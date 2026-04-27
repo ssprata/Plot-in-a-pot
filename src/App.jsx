@@ -5,6 +5,8 @@ import 'reactflow/dist/style.css';
 // Lógica
 import { parseTwee3, exportToTwee3 } from './utils/tweeParser';
 import { buildAdjacencyList } from './utils/graphMath';
+import { validateStoryFlow } from './utils/storyValidator';
+
 
 // Componentes da Interface
 import TopBar from './components/TopBar';
@@ -12,6 +14,7 @@ import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
+
 
 const initialNodes = [
   { id: '1', type: 'choice', position: { x: 250, y: 5 }, data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [] } }
@@ -33,6 +36,7 @@ function App() {
   const [importError, setImportError] = useState('');
   const [showAdjacencyList, setShowAdjacencyList] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
 
   // Cálculos Memorizados
   const adjacencyList = useMemo(() => buildAdjacencyList(nodes, edges), [nodes, edges]);
@@ -56,6 +60,12 @@ function App() {
     // 3. Limpa a seleção
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges]);
+
+  const runValidation = () => {
+    const errors = validateStoryFlow(nodes, edges);
+    setValidationErrors(errors);
+    if (errors.length === 0) alert("História consistente! Todos os caminhos são alcançáveis.");
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -164,8 +174,8 @@ function App() {
     <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 overflow-hidden">
 
       {/* SETTINGS MODAL */}
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
+      <SettingsModal
+        isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         settings={{ showAdjacency: showAdjacencyList }}
         toggleSetting={() => setShowAdjacencyList(!showAdjacencyList)}
@@ -196,8 +206,9 @@ function App() {
         exportToTwine={exportToTwine} importText={importText} setImportText={setImportText}
         handleImport={handleImport} importError={importError} adjacencyList={adjacencyList}
         showAdjacencyList={showAdjacencyList}
+        runValidation={runValidation}
+        validationErrors={validationErrors}
       />
-
     </div>
   );
 }
