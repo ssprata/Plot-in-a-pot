@@ -19,6 +19,13 @@ export function simulateStoryPlaythrough(nodes, edges) {
     const currentNode = nodes.find(n => n.id === nodeId);
     if (!currentNode) continue;
 
+    const isSecret = currentNode.data.tags?.includes('secreto');
+
+    if(isSecret) {
+        //ignorar nós secretos para a simulação
+        continue;
+    }
+
     // Processar modificadores de estado
     const newState = { ...state };
     const content = currentNode.data.content || "";

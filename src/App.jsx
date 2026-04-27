@@ -117,9 +117,10 @@ function App() {
     // O objeto formatado para veres bem a raiz
     const newNode = {
       id,
-      type, // <-- CRUCIAL: O React Flow olha para aqui para saber que tem de usar o StoryNode
+      type,
       position: { x: 200 + (counter % 5) * 80, y: 50 + ((counter / 5) | 0) * 80 },
-      data: { label, nodeType: type, content: '', choices: [] }
+      data: { label, nodeType: type, content: '', choices: [] },
+      tags: ''
     };
 
     setNodes((nds) => nds.concat(newNode));
