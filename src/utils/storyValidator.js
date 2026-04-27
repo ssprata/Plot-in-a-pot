@@ -5,31 +5,34 @@ export function validateStoryFlow(nodes, edges) {
   const reachableChoices = new Set(); 
   const visitedStates = new Map(); 
 
-  // CORREÇÃO: Encontrar o nó de início real
   const startNode = nodes.find(n => n.data.label.toLowerCase() === 'start') || nodes[0];
-  
   if (!startNode) return [];
 
-  // Iniciar a fila com o ID do nó encontrado
-  const queue = [{ nodeId: startNode.id, state: {} }];
+  // --- NOVA LÓGICA: Procurar o StoryInit ---
+  const initNode = nodes.find(n => n.data.label.toLowerCase() === 'storyinit');
+  let initialState = {};
+  
+  if (initNode) {
+    initialState = extractModifiers(initNode.data.content || "");
+  }
+
+  // A mochila agora arranca com as variáveis do StoryInit
+  const queue = [{ nodeId: startNode.id, state: initialState }];
 
   while (queue.length > 0) {
     const { nodeId, state } = queue.shift();
     const currentNode = nodes.find(n => n.id === nodeId);
     if (!currentNode) continue;
 
-    // --- Passo 1: Aplicar Modificadores do Nó Atual ---
     const newState = { ...state };
     const modifiers = extractModifiers(currentNode.data.content || "");
     Object.assign(newState, modifiers);
 
-    // --- Passo 2: Evitar Ciclos Infinitos ---
     const stateString = JSON.stringify(newState);
     if (!visitedStates.has(nodeId)) visitedStates.set(nodeId, []);
     if (visitedStates.get(nodeId).includes(stateString)) continue; 
     visitedStates.get(nodeId).push(stateString);
 
-    // --- Passo 3: Analisar Saídas (Arestas) ---
     const outgoingEdges = edges.filter(e => e.source === nodeId);
 
     outgoingEdges.forEach(edge => {
@@ -43,7 +46,6 @@ export function validateStoryFlow(nodes, edges) {
     });
   }
 
-  // --- Passo 4: Relatório de Erros ---
   return edges
     .filter(edge => !reachableChoices.has(edge.id))
     .map(edge => ({
@@ -52,6 +54,7 @@ export function validateStoryFlow(nodes, edges) {
       targetLabel: nodes.find(n => n.id === edge.target)?.data.label || "Desconhecido",
     }));
 }
+
 
 // Funções Auxiliares de Parsing com Regex Melhorada
 function extractModifiers(content) {

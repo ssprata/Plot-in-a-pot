@@ -1,16 +1,24 @@
-/**
- * Simula todos os caminhos possíveis e faz o log de cobertura de nós.
- */
 export function simulateStoryPlaythrough(nodes, edges) {
   const reachableNodes = new Set();
   const queue = [];
   const visitedStates = new Map();
 
-  // Encontrar o ponto de partida
   const startNode = nodes.find(n => n.data.label.toLowerCase() === 'start') || nodes[0];
   if (!startNode) return { error: "Nó de início não encontrado." };
 
-  queue.push({ nodeId: startNode.id, state: {} });
+  // --- NOVA LÓGICA: Procurar o StoryInit ---
+  const initNode = nodes.find(n => n.data.label.toLowerCase() === 'storyinit');
+  let initialState = {};
+  
+  if (initNode) {
+    const modRegex = /set:\s*([\w_]+)\s*=\s*(true|false)/gi;
+    let match;
+    while ((match = modRegex.exec(initNode.data.content || ""))) {
+      initialState[match[1]] = match[2].toLowerCase() === 'true';
+    }
+  }
+
+  queue.push({ nodeId: startNode.id, state: initialState });
 
   while (queue.length > 0) {
     const { nodeId, state } = queue.shift();
@@ -19,14 +27,6 @@ export function simulateStoryPlaythrough(nodes, edges) {
     const currentNode = nodes.find(n => n.id === nodeId);
     if (!currentNode) continue;
 
-    const isSecret = currentNode.data.tags?.includes('secreto');
-
-    if(isSecret) {
-        //ignorar nós secretos para a simulação
-        continue;
-    }
-
-    // Processar modificadores de estado
     const newState = { ...state };
     const content = currentNode.data.content || "";
     const modRegex = /set:\s*([\w_]+)\s*=\s*(true|false)/gi;
@@ -35,16 +35,13 @@ export function simulateStoryPlaythrough(nodes, edges) {
       newState[match[1]] = match[2].toLowerCase() === 'true';
     }
 
-    // Evitar ciclos infinitos
     const stateStr = JSON.stringify(newState);
     if (!visitedStates.has(nodeId)) visitedStates.set(nodeId, []);
     if (visitedStates.get(nodeId).includes(stateStr)) continue;
     visitedStates.get(nodeId).push(stateStr);
 
-    // Explorar saídas
     const outgoing = edges.filter(e => e.source === nodeId);
     outgoing.forEach(edge => {
-      // Verificar requisitos na label da aresta/escolha
       const choice = currentNode.data.choices?.find(c => c.id === edge.sourceHandle);
       const reqText = choice?.text || "";
       const reqRegex = /req:\s*([\w_]+)\s*==\s*(true|false)/gi;
@@ -64,8 +61,14 @@ export function simulateStoryPlaythrough(nodes, edges) {
     });
   }
 
-  // Comparar com o total de nós
-  const unreachable = nodes.filter(n => !reachableNodes.has(n.id));
+  // Filtrar o StoryInit e outras passagens especiais da contagem de nós inalcançáveis
+  // visto que eles nunca são acedidos diretamente pelo jogador
+  const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
+  const unreachable = nodes.filter(n => {
+    const labelLower = n.data.label.toLowerCase();
+    const isSystemNode = systemNodes.includes(labelLower) || (n.data.tags && n.data.tags.toLowerCase().includes('secreto'));
+    return !reachableNodes.has(n.id) && !isSystemNode;
+  });
 
   return {
     reachableCount: reachableNodes.size,
