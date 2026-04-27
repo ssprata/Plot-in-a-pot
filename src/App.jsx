@@ -304,7 +304,7 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 overflow-hidden">
+    <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
 
       <SettingsModal
         isOpen={isSettingsOpen}
@@ -329,8 +329,8 @@ function App() {
             fitView
             selectionOnDrag
           >
-            <MiniMap className="border-2 border-gray-800 rounded shadow-md" />
-            <Controls className="bg-white border-2 border-gray-800 rounded shadow-md" />
+            <MiniMap className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
+            <Controls className="bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
             <Background gap={16} color="#cbd5e1" />
           </ReactFlow>
         </div>
