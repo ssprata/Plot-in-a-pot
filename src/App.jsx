@@ -40,7 +40,6 @@ function App() {
   const onNodeClick = useCallback((event, node) => setSelectedNodeId(node.id), []);
   const onEdgeClick = useCallback((event, edge) => { setSelectedEdgeId(edge.id); setSelectedNodeId(null); }, []);
 
-
   // --- Gestão de Teclado e Eliminação ---
   const deleteNode = useCallback((nodeIdToRemove) => {
     if (!nodeIdToRemove) return;
@@ -158,19 +157,17 @@ function App() {
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
   }
 
-
-
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', fontFamily: 'Arial, sans-serif', backgroundColor: '#f9f9f9', color: '#111' }}>
+    <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 overflow-hidden">
 
       {/* REACT FLOW AREA (Centro) */}
-      <div style={{ flex: 1, borderRight: '2px solid #ccc', display: 'flex', flexDirection: 'column' }}>
+      <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
         <TopBar addNode={addNode} />
-        <div style={{ flex: 1 }}>
+        <div className="flex-1">
           <ReactFlow nodeTypes={nodeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeDoubleClick={onNodeClick} onEdgeClick={onEdgeClick} fitView selectionOnDrag>
-            <MiniMap />
-            <Controls />
-            <Background gap={16} />
+            <MiniMap className="border-2 border-gray-800 rounded shadow-md" />
+            <Controls className="bg-white border-2 border-gray-800 rounded shadow-md" />
+            <Background gap={16} color="#cbd5e1" />
           </ReactFlow>
         </div>
       </div>
