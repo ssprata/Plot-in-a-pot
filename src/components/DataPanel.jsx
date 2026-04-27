@@ -5,6 +5,34 @@ export default function DataPanel({
   adjacencyList, showAdjacencyList, runValidation, validationErrors, runSimulationLog, showFlowErrors,
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [dragActive, setDragActive] = useState(false);
+
+  // Drag-and-drop handlers for .twee file import
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.twee')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImportText(event.target.result);
+      };
+      reader.readAsText(file);
+    }
+  };
 
   return (
     <div className={`relative transition-all duration-300 ease-in-out border-l border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex flex-col h-full shadow-inner ${isExpanded ? 'w-[360px]' : 'w-12'}`}>
@@ -28,9 +56,13 @@ export default function DataPanel({
           <div className="font-bold mb-2 text-sm text-gray-700 dark:text-gray-300 uppercase">Importar História</div>
           <textarea
             rows={4}
-            className="w-full font-mono text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-600 outline-none focus:ring-1 focus:ring-indigo-500"
+            className={`w-full font-mono text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-600 outline-none focus:ring-1 focus:ring-indigo-500 ${dragActive ? 'ring-2 ring-indigo-400 border-indigo-400' : ''}`}
             value={importText}
             onChange={e => setImportText(e.target.value)}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            placeholder="Cole ou arraste um arquivo .twee aqui"
           />
           <button onClick={handleImport} className="w-full mt-2 p-2 border-2 border-gray-800 dark:border-gray-200 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 font-bold text-xs uppercase transition-all">
             Importar
