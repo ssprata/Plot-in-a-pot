@@ -11,6 +11,7 @@ import TopBar from './components/TopBar';
 import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
+import SettingsModal from './components/SettingsModal';
 
 const initialNodes = [
   { id: '1', type: 'choice', position: { x: 250, y: 5 }, data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [] } }
@@ -30,6 +31,8 @@ function App() {
   const [counter, setCounter] = useState(2);
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
+  const [showAdjacencyList, setShowAdjacencyList] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Cálculos Memorizados
   const adjacencyList = useMemo(() => buildAdjacencyList(nodes, edges), [nodes, edges]);
@@ -160,9 +163,17 @@ function App() {
   return (
     <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 overflow-hidden">
 
+      {/* SETTINGS MODAL */}
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)}
+        settings={{ showAdjacency: showAdjacencyList }}
+        toggleSetting={() => setShowAdjacencyList(!showAdjacencyList)}
+      />
+
       {/* REACT FLOW AREA (Centro) */}
       <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
-        <TopBar addNode={addNode} />
+        <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} />
         <div className="flex-1">
           <ReactFlow nodeTypes={nodeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeDoubleClick={onNodeClick} onEdgeClick={onEdgeClick} fitView selectionOnDrag>
             <MiniMap className="border-2 border-gray-800 rounded shadow-md" />
@@ -184,6 +195,7 @@ function App() {
       <DataPanel
         exportToTwine={exportToTwine} importText={importText} setImportText={setImportText}
         handleImport={handleImport} importError={importError} adjacencyList={adjacencyList}
+        showAdjacencyList={showAdjacencyList}
       />
 
     </div>
