@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { loadConfig } from '../utils/configLoader';
 
 const ThemeContext = createContext();
 
@@ -17,8 +18,9 @@ export const ThemeProvider = ({ children }) => {
     if (saved) {
       return saved === 'dark';
     }
-    // Default to light mode
-    return false;
+    // Use config default
+    const config = loadConfig();
+    return config.theme === 'dark';
   });
 
   useEffect(() => {

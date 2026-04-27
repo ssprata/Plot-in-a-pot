@@ -15,6 +15,9 @@ import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
 
+// Config
+import { loadConfig } from './utils/configLoader';
+
 const initialNodes = [
   {
     id: '1',
@@ -42,10 +45,13 @@ function App() {
 
   // --- Estados de Interface ---
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState({
-    showAdjacency: true,
-    showSecrets: true,
-    showFlowErrors: true
+  const [settings, setSettings] = useState(() => {
+    const config = loadConfig();
+    return {
+      showAdjacency: config.showAdjacency,
+      showSecrets: config.showSecrets,
+      showFlowErrors: config.showFlowErrors
+    };
   });
 
   const toggleSetting = useCallback((key) => {
