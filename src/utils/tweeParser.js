@@ -38,18 +38,18 @@ export function parseTwee3(source) {
   passageBlocks.forEach(block => {
     const lines = block.split(/\r?\n/);
     const headerLine = lines[0];
-    
+
     // Regex robusta oficial para separar Nome, Tags e JSON
     const headerBits = /^::\s*(.*?(?:\\\s)?)\s*(\[.*?\])?\s*(\{.*?\})?\s*$/.exec(headerLine);
-    
+
     if (!headerBits) return; // Ignora blocos corrompidos
-    
+
     const [, rawName, rawTags, rawMetadata] = headerBits;
     if (rawName.trim() === '') return;
 
     const title = unescapeForTweeHeader(rawName.trim());
     const content = lines.slice(1).join('\n').replace(/^\\:/gm, ':').trim();
-    
+
     let tags = [];
     if (rawTags) {
       tags = rawTags.replace(/^\[(.*)\]$/g, '$1').split(/\s/).filter(t => t.trim() !== '').map(unescapeForTweeHeader);
@@ -78,24 +78,87 @@ export function parseTwee3(source) {
 
     const id = String(nodeId++);
     idMap[title] = id;
-    
+
     passages.push({
       id,
+      type: nodeType, // Adiciona o tipo de nó para renderização personalizada
       position,
       data: { label: title, nodeType, content, tags, choices: [] }
     });
   });
 
-  // 3. Fase do Grafo: Extrair Ligações (Arestas)
+  // 3. Fase do Grafo: Extrair Ligações (Arestas) e Povoar Escolhas Visuais
   const edges = [];
   passages.forEach((p) => {
-    const linkRegex = /\[\[(?:([^\]]+?)->)?([^\]]+?)\]\]/g;
+    let choiceCounter = 1;
+
+    // --- PADRÃO 1: Links normais do Twine (Suporta |, ->, <- e simples) ---
+    const linkRegex = /\[\[(.*?)\]\]/g;
     let linkMatch;
+    
     while ((linkMatch = linkRegex.exec(p.data.content))) {
-      const targetTitle = linkMatch[2].trim();
+      let rawContent = linkMatch[1];
+      let rawChoiceText = '';
+      let targetTitle = '';
+
+      // Identificar qual é o formato do link usado pelo autor
+      if (rawContent.includes('|')) {
+        // Formato: [[Texto|Destino]]
+        const parts = rawContent.split('|');
+        rawChoiceText = parts[0].trim();
+        targetTitle = parts[1].trim();
+      } else if (rawContent.includes('->')) {
+        // Formato: [[Texto->Destino]]
+        const parts = rawContent.split('->');
+        rawChoiceText = parts[0].trim();
+        targetTitle = parts[1].trim();
+      } else if (rawContent.includes('<-')) {
+        // Formato: [[Destino<-Texto]]
+        const parts = rawContent.split('<-');
+        targetTitle = parts[0].trim();
+        rawChoiceText = parts[1].trim();
+      } else {
+        // Formato: [[Destino]]
+        rawChoiceText = rawContent.trim();
+        targetTitle = rawContent.trim();
+      }
+
       const targetId = idMap[targetTitle];
+
       if (targetId) {
-        edges.push({ id: `e${p.id}-${targetId}`, source: p.id, target: targetId });
+        const choiceId = `c-${p.id}-${choiceCounter++}`;
+        p.data.choices.push({ id: choiceId, text: rawChoiceText, target: targetId });
+        edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
+      }
+    }
+
+    // --- PADRÃO 2: Macros do SugarCube <<link "Texto">> ... <<goto "Destino">> <</link>> ---
+    const macroLinkRegex = /<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g;
+    let macroMatch;
+    
+    while ((macroMatch = macroLinkRegex.exec(p.data.content))) {
+      const choiceText = macroMatch[1].trim(); 
+      const innerContent = macroMatch[2];      
+
+      // 1. Procurar o goto normal
+      const gotoRegex = /<<goto\s+"([^"]+)"\s*>>/;
+      const gotoMatch = gotoRegex.exec(innerContent);
+
+      // 2. Procurar as variáveis de "encaminhamento" do teu motor específico
+      const variavelDestinoRegex = /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*"([^"]+)"\s*>>/;
+      const variavelMatch = variavelDestinoRegex.exec(innerContent);
+
+      // 3. A MAGIA: Se a variável de destino existir, o alvo visual é ela. Se não, é o goto.
+      const targetTitleRaw = variavelMatch ? variavelMatch[1].trim() : (gotoMatch ? gotoMatch[1].trim() : null);
+
+      if (targetTitleRaw) {
+        const targetId = idMap[targetTitleRaw];
+
+        if (targetId) {
+          const choiceId = `c-${p.id}-${choiceCounter++}`;
+          p.data.choices.push({ id: choiceId, text: choiceText, target: targetId });
+          edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
+        }
       }
     }
   });
@@ -104,7 +167,7 @@ export function parseTwee3(source) {
   const needsLayout = passages.every(p => p.position.x === 0 && p.position.y === 0);
   let nodes = passages;
   if (needsLayout && edges.length > 0) {
-     nodes = layoutNodesAndEdges(passages, edges, 'TB');
+    nodes = layoutNodesAndEdges(passages, edges, 'TB');
   }
 
   return { nodes, edges };
@@ -115,7 +178,7 @@ export function parseTwee3(source) {
 export function exportToTwee3(nodes, edges) {
   const labelCount = {};
   const labelMap = {};
-  
+
   // Garantir nomes únicos e escapados
   nodes.forEach((n) => {
     let label = escapeForTweeHeader(n.data.label || n.id);
@@ -137,14 +200,14 @@ export function exportToTwee3(nodes, edges) {
   let result = '';
   nodes.forEach((n) => {
     const label = labelMap[n.id];
-    
+
     // Restaurar tags obrigatórias baseadas no Node Type
     let tagsArray = Array.isArray(n.data.tags) ? [...n.data.tags] : [];
     if (n.data.nodeType === 'javascript' && !tagsArray.includes('script')) tagsArray.push('script');
     if (n.data.nodeType === 'css' && !tagsArray.includes('stylesheet')) tagsArray.push('stylesheet');
-    
+
     const tags = tagsArray.length > 0 ? ` [${tagsArray.map(escapeForTweeHeader).join(' ')}]` : '';
-    
+
     // Gerar JSON de posição seguro
     const metadataObj = { position: `${Math.round(n.position.x)},${Math.round(n.position.y)}` };
     const metadata = ` ${JSON.stringify(metadataObj).replace(/\s+/g, '')}`;

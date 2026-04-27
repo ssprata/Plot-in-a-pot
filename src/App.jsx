@@ -10,10 +10,17 @@ import { buildAdjacencyList } from './utils/graphMath';
 import TopBar from './components/TopBar';
 import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
+import StoryNode from './components/StoryNode';
 
 const initialNodes = [
-  { id: '1', position: { x: 250, y: 5 }, data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [] } }
+  { id: '1', type: 'choice', position: { x: 250, y: 5 }, data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [] } }
 ];
+
+const nodeTypes = {
+  choice: StoryNode,
+  javascript: StoryNode,
+  css: StoryNode
+};
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -33,16 +40,39 @@ function App() {
   const onNodeClick = useCallback((event, node) => setSelectedNodeId(node.id), []);
   const onEdgeClick = useCallback((event, edge) => { setSelectedEdgeId(edge.id); setSelectedNodeId(null); }, []);
 
+
+  // --- Gestão de Teclado e Eliminação ---
+  const deleteNode = useCallback((nodeIdToRemove) => {
+    if (!nodeIdToRemove) return;
+
+    // 1. Remove o nó
+    setNodes((nds) => nds.filter((n) => n.id !== nodeIdToRemove));
+
+    // 2. Remove TODAS as arestas ligadas a este nó (entradas e saídas)
+    setEdges((eds) => eds.filter((e) => e.source !== nodeIdToRemove && e.target !== nodeIdToRemove));
+
+    // 3. Limpa a seleção
+    if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
+  }, [selectedNodeId, setNodes, setEdges]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEdgeId) {
-        setEdges((eds) => eds.filter((ed) => ed.id !== selectedEdgeId));
-        setSelectedEdgeId(null);
+      // Proteção: Não apagar se o utilizador estiver a escrever numa caixa de texto
+      const activeTag = document.activeElement.tagName;
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedEdgeId) {
+          setEdges((eds) => eds.filter((ed) => ed.id !== selectedEdgeId));
+          setSelectedEdgeId(null);
+        } else if (selectedNodeId) {
+          deleteNode(selectedNodeId);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedEdgeId, setEdges]);
+  }, [selectedEdgeId, selectedNodeId, setEdges, deleteNode]);
 
   // Funções de Nós e Escolhas
   const addNode = useCallback((type) => {
@@ -53,7 +83,16 @@ function App() {
     let labelNum = 1;
     const existingLabels = new Set(nodes.map(n => n.data.label));
     while (existingLabels.has(label)) { labelNum += 1; label = `${baseLabel} ${labelNum}`; }
-    setNodes((nds) => nds.concat({ id, position: { x: 200 + (counter % 5) * 80, y: 50 + ((counter / 5) | 0) * 80 }, data: { label, nodeType: type, content: '', choices: [] } }));
+
+    // O objeto formatado para veres bem a raiz
+    const newNode = {
+      id,
+      type, // <-- CRUCIAL: O React Flow olha para aqui para saber que tem de usar o StoryNode
+      position: { x: 200 + (counter % 5) * 80, y: 50 + ((counter / 5) | 0) * 80 },
+      data: { label, nodeType: type, content: '', choices: [] }
+    };
+
+    setNodes((nds) => nds.concat(newNode));
     setSelectedNodeId(id);
   }, [counter, setNodes, nodes]);
 
@@ -88,9 +127,15 @@ function App() {
     }));
   }, [selectedNodeId, setNodes]);
 
-  const createEdgeFromChoice = useCallback((targetId) => {
-      if (!selectedNodeId || !targetId) return;
-      setEdges((eds) => eds.concat({ id: `e${selectedNodeId}-${targetId}-${Date.now()}`, source: selectedNodeId, target: targetId }));
+  const createEdgeFromChoice = useCallback((choiceId, targetId) => {
+    if (!selectedNodeId || !targetId || !choiceId) return;
+    const id = `e${selectedNodeId}-${targetId}-${Date.now()}`;
+    setEdges((eds) => eds.concat({
+      id,
+      source: selectedNodeId,
+      sourceHandle: choiceId, // <-- Isto liga a seta à escolha exata!
+      target: targetId
+    }));
   }, [selectedNodeId, setEdges]);
 
   // Import / Export
@@ -113,14 +158,16 @@ function App() {
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
   }
 
+
+
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', fontFamily: 'Arial, sans-serif', backgroundColor: '#f9f9f9', color: '#111' }}>
-      
+
       {/* REACT FLOW AREA (Centro) */}
       <div style={{ flex: 1, borderRight: '2px solid #ccc', display: 'flex', flexDirection: 'column' }}>
         <TopBar addNode={addNode} />
         <div style={{ flex: 1 }}>
-          <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeDoubleClick={onNodeClick} onEdgeClick={onEdgeClick} fitView selectionOnDrag>
+          <ReactFlow nodeTypes={nodeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeDoubleClick={onNodeClick} onEdgeClick={onEdgeClick} fitView selectionOnDrag>
             <MiniMap />
             <Controls />
             <Background gap={16} />
@@ -129,18 +176,19 @@ function App() {
       </div>
 
       {/* INSPECTOR (Painel Central de Edição) */}
-      <Inspector 
+      <Inspector
         selectedNode={selectedNode} nodes={nodes} updateSelectedNode={updateSelectedNode}
-        updateChoice={updateChoice} removeChoice={removeChoice} 
+        updateChoice={updateChoice} removeChoice={removeChoice}
         createEdgeFromChoice={createEdgeFromChoice} addChoiceToSelected={addChoiceToSelected}
+        deleteNode={deleteNode}
       />
 
       {/* PAINEL DE DADOS (Direita) */}
-      <DataPanel 
+      <DataPanel
         exportToTwine={exportToTwine} importText={importText} setImportText={setImportText}
         handleImport={handleImport} importError={importError} adjacencyList={adjacencyList}
       />
-      
+
     </div>
   );
 }

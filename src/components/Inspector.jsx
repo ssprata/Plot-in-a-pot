@@ -2,13 +2,15 @@ import React from 'react';
 
 export default function Inspector({ 
   selectedNode, nodes, updateSelectedNode, 
-  updateChoice, removeChoice, createEdgeFromChoice, addChoiceToSelected 
+  updateChoice, removeChoice, createEdgeFromChoice, addChoiceToSelected,
+  deleteNode
 }) {
   return (
-    <div style={{ width: 340, padding: 12, borderRight: '2px solid #ccc', overflowY: 'auto', backgroundColor: '#fff' }}>
+    <div style={{ width: 340, padding: 12, borderRight: '2px solid #ccc', overflowY: 'auto', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
       <h3 style={{ marginTop: 0, borderBottom: '1px solid #ccc', paddingBottom: 4 }}>Inspector</h3>
+      
       {selectedNode ? (
-        <div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: 12 }}><strong>ID:</strong> {selectedNode.id}</div>
           
           <div style={{ marginBottom: 12 }}>
@@ -33,7 +35,7 @@ export default function Inspector({
           </div>
 
           {selectedNode.data.nodeType === 'choice' && (
-            <div>
+            <div style={{ marginBottom: 24 }}>
               <h4 style={{ borderBottom: '1px solid #ccc', paddingBottom: 4 }}>Opções de Saída</h4>
               {(selectedNode.data.choices || []).map((c) => (
                 <div key={c.id} style={{ border: '2px dashed #999', padding: 8, marginBottom: 8 }}>
@@ -55,6 +57,16 @@ export default function Inspector({
               <button onClick={addChoiceToSelected} style={{ width: '100%', padding: 6, border: '1px solid #333', background: '#eee', cursor: 'pointer', fontWeight: 'bold' }}>+ Adicionar Escolha</button>
             </div>
           )}
+
+          {/* Botão de Apagar Nó no fundo do Inspector */}
+          <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '2px solid #ccc' }}>
+            <button 
+              onClick={() => deleteNode(selectedNode.id)} 
+              style={{ width: '100%', padding: 12, border: '2px solid #000', background: '#e0e0e0', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}
+            >
+              Apagar Nó Permanentemente
+            </button>
+          </div>
         </div>
       ) : (
         <div style={{ fontStyle: 'italic', color: '#555' }}>Seleciona um nó (duplo clique) para editar.</div>
