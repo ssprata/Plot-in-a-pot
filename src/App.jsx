@@ -8,7 +8,6 @@ import { buildAdjacencyList } from './utils/graphMath';
 import { validateStoryFlow } from './utils/storyValidator';
 import { simulateStoryPlaythrough } from './utils/storySimulator';
 
-
 // Componentes da Interface
 import TopBar from './components/TopBar';
 import Inspector from './components/Inspector';
@@ -16,10 +15,13 @@ import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
 
-
-
 const initialNodes = [
-  { id: '1', type: 'choice', position: { x: 250, y: 5 }, data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [] } }
+  { 
+    id: '1', 
+    type: 'choice', 
+    position: { x: 250, y: 5 }, 
+    data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [], tags: '' } 
+  }
 ];
 
 const nodeTypes = {
@@ -29,6 +31,7 @@ const nodeTypes = {
 };
 
 function App() {
+  // --- Estados Principais ---
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
@@ -36,91 +39,44 @@ function App() {
   const [counter, setCounter] = useState(2);
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
+  
+  // --- Estados de Interface ---
   const [showAdjacencyList, setShowAdjacencyList] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
 
-  // Cálculos Memorizados
+  // --- Cálculos Memorizados ---
   const adjacencyList = useMemo(() => buildAdjacencyList(nodes, edges), [nodes, edges]);
   const selectedNode = useMemo(() => nodes.find((n) => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
 
-  // Handlers do Grafo
+  // --- Handlers do Grafo ---
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
   const onNodeClick = useCallback((event, node) => setSelectedNodeId(node.id), []);
   const onEdgeClick = useCallback((event, edge) => { setSelectedEdgeId(edge.id); setSelectedNodeId(null); }, []);
 
-  // --- Gestão de Teclado e Eliminação ---
+  // --- Operações de Nós ---
   const deleteNode = useCallback((nodeIdToRemove) => {
     if (!nodeIdToRemove) return;
-
-    // 1. Remove o nó
     setNodes((nds) => nds.filter((n) => n.id !== nodeIdToRemove));
-
-    // 2. Remove TODAS as arestas ligadas a este nó (entradas e saídas)
     setEdges((eds) => eds.filter((e) => e.source !== nodeIdToRemove && e.target !== nodeIdToRemove));
-
-    // 3. Limpa a seleção
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges]);
 
-  const runValidation = () => {
-    const errors = validateStoryFlow(nodes, edges);
-    setValidationErrors(errors);
-    if (errors.length === 0) alert("História consistente! Todos os caminhos são alcançáveis.");
-  };
-
-  const runSimulationLog = () => {
-    const report = simulateStoryPlaythrough(nodes, edges);
-
-    console.log("%c --- SIMULAÇÃO DE FLUXO --- ", "background: #222; color: #bada55; font-size: 14px");
-    console.log(`Total de Nós: ${report.totalNodes}`);
-    console.log(`Nós Alcançáveis: ${report.reachableCount}`);
-
-    if (report.isPerfect) {
-      console.log("%c ✅ SUCESSO: Todos os nós são acessíveis!", "color: green; font-weight: bold");
-    } else {
-      console.error(" ❌ AVISO: Existem nós órfãos ou impossíveis de alcançar:");
-      report.unreachableNodes.forEach(name => console.log(`   - ${name}`));
-    }
-    console.log("----------------------------");
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Proteção: Não apagar se o utilizador estiver a escrever numa caixa de texto
-      const activeTag = document.activeElement.tagName;
-      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return;
-
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedEdgeId) {
-          setEdges((eds) => eds.filter((ed) => ed.id !== selectedEdgeId));
-          setSelectedEdgeId(null);
-        } else if (selectedNodeId) {
-          deleteNode(selectedNodeId);
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedEdgeId, selectedNodeId, setEdges, deleteNode]);
-
-  // Funções de Nós e Escolhas
   const addNode = useCallback((type) => {
     const id = String(counter);
     setCounter((c) => c + 1);
+    
     let baseLabel = type === 'javascript' ? 'Script' : type === 'css' ? 'Estilo' : 'Cena';
     let label = baseLabel;
     let labelNum = 1;
     const existingLabels = new Set(nodes.map(n => n.data.label));
     while (existingLabels.has(label)) { labelNum += 1; label = `${baseLabel} ${labelNum}`; }
 
-    // O objeto formatado para veres bem a raiz
     const newNode = {
       id,
       type,
       position: { x: 200 + (counter % 5) * 80, y: 50 + ((counter / 5) | 0) * 80 },
-      data: { label, nodeType: type, content: '', choices: [] },
-      tags: ''
+      data: { label, nodeType: type, content: '', choices: [], tags: '' }
     };
 
     setNodes((nds) => nds.concat(newNode));
@@ -132,63 +88,6 @@ function App() {
     setNodes((nds) => nds.map((n) => (n.id === selectedNodeId ? { ...n, data: { ...n.data, ...patch } } : n)));
   }, [selectedNodeId, setNodes]);
 
-  const addChoiceToSelected = useCallback(() => {
-    if (!selectedNodeId) return;
-    setNodes((nds) => nds.map((n) => {
-      if (n.id !== selectedNodeId) return n;
-      const choices = Array.isArray(n.data.choices) ? n.data.choices.slice() : [];
-      choices.push({ id: `c-${Date.now()}`, text: 'Nova escolha', target: '' });
-      return { ...n, data: { ...n.data, choices } };
-    }));
-  }, [selectedNodeId, setNodes]);
-
-  const updateChoice = useCallback((choiceId, patch) => {
-    if (!selectedNodeId) return;
-    setNodes((nds) => nds.map((n) => {
-      if (n.id !== selectedNodeId) return n;
-      return { ...n, data: { ...n.data, choices: (n.data.choices || []).map((c) => (c.id === choiceId ? { ...c, ...patch } : c)) } };
-    }));
-  }, [selectedNodeId, setNodes]);
-
-  const removeChoice = useCallback((choiceId) => {
-    if (!selectedNodeId) return;
-    setNodes((nds) => nds.map((n) => {
-      if (n.id !== selectedNodeId) return n;
-      return { ...n, data: { ...n.data, choices: (n.data.choices || []).filter((c) => c.id !== choiceId) } };
-    }));
-  }, [selectedNodeId, setNodes]);
-
-  const createEdgeFromChoice = useCallback((choiceId, targetId) => {
-    if (!selectedNodeId || !targetId || !choiceId) return;
-    const id = `e${selectedNodeId}-${targetId}-${Date.now()}`;
-    setEdges((eds) => eds.concat({
-      id,
-      source: selectedNodeId,
-      sourceHandle: choiceId, // <-- Isto liga a seta à escolha exata!
-      target: targetId
-    }));
-  }, [selectedNodeId, setEdges]);
-
-  // Import / Export
-  const handleImport = useCallback(() => {
-    try {
-      const { nodes: newNodes, edges: newEdges } = parseTwee3(importText);
-      setNodes(newNodes); setEdges(newEdges);
-      setCounter(newNodes.reduce((max, n) => Math.max(max, parseInt(n.id, 10) || 0), 0) + 1);
-      setImportError('');
-    } catch (e) { setImportError('Failed to parse story.'); }
-  }, [importText, setNodes, setEdges]);
-
-  function exportToTwine() {
-    const result = exportToTwee3(nodes, edges);
-    const blob = new Blob([result], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'plot-in-a-pot.twee';
-    document.body.appendChild(a); a.click();
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-  }
-
   const syncChoicesFromText = useCallback((nodeId, text) => {
     const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
     let match;
@@ -196,7 +95,6 @@ function App() {
     const newEdgesPatch = [];
 
     while ((match = linkRegex.exec(text))) {
-      // Captura: [[Texto|Alvo]] ou [[Texto->Alvo]] ou [[Alvo]]
       const rawText = match[1] || match[3];
       const targetLabel = (match[2] || match[3]).trim();
       const choiceText = rawText.trim();
@@ -216,22 +114,79 @@ function App() {
       }
     }
 
-    // 1. Atualizar o Nó com as novas escolhas
     setNodes((nds) => nds.map((n) =>
       n.id === nodeId ? { ...n, data: { ...n.data, content: text, choices: newChoices } } : n
     ));
 
-    // 2. Atualizar as Arestas (remover as antigas deste nó e colocar as novas)
     setEdges((eds) => {
       const otherEdges = eds.filter(e => e.source !== nodeId);
       return [...otherEdges, ...newEdgesPatch];
     });
   }, [nodes, setNodes, setEdges]);
 
+  // --- Gestão de Teclado ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement.tagName;
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedEdgeId) {
+          setEdges((eds) => eds.filter((ed) => ed.id !== selectedEdgeId));
+          setSelectedEdgeId(null);
+        } else if (selectedNodeId) {
+          deleteNode(selectedNodeId);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedEdgeId, selectedNodeId, setEdges, deleteNode]);
+
+  // --- Ferramentas de Análise ---
+  const runValidation = () => {
+    const errors = validateStoryFlow(nodes, edges);
+    setValidationErrors(errors);
+    if (errors.length === 0) alert("História consistente! Todos os caminhos são alcançáveis.");
+  };
+
+  const runSimulationLog = () => {
+    const report = simulateStoryPlaythrough(nodes, edges);
+    console.log("%c --- SIMULAÇÃO DE FLUXO --- ", "background: #222; color: #bada55; font-size: 14px");
+    console.log(`Total de Nós: ${report.totalNodes}`);
+    console.log(`Nós Alcançáveis: ${report.reachableCount}`);
+    if (report.isPerfect) {
+      console.log("%c ✅ SUCESSO: Todos os nós são acessíveis!", "color: green; font-weight: bold");
+    } else {
+      console.error(" ❌ AVISO: Existem nós órfãos ou impossíveis de alcançar:");
+      report.unreachableNodes.forEach(name => console.log(`   - ${name}`));
+    }
+    console.log("----------------------------");
+  };
+
+  // --- Import / Export ---
+  const handleImport = useCallback(() => {
+    try {
+      const { nodes: newNodes, edges: newEdges } = parseTwee3(importText);
+      setNodes(newNodes); setEdges(newEdges);
+      setCounter(newNodes.reduce((max, n) => Math.max(max, parseInt(n.id, 10) || 0), 0) + 1);
+      setImportError('');
+    } catch (e) { setImportError('Failed to parse story.'); }
+  }, [importText, setNodes, setEdges]);
+
+  function exportToTwine() {
+    const result = exportToTwee3(nodes, edges);
+    const blob = new Blob([result], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'plot-in-a-pot.twee';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  }
+
   return (
     <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 overflow-hidden">
-
-      {/* SETTINGS MODAL */}
+      
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -239,7 +194,6 @@ function App() {
         toggleSetting={() => setShowAdjacencyList(!showAdjacencyList)}
       />
 
-      {/* REACT FLOW AREA (Centro) */}
       <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
         <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} />
         <div className="flex-1">
@@ -251,19 +205,21 @@ function App() {
         </div>
       </div>
 
-      {/* INSPECTOR (Painel Central de Edição) */}
       <Inspector
-        selectedNode={selectedNode} nodes={nodes} updateSelectedNode={updateSelectedNode}
-        updateChoice={updateChoice} removeChoice={removeChoice}
-        createEdgeFromChoice={createEdgeFromChoice} addChoiceToSelected={addChoiceToSelected}
+        selectedNode={selectedNode} 
+        nodes={nodes} 
+        updateSelectedNode={updateSelectedNode}
         deleteNode={deleteNode}
         syncChoicesFromText={syncChoicesFromText}
       />
 
-      {/* PAINEL DE DADOS (Direita) */}
       <DataPanel
-        exportToTwine={exportToTwine} importText={importText} setImportText={setImportText}
-        handleImport={handleImport} importError={importError} adjacencyList={adjacencyList}
+        exportToTwine={exportToTwine} 
+        importText={importText} 
+        setImportText={setImportText}
+        handleImport={handleImport} 
+        importError={importError} 
+        adjacencyList={adjacencyList}
         showAdjacencyList={showAdjacencyList}
         runValidation={runValidation}
         validationErrors={validationErrors}
