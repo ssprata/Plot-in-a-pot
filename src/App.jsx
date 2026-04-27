@@ -41,13 +41,38 @@ function App() {
   const [importError, setImportError] = useState('');
 
   // --- Estados de Interface ---
-  const [showAdjacencyList, setShowAdjacencyList] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    showAdjacency: true,
+    showSecrets: true,
+    showFlowErrors: true
+  });
+
+  const toggleSetting = useCallback((key) => {
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  // --- Estado de Erros de Validação ---
   const [validationErrors, setValidationErrors] = useState([]);
 
   // --- Cálculos Memorizados ---
   const adjacencyList = useMemo(() => buildAdjacencyList(nodes, edges), [nodes, edges]);
   const selectedNode = useMemo(() => nodes.find((n) => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
+
+  // --- Adiciona a filtragem visual abaixo dos teus useMemos: ---
+  const visibleNodes = useMemo(() => {
+    if (settings.showSecrets) return nodes;
+    return nodes.filter(n => {
+      const tags = Array.isArray(n.data.tags) ? n.data.tags.join(' ') : String(n.data.tags || "");
+      return !tags.toLowerCase().includes('secreto');
+    });
+  }, [nodes, settings.showSecrets]);
+
+  const visibleEdges = useMemo(() => {
+    if (settings.showSecrets) return edges;
+    const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
+    return edges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+  }, [edges, visibleNodes, settings.showSecrets]);
 
   // --- Handlers do Grafo ---
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
@@ -284,14 +309,26 @@ function App() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        settings={{ showAdjacency: showAdjacencyList }}
-        toggleSetting={() => setShowAdjacencyList(!showAdjacencyList)}
+        settings={settings}
+        toggleSetting={toggleSetting}
       />
 
       <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
         <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} />
         <div className="flex-1">
-          <ReactFlow nodeTypes={nodeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeDoubleClick={onNodeClick} onEdgeClick={onEdgeClick} fitView selectionOnDrag>
+          {/* AQUI: Usar visibleNodes e visibleEdges para que o filtro funcione visualmente */}
+          <ReactFlow
+            nodeTypes={nodeTypes}
+            nodes={visibleNodes}
+            edges={visibleEdges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeDoubleClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
+            fitView
+            selectionOnDrag
+          >
             <MiniMap className="border-2 border-gray-800 rounded shadow-md" />
             <Controls className="bg-white border-2 border-gray-800 rounded shadow-md" />
             <Background gap={16} color="#cbd5e1" />
@@ -305,7 +342,7 @@ function App() {
         updateSelectedNode={updateSelectedNode}
         deleteNode={deleteNode}
         syncChoicesFromText={syncChoicesFromText}
-        setStartNode={setStartNode} // Adicionar esta linha
+        setStartNode={setStartNode}
       />
 
       <DataPanel
@@ -315,7 +352,8 @@ function App() {
         handleImport={handleImport}
         importError={importError}
         adjacencyList={adjacencyList}
-        showAdjacencyList={showAdjacencyList}
+        showAdjacencyList={settings.showAdjacency}
+        showFlowErrors={settings.showFlowErrors}
         runValidation={runValidation}
         validationErrors={validationErrors}
         runSimulationLog={runSimulationLog}

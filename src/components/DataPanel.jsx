@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function DataPanel({
   exportToTwine, importText, setImportText, handleImport, importError,
-  adjacencyList, showAdjacencyList, runValidation, validationErrors, runSimulationLog
+  adjacencyList, showAdjacencyList, runValidation, validationErrors, runSimulationLog, showFlowErrors,
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -46,7 +46,7 @@ export default function DataPanel({
         </button>
 
         {/* EXIBIÇÃO DE ERROS DE FLUXO */}
-        {validationErrors && validationErrors.length > 0 && (
+        {showFlowErrors && validationErrors && validationErrors.length > 0 && (
           <div className="mb-6 p-3 bg-red-900 text-red-100 rounded border-2 border-red-500 shadow-[4px_4px_0px_#000] overflow-y-auto">
             <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter">Erros de Fluxo Detetados:</h4>
             <ul className="text-[9px] space-y-2 uppercase font-mono leading-tight">
@@ -71,15 +71,15 @@ export default function DataPanel({
             </div>
           </div>
         )}
-      </div>
 
-      {/* Simulação de Jogabilidade */}
-      <button
-        onClick={runSimulationLog}
-        className="w-full mt-2 p-2 border-2 border-gray-800 bg-gray-800 text-white hover:bg-black font-mono text-[10px] uppercase tracking-tighter transition-all shadow-[2px_2px_0px_#ccc] active:shadow-none mb-4"
-      >
-        Simular
-      </button>
+        {/* Simulação de Jogabilidade */}
+        <button
+          onClick={runSimulationLog}
+          className="w-full mt-2 p-2 border-2 border-gray-800 bg-gray-800 text-white hover:bg-black font-mono text-[10px] uppercase tracking-tighter transition-all shadow-[2px_2px_0px_#ccc] active:shadow-none mb-4"
+        >
+          Simular
+        </button>
+      </div>
 
       {!isExpanded && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
