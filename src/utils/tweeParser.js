@@ -191,18 +191,18 @@ export function exportToTwee3(nodes, edges) {
     labelMap[n.id] = label;
   });
 
-  const outgoing = {};
-  edges.forEach((e) => {
-    if (!outgoing[e.source]) outgoing[e.source] = [];
-    outgoing[e.source].push(e.target);
-  });
-
   let result = '';
+  
   nodes.forEach((n) => {
     const label = labelMap[n.id];
 
+    // Uniformizar a leitura de tags (suporta Arrays ou Strings separadas por vírgula)
+    let rawTags = n.data.tags || "";
+    let tagsArray = Array.isArray(rawTags) 
+      ? [...rawTags] 
+      : String(rawTags).split(',').map(t => t.trim()).filter(t => t !== "");
+
     // Restaurar tags obrigatórias baseadas no Node Type
-    let tagsArray = Array.isArray(n.data.tags) ? [...n.data.tags] : [];
     if (n.data.nodeType === 'javascript' && !tagsArray.includes('script')) tagsArray.push('script');
     if (n.data.nodeType === 'css' && !tagsArray.includes('stylesheet')) tagsArray.push('stylesheet');
 
@@ -215,19 +215,11 @@ export function exportToTwee3(nodes, edges) {
     // Escapar duplos pontos no meio do texto
     let content = escapeForTweeText(n.data.content || '');
 
-    // Injetar links formatados no fundo do texto
-    if (outgoing[n.id] && outgoing[n.id].length > 0) {
-      outgoing[n.id].forEach((targetId) => {
-        const targetLabel = labelMap[targetId] || targetId;
-        let choiceText = '';
-        if (n.data.choices && Array.isArray(n.data.choices)) {
-          const found = n.data.choices.find(c => c.target === targetId);
-          if (found && found.text) choiceText = found.text;
-        }
-        content += choiceText ? `\n\n[[${choiceText}->${targetLabel}]]` : `\n\n[[${targetLabel}]]`;
-      });
-    }
+    // NOTA: O loop "outgoing" que anexava as escolhas no fundo foi removido.
+    // O texto narrativo ('content') já contém as macros e os links escritos pelo autor.
+
     result += `:: ${label}${tags}${metadata}\n${content}\n\n`;
   });
-  return result;
+  
+  return result.trim();
 }
