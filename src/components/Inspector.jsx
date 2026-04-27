@@ -5,7 +5,8 @@ export default function Inspector({
   nodes,
   updateSelectedNode,
   deleteNode,
-  syncChoicesFromText // <-- 1. ADICIONAR AQUI NAS PROPS
+  syncChoicesFromText,
+  setStartNode
 }) {
   return (
     <div className="w-[340px] p-3 border-r-2 border-gray-300 overflow-y-auto bg-white flex flex-col h-full shadow-md">
@@ -55,6 +56,14 @@ export default function Inspector({
               value={selectedNode.data.tags || ''}
               onChange={(e) => updateSelectedNode({ tags: e.target.value })}
             />
+          </div>
+          <div className="mb-4">
+            <button
+              onClick={() => setStartNode(selectedNode.id)}
+              className="w-full p-2 border-2 border-gray-800 bg-blue-100 hover:bg-blue-200 text-blue-900 font-bold text-xs uppercase tracking-wider transition-all shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none"
+            >
+              Definir como Começo
+            </button>
           </div>
 
           <div className="mb-4">

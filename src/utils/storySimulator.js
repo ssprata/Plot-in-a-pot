@@ -3,13 +3,20 @@ export function simulateStoryPlaythrough(nodes, edges) {
   const queue = [];
   const visitedStates = new Map();
 
-  const startNode = nodes.find(n => n.data.label.toLowerCase() === 'start') || nodes[0];
-  if (!startNode) return { error: "Nó de início não encontrado." };
+  let startNode = nodes.find(n => {
+    const tags = n.data.tags ? n.data.tags.toLowerCase() : '';
+    return tags.includes('start');
+  });
+
+  // Se nao existir etiqueta, tentar encontrar um que se chame 'start', ou usar o primeiro do array
+  if (!startNode) {
+    startNode = nodes.find(n => n.data.label.toLowerCase() === 'start') || nodes[0];
+  }
 
   // --- NOVA LÓGICA: Procurar o StoryInit ---
   const initNode = nodes.find(n => n.data.label.toLowerCase() === 'storyinit');
   let initialState = {};
-  
+
   if (initNode) {
     const modRegex = /set:\s*([\w_]+)\s*=\s*(true|false)/gi;
     let match;

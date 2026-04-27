@@ -16,11 +16,11 @@ import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
 
 const initialNodes = [
-  { 
-    id: '1', 
-    type: 'choice', 
-    position: { x: 250, y: 5 }, 
-    data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [], tags: '' } 
+  {
+    id: '1',
+    type: 'choice',
+    position: { x: 250, y: 5 },
+    data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [], tags: '' }
   }
 ];
 
@@ -39,7 +39,7 @@ function App() {
   const [counter, setCounter] = useState(2);
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
-  
+
   // --- Estados de Interface ---
   const [showAdjacencyList, setShowAdjacencyList] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -62,26 +62,101 @@ function App() {
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges]);
 
-  const addNode = useCallback((type) => {
+  const addNode = useCallback((type, presetLabel = null, presetTags = '') => {
+    // Verificar se é um nó especial que já existe
+    if (presetLabel) {
+      const existingNode = nodes.find(n => n.data.label.toLowerCase() === presetLabel.toLowerCase());
+      if (existingNode) {
+        alert(`O no especial "${presetLabel}" ja existe no projeto.`);
+        setSelectedNodeId(existingNode.id);
+        return;
+      }
+    }
+
     const id = String(counter);
     setCounter((c) => c + 1);
-    
-    let baseLabel = type === 'javascript' ? 'Script' : type === 'css' ? 'Estilo' : 'Cena';
-    let label = baseLabel;
-    let labelNum = 1;
-    const existingLabels = new Set(nodes.map(n => n.data.label));
-    while (existingLabels.has(label)) { labelNum += 1; label = `${baseLabel} ${labelNum}`; }
+
+    let label = presetLabel;
+
+    // Se não houver preset, gera o nome padrao (Cena 1, Script 2, etc.)
+    if (!label) {
+      let baseLabel = type === 'javascript' ? 'Script' : type === 'css' ? 'Estilo' : 'Cena';
+      label = baseLabel;
+      let labelNum = 1;
+      const existingLabels = new Set(nodes.map(n => n.data.label));
+      while (existingLabels.has(label)) { labelNum += 1; label = `${baseLabel} ${labelNum}`; }
+    }
 
     const newNode = {
       id,
       type,
       position: { x: 200 + (counter % 5) * 80, y: 50 + ((counter / 5) | 0) * 80 },
-      data: { label, nodeType: type, content: '', choices: [], tags: '' }
+      data: { label, nodeType: type, content: '', choices: [], tags: presetTags }
     };
 
     setNodes((nds) => nds.concat(newNode));
     setSelectedNodeId(id);
   }, [counter, setNodes, nodes]);
+
+  const setStartNode = useCallback((nodeId) => {
+    const targetNode = nodes.find(n => n.id === nodeId);
+    if (!targetNode) return;
+
+    const newLabel = targetNode.data.label;
+
+    setNodes(nds => {
+      let storyDataNode = nds.find(n => n.data.label.toLowerCase() === 'storydata');
+
+      let storyDataObj = {
+        ifid: crypto.randomUUID ? crypto.randomUUID() : "F3F82260-1419-48CB-B1DC-2C3C56D7324B",
+        format: "SugarCube",
+        "format-version": "2.36.0",
+        start: newLabel,
+        zoom: 1
+      };
+
+      if (storyDataNode) {
+        try {
+          storyDataObj = { ...JSON.parse(storyDataNode.data.content || "{}"), start: newLabel };
+        } catch (e) {
+          console.warn("StoryData estava corrompido. A reescrever ficheiro limpo.");
+        }
+      }
+
+      let updatedNodes = nds.map(n => {
+        // CORREÇÃO: Converter as tags para String garantidamente, quer venham do Parser (Array) ou do Inspector (String)
+        let currentTags = Array.isArray(n.data.tags) ? n.data.tags.join(', ') : String(n.data.tags || "");
+
+        let tags = currentTags.replace(/\bstart\b/gi, '').split(',').map(t => t.trim()).filter(t => t).join(', ');
+
+        if (n.id === nodeId) {
+          tags = tags ? `${tags}, start` : 'start';
+          return { ...n, data: { ...n.data, tags } };
+        }
+        if (storyDataNode && n.id === storyDataNode.id) {
+          // Garante que se o StoryData for atualizado, recebe a tag secreto
+          return { ...n, data: { ...n.data, content: JSON.stringify(storyDataObj, null, 2), tags: 'secreto' } };
+        }
+        return { ...n, data: { ...n.data, tags } };
+      });
+
+      if (!storyDataNode) {
+        updatedNodes.push({
+          id: `sd-${Date.now()}`,
+          type: 'javascript',
+          position: { x: targetNode.position.x, y: targetNode.position.y - 150 },
+          data: {
+            label: 'StoryData',
+            nodeType: 'javascript',
+            content: JSON.stringify(storyDataObj, null, 2),
+            choices: [],
+            tags: 'secreto'
+          }
+        });
+      }
+      return updatedNodes;
+    });
+  }, [nodes, setNodes]);
 
   const updateSelectedNode = useCallback((patch) => {
     if (!selectedNodeId) return;
@@ -168,10 +243,29 @@ function App() {
   const handleImport = useCallback(() => {
     try {
       const { nodes: newNodes, edges: newEdges } = parseTwee3(importText);
-      setNodes(newNodes); setEdges(newEdges);
-      setCounter(newNodes.reduce((max, n) => Math.max(max, parseInt(n.id, 10) || 0), 0) + 1);
+
+      // Lista de nós de sistema oficiais do Twine
+      const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
+
+      const formattedNodes = newNodes.map(n => {
+        // 1. Uniformizar o formato das tags para o nosso editor
+        let tags = Array.isArray(n.data.tags) ? n.data.tags.join(', ') : String(n.data.tags || "");
+
+        // 2. Se for um nó de sistema e não tiver a tag secreto, adicionamos nós mesmos
+        if (systemNodes.includes(n.data.label.toLowerCase()) && !tags.includes('secreto')) {
+          tags = tags ? `${tags}, secreto` : 'secreto';
+        }
+
+        return { ...n, data: { ...n.data, tags } };
+      });
+
+      setNodes(formattedNodes);
+      setEdges(newEdges);
+      setCounter(formattedNodes.reduce((max, n) => Math.max(max, parseInt(n.id, 10) || 0), 0) + 1);
       setImportError('');
-    } catch (e) { setImportError('Failed to parse story.'); }
+    } catch (e) {
+      setImportError('Failed to parse story.');
+    }
   }, [importText, setNodes, setEdges]);
 
   function exportToTwine() {
@@ -186,7 +280,7 @@ function App() {
 
   return (
     <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 overflow-hidden">
-      
+
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -206,19 +300,20 @@ function App() {
       </div>
 
       <Inspector
-        selectedNode={selectedNode} 
-        nodes={nodes} 
+        selectedNode={selectedNode}
+        nodes={nodes}
         updateSelectedNode={updateSelectedNode}
         deleteNode={deleteNode}
         syncChoicesFromText={syncChoicesFromText}
+        setStartNode={setStartNode} // Adicionar esta linha
       />
 
       <DataPanel
-        exportToTwine={exportToTwine} 
-        importText={importText} 
+        exportToTwine={exportToTwine}
+        importText={importText}
         setImportText={setImportText}
-        handleImport={handleImport} 
-        importError={importError} 
+        handleImport={handleImport}
+        importError={importError}
         adjacencyList={adjacencyList}
         showAdjacencyList={showAdjacencyList}
         runValidation={runValidation}
