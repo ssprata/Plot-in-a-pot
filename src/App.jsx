@@ -170,6 +170,45 @@ function App() {
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
   }
 
+  const syncChoicesFromText = useCallback((nodeId, text) => {
+    const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
+    let match;
+    const newChoices = [];
+    const newEdgesPatch = [];
+
+    while ((match = linkRegex.exec(text))) {
+      // Captura: [[Texto|Alvo]] ou [[Texto->Alvo]] ou [[Alvo]]
+      const rawText = match[1] || match[3];
+      const targetLabel = (match[2] || match[3]).trim();
+      const choiceText = rawText.trim();
+
+      const targetNode = nodes.find(n => n.data.label === targetLabel);
+      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}`;
+
+      newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
+
+      if (targetNode) {
+        newEdgesPatch.push({
+          id: `e-${nodeId}-${targetNode.id}-${choiceId}`,
+          source: nodeId,
+          sourceHandle: choiceId,
+          target: targetNode.id
+        });
+      }
+    }
+
+    // 1. Atualizar o Nó com as novas escolhas
+    setNodes((nds) => nds.map((n) =>
+      n.id === nodeId ? { ...n, data: { ...n.data, content: text, choices: newChoices } } : n
+    ));
+
+    // 2. Atualizar as Arestas (remover as antigas deste nó e colocar as novas)
+    setEdges((eds) => {
+      const otherEdges = eds.filter(e => e.source !== nodeId);
+      return [...otherEdges, ...newEdgesPatch];
+    });
+  }, [nodes, setNodes, setEdges]);
+
   return (
     <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 overflow-hidden">
 
@@ -199,6 +238,7 @@ function App() {
         updateChoice={updateChoice} removeChoice={removeChoice}
         createEdgeFromChoice={createEdgeFromChoice} addChoiceToSelected={addChoiceToSelected}
         deleteNode={deleteNode}
+        syncChoicesFromText={syncChoicesFromText}
       />
 
       {/* PAINEL DE DADOS (Direita) */}
