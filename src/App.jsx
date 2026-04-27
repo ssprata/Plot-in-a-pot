@@ -6,6 +6,7 @@ import 'reactflow/dist/style.css';
 import { parseTwee3, exportToTwee3 } from './utils/tweeParser';
 import { buildAdjacencyList } from './utils/graphMath';
 import { validateStoryFlow } from './utils/storyValidator';
+import { simulateStoryPlaythrough } from './utils/storySimulator';
 
 
 // Componentes da Interface
@@ -14,6 +15,7 @@ import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
+
 
 
 const initialNodes = [
@@ -65,6 +67,22 @@ function App() {
     const errors = validateStoryFlow(nodes, edges);
     setValidationErrors(errors);
     if (errors.length === 0) alert("História consistente! Todos os caminhos são alcançáveis.");
+  };
+
+  const runSimulationLog = () => {
+    const report = simulateStoryPlaythrough(nodes, edges);
+
+    console.log("%c --- SIMULAÇÃO DE FLUXO --- ", "background: #222; color: #bada55; font-size: 14px");
+    console.log(`Total de Nós: ${report.totalNodes}`);
+    console.log(`Nós Alcançáveis: ${report.reachableCount}`);
+
+    if (report.isPerfect) {
+      console.log("%c ✅ SUCESSO: Todos os nós são acessíveis!", "color: green; font-weight: bold");
+    } else {
+      console.error(" ❌ AVISO: Existem nós órfãos ou impossíveis de alcançar:");
+      report.unreachableNodes.forEach(name => console.log(`   - ${name}`));
+    }
+    console.log("----------------------------");
   };
 
   useEffect(() => {
@@ -248,6 +266,7 @@ function App() {
         showAdjacencyList={showAdjacencyList}
         runValidation={runValidation}
         validationErrors={validationErrors}
+        runSimulationLog={runSimulationLog}
       />
     </div>
   );
