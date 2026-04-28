@@ -80,8 +80,66 @@ function App() {
     return edges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
   }, [edges, visibleNodes, settings.showSecrets]);
 
+  // --- Sync choices from text (must be above onConnect!) ---
+  const syncChoicesFromText = useCallback((nodeId, text) => {
+    const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
+    let match;
+    const newChoices = [];
+    const newEdgesPatch = [];
+
+    while ((match = linkRegex.exec(text))) {
+      const rawText = match[1] || match[3];
+      const targetLabel = (match[2] || match[3]).trim();
+      const choiceText = rawText.trim();
+
+      const targetNode = nodes.find(n => n.data.label === targetLabel);
+      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}`;
+
+      newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
+
+      if (targetNode) {
+        newEdgesPatch.push({
+          id: `e-${nodeId}-${targetNode.id}-${choiceId}`,
+          source: nodeId,
+          sourceHandle: choiceId,
+          target: targetNode.id
+        });
+      }
+    }
+
+    setNodes((nds) => nds.map((n) =>
+      n.id === nodeId ? { ...n, data: { ...n.data, content: text, choices: newChoices } } : n
+    ));
+
+    setEdges((eds) => {
+      const otherEdges = eds.filter(e => e.source !== nodeId);
+      return [...otherEdges, ...newEdgesPatch];
+    });
+  }, [nodes, setNodes, setEdges]);
+
   // --- Handlers do Grafo ---
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  const onConnect = useCallback((params) => {
+    setEdges((eds) => addEdge(params, eds));
+    setNodes((nds) => nds.map((n) => {
+      if (n.id === params.source) {
+        const targetNode = nds.find(nd => nd.id === params.target);
+        if (!targetNode) return n;
+        const targetLabel = targetNode.data.label;
+        const linkSyntax = `[[${targetLabel}]]`;
+        let content = n.data.content || "";
+        // Only add if not already present
+        if (!content.includes(linkSyntax)) {
+          // Add a newline if needed
+          if (content.length > 0 && !content.endsWith('\n')) content += '\n';
+          content += linkSyntax;
+        }
+        // Call syncChoicesFromText to update choices
+        setTimeout(() => syncChoicesFromText(n.id, content), 0);
+        return { ...n, data: { ...n.data, content } };
+      }
+      return n;
+    }));
+  }, [setEdges, setNodes, syncChoicesFromText]);
   const onNodeClick = useCallback((event, node) => setSelectedNodeId(node.id), []);
   const onEdgeClick = useCallback((event, edge) => { setSelectedEdgeId(edge.id); setSelectedNodeId(null); }, []);
 
@@ -193,42 +251,6 @@ function App() {
     if (!selectedNodeId) return;
     setNodes((nds) => nds.map((n) => (n.id === selectedNodeId ? { ...n, data: { ...n.data, ...patch } } : n)));
   }, [selectedNodeId, setNodes]);
-
-  const syncChoicesFromText = useCallback((nodeId, text) => {
-    const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
-    let match;
-    const newChoices = [];
-    const newEdgesPatch = [];
-
-    while ((match = linkRegex.exec(text))) {
-      const rawText = match[1] || match[3];
-      const targetLabel = (match[2] || match[3]).trim();
-      const choiceText = rawText.trim();
-
-      const targetNode = nodes.find(n => n.data.label === targetLabel);
-      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}`;
-
-      newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
-
-      if (targetNode) {
-        newEdgesPatch.push({
-          id: `e-${nodeId}-${targetNode.id}-${choiceId}`,
-          source: nodeId,
-          sourceHandle: choiceId,
-          target: targetNode.id
-        });
-      }
-    }
-
-    setNodes((nds) => nds.map((n) =>
-      n.id === nodeId ? { ...n, data: { ...n.data, content: text, choices: newChoices } } : n
-    ));
-
-    setEdges((eds) => {
-      const otherEdges = eds.filter(e => e.source !== nodeId);
-      return [...otherEdges, ...newEdgesPatch];
-    });
-  }, [nodes, setNodes, setEdges]);
 
   // --- Gestão de Teclado ---
   useEffect(() => {
