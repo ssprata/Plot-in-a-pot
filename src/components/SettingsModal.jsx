@@ -12,16 +12,10 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
         </div>
 
         <div className="space-y-4">
-          
-          {/* Opção: Lista de Adjacência */}
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Lista de Adjacência</span>
-            <button 
-              onClick={() => toggleSetting('showAdjacency')}
-              className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showAdjacency ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-            >
-              <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showAdjacency ? 'left-6' : 'left-0.5'}`} />
-            </button>
+
+          {/* Divisor: Visualização */}
+          <div className="border-t-2 border-gray-900 dark:border-gray-200 my-2 pt-2">
+            <span className="font-black uppercase tracking-widest text-xs text-gray-500 dark:text-gray-400">Visualização</span>
           </div>
 
           {/* Opção: Nós Secretos */}
@@ -43,6 +37,33 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
               className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showFlowErrors ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
             >
               <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showFlowErrors ? 'left-6' : 'left-0.5'}`} />
+            </button>
+          </div>
+
+          {/* Divisor: Dev */}
+          <div className="border-t-2 border-gray-900 dark:border-gray-200 my-2 pt-2">
+            <span className="font-black uppercase tracking-widest text-xs text-gray-500 dark:text-gray-400">Dev</span>
+          </div>
+
+          {/* Opção: Lista de Adjacência */}
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Lista de Adjacência</span>
+            <button 
+              onClick={() => toggleSetting('showAdjacency')}
+              className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showAdjacency ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showAdjacency ? 'left-6' : 'left-0.5'}`} />
+            </button>
+          </div>
+
+          {/* Opção: Simulação Legada */}
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Simulação Legacy</span>
+            <button
+              onClick={() => toggleSetting('showSimulationLegacy')}
+              className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showSimulationLegacy ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showSimulationLegacy ? 'left-6' : 'left-0.5'}`} />
             </button>
           </div>
           

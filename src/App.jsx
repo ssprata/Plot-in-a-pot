@@ -50,7 +50,8 @@ function App() {
     return {
       showAdjacency: config.showAdjacency,
       showSecrets: config.showSecrets,
-      showFlowErrors: config.showFlowErrors
+      showFlowErrors: config.showFlowErrors,
+      showSimulationLegacy: config.showSimulationLegacy
     };
   });
 
@@ -368,6 +369,7 @@ function App() {
         runValidation={runValidation}
         validationErrors={validationErrors}
         runSimulationLog={runSimulationLog}
+        showSimulationLegacy={settings.showSimulationLegacy}
       />
     </div>
   );
