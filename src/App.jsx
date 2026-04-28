@@ -6,7 +6,7 @@ import 'reactflow/dist/style.css';
 import { parseTwee3, exportToTwee3 } from './utils/tweeParser';
 import { buildAdjacencyList } from './utils/graphMath';
 import { validateStoryFlow } from './utils/storyValidator';
-import { simulateStoryPlaythrough } from './utils/storySimulator';
+import { runDevSimulationLog } from './utils/storySimulator';
 
 // Componentes da Interface
 import TopBar from './components/TopBar';
@@ -263,7 +263,7 @@ function App() {
   };
 
   const runSimulationLog = () => {
-    const report = simulateStoryPlaythrough(nodes, edges);
+    const report = runDevSimulationLog(nodes, edges);
     console.log("%c --- SIMULAÇÃO DE FLUXO --- ", "background: #222; color: #bada55; font-size: 14px");
     console.log(`Total de Nós: ${report.totalNodes}`);
     console.log(`Nós Alcançáveis: ${report.reachableCount}`);
