@@ -1,47 +1,12 @@
 // src/utils/storySimulator.js
-import { findStartNode, getInitialState, applyModifiers, canAccessChoice, isSystemNode } from './sugarcubeLogic';
+import { isSystemNode } from './sugarcubeLogic';
+import { traverseGraph } from './storyTraversal';
 
 export function simulateStoryPlaythrough(nodes, edges) {
-  const reachableNodes = new Set();
-  const queue = [];
-  const visitedStates = new Map();
+  const { reachableNodes, error } = traverseGraph(nodes, edges);
 
-  const startNode = findStartNode(nodes);
-  if (!startNode) return { error: "No de inicio nao encontrado." };
-
-  const initialState = getInitialState(nodes);
-  queue.push({ nodeId: startNode.id, state: initialState });
-
-  while (queue.length > 0) {
-    const { nodeId, state } = queue.shift();
-    reachableNodes.add(nodeId);
-
-    const currentNode = nodes.find(n => n.id === nodeId);
-    if (!currentNode) continue;
-
-    // Atualiza a "mochila" com o que encontrar neste nó
-    const newState = applyModifiers(currentNode.data.content, state);
-
-    const stateStr = JSON.stringify(newState);
-    if (!visitedStates.has(nodeId)) visitedStates.set(nodeId, []);
-    if (visitedStates.get(nodeId).includes(stateStr)) continue;
-    visitedStates.get(nodeId).push(stateStr);
-
-    if (visitedStates.get(nodeId).length >= 10) {
-      console.warn(`Loop infinito evitado no nó: ${currentNode?.data?.label}`);
-      continue;
-    }
-
-    const outgoing = edges.filter(e => e.source === nodeId);
-    outgoing.forEach(edge => {
-      const choice = currentNode.data.choices?.find(c => c.id === edge.sourceHandle);
-      if (!choice) return;
-
-      // Pergunta à biblioteca se a porta está aberta
-      if (canAccessChoice(currentNode.data.content, choice.text, newState)) {
-        queue.push({ nodeId: edge.target, state: { ...newState } });
-      }
-    });
+  if (error) {
+    return { error, reachableCount: 0, totalNodes: nodes.length, unreachableNodes: [], isPerfect: false };
   }
 
   const unreachable = nodes.filter(n => !reachableNodes.has(n.id) && !isSystemNode(n));
