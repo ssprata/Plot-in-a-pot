@@ -27,6 +27,11 @@ export function simulateStoryPlaythrough(nodes, edges) {
     if (visitedStates.get(nodeId).includes(stateStr)) continue;
     visitedStates.get(nodeId).push(stateStr);
 
+    if (visitedStates.get(nodeId).length >= 10) {
+      console.warn(`Loop infinito evitado no nó: ${currentNode?.data?.label}`);
+      continue;
+    }
+
     const outgoing = edges.filter(e => e.source === nodeId);
     outgoing.forEach(edge => {
       const choice = currentNode.data.choices?.find(c => c.id === edge.sourceHandle);
