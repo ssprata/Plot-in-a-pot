@@ -58,7 +58,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
 
           {/* Opção: Simulação Legada */}
           <div className="flex items-center justify-between">
-            <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Simulação Legacy</span>
+            <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Simulação Dev</span>
             <button
               onClick={() => toggleSetting('showSimulationLegacy')}
               className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showSimulationLegacy ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}

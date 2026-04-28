@@ -263,17 +263,10 @@ function App() {
   };
 
   const runSimulationLog = () => {
-    const report = runDevSimulationLog(nodes, edges);
-    console.log("%c --- SIMULAÇÃO DE FLUXO --- ", "background: #222; color: #bada55; font-size: 14px");
-    console.log(`Total de Nós: ${report.totalNodes}`);
-    console.log(`Nós Alcançáveis: ${report.reachableCount}`);
-    if (report.isPerfect) {
-      console.log("%c ✅ SUCESSO: Todos os nós são acessíveis!", "color: green; font-weight: bold");
-    } else {
-      console.error(" ❌ AVISO: Existem nós órfãos ou impossíveis de alcançar:");
-      report.unreachableNodes.forEach(name => console.log(`   - ${name}`));
-    }
-    console.log("----------------------------");
+    // 2. Apaga o console.log antigo que tinhas aqui dentro.
+    // Agora, apenas chamamos o motor de simulação de desenvolvimento.
+    // A função internamente vai encarregar-se de agrupar e imprimir os dados na consola.
+    runDevSimulationLog(nodes, edges);
   };
 
   // --- Import / Export ---
