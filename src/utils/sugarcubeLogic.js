@@ -84,7 +84,8 @@ export function getInitialState(nodes) {
 export function canAccessChoice(content, choiceText, currentState) {
     if (!content) return true;
 
-    // Nota: Esta versão suporta blocos <<if>> simples. Não processa <<else>> ou <<elseif>> aninhados
+    // Nota: Esta versão suporta blocos <<if>> simples. Não processa <<else>> ou <<elseif>> aninhados complexos, mas é um avanço significativo para a maioria dos casos comuns.
+    //TODO: No futuro, poderíamos expandir para suportar lógica mais complexa, mas isso exigiria um parser mais robusto para o conteúdo do nó.
     const ifRegex = /<<if\s+(.+?)\s*>>([\s\S]*?)<<\/if>>/gi;
     let match;
     let canPass = true;
