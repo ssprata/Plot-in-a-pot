@@ -1,29 +1,14 @@
-/**
- * Algoritmo BFS com Propagação de Estado
- */
+// src/utils/storyValidator.js
+import { findStartNode, getInitialState, applyModifiers, canAccessChoice } from './sugarcubeLogic';
+
 export function validateStoryFlow(nodes, edges) {
   const reachableChoices = new Set(); 
   const visitedStates = new Map(); 
 
-  let startNode = nodes.find(n => {
-    const tags = n.data.tags ? n.data.tags.toLowerCase() : '';
-    return tags.includes('start');
-  });
+  const startNode = findStartNode(nodes);
+  if (!startNode) return [];
 
-  // Se nao existir etiqueta, tentar encontrar um que se chame 'start', ou usar o primeiro do array
-  if (!startNode) {
-    startNode = nodes.find(n => n.data.label.toLowerCase() === 'start') || nodes[0];
-  }
-
-  // --- NOVA LÓGICA: Procurar o StoryInit ---
-  const initNode = nodes.find(n => n.data.label.toLowerCase() === 'storyinit');
-  let initialState = {};
-  
-  if (initNode) {
-    initialState = extractModifiers(initNode.data.content || "");
-  }
-
-  // A mochila agora arranca com as variáveis do StoryInit
+  const initialState = getInitialState(nodes);
   const queue = [{ nodeId: startNode.id, state: initialState }];
 
   while (queue.length > 0) {
@@ -31,28 +16,27 @@ export function validateStoryFlow(nodes, edges) {
     const currentNode = nodes.find(n => n.id === nodeId);
     if (!currentNode) continue;
 
-    const newState = { ...state };
-    const modifiers = extractModifiers(currentNode.data.content || "");
-    Object.assign(newState, modifiers);
+    const newState = applyModifiers(currentNode.data.content, state);
 
-    const stateString = JSON.stringify(newState);
+    const stateStr = JSON.stringify(newState);
     if (!visitedStates.has(nodeId)) visitedStates.set(nodeId, []);
-    if (visitedStates.get(nodeId).includes(stateString)) continue; 
-    visitedStates.get(nodeId).push(stateString);
+    if (visitedStates.get(nodeId).includes(stateStr)) continue; 
+    visitedStates.get(nodeId).push(stateStr);
 
     const outgoingEdges = edges.filter(e => e.source === nodeId);
 
     outgoingEdges.forEach(edge => {
-      const choiceData = getChoiceDataFromNode(currentNode, edge.sourceHandle);
-      const requirements = extractRequirements(choiceData?.text || "");
+      const choice = currentNode.data.choices?.find(c => c.id === edge.sourceHandle);
+      if (!choice) return;
 
-      if (checkRequirements(newState, requirements)) {
+      if (canAccessChoice(currentNode.data.content, choice.text, newState)) {
         reachableChoices.add(edge.id); 
         queue.push({ nodeId: edge.target, state: { ...newState } });
       }
     });
   }
 
+  // Retorna as arestas (escolhas) que nunca foram acedidas
   return edges
     .filter(edge => !reachableChoices.has(edge.id))
     .map(edge => ({
@@ -60,39 +44,4 @@ export function validateStoryFlow(nodes, edges) {
       sourceLabel: nodes.find(n => n.id === edge.source)?.data.label || "Desconhecido",
       targetLabel: nodes.find(n => n.id === edge.target)?.data.label || "Desconhecido",
     }));
-}
-
-
-// Funções Auxiliares de Parsing com Regex Melhorada
-function extractModifiers(content) {
-  const mods = {};
-  // Suporta espaços extras e ignora maiúsculas/minúsculas
-  const regex = /set:\s*([\w_]+)\s*=\s*(true|false)/gi;
-  let match;
-  while ((match = regex.exec(content))) {
-    mods[match[1]] = match[2].toLowerCase() === 'true';
-  }
-  return mods;
-}
-
-function extractRequirements(text) {
-  const reqs = {};
-  // Suporta espaços extras e ignora maiúsculas/minúsculas
-  const regex = /req:\s*([\w_]+)\s*==\s*(true|false)/gi;
-  let match;
-  while ((match = regex.exec(text))) {
-    reqs[match[1]] = match[2].toLowerCase() === 'true';
-  }
-  return reqs;
-}
-
-function checkRequirements(state, reqs) {
-  return Object.keys(reqs).every(key => {
-    const val = state[key] === undefined ? false : state[key];
-    return val === reqs[key];
-  });
-}
-
-function getChoiceDataFromNode(node, handleId) {
-  return node.data.choices?.find(c => c.id === handleId);
 }
