@@ -80,36 +80,102 @@ export function getInitialState(nodes) {
     return applyModifiers(initNode ? initNode.data.content : "", {});
 }
 
-// 4. Testar se uma escolha passa nas condições <<if>> (Agora suporta lógica avançada)
+// 4. Testar se uma escolha passa nas condições <<if>>, <<elseif>> e <<else>>
 export function canAccessChoice(content, choiceText, currentState) {
-    if (!content) return true;
+  // 1. VERIFICAÇÃO DE SEGURANÇA
+  // Se não houver texto, não há restrições. A porta está aberta.
+  if (!content) return true;
+  
+  // Por defeito, assumimos que a escolha está livre, a não ser que o algoritmo prove o contrário.
+  let isAccessible = true;
 
-    // Nota: Esta versão suporta blocos <<if>> simples. Não processa <<else>> ou <<elseif>> aninhados complexos, mas é um avanço significativo para a maioria dos casos comuns.
-    //TODO: No futuro, poderíamos expandir para suportar lógica mais complexa, mas isso exigiria um parser mais robusto para o conteúdo do nó.
-    const ifRegex = /<<if\s+(.+?)\s*>>([\s\S]*?)<<\/if>>/gi;
-    let match;
-    let canPass = true;
+  // 2. ENCONTRAR OS BLOCOS COMPLETOS
+  // Expressão regular para capturar tudo entre um <<if>> e o seu <</if>> final
+  const fullIfRegex = /<<if\s+(.+?)\s*>>([\s\S]*?)<<\/if>>/gi;
+  let ifMatch;
 
-    while ((match = ifRegex.exec(content))) {
-        const expression = match[1];
-        const innerContent = match[2];
+  // O ciclo percorre todos os blocos condicionais que existirem no texto do nó
+  while ((ifMatch = fullIfRegex.exec(content))) {
+    const entireBlock = ifMatch[0];       // O texto total do bloco
+    const initialExpression = ifMatch[1]; // A condição do primeiro <<if>>
+    const innerContent = ifMatch[2];      // O texto que está lá dentro
 
-        if (innerContent.includes(choiceText)) {
-            const jsExpression = sanitizeSugarCubeExpression(expression);
-            try {
-                const evaluator = new Function('state', `return ${jsExpression};`);
-                const result = evaluator(currentState);
-
-                if (!result) {
-                    canPass = false;
-                }
-            } catch (e) {
-                console.warn("Aviso: Falha ao avaliar condição:", expression);
-                canPass = false; // Bloqueia por segurança se a lógica estiver corrompida
-            }
-        }
+    // 3. FILTRAGEM RÁPIDA
+    // Se a nossa escolha não estiver escrita dentro deste bloco específico, 
+    // ignoramos este bloco inteiro e passamos ao próximo da lista.
+    if (!entireBlock.includes(choiceText)) {
+      continue;
     }
-    return canPass;
+
+    // 4. DIVISÃO EM RAMIFICAÇÕES (BRANCHES)
+    // Sabemos que a escolha está cá dentro. Vamos dividir o conteúdo interno
+    // sempre que encontrarmos uma tag <<elseif>> ou <<else>>.
+    const branches = [
+      { condition: initialExpression, text: '' } // A primeira ramificação é o <<if>> original
+    ];
+
+    // Esta expressão regular isola as tags de separação
+    const splitRegex = /(<<elseif\s+[^>]+>>|<<else>>)/gi;
+    
+    // O comando split vai criar uma lista alternada: [texto, tag, texto, tag, texto...]
+    const pieces = innerContent.split(splitRegex);
+    
+    // O primeiro pedaço de texto pertence sempre ao <<if>> inicial
+    branches[0].text = pieces[0];
+
+    // O ciclo seguinte agrupa as restantes tags com os seus respetivos textos
+    for (let i = 1; i < pieces.length; i += 2) {
+       const tag = pieces[i];
+       const text = pieces[i + 1] || ''; // O texto que vem logo a seguir à tag
+       
+       let cond = 'true'; // Se a tag for um <<else>>, a condição é sempre verdadeira
+       
+       if (tag.toLowerCase().startsWith('<<elseif')) {
+           // Se for um <<elseif>>, extraímos a fórmula matemática que está lá dentro
+           const exprMatch = tag.match(/<<elseif\s+(.+?)\s*>>/i);
+           if (exprMatch) cond = exprMatch[1];
+       }
+       
+       branches.push({ condition: cond, text: text });
+    }
+
+    // 5. AVALIAÇÃO DE CIMA PARA BAIXO
+    // Vamos testar as condições pela ordem em que o autor as escreveu.
+    let activeBranchIndex = -1; // -1 significa que ainda nenhuma condição foi cumprida
+
+    for (let i = 0; i < branches.length; i++) {
+       const jsExpr = sanitizeSugarCubeExpression(branches[i].condition);
+       let isTrue = false;
+       
+       try {
+          // Usa o nosso tradutor seguro para testar a matemática da ramificação
+          const evaluator = new Function('state', `return ${jsExpr};`);
+          isTrue = !!evaluator(currentState);
+       } catch (e) {
+          console.warn("Aviso: Falha ao avaliar condição complexa:", branches[i].condition);
+       }
+
+       // A REGRAS DE OURO DO SUGARCUBE:
+       // Se esta condição for verdadeira, este é o caminho que o jogador vai ver.
+       // Interrompemos o ciclo imediatamente para não ler os <<elseif>> e <<else>> abaixo.
+       if (isTrue) {
+          activeBranchIndex = i;
+          break; 
+       }
+    }
+
+    // 6. VEREDITO FINAL
+    // Sabemos qual foi a ramificação que ganhou (activeBranchIndex).
+    // A escolha em que o jogador quer clicar está escrita dentro do texto dessa ramificação vencedora?
+    if (activeBranchIndex !== -1 && branches[activeBranchIndex].text.includes(choiceText)) {
+        isAccessible = true; // Sim, a escolha está visível e clicável!
+    } else {
+        // Não. Ou a condição falhou, ou a escolha está escondida dentro de um <<else>> que perdeu.
+        isAccessible = false;
+    }
+  }
+
+  return isAccessible;
 }
 
 // 5. Verificar se é um nó de sistema
