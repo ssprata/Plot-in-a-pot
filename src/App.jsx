@@ -200,13 +200,18 @@ function App() {
     const newChoices = [];
     const newEdgesPatch = [];
 
+    // O SEGREDO ESTÁ AQUI: Usar um contador sequencial em vez de texto dinâmico.
+    let choiceCounter = 1;
+
     while ((match = linkRegex.exec(text))) {
       const rawText = match[1] || match[3];
       const targetLabel = (match[2] || match[3]).trim();
       const choiceText = rawText.trim();
 
-      const targetNode = nodes.find(n => n.data.label === targetLabel);
-      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}`;
+      const targetNode = nodes.find(n => n.data.label.toLowerCase() === targetLabel.toLowerCase());
+
+      // ID imutável baseado na posição do link dentro do texto (ex: c-9-1, c-9-2)
+      const choiceId = `c-${nodeId}-${choiceCounter++}`;
 
       newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
 
