@@ -83,81 +83,86 @@ export function getInitialState(nodes) {
 // 4. Testar se uma escolha passa nas condições <<if>>, <<elseif>> e <<else>>
 export function canAccessChoice(content, choiceText, currentState) {
   // 1. VERIFICAÇÃO DE SEGURANÇA
-  // Se não houver texto, não há restrições. A porta está aberta.
+  // Se não houver texto condicional no nó, não há restrições. A escolha está aberta.
   if (!content) return true;
   
-  // Por defeito, assumimos que a escolha está livre, a não ser que o algoritmo prove o contrário.
+  // Por defeito, assumimos que a escolha está livre, a não ser que a lógica prove o contrário.
   let isAccessible = true;
 
   // 2. ENCONTRAR OS BLOCOS COMPLETOS
-  // Expressão regular para capturar tudo entre um <<if>> e o seu <</if>> final
+  // Expressão regular para capturar tudo entre um <<if>> e o seu <</if>> final, 
+  // capturando a condição inicial e todo o texto lá dentro.
   const fullIfRegex = /<<if\s+(.+?)\s*>>([\s\S]*?)<<\/if>>/gi;
   let ifMatch;
 
-  // O ciclo percorre todos os blocos condicionais que existirem no texto do nó
+  // O ciclo percorre todos os blocos condicionais que existirem no texto do nó atual
   while ((ifMatch = fullIfRegex.exec(content))) {
-    const entireBlock = ifMatch[0];       // O texto total do bloco
-    const initialExpression = ifMatch[1]; // A condição do primeiro <<if>>
-    const innerContent = ifMatch[2];      // O texto que está lá dentro
+    const entireBlock = ifMatch[0];       // O texto total do bloco (do if ao /if)
+    const initialExpression = ifMatch[1]; // A condição matemática do primeiro <<if>>
+    const innerContent = ifMatch[2];      // O texto e escolhas que estão lá dentro
 
     // 3. FILTRAGEM RÁPIDA
-    // Se a nossa escolha não estiver escrita dentro deste bloco específico, 
-    // ignoramos este bloco inteiro e passamos ao próximo da lista.
+    // Se a escolha que estamos a analisar não estiver escrita dentro deste bloco específico, 
+    // ignoramos este bloco inteiro para poupar processamento e passamos ao próximo.
     if (!entireBlock.includes(choiceText)) {
       continue;
     }
 
     // 4. DIVISÃO EM RAMIFICAÇÕES (BRANCHES)
-    // Sabemos que a escolha está cá dentro. Vamos dividir o conteúdo interno
-    // sempre que encontrarmos uma tag <<elseif>> ou <<else>>.
+    // Criamos uma lista de ramificações, começando sempre com a do <<if>> inicial.
     const branches = [
-      { condition: initialExpression, text: '' } // A primeira ramificação é o <<if>> original
+      { condition: initialExpression, text: '' }
     ];
 
-    // Esta expressão regular isola as tags de separação
-    const splitRegex = /(<<elseif\s+[^>]+>>|<<else>>)/gi;
+    // CORREÇÃO APLICADA AQUI: 
+    // Usamos [\s\S]+? para ler qualquer tipo de carácter (incluindo quebras de linha e símbolos matemáticos como > ou <) 
+    // até encontrar estritamente os dois símbolos de fecho da etiqueta '>>'.
+    const splitRegex = /(<<elseif\s+[\s\S]+?>>|<<else>>)/gi;
     
-    // O comando split vai criar uma lista alternada: [texto, tag, texto, tag, texto...]
+    // O comando split corta o texto em fatias, criando uma lista alternada: [texto, etiqueta, texto, etiqueta...]
     const pieces = innerContent.split(splitRegex);
     
-    // O primeiro pedaço de texto pertence sempre ao <<if>> inicial
+    // O primeiro pedaço de texto pertence sempre à primeira condição (<<if>>)
     branches[0].text = pieces[0];
 
-    // O ciclo seguinte agrupa as restantes tags com os seus respetivos textos
+    // Este ciclo agrupa as restantes etiquetas (<<elseif>> ou <<else>>) com os seus respetivos textos
     for (let i = 1; i < pieces.length; i += 2) {
        const tag = pieces[i];
-       const text = pieces[i + 1] || ''; // O texto que vem logo a seguir à tag
+       const text = pieces[i + 1] || ''; // O texto que vem logo a seguir à etiqueta
        
-       let cond = 'true'; // Se a tag for um <<else>>, a condição é sempre verdadeira
+       let cond = 'true'; // Se a etiqueta for um <<else>>, a condição é considerada sempre verdadeira
        
+       // Se for um <<elseif>>, precisamos de extrair a fórmula matemática do interior da etiqueta
        if (tag.toLowerCase().startsWith('<<elseif')) {
-           // Se for um <<elseif>>, extraímos a fórmula matemática que está lá dentro
            const exprMatch = tag.match(/<<elseif\s+(.+?)\s*>>/i);
            if (exprMatch) cond = exprMatch[1];
        }
        
+       // Guardamos a ramificação na nossa lista para futura avaliação
        branches.push({ condition: cond, text: text });
     }
 
-    // 5. AVALIAÇÃO DE CIMA PARA BAIXO
-    // Vamos testar as condições pela ordem em que o autor as escreveu.
-    let activeBranchIndex = -1; // -1 significa que ainda nenhuma condição foi cumprida
+    // 5. AVALIAÇÃO EM CASCATA (DE CIMA PARA BAIXO)
+    // Testamos as condições pela mesma ordem rigorosa em que o autor as escreveu.
+    let activeBranchIndex = -1; // Começa a -1 porque ainda nenhuma condição foi cumprida
 
     for (let i = 0; i < branches.length; i++) {
+       // Converte a sintaxe do SugarCube para JavaScript nativo (ex: 'is' para '===')
        const jsExpr = sanitizeSugarCubeExpression(branches[i].condition);
        let isTrue = false;
        
        try {
-          // Usa o nosso tradutor seguro para testar a matemática da ramificação
+          // Cria uma função isolada para testar se a condição matemática da ramificação é verdadeira com as variáveis atuais
           const evaluator = new Function('state', `return ${jsExpr};`);
           isTrue = !!evaluator(currentState);
        } catch (e) {
+          // Se a fórmula estiver mal escrita no texto, avisa na consola e falha por segurança
           console.warn("Aviso: Falha ao avaliar condição complexa:", branches[i].condition);
        }
 
-       // A REGRAS DE OURO DO SUGARCUBE:
-       // Se esta condição for verdadeira, este é o caminho que o jogador vai ver.
-       // Interrompemos o ciclo imediatamente para não ler os <<elseif>> e <<else>> abaixo.
+       // A regra de ouro do SugarCube:
+       // Assim que uma condição for verdadeira, validamos esse ramo e quebramos o ciclo.
+       // Isto garante que o simulador ignora todos os <<elseif>> e <<else>> que estão abaixo.
        if (isTrue) {
           activeBranchIndex = i;
           break; 
@@ -165,19 +170,17 @@ export function canAccessChoice(content, choiceText, currentState) {
     }
 
     // 6. VEREDITO FINAL
-    // Sabemos qual foi a ramificação que ganhou (activeBranchIndex).
-    // A escolha em que o jogador quer clicar está escrita dentro do texto dessa ramificação vencedora?
+    // Se encontrámos uma ramificação vencedora e o texto da escolha habita lá dentro, a porta abre.
+    // Caso contrário (seja porque a condição da ramificação falhou ou porque a escolha está presa num bloco perdedor), a porta tranca.
     if (activeBranchIndex !== -1 && branches[activeBranchIndex].text.includes(choiceText)) {
-        isAccessible = true; // Sim, a escolha está visível e clicável!
+        isAccessible = true;
     } else {
-        // Não. Ou a condição falhou, ou a escolha está escondida dentro de um <<else>> que perdeu.
         isAccessible = false;
     }
   }
 
   return isAccessible;
 }
-
 // 5. Verificar se é um nó de sistema
 export function isSystemNode(node) {
     const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
