@@ -23,6 +23,11 @@ export function validateStoryFlow(nodes, edges) {
     if (visitedStates.get(nodeId).includes(stateStr)) continue; 
     visitedStates.get(nodeId).push(stateStr);
 
+    if (visitedStates.get(nodeId).length >= 10) {
+      console.warn(`Loop infinito evitado no nó: ${currentNode?.data?.label}`);
+      continue;
+    }
+
     const outgoingEdges = edges.filter(e => e.source === nodeId);
 
     outgoingEdges.forEach(edge => {
