@@ -1,86 +1,59 @@
-export function simulateStoryPlaythrough(nodes, edges) {
-  const reachableNodes = new Set();
-  const queue = [];
-  const visitedStates = new Map();
+// src/utils/storySimulator.js
+import { traverseGraph } from './storyTraversal';
 
-  let startNode = nodes.find(n => {
-    const tags = n.data.tags ? n.data.tags.toLowerCase() : '';
-    return tags.includes('start');
-  });
+export function runDevSimulationLog(nodes, edges) {
+  // 1. Corre o motor principal para extrair o histórico completo de chegadas
+  // O motor devolve os nós alcançados e o histórico (arrivalHistory) com o caminho e estado de variáveis
+  const { reachableNodes, arrivalHistory, error } = traverseGraph(nodes, edges);
 
-  // Se nao existir etiqueta, tentar encontrar um que se chame 'start', ou usar o primeiro do array
-  if (!startNode) {
-    startNode = nodes.find(n => n.data.label.toLowerCase() === 'start') || nodes[0];
+  // 2. Proteção de erro inicial
+  // Se o nó inicial não existir, interrompe e avisa na consola
+  if (error) {
+    console.error("[Simulação Dev] Erro de Arranque:", error);
+    return;
   }
 
-  // --- NOVA LÓGICA: Procurar o StoryInit ---
-  const initNode = nodes.find(n => n.data.label.toLowerCase() === 'storyinit');
-  let initialState = {};
+  // 3. Inicia um grupo colapsável na consola para não poluir o terminal
+  // Tudo o que for impresso depois disto fica dentro de uma "pasta" expansível
+  console.groupCollapsed("%c --- SIMULAÇÃO COMPLETA (DEV MODE) --- ", "background: #222; color: #bada55; font-size: 12px; font-weight: bold;");
+  console.log(`Total de Nós Alcançáveis: ${reachableNodes.size} de ${nodes.length}`);
 
-  if (initNode) {
-    const modRegex = /set:\s*([\w_]+)\s*=\s*(true|false)/gi;
-    let match;
-    while ((match = modRegex.exec(initNode.data.content || ""))) {
-      initialState[match[1]] = match[2].toLowerCase() === 'true';
-    }
-  }
+  // 4. Itera sobre cada nó que tem um histórico de chegada registado
+  // arrivalHistory é um Map onde a chave é o ID do nó e o valor é um array de formas de lá chegar
+  arrivalHistory.forEach((histories, nodeId) => {
+    
+    // Procura o nome amigável do nó na base de dados para facilitar a leitura humana
+    const node = nodes.find(n => n.id === nodeId);
+    const nodeName = node ? node.data.label : nodeId;
 
-  queue.push({ nodeId: startNode.id, state: initialState });
+    // 5. Cria um subgrupo para cada nó
+    // Mostra o nome do nó e quantas formas/caminhos diferentes existem para o atingir
+    console.groupCollapsed(`Nó: [${nodeName}] (${histories.length} rotas possíveis)`);
 
-  while (queue.length > 0) {
-    const { nodeId, state } = queue.shift();
-    reachableNodes.add(nodeId);
-
-    const currentNode = nodes.find(n => n.id === nodeId);
-    if (!currentNode) continue;
-
-    const newState = { ...state };
-    const content = currentNode.data.content || "";
-    const modRegex = /set:\s*([\w_]+)\s*=\s*(true|false)/gi;
-    let match;
-    while ((match = modRegex.exec(content))) {
-      newState[match[1]] = match[2].toLowerCase() === 'true';
-    }
-
-    const stateStr = JSON.stringify(newState);
-    if (!visitedStates.has(nodeId)) visitedStates.set(nodeId, []);
-    if (visitedStates.get(nodeId).includes(stateStr)) continue;
-    visitedStates.get(nodeId).push(stateStr);
-
-    const outgoing = edges.filter(e => e.source === nodeId);
-    outgoing.forEach(edge => {
-      const choice = currentNode.data.choices?.find(c => c.id === edge.sourceHandle);
-      const reqText = choice?.text || "";
-      const reqRegex = /req:\s*([\w_]+)\s*==\s*(true|false)/gi;
-      let reqMatch;
-      let canPass = true;
-
-      while ((reqMatch = reqRegex.exec(reqText))) {
-        const varName = reqMatch[1];
-        const expected = reqMatch[2].toLowerCase() === 'true';
-        const currentVal = newState[varName] === undefined ? false : newState[varName];
-        if (currentVal !== expected) canPass = false;
+    // 6. Itera sobre cada variação de percurso para este nó específico
+    histories.forEach((history, index) => {
+      console.log(`%cRota ${index + 1}:`, "font-weight: bold; color: #4facfe;");
+      
+      // Imprime o trilho de migalhas (ex: Inicio -> Porta -> Fim)
+      console.log(`Caminho: ${history.path.join(' -> ')}`);
+      
+      // Verifica se a "mochila" tem itens/variáveis.
+      const stateKeys = Object.keys(history.state);
+      
+      if (stateKeys.length === 0) {
+        // Se o jogo não tem variáveis ainda, avisa que está vazio para evitar imprimir tabelas em branco
+        console.log("Estado: [Variáveis Vazias]");
+      } else {
+        // Usa console.table para desenhar uma tabela estruturada nativa do browser com as chaves e valores
+        console.table(history.state); 
       }
-
-      if (canPass) {
-        queue.push({ nodeId: edge.target, state: { ...newState } });
-      }
+      console.log("------------------------");
     });
-  }
 
-  // Filtrar o StoryInit e outras passagens especiais da contagem de nós inalcançáveis
-  // visto que eles nunca são acedidos diretamente pelo jogador
-  const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
-  const unreachable = nodes.filter(n => {
-    const labelLower = n.data.label.toLowerCase();
-    const isSystemNode = systemNodes.includes(labelLower) || (n.data.tags && n.data.tags.toLowerCase().includes('secreto'));
-    return !reachableNodes.has(n.id) && !isSystemNode;
+    // Fecha o subgrupo deste nó específico
+    console.groupEnd();
   });
 
-  return {
-    reachableCount: reachableNodes.size,
-    totalNodes: nodes.length,
-    unreachableNodes: unreachable.map(n => n.data.label),
-    isPerfect: unreachable.length === 0
-  };
+  // Fecha o grupo principal da simulação inteira
+  console.groupEnd();
 }

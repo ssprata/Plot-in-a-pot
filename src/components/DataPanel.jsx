@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function DataPanel({
   exportToTwine, importText, setImportText, handleImport, importError,
-  adjacencyList, showAdjacencyList, runValidation, validationErrors, runSimulationLog, showFlowErrors,
+  adjacencyList, showAdjacencyList, runValidation, validationErrors, runSimulationLog, showFlowErrors, showSimulationLegacy
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragActive, setDragActive] = useState(false);
@@ -37,7 +37,7 @@ export default function DataPanel({
   return (
     <div className={`relative transition-all duration-300 ease-in-out border-l border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex flex-col h-full shadow-inner ${isExpanded ? 'w-[360px]' : 'w-12'}`}>
 
-      {/* Botão de Expulsão/Recolha */}
+      {/* Botão de Expansão/Recolha */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="absolute -left-3 top-4 z-20 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
@@ -81,10 +81,37 @@ export default function DataPanel({
         {showFlowErrors && validationErrors && validationErrors.length > 0 && (
           <div className="mb-6 p-3 bg-red-900 text-red-100 rounded border-2 border-red-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
             <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter">Erros de Fluxo Detetados:</h4>
-            <ul className="text-[9px] space-y-2 uppercase font-mono leading-tight">
+            <ul className="text-[9px] space-y-4 uppercase font-mono leading-tight">
               {validationErrors.map((err, i) => (
-                <li key={i} className="border-b border-red-800 pb-1 last:border-0">
-                  Em <span className="text-yellow-400 font-bold">[{err.sourceLabel}]</span>, a escolha para <span className="text-white">[{err.targetLabel}]</span> é impossível de ativar com os itens atuais.
+                <li key={i} className="border-b border-red-800 pb-3 last:border-0">
+                  {/* O Erro Principal */}
+                  <div className="mb-1 text-sm">
+                    Em <span className="text-yellow-400 font-bold">[{err.sourceLabel}]</span>, a escolha para <span className="text-white">[{err.targetLabel}]</span> é impossível de ativar.
+                  </div>
+
+                  {/* O Caminho e as Variáveis em formato de Log */}
+                  <div className="bg-red-950 p-2 rounded border border-red-800 shadow-inner mt-2">
+                    {err.pathTrace && err.pathTrace.length > 0 && (
+                      <div className="mb-2">
+                        <span className="font-black text-red-500 block mb-1">Caminho Seguido:</span>
+                        <span className="text-gray-300">
+                          {err.pathTrace.join(' → ')}
+                        </span>
+                      </div>
+                    )}
+
+                    {err.failedState && Object.keys(err.failedState).length > 0 && (
+                      <div>
+                        <span className="font-black text-red-500 block mb-1">Variáveis na Chegada:</span>
+                        <span className="text-gray-300">
+                          {JSON.stringify(err.failedState)
+                            .replace(/["{}]/g, '') // Limpa formatação feia do JSON
+                            .replace(/:/g, ': ')
+                            .replace(/,/g, ' | ')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -105,12 +132,14 @@ export default function DataPanel({
         )}
 
         {/* Simulação de Jogabilidade */}
-        <button
-          onClick={runSimulationLog}
-          className="w-full mt-2 p-2 border-2 border-gray-800 bg-gray-800 text-white hover:bg-black font-mono text-[10px] uppercase tracking-tighter transition-all shadow-[2px_2px_0px_#ccc] active:shadow-none mb-4"
-        >
-          Simular
-        </button>
+        {showSimulationLegacy && (
+          <button
+            onClick={runSimulationLog}
+            className="w-full mt-2 p-2 border-2 border-gray-800 bg-gray-800 text-white hover:bg-black font-mono text-[10px] uppercase tracking-tighter transition-all shadow-[2px_2px_0px_#ccc] active:shadow-none mb-4"
+          >
+            Simular
+          </button>
+        )}
       </div>
 
       {!isExpanded && (

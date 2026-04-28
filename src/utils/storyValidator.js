@@ -1,98 +1,41 @@
-/**
- * Algoritmo BFS com Propagação de Estado
- */
+// src/utils/storyValidator.js
+
+//legacy reasons only, not usefull anymore, but maybe we can use it in the future for a "pre-flight check" of the story before simulating it, 
+// to give the user a heads up of potential issues with their story structure. For now, it's just a placeholder for future validation logic.
+
+import { traverseGraph } from './storyTraversal';
+
 export function validateStoryFlow(nodes, edges) {
-  const reachableChoices = new Set(); 
-  const visitedStates = new Map(); 
+  // Recebe o history do motor
+  const { reachableEdges, arrivalHistory, error } = traverseGraph(nodes, edges);
 
-  let startNode = nodes.find(n => {
-    const tags = n.data.tags ? n.data.tags.toLowerCase() : '';
-    return tags.includes('start');
-  });
-
-  // Se nao existir etiqueta, tentar encontrar um que se chame 'start', ou usar o primeiro do array
-  if (!startNode) {
-    startNode = nodes.find(n => n.data.label.toLowerCase() === 'start') || nodes[0];
-  }
-
-  // --- NOVA LÓGICA: Procurar o StoryInit ---
-  const initNode = nodes.find(n => n.data.label.toLowerCase() === 'storyinit');
-  let initialState = {};
-  
-  if (initNode) {
-    initialState = extractModifiers(initNode.data.content || "");
-  }
-
-  // A mochila agora arranca com as variáveis do StoryInit
-  const queue = [{ nodeId: startNode.id, state: initialState }];
-
-  while (queue.length > 0) {
-    const { nodeId, state } = queue.shift();
-    const currentNode = nodes.find(n => n.id === nodeId);
-    if (!currentNode) continue;
-
-    const newState = { ...state };
-    const modifiers = extractModifiers(currentNode.data.content || "");
-    Object.assign(newState, modifiers);
-
-    const stateString = JSON.stringify(newState);
-    if (!visitedStates.has(nodeId)) visitedStates.set(nodeId, []);
-    if (visitedStates.get(nodeId).includes(stateString)) continue; 
-    visitedStates.get(nodeId).push(stateString);
-
-    const outgoingEdges = edges.filter(e => e.source === nodeId);
-
-    outgoingEdges.forEach(edge => {
-      const choiceData = getChoiceDataFromNode(currentNode, edge.sourceHandle);
-      const requirements = extractRequirements(choiceData?.text || "");
-
-      if (checkRequirements(newState, requirements)) {
-        reachableChoices.add(edge.id); 
-        queue.push({ nodeId: edge.target, state: { ...newState } });
-      }
-    });
-  }
+  if (error) return [];
 
   return edges
-    .filter(edge => !reachableChoices.has(edge.id))
-    .map(edge => ({
-      edgeId: edge.id,
-      sourceLabel: nodes.find(n => n.id === edge.source)?.data.label || "Desconhecido",
-      targetLabel: nodes.find(n => n.id === edge.target)?.data.label || "Desconhecido",
-    }));
-}
+    .filter(edge => !reachableEdges.has(edge.id))
+    .map(edge => {
+      const sourceNode = nodes.find(n => n.id === edge.source);
+      const targetNode = nodes.find(n => n.id === edge.target);
+      
+      // Tentar ir buscar o último percurso conhecido até à origem do erro
+      let lastKnownPath = [];
+      let lastKnownState = {};
+      
+      if (sourceNode && arrivalHistory.has(sourceNode.id)) {
+        const history = arrivalHistory.get(sourceNode.id);
+        if (history && history.length > 0) {
+          // Pega no primeiro percurso encontrado que levou a esta porta
+          lastKnownPath = history[0].path;
+          lastKnownState = history[0].state;
+        }
+      }
 
-
-// Funções Auxiliares de Parsing com Regex Melhorada
-function extractModifiers(content) {
-  const mods = {};
-  // Suporta espaços extras e ignora maiúsculas/minúsculas
-  const regex = /set:\s*([\w_]+)\s*=\s*(true|false)/gi;
-  let match;
-  while ((match = regex.exec(content))) {
-    mods[match[1]] = match[2].toLowerCase() === 'true';
-  }
-  return mods;
-}
-
-function extractRequirements(text) {
-  const reqs = {};
-  // Suporta espaços extras e ignora maiúsculas/minúsculas
-  const regex = /req:\s*([\w_]+)\s*==\s*(true|false)/gi;
-  let match;
-  while ((match = regex.exec(text))) {
-    reqs[match[1]] = match[2].toLowerCase() === 'true';
-  }
-  return reqs;
-}
-
-function checkRequirements(state, reqs) {
-  return Object.keys(reqs).every(key => {
-    const val = state[key] === undefined ? false : state[key];
-    return val === reqs[key];
-  });
-}
-
-function getChoiceDataFromNode(node, handleId) {
-  return node.data.choices?.find(c => c.id === handleId);
+      return {
+        edgeId: edge.id,
+        sourceLabel: sourceNode?.data.label || "Desconhecido",
+        targetLabel: targetNode?.data.label || "Desconhecido",
+        pathTrace: lastKnownPath, // <-- Exportamos o rasto
+        failedState: lastKnownState // <-- Exportamos as variáveis da mochila
+      };
+    });
 }
