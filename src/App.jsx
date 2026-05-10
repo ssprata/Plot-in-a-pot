@@ -14,6 +14,7 @@ import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
+import PlayMode from './components/PlayMode';
 
 // Config
 import { loadConfig } from './utils/configLoader';
@@ -53,7 +54,7 @@ function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(savedData?.edges || []);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState(null);
-  // REMOVER a linha do const [counter, setCounter]...
+  const [isPlayModeOpen, setIsPlayModeOpen] = useState(false);
 
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
@@ -360,6 +361,13 @@ function App() {
   return (
     <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
 
+      <PlayMode 
+        isOpen={isPlayModeOpen} 
+        onClose={() => setIsPlayModeOpen(false)} 
+        nodes={nodes} 
+        edges={edges} 
+      />
+
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -369,7 +377,7 @@ function App() {
       />
 
       <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
-        <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} />
+        <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} openPlayMode={() => setIsPlayModeOpen(true)}/>
         <div className="flex-1">
           {/* AQUI: Usar visibleNodes e visibleEdges para que o filtro funcione visualmente */}
           <ReactFlow
