@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function SettingsModal({ isOpen, onClose, settings, toggleSetting }) {
+export default function SettingsModal({ isOpen, onClose, settings, toggleSetting, resetProject }) {
   if (!isOpen) return null;
 
   return (
@@ -65,9 +65,18 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
             >
               <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showSimulationLegacy ? 'left-6' : 'left-0.5'}`} />
             </button>
-          </div>
-          
+          </div>  
         </div>
+        <div className="mt-6 border-t border-gray-200 pt-4 dark:border-gray-700">
+          <h3 className="mb-2 text-sm font-semibold text-red-500 uppercase">Zona de Perigo</h3>
+          <button
+            onClick={resetProject}
+            className="w-full rounded bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 transition-colors"
+          >
+            LIMPAR CACHE E RESET
+          </button>
+        </div>
+        
 
         <button 
           onClick={onClose}

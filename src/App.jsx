@@ -6,7 +6,7 @@ import 'reactflow/dist/style.css';
 import { parseTwee3, exportToTwee3 } from './utils/tweeParser';
 import { buildAdjacencyList } from './utils/graphMath';
 import { validateStoryFlow } from './utils/storyValidator';
-import { simulateStoryPlaythrough } from './utils/storySimulator';
+import { runDevSimulationLog } from './utils/storySimulator';
 
 // Componentes da Interface
 import TopBar from './components/TopBar';
@@ -33,15 +33,48 @@ const nodeTypes = {
   css: StoryNode
 };
 
+  const getSavedData = () => {
+    const saved = localStorage.getItem('plot-in-a-pot-project');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Erro ao carregar dados do LocalStorage", e);
+      }
+    }
+    return null;
+  };
+
 function App() {
+  const savedData = getSavedData();
+
   // --- Estados Principais ---
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(savedData?.nodes || initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(savedData?.edges || []);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState(null);
-  const [counter, setCounter] = useState(2);
+  // REMOVER a linha do const [counter, setCounter]...
+
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
+
+  // 1. Função de Reset Total
+  const resetProject = useCallback(() => {
+    if (window.confirm("Atenção: Isto apagará todo o progresso atual. Deseja continuar?")) {
+      localStorage.removeItem('plot-in-a-pot-project');
+      window.location.reload(); // Recarrega a página para estado limpo
+    }
+  }, []);
+
+  // 2. Autosave limpo (sem counter)
+  useEffect(() => {
+    const dataToSave = {
+      nodes,
+      edges,
+      version: "1.0"
+    };
+    localStorage.setItem('plot-in-a-pot-project', JSON.stringify(dataToSave));
+  }, [nodes, edges]);
 
   // --- Estados de Interface ---
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -50,7 +83,8 @@ function App() {
     return {
       showAdjacency: config.showAdjacency,
       showSecrets: config.showSecrets,
-      showFlowErrors: config.showFlowErrors
+      showFlowErrors: config.showFlowErrors,
+      showSimulationLegacy: config.showSimulationLegacy
     };
   });
 
@@ -150,9 +184,7 @@ function App() {
     setEdges((eds) => eds.filter((e) => e.source !== nodeIdToRemove && e.target !== nodeIdToRemove));
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges]);
-
   const addNode = useCallback((type, presetLabel = null, presetTags = '') => {
-    // Verificar se é um nó especial que já existe
     if (presetLabel) {
       const existingNode = nodes.find(n => n.data.label.toLowerCase() === presetLabel.toLowerCase());
       if (existingNode) {
@@ -162,12 +194,13 @@ function App() {
       }
     }
 
-    const id = String(counter);
-    setCounter((c) => c + 1);
+    // Gerador dinâmico de ID baseado no nó com número mais alto
+    const numericIds = nodes.map(n => parseInt(n.id, 10)).filter(n => !isNaN(n));
+    const nextIdNum = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+    const id = String(nextIdNum);
 
     let label = presetLabel;
 
-    // Se não houver preset, gera o nome padrao (Cena 1, Script 2, etc.)
     if (!label) {
       let baseLabel = type === 'javascript' ? 'Script' : type === 'css' ? 'Estilo' : 'Cena';
       label = baseLabel;
@@ -176,16 +209,18 @@ function App() {
       while (existingLabels.has(label)) { labelNum += 1; label = `${baseLabel} ${labelNum}`; }
     }
 
+    // Posição calculada com base no número total de nós atuais
+    const offset = nodes.length;
     const newNode = {
       id,
       type,
-      position: { x: 200 + (counter % 5) * 80, y: 50 + ((counter / 5) | 0) * 80 },
+      position: { x: 200 + (offset % 5) * 80, y: 50 + ((offset / 5) | 0) * 80 },
       data: { label, nodeType: type, content: '', choices: [], tags: presetTags }
     };
 
     setNodes((nds) => nds.concat(newNode));
     setSelectedNodeId(id);
-  }, [counter, setNodes, nodes]);
+  }, [nodes, setNodes]);
 
   const setStartNode = useCallback((nodeId) => {
     const targetNode = nodes.find(n => n.id === nodeId);
@@ -279,17 +314,9 @@ function App() {
   };
 
   const runSimulationLog = () => {
-    const report = simulateStoryPlaythrough(nodes, edges);
-    console.log("%c --- SIMULAÇÃO DE FLUXO --- ", "background: #222; color: #bada55; font-size: 14px");
-    console.log(`Total de Nós: ${report.totalNodes}`);
-    console.log(`Nós Alcançáveis: ${report.reachableCount}`);
-    if (report.isPerfect) {
-      console.log("%c ✅ SUCESSO: Todos os nós são acessíveis!", "color: green; font-weight: bold");
-    } else {
-      console.error(" ❌ AVISO: Existem nós órfãos ou impossíveis de alcançar:");
-      report.unreachableNodes.forEach(name => console.log(`   - ${name}`));
-    }
-    console.log("----------------------------");
+    // A função runDevSimulationLog já trata de todo o agrupamento e formatação
+    // na consola. Basta chamá-la e passar os dados do grafo.
+    runDevSimulationLog(nodes, edges);
   };
 
   // --- Import / Export ---
@@ -314,7 +341,6 @@ function App() {
 
       setNodes(formattedNodes);
       setEdges(newEdges);
-      setCounter(formattedNodes.reduce((max, n) => Math.max(max, parseInt(n.id, 10) || 0), 0) + 1);
       setImportError('');
     } catch (e) {
       setImportError('Failed to parse story.');
@@ -339,6 +365,7 @@ function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         toggleSetting={toggleSetting}
+        resetProject={resetProject}
       />
 
       <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
@@ -385,6 +412,7 @@ function App() {
         runValidation={runValidation}
         validationErrors={validationErrors}
         runSimulationLog={runSimulationLog}
+        showSimulationLegacy={settings.showSimulationLegacy}
       />
     </div>
   );

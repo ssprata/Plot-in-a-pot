@@ -14,7 +14,6 @@ function sanitizeSugarCubeExpression(expr) {
 }
 
 // 1. Encontrar o nó de início
-// 1. Encontrar o nó de início
 export function findStartNode(nodes) {
     // 1º Tentativa: Encontrar pela tag "start"
     let startNode = nodes.find(n => {
