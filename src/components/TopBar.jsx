@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function TopBar({ addNode, openSettings, openPlayMode }) {
+export default function TopBar({ addNode, openSettings, openPlayMode, openAiModal }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { isDark, toggleTheme } = useTheme();
@@ -78,8 +78,14 @@ export default function TopBar({ addNode, openSettings, openPlayMode }) {
       </div>
 
       <div className="ml-auto flex items-center gap-4">
-        
-        {/* BOTÃO JOGAR (Movido para aqui com estilo Brutalista) */}
+
+        <button 
+          onClick={openAiModal}
+          className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100 font-black text-xs uppercase tracking-widest hover:bg-purple-300 dark:hover:bg-purple-800 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none flex items-center gap-2"
+        >
+          ✨ Gerar com IA
+        </button>
+      
         <button 
           onClick={openPlayMode}
           className="px-6 py-2 border-2 border-gray-800 dark:border-gray-200 bg-yellow-400 text-gray-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-300 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"

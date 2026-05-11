@@ -15,6 +15,7 @@ import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
 import PlayMode from './components/PlayMode';
+import AiImportModal from './components/AiImportModal';
 
 // Config
 import { loadConfig } from './utils/configLoader';
@@ -34,17 +35,17 @@ const nodeTypes = {
   css: StoryNode
 };
 
-  const getSavedData = () => {
-    const saved = localStorage.getItem('plot-in-a-pot-project');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Erro ao carregar dados do LocalStorage", e);
-      }
+const getSavedData = () => {
+  const saved = localStorage.getItem('plot-in-a-pot-project');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error("Erro ao carregar dados do LocalStorage", e);
     }
-    return null;
-  };
+  }
+  return null;
+};
 
 function App() {
   const savedData = getSavedData();
@@ -55,7 +56,7 @@ function App() {
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState(null);
   const [isPlayModeOpen, setIsPlayModeOpen] = useState(false);
-
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
 
@@ -88,6 +89,31 @@ function App() {
       showSimulationLegacy: config.showSimulationLegacy
     };
   });
+
+  const handleAiImportSuccess = useCallback((tweeText) => {
+    try {
+      const { nodes: newNodes, edges: newEdges } = parseTwee3(tweeText);
+      const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
+
+      const formattedNodes = newNodes.map(n => {
+        let tags = Array.isArray(n.data.tags) ? n.data.tags.join(', ') : String(n.data.tags || "");
+        if (systemNodes.includes(n.data.label.toLowerCase()) && !tags.includes('secreto')) {
+          tags = tags ? `${tags}, secreto` : 'secreto';
+        }
+        return { ...n, data: { ...n.data, tags } };
+      });
+
+      // Atualiza o estado da aplicação com a nova história
+      setNodes(formattedNodes);
+      setEdges(newEdges);
+
+      // Feedback visual
+      alert("A IA gerou a tua história com sucesso!");
+    } catch (e) {
+      alert("A IA devolveu um formato inválido. Tenta gerar novamente.");
+      console.error(e);
+    }
+  }, [setNodes, setEdges]);
 
   const toggleSetting = useCallback((key) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -361,11 +387,17 @@ function App() {
   return (
     <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
 
-      <PlayMode 
-        isOpen={isPlayModeOpen} 
-        onClose={() => setIsPlayModeOpen(false)} 
-        nodes={nodes} 
-        edges={edges} 
+      <AiImportModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        onImportSuccess={handleAiImportSuccess}
+      />
+
+      <PlayMode
+        isOpen={isPlayModeOpen}
+        onClose={() => setIsPlayModeOpen(false)}
+        nodes={nodes}
+        edges={edges}
       />
 
       <SettingsModal
@@ -377,7 +409,7 @@ function App() {
       />
 
       <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
-        <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} openPlayMode={() => setIsPlayModeOpen(true)}/>
+        <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} openPlayMode={() => setIsPlayModeOpen(true)} openAiModal={() => setIsAiModalOpen(true)} />
         <div className="flex-1">
           {/* AQUI: Usar visibleNodes e visibleEdges para que o filtro funcione visualmente */}
           <ReactFlow
