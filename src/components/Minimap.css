@@ -1,0 +1,13 @@
+.minimap-container {
+  /* Remove fixed positioning for in-flow placement */
+  background: #181c23;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  padding: 8px;
+  z-index: 1000;
+  overflow: hidden;
+  border: 2px solid #222;
+}
+.minimap-svg {
+  display: block;
+}

@@ -1,6 +1,7 @@
 // src/components/PlayMode.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { findStartNode, getInitialState, applyModifiers, canAccessChoice } from '../utils/sugarcubeLogic';
+import Minimap from './Minimap';
 
 export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   // 1. ESTADOS DO JOGO
@@ -8,6 +9,9 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   const [currentNodeId, setCurrentNodeId] = useState(null);
   const [currentState, setCurrentState] = useState({});
   const [history, setHistory] = useState([]);
+
+  // Track hovered choice for minimap highlighting
+  const [hoveredTargets, setHoveredTargets] = useState([]);
 
   // 2. ARRANQUE DO JOGO
   // Sempre que o PlayMode é aberto, reiniciamos a história para o estado inicial
@@ -77,9 +81,17 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   return (
     // Fundo escuro a cobrir a aplicação inteira
     <div className="fixed inset-0 z-50 flex bg-gray-950 text-gray-100 font-sans">
-      
       {/* COLUNA ESQUERDA: A ÁREA DE LEITURA (O Jogo) */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto relative">
+        {/* Minimap overlay inside play area, bottom right */}
+        <div style={{position: 'absolute', right: -80, bottom: 16, transform: 'translateX(-50%)', zIndex: 10}}>
+          <Minimap
+            nodes={nodes}
+            edges={edges}
+            currentNodeId={currentNodeId}
+            hoveredOptionTargets={hoveredTargets}
+          />
+        </div>
         <div className="max-w-2xl w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-8 shadow-2xl">
           
           <h2 className="text-2xl font-bold border-b-2 border-gray-700 pb-4 mb-6 uppercase tracking-wider text-yellow-400">
@@ -101,6 +113,8 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
                   key={choice.id}
                   disabled={!isAccessible}
                   onClick={() => handleChoiceClick(edge.target)}
+                  onMouseEnter={() => setHoveredTargets([edge.target])}
+                  onMouseLeave={() => setHoveredTargets([])}
                   className={`px-4 py-3 text-left font-bold rounded border-2 transition-colors ${
                     isAccessible 
                       ? 'border-blue-500 bg-blue-900/30 hover:bg-blue-600 hover:text-white cursor-pointer' 
@@ -112,7 +126,8 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
                   {choice.text}
                 </button>
               ))
-            )}
+            )
+            }
           </div>
         </div>
       </div>

@@ -93,17 +93,6 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
             />
             Google Gemini
           </label>
-          <label className="flex items-center gap-2 font-bold cursor-pointer">
-            <input 
-              type="radio" 
-              name="provider" 
-              value="ollama" 
-              checked={provider === 'ollama'} 
-              onChange={() => setProvider('ollama')}
-              className="accent-purple-600 w-4 h-4"
-            />
-            Ollama (Local)
-          </label>
         </div>
 
         {/* ÁREA DE CONFIGURAÇÕES ESPECÍFICAS */}
