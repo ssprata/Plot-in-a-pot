@@ -3,25 +3,41 @@
 // 1. O PROMPT DO SISTEMA (A "Ditadura" de Formatação)
 // Este texto é injetado antes da história do utilizador.
 // Serve para forçar a IA a cuspir APENAS código Twee, sem introduções simpáticas.
-const SYSTEM_PROMPT = `
-És um compilador estrito de formato Twee 3 para SugarCube.
-A tua tarefa é ler a história fornecida e convertê-la num grafo narrativo válido.
-Regras absolutas:
-1. Começa sempre com os nós obrigatórios: :: StoryTitle e :: StoryData [secreto]
-2. O StoryData tem de ser um JSON válido com "format": "SugarCube" e "start": "NomeDoPrimeiroNo".
-3. Identifica as opções na história e cria ligações usando o formato [[Texto da Escolha|Nome do Nó Alvo]].
-4. Não adiciones blocos de código markdown (\`\`\`twee). Retorna apenas o texto puro.
-5. Não digas "Aqui está a história" nem faças comentários fora do formato Twee.
-6. Se detetares necessidade de inventário, usa <<set $variavel = valor>> no texto e <<if>> nas escolhas.
-7. Se o destino de uma escolha for uma variável (ex: $proximoNo) ou contiver expressões matemáticas, ignora essa escolha no grafo visual e não a adiciones.
-8. O nó inicial do jogo deve ser identificado claramente no StoryData e deve ser o primeiro nó listado.
-9. Se a história contiver macros do SugarCube (ex: <<link>>, <<goto>>, <<set>>), processa-as corretamente para extrair as escolhas e destinos.
-10. Não adiciones texto explicativo, apenas o código Twee formatado corretamente.
-11. Se a história tiver formatação inválida ou faltar informações essenciais, tenta corrigir o melhor que puderes, mas mantém o formato Twee estrito.
-12. O output deve ser um grafo narrativo completo e funcional, pronto para ser importado para um motor de jogos baseado em SugarCube.
-13. Variáveis devem ser definidas usando <<set>> e não podem ser usadas como destinos de escolhas visuais. Se uma escolha depender de uma variável, ela deve ser ignorada no grafo visual.
+const SYSTEM_PROMPT = `És um conversor estrito de texto para código Twee 3 (SugarCube). A tua única função é devolver código. Não podes falar, não podes explicar, e não podes usar blocos de código markdown (como \`\`\`twee).
 
-História para converter:
+REGRAS OBRIGATÓRIAS:
+1. O ficheiro arranca obrigatoriamente com os nós :: StoryTitle e :: StoryData [secreto].
+2. O cabeçalho de CADA nova cena tem de começar com ":: " seguido do nome. Nunca uses parênteses retos para cabeçalhos.
+3. Para criar opções no final das cenas, usa estritamente o formato [[Texto|Nome da Cena]].
+
+EXEMPLO DE ENTRADA DE TEXTO:
+Acordas num quarto. Podes explorar a sala ou voltar a dormir. Se explorares a sala, encontras uma espada. Se dormires, o jogo acaba.
+
+EXEMPLO DA SAÍDA ESPERADA:
+:: StoryTitle
+História Gerada
+
+:: StoryData [secreto]
+{
+  "ifid": "12345",
+  "format": "SugarCube",
+  "format-version": "2.36.0",
+  "start": "Inicio",
+  "zoom": 1
+}
+
+:: Inicio
+Acordas num quarto.
+[[Explorar a sala|Sala]]
+[[Voltar a dormir|Fim]]
+
+:: Sala
+Encontras uma espada.
+
+:: Fim
+O jogo acaba.
+
+AGORA CONVERTE ESTA HISTÓRIA EXATAMENTE COM O MESMO PADRÃO:
 `;
 
 // 2. FUNÇÃO DE CHAMADA AO GEMINI
