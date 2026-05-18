@@ -40,19 +40,42 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   const currentNode = nodes.find(n => n.id === currentNodeId);
   if (!currentNode) return null;
 
-  // 4. LIMPAR O TEXTO PARA O LEITOR
-  // O autor escreve código SugarCube no texto, mas o jogador não deve ler "[[Escolha]]" nem "<<set $ouro = 10>>".
-  // Esta função remove todo o código para deixar apenas a narrativa pura.
-  const cleanNarrativeText = (text) => {
+  // 4. PROCESSAR O TEXTO PARA O LEITOR (Limpeza e Interpolação)
+  const processNarrativeText = (text, state) => {
     if (!text) return "";
-    return text
-      .replace(/\/%[\s\S]*?%\//g, '') // Remove comentários do SugarCube
-      .replace(/<<[\s\S]*?>>/g, '')   // Remove todas as macros (set, if, else, etc)
-      .replace(/\[\[.*?\]\]/g, '')    // Remove as hiperligações brutas
-      .trim();                        // Remove espaços em branco a mais nas pontas
+    
+    let processedText = text;
+
+    // PASSO A: Processar macros explícitas de print (ex: <<print $ouro>> ou <<= $ouro>>)
+    // Captura estes macros antes que o limpador geral os apague
+    processedText = processedText.replace(/<<(?:print|=)\s+(\$|_)([a-zA-Z_][a-zA-Z0-9_]*)\s*>>/g, (match, prefix, varName) => {
+      // Se a variável existir na mochila, devolve o valor. Se não, não imprime nada (string vazia).
+      return state[varName] !== undefined ? String(state[varName]) : '';
+    });
+
+    // PASSO B: Limpar o código técnico (comentários, macros de sistema e links brutos)
+    processedText = processedText
+      .replace(/\/%[\s\S]*?%\//g, '') 
+      .replace(/<<[\s\S]*?>>/g, '')   
+      .replace(/\[\[.*?\]\]/g, '');   
+
+    // PASSO C: Interpolação de "Naked Variables" (Variáveis nuas no meio do texto)
+    // Procura qualquer palavra começada por $ ou _ e substitui pelo valor.
+    // Exemplo: "O custo é de $preco moedas."
+    processedText = processedText.replace(/(\$|_)([a-zA-Z_][a-zA-Z0-9_]*)/g, (match, prefix, varName) => {
+      // Se a variável existir, injeta o valor na frase
+      if (state[varName] !== undefined) {
+        return String(state[varName]);
+      }
+      // Se a variável não existir no sistema, deixa o texto como o autor escreveu (ex: pode ser apenas o símbolo do dólar)
+      return match; 
+    });
+
+    return processedText.trim();
   };
 
-  const narrativeText = cleanNarrativeText(currentNode.data.content);
+  // Usamos a nova função, passando não só o texto, mas o estado (variáveis) atual do jogador
+  const narrativeText = processNarrativeText(currentNode.data.content, currentState);
 
   // 5. CALCULAR AS ESCOLHAS DISPONÍVEIS
   // Verificamos quais as arestas que saem deste nó e se a matemática permite ao jogador clicar nelas
