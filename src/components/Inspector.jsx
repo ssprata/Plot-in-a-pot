@@ -1,4 +1,5 @@
 import React from 'react';
+import { useInfoPopout } from '../contexts/InfoPopoutContext';
 
 export default function Inspector({
   selectedNode,
@@ -8,6 +9,14 @@ export default function Inspector({
   syncChoicesFromText,
   setStartNode
 }) {
+  const { showInfoPopout } = useInfoPopout();
+
+  const openHelp = (title, subtitle, content) => {
+    showInfoPopout({ title, subtitle, content });
+  };
+
+  const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
+
   return (
     <div className="w-[340px] p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col h-full shadow-md">
       <h3 className="mt-0 border-b border-gray-300 dark:border-gray-600 pb-2 mb-4 text-lg font-bold text-gray-800 dark:text-gray-200">
@@ -21,9 +30,25 @@ export default function Inspector({
           </div>
 
           <div className="mb-4">
-            <label className="font-bold block mb-1 text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-              Label (Nome da Passagem)
-            </label>
+            <div className="flex items-center gap-2 mb-1">
+              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
+                Label (Nome)
+              </label>
+              <button
+                type="button"
+                onClick={() => openHelp(
+                  'Label (Nome da Passagem)',
+                  'O identificador único do nó',
+                  <div className="space-y-2">
+                    <p>O nome que deres aqui é o que o motor usa para ligar as setas.</p>
+                    <p>Se mudares o nome de um nó, lembra-te de atualizar os links nos outros nós que apontavam para ele (ex: de <code>[[Quarto]]</code> para <code>[[Quarto_Escuro]]</code>).</p>
+                  </div>
+                )}
+                className={helpButtonClass}
+              >
+                ?
+              </button>
+            </div>
             <input
               className="w-full p-2 border border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white rounded focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-gray-50 dark:bg-gray-700"
               value={selectedNode.data.label || ''}
@@ -32,9 +57,26 @@ export default function Inspector({
           </div>
 
           <div className="mb-4">
-            <label className="font-bold block mb-1 text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-              Type
-            </label>
+            <div className="flex items-center gap-2 mb-1">
+              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
+                Type
+              </label>
+              <button
+                type="button"
+                onClick={() => openHelp(
+                  'Tipo de Nó',
+                  'Define a função principal do bloco',
+                  <ul className="list-disc pl-5 space-y-1 text-sm mt-2">
+                    <li><strong>Choice (Cena):</strong> Para escreveres a história e criares opções.</li>
+                    <li><strong>JavaScript:</strong> Para escreveres código que corre por trás do jogo.</li>
+                    <li><strong>CSS:</strong> Para escreveres regras visuais que alteram o design final.</li>
+                  </ul>
+                )}
+                className={helpButtonClass}
+              >
+                ?
+              </button>
+            </div>
             <select
               className="w-full p-2 border border-gray-400 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 cursor-pointer focus:ring-2 focus:ring-indigo-500 outline-none"
               value={selectedNode.data.nodeType || 'choice'}
@@ -47,16 +89,36 @@ export default function Inspector({
           </div>
 
           <div className="mb-4">
-            <label className="font-bold block mb-1 text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-              Tags (Separadas por vírgula)
-            </label>
+            <div className="flex items-center gap-2 mb-1">
+              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
+                Tags
+              </label>
+              <button
+                type="button"
+                onClick={() => openHelp(
+                  'Tags',
+                  'Categorização e Metadados',
+                  <div className="space-y-2">
+                    <p>Palavras-chave separadas por vírgula que ajudam a organizar a história.</p>
+                    <ul className="list-disc pl-5 space-y-1 mt-1">
+                      <li><strong>start:</strong> Define este nó como o início automático do jogo.</li>
+                      <li><strong>secreto:</strong> Esconde o nó no grafo (precisas de ativar a visualização nas definições).</li>
+                    </ul>
+                  </div>
+                )}
+                className={helpButtonClass}
+              >
+                ?
+              </button>
+            </div>
             <input
               className="w-full p-2 border border-gray-400 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="ex: boss_fight, secreto, checkpoint"
+              placeholder="ex: boss_fight, secreto, start"
               value={selectedNode.data.tags || ''}
               onChange={(e) => updateSelectedNode({ tags: e.target.value })}
             />
           </div>
+
           <div className="mb-4">
             <button
               onClick={() => setStartNode(selectedNode.id)}
@@ -66,16 +128,34 @@ export default function Inspector({
             </button>
           </div>
 
-          <div className="mb-4">
-            <label className="font-bold block mb-1 text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-              {selectedNode.data.nodeType === 'choice' ? 'Texto Narrativo' : 'Código Fonte'}
-            </label>
+          <div className="mb-4 flex-1 flex flex-col">
+            <div className="flex items-center gap-2 mb-1">
+              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
+                {selectedNode.data.nodeType === 'choice' ? 'Texto Narrativo' : 'Código Fonte'}
+              </label>
+              <button
+                type="button"
+                onClick={() => openHelp(
+                  selectedNode.data.nodeType === 'choice' ? 'Texto Narrativo' : 'Código Fonte',
+                  'Onde a magia acontece',
+                  <div className="space-y-2">
+                    <p>Escreve aqui o conteúdo que o jogador vai ler.</p>
+                    <ul className="list-disc pl-5 space-y-1 mt-1">
+                      <li>Usa <code>[[Destino]]</code> para criar um link com o mesmo nome do nó.</li>
+                      <li>Usa <code>[[Texto no Ecrã|Destino]]</code> para que o texto mostrado seja diferente do nome real do nó.</li>
+                      <li>Usa macros SugarCube como <code>&lt;&lt;set $vida = 100&gt;&gt;</code> para manipular dados invisíveis.</li>
+                    </ul>
+                  </div>
+                )}
+                className={helpButtonClass}
+              >
+                ?
+              </button>
+            </div>
             <textarea
-              rows={12}
-              className={`w-full p-2 border border-gray-400 dark:border-gray-600 rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
+              className={`w-full flex-1 min-h-[250px] p-2 border border-gray-400 dark:border-gray-600 rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
                 }`}
               value={selectedNode.data.content || ''}
-              // 2. UNIFICAR OS ONCHANGE:
               onChange={(e) => {
                 if (selectedNode.data.nodeType === 'choice') {
                   syncChoicesFromText(selectedNode.id, e.target.value);
@@ -100,17 +180,7 @@ export default function Inspector({
                 </ul>
               </div>
             )}
-
-            {selectedNode.data.nodeType === 'choice' && (
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 italic">
-                Usa [[Link]] ou [[Texto|Link]] para criar conexões.
-              </p>
-            )}
-
-
-
           </div>
-
 
           <div className="mt-auto pt-4 border-t-2 border-gray-200 dark:border-gray-600">
             <button

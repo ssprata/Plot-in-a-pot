@@ -16,6 +16,8 @@ import StoryNode from './components/StoryNode';
 import SettingsModal from './components/SettingsModal';
 import PlayMode from './components/PlayMode';
 import AiImportModal from './components/AiImportModal';
+import Popout from './components/Popout';
+import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
 
 // Config
 import { loadConfig } from './utils/configLoader';
@@ -90,6 +92,26 @@ function App() {
       showSimulationLegacy: config.showSimulationLegacy
     };
   });
+
+  const [infoPopout, setInfoPopout] = useState({
+    isOpen: false,
+    title: 'Informações',
+    subtitle: '',
+    content: null
+  });
+
+  const showInfoPopout = useCallback(({ title, subtitle, content }) => {
+    setInfoPopout({
+      isOpen: true,
+      title,
+      subtitle,
+      content
+    });
+  }, []);
+
+  const closeInfoPopout = useCallback(() => {
+    setInfoPopout((prev) => ({ ...prev, isOpen: false }));
+  }, []);
 
   const handleAiImportSuccess = useCallback((tweeText) => {
     try {
@@ -446,13 +468,14 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
+    <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>
+      <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
 
-      <AiImportModal
-        isOpen={isAiModalOpen}
-        onClose={() => setIsAiModalOpen(false)}
-        onImportSuccess={handleAiImportSuccess}
-      />
+        <AiImportModal
+          isOpen={isAiModalOpen}
+          onClose={() => setIsAiModalOpen(false)}
+          onImportSuccess={handleAiImportSuccess}
+        />
 
       <PlayMode
         isOpen={isPlayModeOpen}
@@ -515,7 +538,17 @@ function App() {
         runSimulationLog={runSimulationLog}
         showSimulationLegacy={settings.showSimulationLegacy}
       />
+
+      <Popout
+        isOpen={infoPopout.isOpen}
+        onClose={closeInfoPopout}
+        title={infoPopout.title}
+        subtitle={infoPopout.subtitle}
+      >
+        {infoPopout.content}
+      </Popout>
     </div>
+  </InfoPopoutProvider>
   );
 }
 

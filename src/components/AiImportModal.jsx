@@ -1,37 +1,39 @@
-// src/components/AiImportModal.jsx
 import React, { useState, useEffect } from 'react';
 import { generateFromGemini, generateFromOllama } from '../utils/aiGenerator';
+import { useInfoPopout } from '../contexts/InfoPopoutContext';
 
 export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
+  // Contexto para a janela de ajuda
+  const { showInfoPopout } = useInfoPopout();
+
+  const openHelp = (title, subtitle, content) => {
+    showInfoPopout({ title, subtitle, content });
+  };
+
+  const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
+
   // 1. ESTADOS DA INTERFACE
-  // Controlam o que o utilizador escreveu e as definições que selecionou
   const [storyText, setStoryText] = useState('');
-  const [provider, setProvider] = useState('gemini'); // Por defeito usa o Gemini
+  const [provider, setProvider] = useState('gemini');
   const [ollamaModel, setOllamaModel] = useState('llama3');
   
   // 2. ESTADOS DE SISTEMA
-  // Controlam o feedback visual (erros e estado de carregamento)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // 3. PERSISTÊNCIA DA CHAVE API
-  // Tenta carregar a chave da cache assim que o modal abre
   const [apiKey, setApiKey] = useState(() => {
     return localStorage.getItem('gemini-api-key') || '';
   });
 
-  // Sempre que o utilizador altera a chave, guardamos automaticamente na cache
   useEffect(() => {
     localStorage.setItem('gemini-api-key', apiKey);
   }, [apiKey]);
 
-  // Se o modal estiver fechado, não desenha nada no ecrã
   if (!isOpen) return null;
 
   // 4. FUNÇÃO PRINCIPAL DE GERAÇÃO
-  // É chamada quando o utilizador clica em "Gerar Grafo"
   const handleGenerate = async () => {
-    // Validações básicas antes de gastar recursos
     if (!storyText.trim()) {
       setError("Por favor, escreve alguma história primeiro.");
       return;
@@ -41,33 +43,26 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
       return;
     }
 
-    // Limpa erros anteriores e mostra o indicador de carregamento
     setError(null);
     setIsLoading(true);
 
     try {
       let generatedTwee = '';
 
-      // Delega a tarefa para a função correta consoante o fornecedor escolhido
       if (provider === 'gemini') {
         generatedTwee = await generateFromGemini(storyText, apiKey);
       } else {
         generatedTwee = await generateFromOllama(storyText, ollamaModel);
       }
 
-      // Se a IA respondeu com sucesso, envia o texto Twee de volta para o App.jsx
-      // para ser importado e desenhado no ecrã.
       onImportSuccess(generatedTwee);
       
-      // Limpa a caixa de texto e fecha o modal
       setStoryText('');
       onClose();
 
     } catch (err) {
-      // Se algo falhar (ex: sem internet, chave inválida, servidor Ollama desligado)
       setError(err.message || "Ocorreu um erro ao gerar a história.");
     } finally {
-      // Independentemente de sucesso ou falha, desliga o indicador de carregamento
       setIsLoading(false);
     }
   };
@@ -98,7 +93,24 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
         {/* ÁREA DE CONFIGURAÇÕES ESPECÍFICAS */}
         {provider === 'gemini' ? (
           <div className="mb-4">
-            <label className="block text-xs font-black uppercase tracking-wider mb-1">API Key do Gemini</label>
+            <div className="flex items-center gap-2 mb-1">
+              <label className="block text-xs font-black uppercase tracking-wider">API Key do Gemini</label>
+              <button
+                type="button"
+                onClick={() => openHelp(
+                  'API Key do Gemini',
+                  'Chave de Autenticação da Google',
+                  <div className="space-y-2">
+                    <p>Para usares o modelo Gemini, precisas de uma chave de API gratuita fornecida pela Google.</p>
+                    <p>Podes criar a tua chave acedendo ao <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline font-bold">Google AI Studio</a>.</p>
+                    <p className="text-xs text-gray-500 mt-2">Nota: A tua chave fica guardada apenas localmente no teu navegador. Não é enviada para os nossos servidores.</p>
+                  </div>
+                )}
+                className={helpButtonClass}
+              >
+                ?
+              </button>
+            </div>
             <input 
               type="password" 
               value={apiKey}
@@ -122,7 +134,27 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
 
         {/* ÁREA DE TEXTO DA HISTÓRIA */}
         <div className="flex-1 flex flex-col min-h-[200px] mb-4">
-          <label className="block text-xs font-black uppercase tracking-wider mb-1">História em Texto Livre</label>
+          <div className="flex items-center gap-2 mb-1">
+            <label className="block text-xs font-black uppercase tracking-wider">História em Texto Livre</label>
+            <button
+              type="button"
+              onClick={() => openHelp(
+                'Instruções para a IA',
+                'Como escrever para obter os melhores resultados',
+                <div className="space-y-2">
+                  <p>Escreve a tua narrativa de forma corrida, mas certifica-te de que as ramificações são óbvias.</p>
+                  <p><strong>Exemplo:</strong></p>
+                  <div className="bg-gray-100 dark:bg-gray-700 p-2 text-xs font-mono italic">
+                    "Acordas numa cela. Podes tentar arrombar a porta ou gritar por um guarda. Se arrombares a porta, encontras um corredor. Se gritares, o guarda prende-te com correntes."
+                  </div>
+                  <p>A IA encarregar-se-á de converter a tua lógica descritiva num grafo de nós perfeitamente estruturado.</p>
+                </div>
+              )}
+              className={helpButtonClass}
+            >
+              ?
+            </button>
+          </div>
           <textarea
             value={storyText}
             onChange={(e) => setStoryText(e.target.value)}
@@ -133,7 +165,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
 
         {/* MENSAGEM DE ERRO */}
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border-2 border-red-600 text-red-900 font-bold text-sm">
+          <div className="mb-4 p-3 bg-red-100 border-2 border-red-600 text-red-900 font-bold text-sm shadow-[2px_2px_0px_#dc2626]">
             {error}
           </div>
         )}

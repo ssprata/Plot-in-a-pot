@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
+import { useInfoPopout } from '../contexts/InfoPopoutContext';
 
 export default function DataPanel({
   exportToTwine, importText, setImportText, handleImport, importError,
   adjacencyList, showAdjacencyList, runValidation, validationErrors, 
-  runSimulationLog, showFlowErrors, showSimulationLegacy, parserWarnings // <-- NOVA PROP AQUI
+  runSimulationLog, showFlowErrors, showSimulationLegacy, parserWarnings
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragActive, setDragActive] = useState(false);
+  const { showInfoPopout } = useInfoPopout();
+
+  const openHelp = (title, subtitle, content) => {
+    showInfoPopout({ title, subtitle, content });
+  };
+
+  const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
 
   // Drag-and-drop handlers for .twee file import
   const handleDragOver = (e) => {
@@ -54,7 +62,27 @@ export default function DataPanel({
         </button>
 
         <div className="mb-4 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 rounded shadow-sm">
-          <div className="font-bold mb-2 text-sm text-gray-700 dark:text-gray-300 uppercase">Importar História</div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase">Importar História</div>
+            <button
+              type="button"
+              onClick={() => openHelp(
+                'Importar História',
+                'Como carregar o teu projeto',
+                <div className="space-y-2">
+                  <p>Podes importar o teu código Twine (formato Twee) de duas formas:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Colando o texto diretamente na caixa.</li>
+                    <li>Arrastando e largando um ficheiro <code>.twee</code> para cima da caixa.</li>
+                  </ul>
+                  <p className="text-red-600 font-bold mt-2">Aviso: Importar irá sobrepor o grafo atual.</p>
+                </div>
+              )}
+              className={helpButtonClass}
+            >
+              ?
+            </button>
+          </div>
           <textarea
             rows={4}
             className={`w-full font-mono text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-600 outline-none focus:ring-1 focus:ring-indigo-500 ${dragActive ? 'ring-2 ring-indigo-400 border-indigo-400' : ''}`}
@@ -71,12 +99,28 @@ export default function DataPanel({
         </div>
 
         {/* BOTÃO DO ALGORITMO */}
-        <button
-          onClick={runValidation}
-          className="w-full p-3 border-2 border-gray-900 dark:border-gray-200 text-gray-900 dark:!font-black bg-yellow-400 hover:bg-yellow-500 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none mb-6"
-        >
-          Validar Lógica
-        </button>
+        <div className="flex items-stretch gap-2 mb-6">
+          <button
+            onClick={runValidation}
+            className="flex-1 p-3 border-2 border-gray-900 dark:border-gray-200 text-gray-900 dark:!font-black bg-yellow-400 hover:bg-yellow-500 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none"
+          >
+            Validar Lógica
+          </button>
+          <button
+            type="button"
+            onClick={() => openHelp(
+              'Validador Lógico',
+              'O motor matemático do grafo',
+              <div className="space-y-2">
+                <p>Este algoritmo percorre todos os caminhos possíveis da tua história simulando o estado das variáveis (mochila do jogador).</p>
+                <p>Ele avisa-te se detetar "Caminhos Mortos" (portas que nunca se conseguem abrir, não importa o que o jogador faça) para evitar que lances uma história impossível de terminar.</p>
+              </div>
+            )}
+            className="w-12 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none cursor-pointer"
+          >
+            ?
+          </button>
+        </div>
 
         {/* EXIBIÇÃO DE AVISOS DO PARSER (A CAIXA LARANJA) */}
         {parserWarnings && parserWarnings.length > 0 && (
@@ -135,8 +179,21 @@ export default function DataPanel({
         )}
 
         {showAdjacencyList && (
-          <div className="flex-1 min-h-0 flex flex-col">
-            <h4 className="border-b border-gray-300 pb-1 mb-2 font-bold text-gray-700 text-xs uppercase">Adjacency List</h4>
+          <div className="flex-1 min-h-0 flex flex-col mb-4">
+            <div className="flex items-center justify-between border-b border-gray-300 pb-1 mb-2">
+              <h4 className="font-bold text-gray-700 text-xs uppercase">Adjacency List</h4>
+              <button
+                type="button"
+                onClick={() => openHelp(
+                  'Lista de Adjacência',
+                  'A matriz do grafo',
+                  <p>Isto é uma representação puramente matemática do teu grafo. Mostra cada nó e a lista exata dos IDs dos nós para onde ele aponta. Muito útil para programadores depurarem ligações invisíveis.</p>
+                )}
+                className={helpButtonClass}
+              >
+                ?
+              </button>
+            </div>
             <div className="flex-1 font-mono text-[10px] bg-gray-900 text-green-400 p-3 rounded shadow-inner overflow-y-auto">
               {Object.keys(adjacencyList).map((id) => (
                 <div key={id} className="mb-1">
@@ -149,12 +206,14 @@ export default function DataPanel({
 
         {/* Simulação de Jogabilidade */}
         {showSimulationLegacy && (
-          <button
-            onClick={runSimulationLog}
-            className="w-full mt-2 p-2 border-2 border-gray-800 bg-gray-800 text-white hover:bg-black font-mono text-[10px] uppercase tracking-tighter transition-all shadow-[2px_2px_0px_#ccc] active:shadow-none mb-4"
-          >
-            Simular
-          </button>
+          <div className="mt-auto">
+            <button
+              onClick={runSimulationLog}
+              className="w-full p-2 border-2 border-gray-800 bg-gray-800 text-white hover:bg-black font-mono text-[10px] uppercase tracking-tighter transition-all shadow-[2px_2px_0px_#ccc] active:shadow-none"
+            >
+              Simular (Ver Consola)
+            </button>
+          </div>
         )}
       </div>
 

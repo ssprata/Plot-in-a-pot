@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { findStartNode, getInitialState, applyModifiers, canAccessChoice } from '../utils/sugarcubeLogic';
 import Minimap from './Minimap';
+import { useInfoPopout } from '../contexts/InfoPopoutContext';
 
 export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   // 1. ESTADOS DO JOGO
@@ -15,6 +16,7 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
 
   // Guardamos o alvo que o rato está a sobrevoar para destacar no minimapa
   const [hoveredTargets, setHoveredTargets] = useState([]);
+  const { showInfoPopout } = useInfoPopout();
 
   // 2. ARRANQUE DO JOGO
   // Sempre que o PlayMode é aberto, reiniciamos a história para o estado inicial
@@ -110,6 +112,15 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
     setHistory(prev => [...prev, nextNode.data.label]); // Adiciona o nó ao mapa textual
   };
 
+  const infoPopoutContent = (
+    <div className="space-y-4 text-sm leading-relaxed text-gray-200">
+      <p>Leia o texto com atenção e escolha a opção que deseja seguir. Cada escolha pode alterar o estado do jogo e a sua progressão.</p>
+      <p>O modo normal mostra apenas opções acessíveis. No modo Dev, todas as opções são visíveis para ajudar a testar o fluxo.</p>
+      <p>Use o botão <span className="font-bold">Terminar Teste</span> para fechar o modo de jogo e voltar ao editor.</p>
+      <p>O minimapa e as variáveis aparecem apenas no modo Dev, para ajudar a entender o estado interno da história.</p>
+    </div>
+  );
+
   return (
     // Fundo escuro a cobrir a aplicação inteira
     <div className="fixed inset-0 z-50 flex bg-gray-950 text-gray-100 font-sans">
@@ -174,12 +185,23 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
       <div className="w-80 bg-gray-900 border-l-4 border-gray-700 p-6 flex flex-col overflow-y-auto">
         
         <div className="mb-8 space-y-3">
-          {/* Botão de Fechar */}
           <button 
             onClick={onClose}
             className="w-full border-2 border-gray-500 hover:border-white text-gray-300 hover:text-white font-bold py-2 uppercase tracking-widest transition-colors"
           >
             Terminar Teste
+          </button>
+
+          <button
+            onClick={() => showInfoPopout({
+              title: 'Informações Úteis',
+              subtitle: 'Dicas rápidas para navegar pelo modo de jogo',
+              content: infoPopoutContent
+            })}
+            className="w-full flex items-center justify-center gap-2 border-2 border-blue-500 bg-blue-600 text-white font-bold py-2 uppercase tracking-widest transition-colors hover:bg-blue-500"
+          >
+            <span aria-hidden="true">ℹ️</span>
+            Info
           </button>
 
           {/* Botão para alternar o Modo Dev */}
