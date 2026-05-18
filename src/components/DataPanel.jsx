@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 
 export default function DataPanel({
   exportToTwine, importText, setImportText, handleImport, importError,
-  adjacencyList, showAdjacencyList, runValidation, validationErrors, runSimulationLog, showFlowErrors, showSimulationLegacy
+  adjacencyList, showAdjacencyList, runValidation, validationErrors, 
+  runSimulationLog, showFlowErrors, showSimulationLegacy, parserWarnings // <-- NOVA PROP AQUI
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragActive, setDragActive] = useState(false);
@@ -77,7 +78,22 @@ export default function DataPanel({
           Validar Lógica
         </button>
 
-        {/* EXIBIÇÃO DE ERROS DE FLUXO */}
+        {/* EXIBIÇÃO DE AVISOS DO PARSER (A CAIXA LARANJA) */}
+        {parserWarnings && parserWarnings.length > 0 && (
+          <div className="mb-6 p-3 bg-orange-950 text-orange-100 rounded border-2 border-orange-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
+            <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter text-orange-400">Alertas de Sintaxe:</h4>
+            <ul className="text-[9px] space-y-3 uppercase font-mono leading-tight">
+              {parserWarnings.map((warn, i) => (
+                <li key={i} className="border-b border-orange-800 pb-3 last:border-0 text-orange-200">
+                  <span className="font-bold text-orange-500 mr-2">[IGNORADO]</span>
+                  {warn}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* EXIBIÇÃO DE ERROS DE FLUXO (A CAIXA VERMELHA) */}
         {showFlowErrors && validationErrors && validationErrors.length > 0 && (
           <div className="mb-6 p-3 bg-red-900 text-red-100 rounded border-2 border-red-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
             <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter">Erros de Fluxo Detetados:</h4>

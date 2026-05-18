@@ -13,6 +13,13 @@ Regras absolutas:
 4. Não adiciones blocos de código markdown (\`\`\`twee). Retorna apenas o texto puro.
 5. Não digas "Aqui está a história" nem faças comentários fora do formato Twee.
 6. Se detetares necessidade de inventário, usa <<set $variavel = valor>> no texto e <<if>> nas escolhas.
+7. Se o destino de uma escolha for uma variável (ex: $proximoNo) ou contiver expressões matemáticas, ignora essa escolha no grafo visual e não a adiciones.
+8. O nó inicial do jogo deve ser identificado claramente no StoryData e deve ser o primeiro nó listado.
+9. Se a história contiver macros do SugarCube (ex: <<link>>, <<goto>>, <<set>>), processa-as corretamente para extrair as escolhas e destinos.
+10. Não adiciones texto explicativo, apenas o código Twee formatado corretamente.
+11. Se a história tiver formatação inválida ou faltar informações essenciais, tenta corrigir o melhor que puderes, mas mantém o formato Twee estrito.
+12. O output deve ser um grafo narrativo completo e funcional, pronto para ser importado para um motor de jogos baseado em SugarCube.
+13. Variáveis devem ser definidas usando <<set>> e não podem ser usadas como destinos de escolhas visuais. Se uma escolha depender de uma variável, ela deve ser ignorada no grafo visual.
 
 História para converter:
 `;

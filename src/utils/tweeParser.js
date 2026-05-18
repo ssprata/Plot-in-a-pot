@@ -1,4 +1,3 @@
-// src/utils/tweeParser.js
 import { layoutNodesAndEdges } from '../dagreLayout';
 
 // --- FUNÇÕES DE SEGURANÇA (Baseadas no Parser Oficial) ---
@@ -24,6 +23,9 @@ export function unescapeForTweeText(value) {
 // --- IMPORTAÇÃO (Leitura do Ficheiro) ---
 
 export function parseTwee3(source) {
+  // Array dedicado para guardar os avisos detetados durante a leitura
+  const warnings = [];
+
   // 1. Separação segura por nós, garantindo que o :: está no início da linha
   const passageBlocks = source
     .split(/^::/m)
@@ -81,7 +83,7 @@ export function parseTwee3(source) {
 
     passages.push({
       id,
-      type: nodeType, // Adiciona o tipo de nó para renderização personalizada
+      type: nodeType,
       position,
       data: { label: title, nodeType, content, tags, choices: [] }
     });
@@ -101,26 +103,27 @@ export function parseTwee3(source) {
       let rawChoiceText = '';
       let targetTitle = '';
 
-      // Identificar qual é o formato do link usado pelo autor
       if (rawContent.includes('|')) {
-        // Formato: [[Texto|Destino]]
         const parts = rawContent.split('|');
         rawChoiceText = parts[0].trim();
         targetTitle = parts[1].trim();
       } else if (rawContent.includes('->')) {
-        // Formato: [[Texto->Destino]]
         const parts = rawContent.split('->');
         rawChoiceText = parts[0].trim();
         targetTitle = parts[1].trim();
       } else if (rawContent.includes('<-')) {
-        // Formato: [[Destino<-Texto]]
         const parts = rawContent.split('<-');
         targetTitle = parts[0].trim();
         rawChoiceText = parts[1].trim();
       } else {
-        // Formato: [[Destino]]
         rawChoiceText = rawContent.trim();
         targetTitle = rawContent.trim();
+      }
+
+      // BARREIRA ANTI-VARIÁVEIS
+      if (targetTitle.startsWith('$') || targetTitle.startsWith('_') || targetTitle.match(/[\(\)\+\-\*\/\=]/)) {
+        warnings.push(`Em [${p.data.label}], o link para "${targetTitle}" foi ignorado por conter variáveis ou matemática.`);
+        continue;
       }
 
       const targetId = idMap[targetTitle];
@@ -140,18 +143,24 @@ export function parseTwee3(source) {
       const choiceText = macroMatch[1].trim(); 
       const innerContent = macroMatch[2];      
 
-      // 1. Procurar o goto normal
-      const gotoRegex = /<<goto\s+"([^"]+)"\s*>>/;
+      const gotoRegex = /<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
       const gotoMatch = gotoRegex.exec(innerContent);
+      const gotoTarget = gotoMatch ? (gotoMatch[1] || gotoMatch[2] || gotoMatch[3]) : null;
 
-      // 2. Procurar as variáveis de "encaminhamento" do teu motor específico
-      const variavelDestinoRegex = /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*"([^"]+)"\s*>>/;
+      const variavelDestinoRegex = /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
       const variavelMatch = variavelDestinoRegex.exec(innerContent);
+      const varTarget = variavelMatch ? (variavelMatch[1] || variavelMatch[2] || variavelMatch[3]) : null;
 
-      // 3. A MAGIA: Se a variável de destino existir, o alvo visual é ela. Se não, é o goto.
-      const targetTitleRaw = variavelMatch ? variavelMatch[1].trim() : (gotoMatch ? gotoMatch[1].trim() : null);
+      let targetTitleRaw = varTarget || gotoTarget;
+      if (targetTitleRaw) targetTitleRaw = targetTitleRaw.trim();
 
       if (targetTitleRaw) {
+        // BARREIRA ANTI-VARIÁVEIS EM MACROS
+        if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
+           warnings.push(`Em [${p.data.label}], o macro <<goto>> para "${targetTitleRaw}" foi ignorado por apontar para uma variável.`);
+           continue; 
+        }
+
         const targetId = idMap[targetTitleRaw];
 
         if (targetId) {
@@ -170,7 +179,8 @@ export function parseTwee3(source) {
     nodes = layoutNodesAndEdges(passages, edges, 'TB');
   }
 
-  return { nodes, edges };
+  // Devolve tudo direitinho, incluindo os avisos para o ecrã laranja
+  return { nodes, edges, warnings };
 }
 
 // --- EXPORTAÇÃO (Gravação do Ficheiro) ---
@@ -214,9 +224,6 @@ export function exportToTwee3(nodes, edges) {
 
     // Escapar duplos pontos no meio do texto
     let content = escapeForTweeText(n.data.content || '');
-
-    // NOTA: O loop "outgoing" que anexava as escolhas no fundo foi removido.
-    // O texto narrativo ('content') já contém as macros e os links escritos pelo autor.
 
     result += `:: ${label}${tags}${metadata}\n${content}\n\n`;
   });

@@ -84,6 +84,23 @@ export default function Inspector({
                 }
               }}
             />
+
+            {selectedNode.data.warnings && selectedNode.data.warnings.length > 0 && (
+              <div className="mt-2 p-3 bg-orange-900 border-2 border-orange-500 shadow-md">
+                <span className="block mb-1 font-black uppercase text-[10px] text-orange-400 tracking-widest">
+                  Avisos de Sintaxe:
+                </span>
+                <ul className="space-y-1 text-orange-100 font-mono text-xs">
+                  {selectedNode.data.warnings.map((w, i) => (
+                    <li key={i} className="flex items-start">
+                      <span className="font-bold text-orange-500 mr-2">[!]</span>
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {selectedNode.data.nodeType === 'choice' && (
               <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 italic">
                 Usa [[Link]] ou [[Texto|Link]] para criar conexões.

@@ -59,6 +59,7 @@ function App() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
+  const [parserWarnings, setParserWarnings] = useState([]);
 
   // 1. Função de Reset Total
   const resetProject = useCallback(() => {
@@ -142,19 +143,29 @@ function App() {
   }, [edges, visibleNodes, settings.showSecrets]);
 
   // --- Sync choices from text (must be above onConnect!) ---
+  // --- Sync choices from text (must be above onConnect!) ---
+// --- Sync choices from text (must be above onConnect!) ---
   const syncChoicesFromText = useCallback((nodeId, text) => {
-    const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
     let match;
     const newChoices = [];
     const newEdgesPatch = [];
+    const localWarnings = [];
 
+    // --- PADRÃO 1: Links normais do Twine ---
+    const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
+    
     while ((match = linkRegex.exec(text))) {
       const rawText = match[1] || match[3];
       const targetLabel = (match[2] || match[3]).trim();
       const choiceText = rawText.trim();
 
+      if (targetLabel.startsWith('$') || targetLabel.startsWith('_') || targetLabel.match(/[\(\)\+\-\*\/\=]/)) {
+        localWarnings.push(`A ligação para "${targetLabel}" foi bloqueada. Não uses variáveis no destino.`);
+        continue;
+      }
+
       const targetNode = nodes.find(n => n.data.label === targetLabel);
-      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}`;
+      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}-${Math.floor(Math.random()*1000)}`;
 
       newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
 
@@ -168,8 +179,49 @@ function App() {
       }
     }
 
+    // --- PADRÃO 2: Macros do SugarCube ---
+    const macroLinkRegex = /<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g;
+    let macroMatch;
+    
+    while ((macroMatch = macroLinkRegex.exec(text))) {
+      const choiceText = macroMatch[1].trim(); 
+      const innerContent = macroMatch[2];      
+
+      const gotoRegex = /<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
+      const gotoMatch = gotoRegex.exec(innerContent);
+      const gotoTarget = gotoMatch ? (gotoMatch[1] || gotoMatch[2] || gotoMatch[3]) : null;
+
+      const variavelDestinoRegex = /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
+      const variavelMatch = variavelDestinoRegex.exec(innerContent);
+      const varTarget = variavelMatch ? (variavelMatch[1] || variavelMatch[2] || variavelMatch[3]) : null;
+
+      let targetTitleRaw = varTarget || gotoTarget;
+      if (targetTitleRaw) targetTitleRaw = targetTitleRaw.trim();
+
+      if (targetTitleRaw) {
+        if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
+           localWarnings.push(`O macro <<goto>> para "${targetTitleRaw}" foi bloqueado. Não uses variáveis no destino.`);
+           continue; 
+        }
+
+        const targetNode = nodes.find(n => n.data.label === targetTitleRaw);
+        const choiceId = `c-${nodeId}-${targetTitleRaw}-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+
+        newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
+
+        if (targetNode) {
+          newEdgesPatch.push({
+            id: `e-${nodeId}-${targetNode.id}-${choiceId}`,
+            source: nodeId,
+            sourceHandle: choiceId,
+            target: targetNode.id
+          });
+        }
+      }
+    }
+
     setNodes((nds) => nds.map((n) =>
-      n.id === nodeId ? { ...n, data: { ...n.data, content: text, choices: newChoices } } : n
+      n.id === nodeId ? { ...n, data: { ...n.data, content: text, choices: newChoices, warnings: localWarnings } } : n
     ));
 
     setEdges((eds) => {
@@ -349,27 +401,36 @@ function App() {
   // --- Import / Export ---
   const handleImport = useCallback(() => {
     try {
-      const { nodes: newNodes, edges: newEdges } = parseTwee3(importText);
+      console.log("1. A iniciar importação...");
+
+      // Extrai explicitamente a propriedade 'warnings' que o parser devolve
+      const { nodes: newNodes, edges: newEdges, warnings } = parseTwee3(importText);
+
+      console.log("2. O Parser devolveu estes avisos:", warnings);
 
       // Lista de nós de sistema oficiais do Twine
       const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
 
       const formattedNodes = newNodes.map(n => {
-        // 1. Uniformizar o formato das tags para o nosso editor
         let tags = Array.isArray(n.data.tags) ? n.data.tags.join(', ') : String(n.data.tags || "");
-
-        // 2. Se for um nó de sistema e não tiver a tag secreto, adicionamos nós mesmos
         if (systemNodes.includes(n.data.label.toLowerCase()) && !tags.includes('secreto')) {
           tags = tags ? `${tags}, secreto` : 'secreto';
         }
-
         return { ...n, data: { ...n.data, tags } };
       });
 
       setNodes(formattedNodes);
       setEdges(newEdges);
+
+      // Se não houver avisos, garantimos que passa um array vazio em vez de "undefined"
+      const avisosParaOEcran = warnings || [];
+      console.log("3. A enviar para o ecrã:", avisosParaOEcran);
+
+      setParserWarnings(avisosParaOEcran);
       setImportError('');
+
     } catch (e) {
+      console.error("Erro fatal na importação:", e);
       setImportError('Failed to parse story.');
     }
   }, [importText, setNodes, setEdges]);

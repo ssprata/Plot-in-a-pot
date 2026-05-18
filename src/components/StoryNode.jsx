@@ -28,6 +28,12 @@ export default function StoryNode({ data }) {
   return (
     <div className={`border-2 ${borderColor} rounded bg-white dark:bg-gray-800 min-w-[180px] shadow-[4px_4px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.15)] overflow-hidden transition-all hover:shadow-[6px_6px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[6px_6px_0px_rgba(255,255,255,0.2)] ${isSecret ? 'opacity-90' : ''}`}>
 
+      {data.warnings && data.warnings.length > 0 && (
+        <div className="absolute -top-3 -right-3 z-10 bg-orange-500 border-2 border-gray-900 text-gray-900 text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-md">
+          Aviso
+        </div>
+      )}
+      
       {/* Ponto de Entrada (Target) no topo */}
       <Handle
         type="target"
