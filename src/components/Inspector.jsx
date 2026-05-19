@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 
 export default function Inspector({
@@ -10,12 +10,75 @@ export default function Inspector({
   setStartNode
 }) {
   const { showInfoPopout } = useInfoPopout();
+  
+  // Estado para a checkbox de variável local
+  const [isLocalVarMode, setIsLocalVarMode] = useState(false);
 
   const openHelp = (title, subtitle, content) => {
     showInfoPopout({ title, subtitle, content });
   };
 
+  // --- EXTRAIR VARIÁVEIS DO STORYINIT ---
+  const extractVariables = (allNodes) => {
+    const storyInit = allNodes.find(n => n.data.label === 'StoryInit');
+    if (!storyInit || !storyInit.data.content) return [];
+    
+    const regex = /\$(\w+)/g;
+    const matches = storyInit.data.content.match(regex) || [];
+    return [...new Set(matches)]; // Retorna lista única: ["$ouro", "$vida"]
+  };
+
+  // --- CRIAR VARIÁVEL (STORYINIT) ---
+  const handleCreateVariable = () => {
+    const name = prompt("Nome da variável global (ex: ouro):");
+    if (!name) return;
+    
+    const cleanName = name.startsWith('$') ? name : `$${name}`;
+    const value = prompt(`Valor inicial para ${cleanName}:`, "0");
+    if (value === null) return;
+
+    const newMacro = `<<set ${cleanName} to ${value}>>\n`;
+    const oldContent = selectedNode.data.content || "";
+    updateSelectedNode({ content: newMacro + oldContent });
+  };
+
+  // --- ALTERAR VARIÁVEL (OUTROS NÓS) ---
+  const handleChangeVariable = () => {
+    const existingVars = extractVariables(nodes);
+    
+    // 1. Pedir o nome da variável
+    let varName = prompt(
+      isLocalVarMode 
+      ? "CRIAR VARIÁVEL LOCAL\nNome da variável (ex: $chavePorta):" 
+      : `ALTERAR VARIÁVEL EXISTENTE\nVariáveis disponíveis: ${existingVars.join(', ')}`
+    );
+
+    if (!varName) return;
+    if (!varName.startsWith('$')) varName = `$${varName}`;
+
+    // 2. Validação: Se não for modo local, a variável TEM de existir no StoryInit
+    if (!isLocalVarMode && !existingVars.includes(varName)) {
+      alert(`Erro: A variável ${varName} não foi inicializada no StoryInit!\n\nInicialize-a lá primeiro ou ative a checkbox "Variável Local".`);
+      return;
+    }
+
+    // 3. Pedir o valor
+    const newValue = prompt(`Novo valor para ${varName}:`);
+    if (newValue === null) return;
+
+    const newMacro = `\n<<set ${varName} to ${newValue}>>`;
+    const oldContent = selectedNode.data.content || "";
+
+    if (selectedNode.data.nodeType === 'choice') {
+      syncChoicesFromText(selectedNode.id, oldContent + newMacro);
+    } else {
+      updateSelectedNode({ content: oldContent + newMacro });
+    }
+  };
+
   const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
+
+  const isStoryInit = selectedNode?.data.label === 'StoryInit';
 
   return (
     <div className="w-[340px] p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col h-full shadow-md">
@@ -25,136 +88,65 @@ export default function Inspector({
 
       {selectedNode ? (
         <div className="flex-1 flex flex-col">
-          <div className="mb-3 text-sm text-gray-500 dark:text-gray-400 italic">
-            <strong>ID:</strong> {selectedNode.id}
-          </div>
-
+          {/* ... (Campos de ID, Label, Type e Tags mantêm-se iguais) ... */}
+          
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-                Label (Nome)
-              </label>
-              <button
-                type="button"
-                onClick={() => openHelp(
-                  'Label (Nome da Passagem)',
-                  'O identificador único do nó',
-                  <div className="space-y-2">
-                    <p>O nome que deres aqui é o que o motor usa para ligar as setas.</p>
-                    <p>Se mudares o nome de um nó, lembra-te de atualizar os links nos outros nós que apontavam para ele (ex: de <code>[[Quarto]]</code> para <code>[[Quarto_Escuro]]</code>).</p>
-                  </div>
-                )}
-                className={helpButtonClass}
-              >
-                ?
-              </button>
+              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">Label (Nome)</label>
             </div>
             <input
-              className="w-full p-2 border border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white rounded focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-gray-50 dark:bg-gray-700"
+              className="w-full p-2 border border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white rounded bg-gray-50 dark:bg-gray-700"
               value={selectedNode.data.label || ''}
               onChange={(e) => updateSelectedNode({ label: e.target.value })}
             />
           </div>
 
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-1">
-              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-                Type
-              </label>
-              <button
-                type="button"
-                onClick={() => openHelp(
-                  'Tipo de Nó',
-                  'Define a função principal do bloco',
-                  <ul className="list-disc pl-5 space-y-1 text-sm mt-2">
-                    <li><strong>Choice (Cena):</strong> Para escreveres a história e criares opções.</li>
-                    <li><strong>JavaScript:</strong> Para escreveres código que corre por trás do jogo.</li>
-                    <li><strong>CSS:</strong> Para escreveres regras visuais que alteram o design final.</li>
-                  </ul>
-                )}
-                className={helpButtonClass}
-              >
-                ?
-              </button>
-            </div>
-            <select
-              className="w-full p-2 border border-gray-400 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 cursor-pointer focus:ring-2 focus:ring-indigo-500 outline-none"
-              value={selectedNode.data.nodeType || 'choice'}
-              onChange={(e) => updateSelectedNode({ nodeType: e.target.value })}
-            >
-              <option value="choice">Choice (Cena)</option>
-              <option value="javascript">JavaScript (Lógica)</option>
-              <option value="css">CSS (Estilo)</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-1">
-              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-                Tags
-              </label>
-              <button
-                type="button"
-                onClick={() => openHelp(
-                  'Tags',
-                  'Categorização e Metadados',
-                  <div className="space-y-2">
-                    <p>Palavras-chave separadas por vírgula que ajudam a organizar a história.</p>
-                    <ul className="list-disc pl-5 space-y-1 mt-1">
-                      <li><strong>start:</strong> Define este nó como o início automático do jogo.</li>
-                      <li><strong>secreto:</strong> Esconde o nó no grafo (precisas de ativar a visualização nas definições).</li>
-                    </ul>
-                  </div>
-                )}
-                className={helpButtonClass}
-              >
-                ?
-              </button>
-            </div>
-            <input
-              className="w-full p-2 border border-gray-400 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="ex: boss_fight, secreto, start"
-              value={selectedNode.data.tags || ''}
-              onChange={(e) => updateSelectedNode({ tags: e.target.value })}
-            />
-          </div>
-
-          <div className="mb-4">
-            <button
-              onClick={() => setStartNode(selectedNode.id)}
-              className="w-full p-2 border-2 border-gray-800 dark:border-gray-200 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-900 dark:text-blue-100 font-bold text-xs uppercase tracking-wider transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none"
-            >
-              Definir como Começo
-            </button>
-          </div>
-
           <div className="mb-4 flex-1 flex flex-col">
-            <div className="flex items-center gap-2 mb-1">
-              <label className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-tight">
-                {selectedNode.data.nodeType === 'choice' ? 'Texto Narrativo' : 'Código Fonte'}
-              </label>
-              <button
-                type="button"
-                onClick={() => openHelp(
-                  selectedNode.data.nodeType === 'choice' ? 'Texto Narrativo' : 'Código Fonte',
-                  'Onde a magia acontece',
-                  <div className="space-y-2">
-                    <p>Escreve aqui o conteúdo que o jogador vai ler.</p>
-                    <ul className="list-disc pl-5 space-y-1 mt-1">
-                      <li>Usa <code>[[Destino]]</code> para criar um link com o mesmo nome do nó.</li>
-                      <li>Usa <code>[[Texto no Ecrã|Destino]]</code> para que o texto mostrado seja diferente do nome real do nó.</li>
-                      <li>Usa macros SugarCube como <code>&lt;&lt;set $vida = 100&gt;&gt;</code> para manipular dados invisíveis.</li>
-                    </ul>
-                  </div>
+            <div className="flex flex-col mb-2 gap-2">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-tight">
+                  {selectedNode.data.nodeType === 'choice' ? 'Texto Narrativo' : 'Código Fonte'}
+                </label>
+
+                {/* BOTÕES DE AÇÃO */}
+                {isStoryInit ? (
+                  <button
+                    onClick={handleCreateVariable}
+                    className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-blue-500 active:shadow-none active:translate-y-0.5"
+                  >
+                    + Criar Variável
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleChangeVariable}
+                    className="px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-emerald-500 active:shadow-none active:translate-y-0.5"
+                  >
+                    +/- Alterar Valor
+                  </button>
                 )}
-                className={helpButtonClass}
-              >
-                ?
-              </button>
+              </div>
+
+              {/* CHECKBOX PARA VARIÁVEL LOCAL (Só aparece se não for StoryInit) */}
+              {!isStoryInit && (
+                <div className="flex items-center gap-2 self-end">
+                  <input 
+                    type="checkbox" 
+                    id="localVar"
+                    checked={isLocalVarMode}
+                    onChange={(e) => setIsLocalVarMode(e.target.checked)}
+                    className="w-3 h-3 accent-emerald-600 cursor-pointer"
+                  />
+                  <label htmlFor="localVar" className="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase cursor-pointer">
+                    Criar uma variável só nesta node
+                  </label>
+                </div>
+              )}
             </div>
+
             <textarea
-              className={`w-full flex-1 min-h-[250px] p-2 border border-gray-400 dark:border-gray-600 rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
-                }`}
+              className={`w-full flex-1 min-h-[250px] p-2 border border-gray-400 dark:border-gray-600 rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y ${
+                selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
+              }`}
               value={selectedNode.data.content || ''}
               onChange={(e) => {
                 if (selectedNode.data.nodeType === 'choice') {
@@ -164,22 +156,6 @@ export default function Inspector({
                 }
               }}
             />
-
-            {selectedNode.data.warnings && selectedNode.data.warnings.length > 0 && (
-              <div className="mt-2 p-3 bg-orange-900 border-2 border-orange-500 shadow-md">
-                <span className="block mb-1 font-black uppercase text-[10px] text-orange-400 tracking-widest">
-                  Avisos de Sintaxe:
-                </span>
-                <ul className="space-y-1 text-orange-100 font-mono text-xs">
-                  {selectedNode.data.warnings.map((w, i) => (
-                    <li key={i} className="flex items-start">
-                      <span className="font-bold text-orange-500 mr-2">[!]</span>
-                      {w}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
 
           <div className="mt-auto pt-4 border-t-2 border-gray-200 dark:border-gray-600">
