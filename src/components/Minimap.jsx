@@ -1,80 +1,48 @@
 import React from 'react';
 import './Minimap.css';
 
-const MINIMAP_WIDTH = 220;  // Back to original size
-const MINIMAP_HEIGHT = 160; // Back to original size
-const PADDING = 16;
-const NODE_W = 20;  // Slightly smaller to fit better
-const NODE_H = 12;  // Slightly smaller to fit better
-const SPACING_FACTOR = 1.3; // Subtle spacing increase
+const MINIMAP_WIDTH = 220; 
+const MINIMAP_HEIGHT = 160; 
+const NODE_W = 32;  
+const NODE_H = 18;  
+const SPACING_FACTOR = 1.3; 
+// 🔍 Lower ZOOM_SCALE to zoom out, higher to zoom in!
+const ZOOM_SCALE = 0.15; 
 
 function isSecret(node) {
   const tags = String(node.data?.tags || '').split(',').map(t => t.trim().toLowerCase());
   return tags.includes('secreto') || tags.includes('secret');
 }
 
-function getScaledPositions(nodes) {
+// Logic: Acts as a camera that centers on the active node
+function getCameraCenteredPositions(nodes, currentNodeId) {
   if (nodes.length === 0) return {};
   
-  // Find bounds of the graph
-  const xs = nodes.map(n => n.position?.x ?? 0);
-  const ys = nodes.map(n => n.position?.y ?? 0);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
+  // 1. Find the focal point (the active node)
+  let targetNode = nodes.find(n => n.id === currentNodeId);
   
-  // Calculate center of the graph
-  const centerX = (minX + maxX) / 2;
-  const centerY = (minY + maxY) / 2;
+  // If no active node is found, fallback to the first visible node
+  if (!targetNode) {
+    targetNode = nodes[0];
+  }
   
-  // Apply spacing factor to expand from center
-  let expandedMinX = Infinity;
-  let expandedMaxX = -Infinity;
-  let expandedMinY = Infinity;
-  let expandedMaxY = -Infinity;
-  
-  const expandedPositions = {};
+  const targetOrigX = targetNode?.position?.x ?? 0;
+  const targetOrigY = targetNode?.position?.y ?? 0;
+
+  const positions = {};
   
   nodes.forEach(node => {
     const origX = node.position?.x ?? 0;
     const origY = node.position?.y ?? 0;
     
-    // Expand from center
-    const dx = (origX - centerX) * SPACING_FACTOR;
-    const dy = (origY - centerY) * SPACING_FACTOR;
-    const expandedX = centerX + dx;
-    const expandedY = centerY + dy;
+    // 2. Calculate distance from the camera center (active node)
+    const dx = (origX - targetOrigX) * SPACING_FACTOR;
+    const dy = (origY - targetOrigY) * SPACING_FACTOR;
     
-    expandedPositions[node.id] = { x: expandedX, y: expandedY };
-    
-    expandedMinX = Math.min(expandedMinX, expandedX);
-    expandedMaxX = Math.max(expandedMaxX, expandedX);
-    expandedMinY = Math.min(expandedMinY, expandedY);
-    expandedMaxY = Math.max(expandedMaxY, expandedY);
-  });
-  
-  // Add padding for node sizes
-  const graphW = (expandedMaxX - expandedMinX) + NODE_W;
-  const graphH = (expandedMaxY - expandedMinY) + NODE_H;
-  
-  // Calculate scale to fit in minimap
-  const scale = Math.min(
-    (MINIMAP_WIDTH - 2 * PADDING) / graphW,
-    (MINIMAP_HEIGHT - 2 * PADDING) / graphH
-  );
-  
-  // Center the graph in the minimap
-  const offsetX = PADDING + (MINIMAP_WIDTH - 2 * PADDING - graphW * scale) / 2;
-  const offsetY = PADDING + (MINIMAP_HEIGHT - 2 * PADDING - graphH * scale) / 2;
-  
-  // Convert to minimap coordinates
-  const positions = {};
-  nodes.forEach(node => {
-    const expanded = expandedPositions[node.id];
+    // 3. Apply zoom scale and place in the exact center of the minimap
     positions[node.id] = {
-      x: (expanded.x - expandedMinX) * scale + offsetX,
-      y: (expanded.y - expandedMinY) * scale + offsetY
+      x: (dx * ZOOM_SCALE) + (MINIMAP_WIDTH / 2) - (NODE_W / 2),
+      y: (dy * ZOOM_SCALE) + (MINIMAP_HEIGHT / 2) - (NODE_H / 2)
     };
   });
   
@@ -83,50 +51,152 @@ function getScaledPositions(nodes) {
 
 export default function Minimap({ nodes, edges, currentNodeId, hoveredOptionTargets }) {
   const visibleNodes = nodes.filter(n => !isSecret(n));
-  const nodePositions = getScaledPositions(visibleNodes);
-  const visibleEdges = edges.filter(e => nodePositions[e.from] && nodePositions[e.to]);
+  const nodePositions = getCameraCenteredPositions(visibleNodes, currentNodeId);
+  
+  // Checking both 'from/to' and 'source/target' just in case of library mismatches
+  const visibleEdges = edges.filter(e => {
+    const fromId = e.from || e.source;
+    const toId = e.to || e.target;
+    return nodePositions[fromId] && nodePositions[toId];
+  });
 
   return (
-    <div className="minimap-container" style={{ width: MINIMAP_WIDTH, height: MINIMAP_HEIGHT }}>
+    <div className="minimap-container" style={{ 
+      width: MINIMAP_WIDTH, 
+      height: MINIMAP_HEIGHT, 
+      backgroundColor: '#181A1F', 
+      borderRadius: '8px',
+      overflow: 'hidden' // Ensures lines don't bleed outside the box
+    }}>
       <svg width={MINIMAP_WIDTH} height={MINIMAP_HEIGHT} className="minimap-svg">
+        
         {/* Draw edges */}
         {visibleEdges.map((edge, i) => {
-          const from = nodePositions[edge.from];
-          const to = nodePositions[edge.to];
+          const fromId = edge.from || edge.source;
+          const toId = edge.to || edge.target;
+          
+          const from = nodePositions[fromId];
+          const to = nodePositions[toId];
+          
           if (!from || !to) return null;
+
+          // ⭐ --- Highlighting Logic --- ⭐
+          // The edge is highlighted if:
+          // 1. Its source is the current node
+          // 2. Its target is in the list of nodes targeted by the hovered option
+          const isEdgeHighlighted = fromId === currentNodeId && hoveredOptionTargets && hoveredOptionTargets.includes(toId);
+
+          // Default style
+          let edgeStroke = "#555F77"; // Slightly darker default
+          let edgeWidth = "1.5";
+          let edgeOpacity = "0.7";
+
+          // Highlighted style
+          if (isEdgeHighlighted) {
+            edgeStroke = '#FF9800'; // Bright orange to match the node hover
+            edgeWidth = "3"; // Extra width for emphasis
+            edgeOpacity = "1";
+          }
+
+          // Define curve points
+          // Start at the right side (lower half)
+          const startX = from.x + NODE_W;
+          const startY = from.y + (NODE_H * 0.7); 
+          
+          // End at the top center
+          const endX = to.x + (NODE_W / 2);
+          const endY = to.y;
+
+          const distanceX = Math.abs(endX - startX);
+          const offset = Math.max(distanceX * 0.4, 15);
+
+          const pathData = `M ${startX} ${startY} C ${startX + offset} ${startY}, ${endX} ${endY - offset}, ${endX} ${endY}`;
+
           return (
-            <line 
-              key={i} 
-              x1={from.x + NODE_W/2} 
-              y1={from.y + NODE_H/2} 
-              x2={to.x + NODE_W/2} 
-              y2={to.y + NODE_H/2} 
-              stroke="#aaa" 
-              strokeWidth="1"
+            <path 
+              key={`edge-${i}`} 
+              d={pathData}
+              fill="none"
+              stroke={edgeStroke} 
+              strokeWidth={edgeWidth}
+              opacity={edgeOpacity}
+              style={{ transition: 'stroke 0.2s ease, stroke-width 0.2s ease' }} // Smooth transition
             />
           );
         })}
+
         {/* Draw nodes */}
         {visibleNodes.map((node) => {
           const pos = nodePositions[node.id];
           if (!pos) return null;
           const { x, y } = pos;
-          let stroke = '#333';
-          let strokeWidth = 1.5;
           
+          // Default Styles
+          let fill = '#282C34';
+          let stroke = '#4B5363';
+          let strokeWidth = 1.5;
+          let portColor = '#9CA3AF';
+
+          // Active/Hover States
           if (node.id === currentNodeId) {
-            stroke = 'green';
-            strokeWidth = 2.5;
+            fill = '#1E3A2F'; 
+            stroke = '#4CAF50'; 
+            strokeWidth = 2;
+            portColor = '#4CAF50';
           } else if (hoveredOptionTargets && hoveredOptionTargets.includes(node.id)) {
-            stroke = 'orange';
-            strokeWidth = 2.5;
+            fill = '#4A3219'; // Subtle orange tint
+            stroke = '#FF9800'; // Bright orange border
+            strokeWidth = 2;
+            portColor = '#FF9800';
           }
           
           return (
             <g key={node.id}>
-              <rect x={x} y={y} width={NODE_W} height={NODE_H} rx={3} fill="#23272e" stroke={stroke} strokeWidth={strokeWidth} />
-              <circle cx={x} cy={y + NODE_H/2} r={2.5} fill="#888" />
-              <circle cx={x + NODE_W} cy={y + NODE_H/2} r={2.5} fill="#888" />
+              {/* Node Body */}
+              <rect 
+                x={x} 
+                y={y} 
+                width={NODE_W} 
+                height={NODE_H} 
+                rx={3} 
+                fill={fill} 
+                stroke={stroke} 
+                strokeWidth={strokeWidth} 
+                style={{ transition: 'fill 0.2s ease, stroke 0.2s ease' }} // Smooth transition
+              />
+              
+              {/* Node Header Separator Line */}
+              <line 
+                x1={x} 
+                y1={y + (NODE_H * 0.4)} 
+                x2={x + NODE_W} 
+                y2={y + (NODE_H * 0.4)} 
+                stroke={stroke} 
+                strokeWidth="1" 
+                opacity="0.5" 
+              />
+
+              {/* Input Port (Top Center) */}
+              <circle 
+                cx={x + (NODE_W / 2)} 
+                cy={y} 
+                r={2} 
+                fill={portColor} 
+                stroke="#181A1F" 
+                strokeWidth="0.5" 
+                style={{ transition: 'fill 0.2s ease' }} // Smooth transition
+              />
+              
+              {/* Output Port (Right side, lower half) */}
+              <circle 
+                cx={x + NODE_W} 
+                cy={y + (NODE_H * 0.7)} 
+                r={2} 
+                fill={portColor} 
+                stroke="#181A1F" 
+                strokeWidth="0.5" 
+                style={{ transition: 'fill 0.2s ease' }} // Smooth transition
+              />
             </g>
           );
         })}
