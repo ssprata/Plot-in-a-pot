@@ -19,6 +19,8 @@ import AiImportModal from './components/AiImportModal';
 import Popout from './components/Popout';
 import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
 
+// Hotkey
+import { useTheme } from './contexts/ThemeContext';
 // Config
 import { loadConfig } from './utils/configLoader';
 
@@ -50,6 +52,7 @@ const getSavedData = () => {
 };
 
 function App() {
+  const { toggleTheme } = useTheme(); // Add this line to use the theme toggler
   const savedData = getSavedData();
 
   // --- Estados Principais ---
@@ -466,6 +469,86 @@ function App() {
     document.body.appendChild(a); a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
   }
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // We don't want hotkeys triggering while the user is typing story text or names!
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      // -- ORIGINAL HOTKEYS --
+      // Ctrl + P : Toggle Play Mode
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        setIsPlayModeOpen(prev => !prev);
+      } 
+      // Ctrl + I : Toggle AI Import
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        setIsAiModalOpen(prev => !prev);
+      } 
+      // Ctrl + C : Add standard Choice Node
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        addNode('choice');
+      } 
+      // Ctrl + , : Toggle Settings
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey  && e.key === ',') {
+        e.preventDefault();
+        setIsSettingsOpen(prev => !prev);
+      } 
+      // Escape : Close all modals and popouts safely
+      else if (e.key === 'Escape') {
+        setIsPlayModeOpen(false);
+        setIsAiModalOpen(false);
+        setIsSettingsOpen(false);
+        closeInfoPopout(); 
+      }
+      // Ctrl + S : Add Script Node
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        addNode('javascript');
+      }
+      // Ctrl + E : Add Estilo (CSS) Node
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        addNode('css');
+      }
+      // Ctrl + V : Run Validation
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        if (runValidation) runValidation();
+      }
+      // Ctrl + Alt + M : Toggle Light/Night Mode
+      else if (e.ctrlKey && !e.shiftKey && e.altKey  && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        // Broadcast a custom event to any component listening
+        window.dispatchEvent(new Event('triggerThemeToggle'));
+      }
+      // --System Nodes Hotkeys (with Ctrl + Alt)--
+      // Ctrl + Alt + D : Add StoryData
+      else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        addNode('choice', 'StoryData', 'secreto');
+      }
+      // Ctrl + Alt + T : Add StoryTitle
+      else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        addNode('choice', 'StoryTitle', 'secreto');
+      }
+      // Ctrl + Alt + I : Add StoryInit (Because Ctrl + I is AI Import!)
+      else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        addNode('choice', 'StoryInit', 'secreto');
+      }
+      // Ctrl + Alt + C : Add StoryCaption
+      else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        addNode('choice', 'StoryCaption', 'secreto');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [addNode, closeInfoPopout, runValidation]); // Important dependencies so React doesn't use stale state
 
   return (
     <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>

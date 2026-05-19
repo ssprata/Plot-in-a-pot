@@ -114,6 +114,8 @@ export default function DataPanel({
               <div className="space-y-2">
                 <p>Este algoritmo percorre todos os caminhos possíveis da tua história simulando o estado das variáveis (mochila do jogador).</p>
                 <p>Ele avisa-te se detetar "Caminhos Mortos" (portas que nunca se conseguem abrir, não importa o que o jogador faça) para evitar que lances uma história impossível de terminar.</p>
+                <br></br>
+                <p><strong>Hotkey:</strong> Ctrl + V</p>
               </div>
             )}
             className="w-12 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none cursor-pointer"
