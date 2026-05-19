@@ -167,8 +167,6 @@ function App() {
     return edges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
   }, [edges, visibleNodes, settings.showSecrets]);
 
-  // --- Sync choices from text (must be above onConnect!) ---
-  // --- Sync choices from text (must be above onConnect!) ---
 // --- Sync choices from text (must be above onConnect!) ---
   const syncChoicesFromText = useCallback((nodeId, text) => {
     let match;
@@ -517,8 +515,8 @@ function App() {
         e.preventDefault();
         if (runValidation) runValidation();
       }
-      // Ctrl + Alt + M : Toggle Light/Night Mode
-      else if (e.ctrlKey && !e.shiftKey && e.altKey  && e.key.toLowerCase() === 'm') {
+      // Ctrl + M : Toggle Light/Night Mode
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey  && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         // Broadcast a custom event to any component listening
         window.dispatchEvent(new Event('triggerThemeToggle'));
@@ -549,6 +547,13 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [addNode, closeInfoPopout, runValidation]); // Important dependencies so React doesn't use stale state
+
+  // Listen for custom theme toggle event (Ctrl+M)
+  useEffect(() => {
+    const handler = () => toggleTheme();
+    window.addEventListener('triggerThemeToggle', handler);
+    return () => window.removeEventListener('triggerThemeToggle', handler);
+  }, [toggleTheme]);
 
   return (
     <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>
