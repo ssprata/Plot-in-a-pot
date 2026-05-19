@@ -483,7 +483,7 @@ const runValidation = () => {
       // Ctrl + P : Toggle Play Mode
       if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'p') {
         e.preventDefault();
-        setIsPlayModeOpen(prev => !prev);
+        handleOpenPlayMode();
       }
       // Ctrl + I : Toggle AI Import
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'i') {
@@ -562,6 +562,20 @@ const runValidation = () => {
     return () => window.removeEventListener('triggerThemeToggle', handler);
   }, [toggleTheme]);
 
+  // --- Barreira de Segurança do Modo Jogador ---
+  const handleOpenPlayMode = useCallback(() => {
+    // Procura no array se ALGUÉM tem a lista de avisos preenchida
+    const hasSyntaxErrors = nodes.some(node => node.data.warnings && node.data.warnings.length > 0);
+
+    if (hasSyntaxErrors) {
+      alert(" ACESSO BLOQUEADO:\n\nNão é possível iniciar o Modo Jogador. Tens nós com erros de sintaxe (etiquetas cor de laranja).\n\nVerifica o Inspector e corrige as ligações inválidas antes de testares a história.");
+      return;
+    }
+
+    // Se estiver tudo limpo, abre o modal normalmente
+    setIsPlayModeOpen(true);
+  }, [nodes]);
+
   return (
     <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>
       <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
@@ -588,9 +602,8 @@ const runValidation = () => {
         />
 
         <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
-          <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} openPlayMode={() => setIsPlayModeOpen(true)} openAiModal={() => setIsAiModalOpen(true)} />
+          <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} openPlayMode={() => handleOpenPlayMode()} openAiModal={() => setIsAiModalOpen(true)} />
           <div className="flex-1">
-            {/* AQUI: Usar visibleNodes e visibleEdges para que o filtro funcione visualmente */}
             <ReactFlow
               nodeTypes={nodeTypes}
               nodes={visibleNodes}

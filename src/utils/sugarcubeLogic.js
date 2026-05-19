@@ -113,7 +113,6 @@ export function canAccessChoice(content, choiceText, currentState) {
       { condition: initialExpression, text: '' }
     ];
 
-    // CORREÇÃO APLICADA AQUI: 
     // Usamos [\s\S]+? para ler qualquer tipo de carácter (incluindo quebras de linha e símbolos matemáticos como > ou <) 
     // até encontrar estritamente os dois símbolos de fecho da etiqueta '>>'.
     const splitRegex = /(<<elseif\s+[\s\S]+?>>|<<else>>)/gi;

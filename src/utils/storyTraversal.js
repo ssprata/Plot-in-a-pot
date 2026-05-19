@@ -14,7 +14,7 @@ export function traverseGraph(nodes, edges) {
 
   const initialState = getInitialState(nodes);
   
-  // NOVO: Iniciamos a fila com a propriedade 'path' a registar o primeiro passo
+  //  Iniciamos a fila com a propriedade 'path' a registar o primeiro passo
   const queue = [{ 
     nodeId: startNode.id, 
     state: initialState, 
@@ -52,7 +52,7 @@ export function traverseGraph(nodes, edges) {
       if (canAccessChoice(currentNode.data.content, choice.text, newState)) {
         reachableEdges.add(edge.id);
         
-        // NOVO: Obter o nome do próximo nó para adicionar ao trilho de migalhas
+        //  Obter o nome do próximo nó para adicionar ao trilho de migalhas
         const nextNode = nodes.find(n => n.id === edge.target);
         const nextLabel = nextNode ? nextNode.data.label : "Desconhecido";
         
