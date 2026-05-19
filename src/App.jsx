@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import ReactFlow, { addEdge, MiniMap, Controls, Background, useNodesState, useEdgesState } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { flushSync } from 'react-dom';
 
 // Lógica
 import { parseTwee3, exportToTwee3 } from './utils/tweeParser';
@@ -52,7 +53,7 @@ const getSavedData = () => {
 };
 
 function App() {
-  const { toggleTheme } = useTheme(); // Add this line to use the theme toggler
+  const { isDark, toggleTheme } = useTheme();
   const savedData = getSavedData();
 
   // --- Estados Principais ---
@@ -168,30 +169,46 @@ function App() {
     return edges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
   }, [edges, visibleNodes, settings.showSecrets]);
 
-  // --- Sync choices from text (must be above onConnect!) ---
   const syncChoicesFromText = useCallback((nodeId, text) => {
-    let match;
+    const localWarnings = [];
     const newChoices = [];
     const newEdgesPatch = [];
-    const localWarnings = [];
+    let choiceIndex = 0;
 
-    // --- PADRÃO 1: Links normais do Twine ---
+    // Snapshot atual dos nós (leitura síncrona, sem closure stale)
+    const currentNodes = nodes;
+
+    // --- PADRÃO 1: Links normais do Twine [[Texto|Destino]] ou [[Destino]] ---
     const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
+    let match;
 
     while ((match = linkRegex.exec(text))) {
       const rawText = match[1] || match[3];
       const targetLabel = (match[2] || match[3]).trim();
       const choiceText = rawText.trim();
 
-      if (targetLabel.startsWith('$') || targetLabel.startsWith('_') || targetLabel.match(/[\(\)\+\-\*\/\=]/)) {
-        localWarnings.push(`A ligação para "${targetLabel}" foi bloqueada. Não uses variáveis no destino.`);
+      if (
+        targetLabel.startsWith('$') ||
+        targetLabel.startsWith('_') ||
+        targetLabel.match(/[\(\)\+\-\*\/\=]/)
+      ) {
+        localWarnings.push(
+          `A ligação para "${targetLabel}" foi bloqueada. Não uses variáveis no destino.`
+        );
         continue;
       }
 
-      const targetNode = nodes.find(n => n.data.label === targetLabel);
-      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const targetNode = currentNodes.find(n => n.data.label === targetLabel);
 
-      newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
+      // ID estável: baseado no nó de origem, destino e posição na lista
+      const safeTarget = targetLabel.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_-]/g, '');
+      const choiceId = `c-${nodeId}-${safeTarget}-${choiceIndex++}`;
+
+      newChoices.push({
+        id: choiceId,
+        text: choiceText,
+        target: targetNode?.id || ''
+      });
 
       if (targetNode) {
         newEdgesPatch.push({
@@ -203,7 +220,7 @@ function App() {
       }
     }
 
-    // --- PADRÃO 2: Macros do SugarCube ---
+    // --- PADRÃO 2: Macros do SugarCube <<link "Texto">><<goto "Destino">><</link>> ---
     const macroLinkRegex = /<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g;
     let macroMatch;
 
@@ -213,45 +230,68 @@ function App() {
 
       const gotoRegex = /<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
       const gotoMatch = gotoRegex.exec(innerContent);
-      const gotoTarget = gotoMatch ? (gotoMatch[1] || gotoMatch[2] || gotoMatch[3]) : null;
+      const gotoTarget = gotoMatch
+        ? (gotoMatch[1] || gotoMatch[2] || gotoMatch[3])
+        : null;
 
-      const variavelDestinoRegex = /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
+      const variavelDestinoRegex =
+        /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
       const variavelMatch = variavelDestinoRegex.exec(innerContent);
-      const varTarget = variavelMatch ? (variavelMatch[1] || variavelMatch[2] || variavelMatch[3]) : null;
+      const varTarget = variavelMatch
+        ? (variavelMatch[1] || variavelMatch[2] || variavelMatch[3])
+        : null;
 
       let targetTitleRaw = varTarget || gotoTarget;
       if (targetTitleRaw) targetTitleRaw = targetTitleRaw.trim();
 
-      if (targetTitleRaw) {
-        if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
-          localWarnings.push(`O macro <<goto>> para "${targetTitleRaw}" foi bloqueado. Não uses variáveis no destino.`);
-          continue;
-        }
+      if (!targetTitleRaw) continue;
 
-        const targetNode = nodes.find(n => n.data.label === targetTitleRaw);
-        const choiceId = `c-${nodeId}-${targetTitleRaw}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
+        localWarnings.push(
+          `O macro <<goto>> para "${targetTitleRaw}" foi bloqueado. Não uses variáveis no destino.`
+        );
+        continue;
+      }
 
-        newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
+      const targetNode = currentNodes.find(n => n.data.label === targetTitleRaw);
 
-        if (targetNode) {
-          newEdgesPatch.push({
-            id: `e-${nodeId}-${targetNode.id}-${choiceId}`,
-            source: nodeId,
-            sourceHandle: choiceId,
-            target: targetNode.id
-          });
-        }
+      const safeTarget = targetTitleRaw.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_-]/g, '');
+      const choiceId = `c-${nodeId}-${safeTarget}-${choiceIndex++}`;
+
+      newChoices.push({
+        id: choiceId,
+        text: choiceText,
+        target: targetNode?.id || ''
+      });
+
+      if (targetNode) {
+        newEdgesPatch.push({
+          id: `e-${nodeId}-${targetNode.id}-${choiceId}`,
+          source: nodeId,
+          sourceHandle: choiceId,
+          target: targetNode.id
+        });
       }
     }
 
-    setNodes((nds) => nds.map((n) =>
-      n.id === nodeId ? { ...n, data: { ...n.data, content: text, choices: newChoices, warnings: localWarnings } } : n
-    ));
+    // --- Aplicação atómica: choices primeiro, edges depois ---
+    // flushSync garante que os Handles já estão no DOM antes do React Flow
+    // tentar desenhar as arestas, evitando o erro #008.
+    flushSync(() => {
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === nodeId
+            ? { ...n, data: { ...n.data, content: text, choices: newChoices, warnings: localWarnings } }
+            : n
+        )
+      );
+    });
 
     setEdges((eds) => {
       const otherEdges = eds.filter(e => e.source !== nodeId);
       return [...otherEdges, ...newEdgesPatch];
     });
+
   }, [nodes, setNodes, setEdges]);
 
   // --- Handlers do Grafo ---
@@ -277,6 +317,7 @@ function App() {
       return n;
     }));
   }, [setEdges, setNodes, syncChoicesFromText]);
+
   const onNodeClick = useCallback((event, node) => setSelectedNodeId(node.id), []);
   const onEdgeClick = useCallback((event, edge) => { setSelectedEdgeId(edge.id); setSelectedNodeId(null); }, []);
 
@@ -287,6 +328,7 @@ function App() {
     setEdges((eds) => eds.filter((e) => e.source !== nodeIdToRemove && e.target !== nodeIdToRemove));
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges]);
+
   const addNode = useCallback((type, presetLabel = null, presetTags = '') => {
     if (presetLabel) {
       const existingNode = nodes.find(n => n.data.label.toLowerCase() === presetLabel.toLowerCase());
@@ -409,18 +451,17 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedEdgeId, selectedNodeId, setEdges, deleteNode]);
 
+  const runValidation = () => {
+    const result = validateStoryFlow(nodes, edges);
+    setValidationErrors(result.unreachableEdges);
+    setValidationResult(result);
 
-const runValidation = () => {
-  const result = validateStoryFlow(nodes, edges);
-  setValidationErrors(result.unreachableEdges);
-  setValidationResult(result);
-
-  if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && result.hasReachableEnd) {
-    alert(`História consistente! Todos os caminhos são alcançáveis.\n✓ ${result.reachableEndNodes.length} fim(s) detetado(s): ${result.reachableEndNodes.map(n => n.label).join(', ')}`);
-  } else if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && !result.hasReachableEnd) {
-    alert(" Sem erros de fluxo, mas nenhum fim foi detetado. A história pode estar em loop infinito.");
-  }
-};
+    if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && result.hasReachableEnd) {
+      alert(`História consistente! Todos os caminhos são alcançáveis.\n✓ ${result.reachableEndNodes.length} fim(s) detetado(s): ${result.reachableEndNodes.map(n => n.label).join(', ')}`);
+    } else if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && !result.hasReachableEnd) {
+      alert(" Sem erros de fluxo, mas nenhum fim foi detetado. A história pode estar em loop infinito.");
+    }
+  };
 
   const runSimulationLog = () => {
     // A função runDevSimulationLog já trata de todo o agrupamento e formatação
@@ -474,6 +515,21 @@ const runValidation = () => {
     document.body.appendChild(a); a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
   }
+
+  // --- Barreira de Segurança do Modo Jogador ---
+  const handleOpenPlayMode = useCallback(() => {
+    // Procura no array se ALGUÉM tem a lista de avisos preenchida
+    const hasSyntaxErrors = nodes.some(node => node.data.warnings && node.data.warnings.length > 0);
+
+    if (hasSyntaxErrors) {
+      alert(" ACESSO BLOQUEADO:\n\nNão é possível iniciar o Modo Jogador. Tens nós com erros de sintaxe (etiquetas cor de laranja).\n\nVerifica o Inspector e corrige as ligações inválidas antes de testares a história.");
+      return;
+    }
+
+    // Se estiver tudo limpo, abre o modal normalmente
+    setIsPlayModeOpen(true);
+  }, [nodes]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       // We don't want hotkeys triggering while the user is typing story text or names!
@@ -553,7 +609,7 @@ const runValidation = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [addNode, closeInfoPopout, runValidation]); // Important dependencies so React doesn't use stale state
+  }, [addNode, closeInfoPopout, handleOpenPlayMode]); // Important dependencies so React doesn't use stale state
 
   // Listen for custom theme toggle event (Ctrl+M)
   useEffect(() => {
@@ -561,20 +617,6 @@ const runValidation = () => {
     window.addEventListener('triggerThemeToggle', handler);
     return () => window.removeEventListener('triggerThemeToggle', handler);
   }, [toggleTheme]);
-
-  // --- Barreira de Segurança do Modo Jogador ---
-  const handleOpenPlayMode = useCallback(() => {
-    // Procura no array se ALGUÉM tem a lista de avisos preenchida
-    const hasSyntaxErrors = nodes.some(node => node.data.warnings && node.data.warnings.length > 0);
-
-    if (hasSyntaxErrors) {
-      alert(" ACESSO BLOQUEADO:\n\nNão é possível iniciar o Modo Jogador. Tens nós com erros de sintaxe (etiquetas cor de laranja).\n\nVerifica o Inspector e corrige as ligações inválidas antes de testares a história.");
-      return;
-    }
-
-    // Se estiver tudo limpo, abre o modal normalmente
-    setIsPlayModeOpen(true);
-  }, [nodes]);
 
   return (
     <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>
@@ -616,9 +658,21 @@ const runValidation = () => {
               fitView
               selectionOnDrag
             >
-              <MiniMap className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
-              <Controls className="bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
-              <Background gap={16} color="#cbd5e1" />
+              <MiniMap
+                className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]"
+                nodeColor={isDark ? '#4b5563' : '#e2e8f0'} // Cor dos nós no mapa (cinza escuro vs claro)
+                maskColor={isDark ? 'rgba(17, 24, 39, 0.75)' : 'rgba(240, 242, 243, 0.7)'} // Sombra fora da visão
+                style={{ backgroundColor: isDark ? '#1f2937' : '#ffffff' }} // Fundo geral do mapa
+              />
+
+              <Controls
+                className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-hidden [&>button]:dark:bg-gray-800 [&>button]:dark:border-gray-700 [&>button]:dark:fill-gray-200 hover:[&>button]:dark:bg-gray-700 [&>button]:transition-colors"
+              />
+
+              <Background
+                gap={16}
+                color={isDark ? "#475569" : "#cbd5e1"} // Cor dos pontos/linhas de fundo
+              />
             </ReactFlow>
           </div>
         </div>
@@ -642,8 +696,8 @@ const runValidation = () => {
           showAdjacencyList={settings.showAdjacency}
           showFlowErrors={settings.showFlowErrors}
           runValidation={runValidation}
-          validationResult={validationResult}   
-          parserWarnings={parserWarnings}    
+          validationResult={validationResult}
+          parserWarnings={parserWarnings}
           validationErrors={validationErrors}
           runSimulationLog={runSimulationLog}
           showSimulationLegacy={settings.showSimulationLegacy}
