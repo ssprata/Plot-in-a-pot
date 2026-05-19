@@ -46,7 +46,7 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
             onClick={() => openHelp(
               'Adicionar Cena',
               'Cria um nó de escolha',
-              <p>Usa este botão para adicionar uma nova passagem de escolha ao teu grafo. Cada cena pode ter várias opções para avançar a história.<br/><br/><b>Hotkey:</b> Ctrl + C</p>
+              <p>Usa este botão para adicionar uma nova passagem de escolha ao teu grafo. Cada cena pode ter várias opções para avançar a história.<br/><br/><b>Hotkey:</b> Ctrl + X</p>
             )}
             className={helpButtonClass}
             aria-label="Ajuda Add Cena"

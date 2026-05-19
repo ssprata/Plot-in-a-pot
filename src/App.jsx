@@ -483,8 +483,8 @@ function App() {
         e.preventDefault();
         setIsAiModalOpen(prev => !prev);
       } 
-      // Ctrl + C : Add standard Choice Node
-      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'c') {
+      // Ctrl + X : Add standard Choice Node
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'x') {
         e.preventDefault();
         addNode('choice');
       } 
