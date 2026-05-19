@@ -1,30 +1,34 @@
 // src/utils/storyValidator.js
-
-//legacy reasons only, not usefull anymore, but maybe we can use it in the future for a "pre-flight check" of the story before simulating it, 
-// to give the user a heads up of potential issues with their story structure. For now, it's just a placeholder for future validation logic.
-
 import { traverseGraph } from './storyTraversal';
 
 export function validateStoryFlow(nodes, edges) {
-  // Recebe o history do motor
   const { reachableEdges, arrivalHistory, error } = traverseGraph(nodes, edges);
 
-  if (error) return [];
+  if (error) {
+    return { unreachableEdges: [], orphanNodes: [], hasReachableEnd: false, reachableEndNodes: [], error };
+  }
 
-  return edges
+  const reachableNodeIds = new Set(arrivalHistory.keys());
+
+  const outgoingEdgesByNode = edges.reduce((map, edge) => {
+    if (!map.has(edge.source)) map.set(edge.source, []);
+    map.get(edge.source).push(edge);
+    return map;
+  }, new Map());
+
+  // --- Arestas inacessíveis (lógica já existente) ---
+  const unreachableEdges = edges
     .filter(edge => !reachableEdges.has(edge.id))
     .map(edge => {
       const sourceNode = nodes.find(n => n.id === edge.source);
       const targetNode = nodes.find(n => n.id === edge.target);
-      
-      // Tentar ir buscar o último percurso conhecido até à origem do erro
+      const sourceReached = sourceNode && reachableNodeIds.has(sourceNode.id);
+
       let lastKnownPath = [];
       let lastKnownState = {};
-      
-      if (sourceNode && arrivalHistory.has(sourceNode.id)) {
+      if (sourceReached) {
         const history = arrivalHistory.get(sourceNode.id);
-        if (history && history.length > 0) {
-          // Pega no primeiro percurso encontrado que levou a esta porta
+        if (history?.length > 0) {
           lastKnownPath = history[0].path;
           lastKnownState = history[0].state;
         }
@@ -32,10 +36,46 @@ export function validateStoryFlow(nodes, edges) {
 
       return {
         edgeId: edge.id,
-        sourceLabel: sourceNode?.data.label || "Desconhecido",
-        targetLabel: targetNode?.data.label || "Desconhecido",
-        pathTrace: lastKnownPath, // <-- Exportamos o rasto
-        failedState: lastKnownState // <-- Exportamos as variáveis da mochila
+        reason: sourceReached ? 'condition_never_met' : 'source_unreachable',
+        sourceLabel: sourceNode?.data?.label ?? 'Desconhecido',
+        targetLabel: targetNode?.data?.label ?? 'Desconhecido',
+        pathTrace: lastKnownPath,
+        failedState: lastKnownState,
       };
     });
+
+  // --- Nós órfãos (existem mas nunca são alcançados) ---
+  const orphanNodes = nodes
+    .filter(node => {
+      const isSecret   = node.data?.secret === true || 
+                         String(node.data?.tags || '').toLowerCase().includes('secreto');
+      const isReachable = reachableNodeIds.has(node.id);
+      return !isReachable && !isSecret;
+    })
+    .map(node => ({
+      id: node.id,
+      label: node.data?.label ?? 'Desconhecido',
+    }));
+
+  // --- Nós terminais alcançáveis ---
+  const reachableEndNodes = nodes
+    .filter(node => {
+      const isReachable  = reachableNodeIds.has(node.id);
+      const isSecret     = node.data?.secret === true ||
+                           String(node.data?.tags || '').toLowerCase().includes('secreto');
+      const hasNoOutputs = !outgoingEdgesByNode.has(node.id);
+      return isReachable && !isSecret && hasNoOutputs;
+    })
+    .map(node => ({
+      id: node.id,
+      label: node.data?.label ?? 'Desconhecido',
+      pathTrace: arrivalHistory.get(node.id)?.[0]?.path ?? [],
+    }));
+
+  return {
+    unreachableEdges,
+    orphanNodes,        // NOVO
+    hasReachableEnd: reachableEndNodes.length > 0,
+    reachableEndNodes,
+  };
 }

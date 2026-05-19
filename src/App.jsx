@@ -65,6 +65,7 @@ function App() {
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState('');
   const [parserWarnings, setParserWarnings] = useState([]);
+  const [validationResult, setValidationResult] = useState(null);
 
   // 1. Função de Reset Total
   const resetProject = useCallback(() => {
@@ -167,7 +168,7 @@ function App() {
     return edges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
   }, [edges, visibleNodes, settings.showSecrets]);
 
-// --- Sync choices from text (must be above onConnect!) ---
+  // --- Sync choices from text (must be above onConnect!) ---
   const syncChoicesFromText = useCallback((nodeId, text) => {
     let match;
     const newChoices = [];
@@ -176,7 +177,7 @@ function App() {
 
     // --- PADRÃO 1: Links normais do Twine ---
     const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
-    
+
     while ((match = linkRegex.exec(text))) {
       const rawText = match[1] || match[3];
       const targetLabel = (match[2] || match[3]).trim();
@@ -188,7 +189,7 @@ function App() {
       }
 
       const targetNode = nodes.find(n => n.data.label === targetLabel);
-      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+      const choiceId = `c-${nodeId}-${targetLabel}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
       newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
 
@@ -205,10 +206,10 @@ function App() {
     // --- PADRÃO 2: Macros do SugarCube ---
     const macroLinkRegex = /<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g;
     let macroMatch;
-    
+
     while ((macroMatch = macroLinkRegex.exec(text))) {
-      const choiceText = macroMatch[1].trim(); 
-      const innerContent = macroMatch[2];      
+      const choiceText = macroMatch[1].trim();
+      const innerContent = macroMatch[2];
 
       const gotoRegex = /<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
       const gotoMatch = gotoRegex.exec(innerContent);
@@ -223,12 +224,12 @@ function App() {
 
       if (targetTitleRaw) {
         if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
-           localWarnings.push(`O macro <<goto>> para "${targetTitleRaw}" foi bloqueado. Não uses variáveis no destino.`);
-           continue; 
+          localWarnings.push(`O macro <<goto>> para "${targetTitleRaw}" foi bloqueado. Não uses variáveis no destino.`);
+          continue;
         }
 
         const targetNode = nodes.find(n => n.data.label === targetTitleRaw);
-        const choiceId = `c-${nodeId}-${targetTitleRaw}-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+        const choiceId = `c-${nodeId}-${targetTitleRaw}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
         newChoices.push({ id: choiceId, text: choiceText, target: targetNode?.id || '' });
 
@@ -408,12 +409,18 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedEdgeId, selectedNodeId, setEdges, deleteNode]);
 
-  // --- Ferramentas de Análise ---
-  const runValidation = () => {
-    const errors = validateStoryFlow(nodes, edges);
-    setValidationErrors(errors);
-    if (errors.length === 0) alert("História consistente! Todos os caminhos são alcançáveis.");
-  };
+
+const runValidation = () => {
+  const result = validateStoryFlow(nodes, edges);
+  setValidationErrors(result.unreachableEdges);
+  setValidationResult(result);
+
+  if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && result.hasReachableEnd) {
+    alert(`História consistente! Todos os caminhos são alcançáveis.\n✓ ${result.reachableEndNodes.length} fim(s) detetado(s): ${result.reachableEndNodes.map(n => n.label).join(', ')}`);
+  } else if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && !result.hasReachableEnd) {
+    alert(" Sem erros de fluxo, mas nenhum fim foi detetado. A história pode estar em loop infinito.");
+  }
+};
 
   const runSimulationLog = () => {
     // A função runDevSimulationLog já trata de todo o agrupamento e formatação
@@ -477,28 +484,28 @@ function App() {
       if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'p') {
         e.preventDefault();
         setIsPlayModeOpen(prev => !prev);
-      } 
+      }
       // Ctrl + I : Toggle AI Import
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'i') {
         e.preventDefault();
         setIsAiModalOpen(prev => !prev);
-      } 
+      }
       // Ctrl + X : Add standard Choice Node
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'x') {
         e.preventDefault();
         addNode('choice');
-      } 
+      }
       // Ctrl + , : Toggle Settings
-      else if (e.ctrlKey && !e.shiftKey && !e.altKey  && e.key === ',') {
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === ',') {
         e.preventDefault();
         setIsSettingsOpen(prev => !prev);
-      } 
+      }
       // Escape : Close all modals and popouts safely
       else if (e.key === 'Escape') {
         setIsPlayModeOpen(false);
         setIsAiModalOpen(false);
         setIsSettingsOpen(false);
-        closeInfoPopout(); 
+        closeInfoPopout();
       }
       // Ctrl + S : Add Script Node
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
@@ -516,7 +523,7 @@ function App() {
         if (runValidation) runValidation();
       }
       // Ctrl + M : Toggle Light/Night Mode
-      else if (e.ctrlKey && !e.shiftKey && !e.altKey  && e.key.toLowerCase() === 'm') {
+      else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         // Broadcast a custom event to any component listening
         window.dispatchEvent(new Event('triggerThemeToggle'));
@@ -565,78 +572,80 @@ function App() {
           onImportSuccess={handleAiImportSuccess}
         />
 
-      <PlayMode
-        isOpen={isPlayModeOpen}
-        onClose={() => setIsPlayModeOpen(false)}
-        nodes={nodes}
-        edges={edges}
-      />
+        <PlayMode
+          isOpen={isPlayModeOpen}
+          onClose={() => setIsPlayModeOpen(false)}
+          nodes={nodes}
+          edges={edges}
+        />
 
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        settings={settings}
-        toggleSetting={toggleSetting}
-        resetProject={resetProject}
-      />
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          settings={settings}
+          toggleSetting={toggleSetting}
+          resetProject={resetProject}
+        />
 
-      <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
-        <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} openPlayMode={() => setIsPlayModeOpen(true)} openAiModal={() => setIsAiModalOpen(true)} />
-        <div className="flex-1">
-          {/* AQUI: Usar visibleNodes e visibleEdges para que o filtro funcione visualmente */}
-          <ReactFlow
-            nodeTypes={nodeTypes}
-            nodes={visibleNodes}
-            edges={visibleEdges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeDoubleClick={onNodeClick}
-            onEdgeClick={onEdgeClick}
-            fitView
-            selectionOnDrag
-          >
-            <MiniMap className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
-            <Controls className="bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
-            <Background gap={16} color="#cbd5e1" />
-          </ReactFlow>
+        <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
+          <TopBar addNode={addNode} openSettings={() => setIsSettingsOpen(true)} openPlayMode={() => setIsPlayModeOpen(true)} openAiModal={() => setIsAiModalOpen(true)} />
+          <div className="flex-1">
+            {/* AQUI: Usar visibleNodes e visibleEdges para que o filtro funcione visualmente */}
+            <ReactFlow
+              nodeTypes={nodeTypes}
+              nodes={visibleNodes}
+              edges={visibleEdges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeDoubleClick={onNodeClick}
+              onEdgeClick={onEdgeClick}
+              fitView
+              selectionOnDrag
+            >
+              <MiniMap className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
+              <Controls className="bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 rounded shadow-md dark:shadow-lg" />
+              <Background gap={16} color="#cbd5e1" />
+            </ReactFlow>
+          </div>
         </div>
+
+        <Inspector
+          selectedNode={selectedNode}
+          nodes={nodes}
+          updateSelectedNode={updateSelectedNode}
+          deleteNode={deleteNode}
+          syncChoicesFromText={syncChoicesFromText}
+          setStartNode={setStartNode}
+        />
+
+        <DataPanel
+          exportToTwine={exportToTwine}
+          importText={importText}
+          setImportText={setImportText}
+          handleImport={handleImport}
+          importError={importError}
+          adjacencyList={adjacencyList}
+          showAdjacencyList={settings.showAdjacency}
+          showFlowErrors={settings.showFlowErrors}
+          runValidation={runValidation}
+          validationResult={validationResult}   
+          parserWarnings={parserWarnings}    
+          validationErrors={validationErrors}
+          runSimulationLog={runSimulationLog}
+          showSimulationLegacy={settings.showSimulationLegacy}
+        />
+
+        <Popout
+          isOpen={infoPopout.isOpen}
+          onClose={closeInfoPopout}
+          title={infoPopout.title}
+          subtitle={infoPopout.subtitle}
+        >
+          {infoPopout.content}
+        </Popout>
       </div>
-
-      <Inspector
-        selectedNode={selectedNode}
-        nodes={nodes}
-        updateSelectedNode={updateSelectedNode}
-        deleteNode={deleteNode}
-        syncChoicesFromText={syncChoicesFromText}
-        setStartNode={setStartNode}
-      />
-
-      <DataPanel
-        exportToTwine={exportToTwine}
-        importText={importText}
-        setImportText={setImportText}
-        handleImport={handleImport}
-        importError={importError}
-        adjacencyList={adjacencyList}
-        showAdjacencyList={settings.showAdjacency}
-        showFlowErrors={settings.showFlowErrors}
-        runValidation={runValidation}
-        validationErrors={validationErrors}
-        runSimulationLog={runSimulationLog}
-        showSimulationLegacy={settings.showSimulationLegacy}
-      />
-
-      <Popout
-        isOpen={infoPopout.isOpen}
-        onClose={closeInfoPopout}
-        title={infoPopout.title}
-        subtitle={infoPopout.subtitle}
-      >
-        {infoPopout.content}
-      </Popout>
-    </div>
-  </InfoPopoutProvider>
+    </InfoPopoutProvider>
   );
 }
 
