@@ -10,7 +10,7 @@ export default function Inspector({
   setStartNode
 }) {
   const { showInfoPopout } = useInfoPopout();
-  
+
   // Estado para a checkbox de variável local
   const [isLocalVarMode, setIsLocalVarMode] = useState(false);
 
@@ -42,11 +42,11 @@ export default function Inspector({
 
   const handleChangeVariable = () => {
     const existingVars = extractVariables(nodes);
-    
+
     let varName = prompt(
-      isLocalVarMode 
-      ? "CRIAR VARIÁVEL LOCAL\nNome da variável (ex: $chavePorta):" 
-      : `ALTERAR VARIÁVEL EXISTENTE\nVariáveis disponíveis: ${existingVars.join(', ')}`
+      isLocalVarMode
+        ? "CRIAR VARIÁVEL LOCAL\nNome da variável (ex: $chavePorta):"
+        : `ALTERAR VARIÁVEL EXISTENTE\nVariáveis disponíveis: ${existingVars.join(', ')}`
     );
 
     if (!varName) return;
@@ -165,8 +165,8 @@ export default function Inspector({
 
               {!isStoryInit && (
                 <div className="flex items-center gap-2 self-end">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     id="localVar"
                     checked={isLocalVarMode}
                     onChange={(e) => setIsLocalVarMode(e.target.checked)}
@@ -180,9 +180,8 @@ export default function Inspector({
             </div>
 
             <textarea
-              className={`w-full flex-1 min-h-[200px] p-2 border border-gray-400 dark:border-gray-600 rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y ${
-                selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
-              }`}
+              className={`w-full flex-1 min-h-[200px] p-2 border border-gray-400 dark:border-gray-600 rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
+                }`}
               value={selectedNode.data.content || ''}
               onChange={(e) => {
                 if (selectedNode.data.nodeType === 'choice') {
@@ -211,8 +210,16 @@ export default function Inspector({
           {/* DELETE BUTTON */}
           <div className="mt-auto pt-4 border-t-2 border-gray-200 dark:border-gray-600">
             <button
+              // A função de apagar mantém-se igual, chamando o ID do nó selecionado
               onClick={() => deleteNode(selectedNode.id)}
-              className="w-full p-3 border-2 border-gray-900 bg-gray-100 hover:bg-red-600 hover:text-white font-black text-sm uppercase tracking-widest shadow-[4px_4px_0px_#000] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+              className={
+                "w-full p-3 font-black text-sm uppercase tracking-widest transition-all " +
+                "active:translate-x-[2px] active:translate-y-[2px] active:shadow-none " +
+                "border-2 border-gray-900 bg-gray-100 text-gray-900 shadow-[4px_4px_0px_#000] " +
+                "hover:bg-red-600 hover:text-white " +
+                "dark:bg-gray-800 dark:border-gray-200 dark:text-gray-100 dark:shadow-[4px_4px_0px_#fff] " +
+                "dark:hover:bg-red-500 dark:hover:border-red-500 dark:hover:text-white"
+              }
             >
               Apagar Nó
             </button>
