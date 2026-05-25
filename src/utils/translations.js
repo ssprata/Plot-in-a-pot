@@ -101,7 +101,32 @@ export const translations = {
             simulateLegacy: 'Simulate (See Console)',
             collapsedLabel: 'Data Engine',
             pathFollowed: 'Path Followed',
-            arrivalVariables: 'Arrival Variables'
+            arrivalVariables: 'Arrival Variables',
+            exportTranslations: 'Export CSV',
+            importTranslations: 'Import CSV',
+            addKey: 'Add Key',
+            translationTableTitle: 'Keys Database',
+            languagesManagement: 'Active Locales',
+            removeLanguageHint: 'Click to completely delete this locale column',
+            editTitle: 'Edit Entry',
+            translationPlaceholder: 'Type translation here...',
+            help: {
+                languages: {
+                    title: 'Locale Manager',
+                    subtitle: 'Adding custom targets',
+                    line1: 'Type any locale identifier (like CZ, FR, JP) and click "+" to append a dynamic translation column across your database.',
+                    warning: 'Warning: Clicking an active language badge will purge its column and all associated data permanently!'
+                },
+                table: {
+                    title: 'Localization Engine',
+                    subtitle: 'Dynamic placeholders mapping',
+                    line1: 'Define abstract keys to bypass raw hardcoded text lines. Inside your passage choice layouts, parse them using:',
+                    syntaxExample: 'You see a [[t("scene_cave")]].'
+                }
+            }
+        },
+        dataPanelPrompts: {
+            newKeyName: 'Enter the new translation key (e.g., scene_intro):'
         },
         settingsModal: {
             title: 'Settings',
@@ -187,7 +212,8 @@ export const translations = {
             blocked: 'BLOCKED',
             path: 'Path',
             devHelpLine1: 'Normal mode shows only accessible options. In Dev mode, all options are visible to help test flow.',
-            devHelpLine2: 'Use Ctrl + Shift + D to toggle Dev Mode quickly.'
+            devHelpLine2: 'Use Ctrl + Shift + D to toggle Dev Mode quickly.',
+            language: 'Current Locale'
         },
         inspector: {
             title: 'Inspector',
@@ -358,8 +384,8 @@ export const translations = {
             validationHelp: {
                 title: 'Validador Lógico',
                 subtitle: 'O motor matemático do grafo',
-                line1: 'Este algoritmo percorre todos os caminhos possíveis da tua história simulando o estado das variáveis (mochila do jogador).',
-                line2: 'Ele avisa-te se detetar caminhos mortos ou rotas permanentemente bloqueadas para evitar lançares uma história impossível de terminar.',
+                line1: 'Este algoritmo percorre todos os caminhos possíveis da tua história simulando o estado das variáveis.',
+                line2: 'Ele avisa-te se detetar caminhos mortos ou rotas permanentemente bloqueadas.',
                 hotkeyLabel: 'Hotkey: Ctrl + V'
             },
             syntaxWarnings: 'Alertas de Sintaxe:',
@@ -367,11 +393,36 @@ export const translations = {
             noEndDetected: 'Sem Fim Detetado',
             reachableEnds: 'Fim(s) Alcançável(is):',
             flowErrors: 'Erros de Fluxo Detetados:',
-            adjacencyList: 'Adjacency List',
+            adjacencyList: 'Lista de Adjacência',
             simulateLegacy: 'Simular (Ver Consola)',
             collapsedLabel: 'Motor de Dados',
             pathFollowed: 'Caminho Seguido',
-            arrivalVariables: 'Variáveis na Chegada'
+            arrivalVariables: 'Variáveis na Chegada',
+            exportTranslations: 'Exportar CSV',
+            importTranslations: 'Importar CSV',
+            addKey: 'Criar Chave',
+            translationTableTitle: 'Base de Chaves',
+            languagesManagement: 'Idiomas Ativos',
+            removeLanguageHint: 'Clique para apagar permanentemente esta coluna de idioma',
+            editTitle: 'Editar Entrada',
+            translationPlaceholder: 'Digite a tradução aqui...',
+            help: {
+                languages: {
+                    title: 'Gestor de Idiomas',
+                    subtitle: 'Adicionar identificadores personalizados',
+                    line1: 'Escreve qualquer sigla de idioma (como CZ, FR, JP) e clica em "+" para criar uma nova coluna de tradução em toda a tabela.',
+                    warning: 'Aviso: Clicar num idioma ativo irá remover a coluna e apagar todas as traduções nela contidas sem retorno!'
+                },
+                table: {
+                    title: 'Motor de Localização',
+                    subtitle: 'Mapeamento de chaves dinâmicas',
+                    line1: 'Cria chaves textuais unificadas para evitar texto estático. Dentro dos teus nós de história podes chamá-las usando a sintaxe:',
+                    syntaxExample: 'Estás a ver uma [[t("cena_gruta")]].'
+                }
+            }
+        },
+        dataPanelPrompts: {
+            newKeyName: 'Insira o nome da nova chave (ex: cena_intro):'
         },
         settingsModal: {
             title: 'Definições',
@@ -457,7 +508,8 @@ export const translations = {
             blocked: 'BLOQUEADO',
             path: 'Caminho',
             devHelpLine1: 'O modo normal mostra apenas opções acessíveis. No modo Dev, todas as opções são visíveis para ajudar a testar o fluxo.',
-            devHelpLine2: 'Use Ctrl + Shift + D para alternar o Modo Dev rapidamente.'
+            devHelpLine2: 'Use Ctrl + Shift + D para alternar o Modo Dev rapidamente.',
+            language: 'Idioma Atual'
         },
         inspector: {
             title: 'Inspector',

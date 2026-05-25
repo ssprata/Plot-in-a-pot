@@ -1,15 +1,16 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
+// Mantemos o MiniMap oficial importado para uso no grafo geral
 import ReactFlow, { addEdge, MiniMap, Controls, Background, useNodesState, useEdgesState } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { flushSync } from 'react-dom';
 
-// Lógica
+// Utilitários de Lógica e Parsing
 import { parseTwee3, exportToTwee3 } from './utils/tweeParser';
 import { buildAdjacencyList } from './utils/graphMath';
 import { validateStoryFlow } from './utils/storyValidator';
 import { runDevSimulationLog } from './utils/storySimulator';
 
-// Componentes da Interface
+// Componentes da Interface Geral
 import TopBar from './components/TopBar';
 import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
@@ -21,11 +22,11 @@ import Popout from './components/Popout';
 import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 
-// Hotkey
+// Contexto de Tema e Carregamento de Configurações
 import { useTheme } from './contexts/ThemeContext';
-// Config
 import { loadConfig } from './utils/configLoader';
 
+// Nó de inicialização padrão caso o armazenamento local esteja vazio
 const initialNodes = [
   {
     id: '1',
@@ -35,12 +36,14 @@ const initialNodes = [
   }
 ];
 
+// Mapeamento de tipos de nós customizados para renderização no grafo do ReactFlow
 const nodeTypes = {
   choice: StoryNode,
   javascript: StoryNode,
   css: StoryNode
 };
 
+// Função utilitária para extrair e fazer o parse seguro dos dados guardados no browser
 const getSavedData = () => {
   const saved = localStorage.getItem('plot-in-a-pot-project');
   if (saved) {
@@ -70,23 +73,39 @@ function App() {
   const [parserWarnings, setParserWarnings] = useState([]);
   const [validationResult, setValidationResult] = useState(null);
 
-  // 1. Função de Reset Total
+  // CORRIGIDO: Inicialização do estado que agora lê e persiste a base de dados de localização do LocalStorage
+  const [translations, setTranslations] = useState({
+    languages: savedData?.translations?.languages || ['pt', 'en'], 
+    keys: savedData?.translations?.keys || {}                      
+  });
+
+  // 1. Função de Reset Total do Espaço de Trabalho
   const resetProject = useCallback(() => {
     if (window.confirm(t('alerts.resetConfirm', 'Warning: This will delete all current progress. Continue?'))) {
       localStorage.removeItem('plot-in-a-pot-project');
-      window.location.reload(); // Recarrega a página para estado limpo
+      window.location.reload(); 
     }
   }, [t]);
 
-  // 2. Autosave limpo (sem counter)
+  // 2. Gancho de Auto-Save Atómico sincronizado com o grafo e tabelas de chaves
   useEffect(() => {
     const dataToSave = {
       nodes,
       edges,
+      translations, // Inclui as chaves e línguas no snapshot do ficheiro de salvaguarda
       version: "1.0"
     };
     localStorage.setItem('plot-in-a-pot-project', JSON.stringify(dataToSave));
-  }, [nodes, edges]);
+  }, [nodes, edges, translations]);
+
+  // Sincroniza dinamicamente as novas chaves injetadas no motor global do i18next
+  useEffect(() => {
+    translations.languages.forEach(lang => {
+      if (!i18n.hasResourceBundle(lang, 'translation')) {
+        i18n.addResourceBundle(lang, 'translation', translations.keys);
+      }
+    });
+  }, [translations, i18n]);
 
   // --- Estados de Interface ---
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -120,6 +139,7 @@ function App() {
     setInfoPopout((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
+  // Processa o retorno textual do gerador de Inteligência Artificial para nós do grafo
   const handleAiImportSuccess = useCallback((tweeText) => {
     try {
       const { nodes: newNodes, edges: newEdges } = parseTwee3(tweeText);
@@ -133,17 +153,15 @@ function App() {
         return { ...n, data: { ...n.data, tags } };
       });
 
-      // Atualiza o estado da aplicação com a nova história
       setNodes(formattedNodes);
       setEdges(newEdges);
 
-      // Feedback visual
       alert(t('alerts.aiSuccess', 'AI generated your story successfully!'));
     } catch (e) {
       alert(t('alerts.aiInvalid', 'AI returned invalid output. Please try again.'));
       console.error(e);
     }
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, t]);
 
   const toggleSetting = useCallback((key) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -152,11 +170,11 @@ function App() {
   // --- Estado de Erros de Validação ---
   const [validationErrors, setValidationErrors] = useState([]);
 
-  // --- Cálculos Memorizados ---
+  // --- Cálculos Memorizados do Ciclo do Grafo ---
   const adjacencyList = useMemo(() => buildAdjacencyList(nodes, edges), [nodes, edges]);
   const selectedNode = useMemo(() => nodes.find((n) => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
 
-  // --- Adiciona a filtragem visual abaixo dos teus useMemos: ---
+  // Filtragem visual para ocultar nós marcados com a tag "secreto" no modo de visualização normal
   const visibleNodes = useMemo(() => {
     if (settings.showSecrets) return nodes;
     return nodes.filter(n => {
@@ -171,23 +189,30 @@ function App() {
     return edges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
   }, [edges, visibleNodes, settings.showSecrets]);
 
+  // Sincroniza as escolhas de navegação e as arestas analisando o texto em tempo real (Padrões Twine e SugarCube)
   const syncChoicesFromText = useCallback((nodeId, text) => {
     const localWarnings = [];
     const newChoices = [];
     const newEdgesPatch = [];
     let choiceIndex = 0;
 
-    // Snapshot atual dos nós (leitura síncrona, sem closure stale)
     const currentNodes = nodes;
 
-    // --- PADRÃO 1: Links normais do Twine [[Texto|Destino]] ou [[Destino]] ---
+    // --- PADRÃO 1: Links normais do Twine ---
     const linkRegex = /\[\[(.*?)(?:\||->)(.*?)\]\]|\[\[(.*?)\]\]/g;
     let match;
 
     while ((match = linkRegex.exec(text))) {
       const rawText = match[1] || match[3];
       const targetLabel = (match[2] || match[3]).trim();
-      const choiceText = rawText.trim();
+      let choiceText = rawText.trim();
+
+      // ALGORITMO DE EXTRAÇÃO DA CHAVE DE TRADUÇÃO
+      // Limpa e isola o identificador da chave de localização t('...') antes de salvar no estado das escolhas
+      const translationMatch = choiceText.match(/^t\(['"]([^'"]+)['"]\)$/);
+      if (translationMatch) {
+        choiceText = translationMatch[1];
+      }
 
       if (
         targetLabel.startsWith('$') ||
@@ -201,14 +226,12 @@ function App() {
       }
 
       const targetNode = currentNodes.find(n => n.data.label === targetLabel);
-
-      // ID estável: baseado no nó de origem, destino e posição na lista
       const safeTarget = targetLabel.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_-]/g, '');
       const choiceId = `c-${nodeId}-${safeTarget}-${choiceIndex++}`;
 
       newChoices.push({
         id: choiceId,
-        text: choiceText,
+        text: choiceText, 
         target: targetNode?.id || ''
       });
 
@@ -222,13 +245,18 @@ function App() {
       }
     }
 
-    // --- PADRÃO 2: Macros do SugarCube <<link "Texto">><<goto "Destino">><</link>> ---
+    // --- PADRÃO 2: Macros do SugarCube ---
     const macroLinkRegex = /<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g;
     let macroMatch;
 
     while ((macroMatch = macroLinkRegex.exec(text))) {
-      const choiceText = macroMatch[1].trim();
+      let choiceText = macroMatch[1].trim();
       const innerContent = macroMatch[2];
+
+      const translationMatch = choiceText.match(/^t\(['"]([^'"]+)['"]\)$/);
+      if (translationMatch) {
+        choiceText = translationMatch[1];
+      }
 
       const gotoRegex = /<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
       const gotoMatch = gotoRegex.exec(innerContent);
@@ -256,7 +284,6 @@ function App() {
       }
 
       const targetNode = currentNodes.find(n => n.data.label === targetTitleRaw);
-
       const safeTarget = targetTitleRaw.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_-]/g, '');
       const choiceId = `c-${nodeId}-${safeTarget}-${choiceIndex++}`;
 
@@ -276,9 +303,7 @@ function App() {
       }
     }
 
-    // --- Aplicação atómica: choices primeiro, edges depois ---
-    // flushSync garante que os Handles já estão no DOM antes do React Flow
-    // tentar desenhar as arestas, evitando o erro #008.
+    // Atualização síncrona atómica para evitar desfasamento nos handles do DOM das arestas
     flushSync(() => {
       setNodes((nds) =>
         nds.map((n) =>
@@ -296,7 +321,7 @@ function App() {
 
   }, [nodes, setNodes, setEdges]);
 
-  // --- Handlers do Grafo ---
+  // --- Handlers do Grafo (ReactFlow) ---
   const onConnect = useCallback((params) => {
     setEdges((eds) => addEdge(params, eds));
     setNodes((nds) => nds.map((n) => {
@@ -306,13 +331,10 @@ function App() {
         const targetLabel = targetNode.data.label;
         const linkSyntax = `[[${targetLabel}]]`;
         let content = n.data.content || "";
-        // Only add if not already present
         if (!content.includes(linkSyntax)) {
-          // Add a newline if needed
           if (content.length > 0 && !content.endsWith('\n')) content += '\n';
           content += linkSyntax;
         }
-        // Call syncChoicesFromText to update choices
         setTimeout(() => syncChoicesFromText(n.id, content), 0);
         return { ...n, data: { ...n.data, content } };
       }
@@ -323,7 +345,7 @@ function App() {
   const onNodeClick = useCallback((event, node) => setSelectedNodeId(node.id), []);
   const onEdgeClick = useCallback((event, edge) => { setSelectedEdgeId(edge.id); setSelectedNodeId(null); }, []);
 
-  // --- Operações de Nós ---
+  // --- Operações de Gestão de Nós ---
   const deleteNode = useCallback((nodeIdToRemove) => {
     if (!nodeIdToRemove) return;
     setNodes((nds) => nds.filter((n) => n.id !== nodeIdToRemove));
@@ -331,46 +353,39 @@ function App() {
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges]);
 
-  // Função para adicionar um novo nó ao grafo
   const addNode = useCallback((type, presetLabel = null, presetTags = '') => {
-    // 1. Prevenção de duplicados para nós de sistema
     if (presetLabel) {
       const existingNode = nodes.find(n => n.data.label.toLowerCase() === presetLabel.toLowerCase());
       if (existingNode) {
-        // Se já existir, avisa o utilizador (com tradução) e foca nesse nó
         alert(t('alerts.specialNodeExists', `O nó especial "${presetLabel}" já existe no projeto.`));
         setSelectedNodeId(existingNode.id);
         return;
       }
     }
 
-    // 2. Geração dinâmica de um ID numérico sequencial
     const numericIds = nodes.map(n => parseInt(n.id, 10)).filter(n => !isNaN(n));
     const nextIdNum = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
     const id = String(nextIdNum);
 
     let label = presetLabel;
 
-    // 3. Atribuição de um nome padrão (ex: "Cena 1", "Script 2") se não for fornecido um
     if (!label) {
       let baseLabel = type === 'javascript'
         ? 'Script'
         : type === 'css'
           ? t('topBar.nodeLabels.style')
           : t('topBar.nodeLabels.scene');
-      
+
       label = baseLabel;
       let labelNum = 1;
       const existingLabels = new Set(nodes.map(n => n.data.label));
-      
-      // Incrementa o número até encontrar um nome que não exista no grafo
-      while (existingLabels.has(label)) { 
-        labelNum += 1; 
-        label = `${baseLabel} ${labelNum}`; 
+
+      while (existingLabels.has(label)) {
+        labelNum += 1;
+        label = `${baseLabel} ${labelNum}`;
       }
     }
 
-    // 4. Cálculo da posição inicial do nó no ecrã para evitar sobreposições
     const offset = nodes.length;
     const newNode = {
       id,
@@ -379,11 +394,8 @@ function App() {
       data: { label, nodeType: type, content: '', choices: [], tags: presetTags }
     };
 
-    // 5. Atualização do estado para desenhar o nó e selecioná-lo imediatamente
     setNodes((nds) => nds.concat(newNode));
     setSelectedNodeId(id);
-    
-  // CORREÇÃO: Removemos a variável 'language' daqui, mantendo apenas o que ainda usamos
   }, [nodes, setNodes, t]);
 
   const setStartNode = useCallback((nodeId) => {
@@ -412,9 +424,7 @@ function App() {
       }
 
       let updatedNodes = nds.map(n => {
-        // CORREÇÃO: Converter as tags para String garantidamente, quer venham do Parser (Array) ou do Inspector (String)
         let currentTags = Array.isArray(n.data.tags) ? n.data.tags.join(', ') : String(n.data.tags || "");
-
         let tags = currentTags.replace(/\bstart\b/gi, '').split(',').map(t => t.trim()).filter(t => t).join(', ');
 
         if (n.id === nodeId) {
@@ -422,7 +432,6 @@ function App() {
           return { ...n, data: { ...n.data, tags } };
         }
         if (storyDataNode && n.id === storyDataNode.id) {
-          // Garante que se o StoryData for atualizado, recebe a tag secreto
           return { ...n, data: { ...n.data, content: JSON.stringify(storyDataObj, null, 2), tags: 'secreto' } };
         }
         return { ...n, data: { ...n.data, tags } };
@@ -451,7 +460,7 @@ function App() {
     setNodes((nds) => nds.map((n) => (n.id === selectedNodeId ? { ...n, data: { ...n.data, ...patch } } : n)));
   }, [selectedNodeId, setNodes]);
 
-  // --- Gestão de Teclado ---
+  // --- Gestão de Teclado e Atalhos Globais ---
   useEffect(() => {
     const handleKeyDown = (e) => {
       const activeTag = document.activeElement.tagName;
@@ -488,22 +497,13 @@ function App() {
   };
 
   const runSimulationLog = () => {
-    // A função runDevSimulationLog já trata de todo o agrupamento e formatação
-    // na consola. Basta chamá-la e passar os dados do grafo.
     runDevSimulationLog(nodes, edges);
   };
 
-  // --- Import / Export ---
+  // --- Importação e Exportação de Ficheiros do Projeto ---
   const handleImport = useCallback(() => {
     try {
-      console.log("1. A iniciar importação...");
-
-      // Extrai explicitamente a propriedade 'warnings' que o parser devolve
       const { nodes: newNodes, edges: newEdges, warnings } = parseTwee3(importText);
-
-      console.log("2. O Parser devolveu estes avisos:", warnings);
-
-      // Lista de nós de sistema oficiais do Twine
       const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
 
       const formattedNodes = newNodes.map(n => {
@@ -517,10 +517,7 @@ function App() {
       setNodes(formattedNodes);
       setEdges(newEdges);
 
-      // Se não houver avisos, garantimos que passa um array vazio em vez de "undefined"
       const avisosParaOEcran = warnings || [];
-      console.log("3. A enviar para o ecrã:", avisosParaOEcran);
-
       setParserWarnings(avisosParaOEcran);
       setImportError('');
 
@@ -540,9 +537,8 @@ function App() {
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
   }
 
-  // --- Barreira de Segurança do Modo Jogador ---
+  // Barreira de validação estrutural antes de permitir o arranque do simulador de jogo
   const handleOpenPlayMode = useCallback(() => {
-    // Procura no array se ALGUÉM tem a lista de avisos preenchida
     const hasSyntaxErrors = nodes.some(node => node.data.warnings && node.data.warnings.length > 0);
 
     if (hasSyntaxErrors) {
@@ -550,81 +546,63 @@ function App() {
       return;
     }
 
-    // Se estiver tudo limpo, abre o modal normalmente
     setIsPlayModeOpen(true);
-  }, [nodes]);
+  }, [nodes, t]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // We don't want hotkeys triggering while the user is typing story text or names!
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-      // -- ORIGINAL HOTKEYS --
-      // Ctrl + P : Toggle Play Mode
       if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'p') {
         e.preventDefault();
         handleOpenPlayMode();
       }
-      // Ctrl + I : Toggle AI Import
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'i') {
         e.preventDefault();
         setIsAiModalOpen(prev => !prev);
       }
-      // Ctrl + X : Add standard Choice Node
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'x') {
         e.preventDefault();
         addNode('choice');
       }
-      // Ctrl + , : Toggle Settings
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === ',') {
         e.preventDefault();
         setIsSettingsOpen(prev => !prev);
       }
-      // Escape : Close all modals and popouts safely
       else if (e.key === 'Escape') {
         setIsPlayModeOpen(false);
         setIsAiModalOpen(false);
         setIsSettingsOpen(false);
         closeInfoPopout();
       }
-      // Ctrl + S : Add Script Node
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
         e.preventDefault();
         addNode('javascript');
       }
-      // Ctrl + E : Add Estilo (CSS) Node
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'e') {
         e.preventDefault();
         addNode('css');
       }
-      // Ctrl + V : Run Validation
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'v') {
         e.preventDefault();
         if (runValidation) runValidation();
       }
-      // Ctrl + M : Toggle Light/Night Mode
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'm') {
         e.preventDefault();
-        // Broadcast a custom event to any component listening
         window.dispatchEvent(new Event('triggerThemeToggle'));
       }
-      // --System Nodes Hotkeys (with Ctrl + Alt)--
-      // Ctrl + Alt + D : Add StoryData
       else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         addNode('choice', 'StoryData', 'secreto');
       }
-      // Ctrl + Alt + T : Add StoryTitle
       else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 't') {
         e.preventDefault();
         addNode('choice', 'StoryTitle', 'secreto');
       }
-      // Ctrl + Alt + I : Add StoryInit (Because Ctrl + I is AI Import!)
       else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 'i') {
         e.preventDefault();
         addNode('choice', 'StoryInit', 'secreto');
       }
-      // Ctrl + Alt + C : Add StoryCaption
       else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
         addNode('choice', 'StoryCaption', 'secreto');
@@ -633,9 +611,8 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [addNode, closeInfoPopout, handleOpenPlayMode]); // Important dependencies so React doesn't use stale state
+  }, [addNode, closeInfoPopout, handleOpenPlayMode]);
 
-  // Listen for custom theme toggle event (Ctrl+M)
   useEffect(() => {
     const handler = () => toggleTheme();
     window.addEventListener('triggerThemeToggle', handler);
@@ -657,6 +634,7 @@ function App() {
           onClose={() => setIsPlayModeOpen(false)}
           nodes={nodes}
           edges={edges}
+          translations={translations}
         />
 
         <SettingsModal
@@ -682,11 +660,28 @@ function App() {
               fitView
               selectionOnDrag
             >
-              <MiniMap
-                className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]"
-                nodeColor={isDark ? '#4b5563' : '#e2e8f0'} // Cor dos nós no mapa (cinza escuro vs claro)
-                maskColor={isDark ? 'rgba(17, 24, 39, 0.75)' : 'rgba(240, 242, 243, 0.7)'} // Sombra fora da visão
-                style={{ backgroundColor: isDark ? '#1f2937' : '#ffffff' }} // Fundo geral do mapa
+
+              {/* MiniMap Adaptativo Otimizado com Alto Contraste Brutalista */}
+              <MiniMap 
+                className="!border-2 !border-gray-900 dark:!border-gray-200 !shadow-[4px_4px_0px_#000] dark:!shadow-[4px_4px_0px_#fff] !bg-white dark:!bg-gray-800 transition-colors"
+                nodeColor={(n) => {
+                  const type = n.data?.nodeType || n.type;
+
+                  if (type === 'javascript') {
+                    return '#2563eb'; 
+                  }
+                  if (type === 'css') {
+                    return '#db2777'; 
+                  }
+
+                  return isDark ? '#f8fafc' : '#1e293b';
+                }}
+                nodeStrokeColor={(n) => {
+                  return isDark ? '#ffffff' : '#000000';
+                }}
+                maskColor={isDark ? 'rgba(15, 23, 42, 0.7)' : 'rgba(203, 213, 225, 0.5)'}
+                nodeStrokeWidth={3} 
+                nodeBorderRadius={2}
               />
 
               <Controls
@@ -695,7 +690,7 @@ function App() {
 
               <Background
                 gap={16}
-                color={isDark ? "#475569" : "#cbd5e1"} // Cor dos pontos/linhas de fundo
+                color={isDark ? "#475569" : "#cbd5e1"}
               />
             </ReactFlow>
           </div>
@@ -725,6 +720,8 @@ function App() {
           validationErrors={validationErrors}
           runSimulationLog={runSimulationLog}
           showSimulationLegacy={settings.showSimulationLegacy}
+          translations={translations}
+          setTranslations={setTranslations}
         />
 
         <Popout

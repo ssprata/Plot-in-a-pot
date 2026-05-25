@@ -3,12 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { findStartNode, getInitialState, applyModifiers, canAccessChoice } from '../utils/sugarcubeLogic';
 import Minimap from './Minimap';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
-// 1. Importar o hook oficial do motor de traduções
 import { useTranslation } from 'react-i18next';
 
-export default function PlayMode({ isOpen, onClose, nodes, edges }) {
+export default function PlayMode({ isOpen, onClose, nodes, edges, translations }) {
   // --- ESTADOS DO JOGO ---
-  // Guardam a posição atual do jogador, as variáveis processadas, o histórico e o modo de visualização.
   const [currentNodeId, setCurrentNodeId] = useState(null);
   const [currentState, setCurrentState] = useState({});
   const [history, setHistory] = useState([]);
@@ -16,11 +14,38 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   const [hoveredTargets, setHoveredTargets] = useState([]);
   
   const { showInfoPopout } = useInfoPopout();
-  // 2. Extrair apenas a função de tradução 't'
   const { t } = useTranslation();
+  
+  // Estado local que dita a linguagem ativa de simulação da história
+  const [gameLanguage, setGameLanguage] = useState('pt');
+
+  // --- FUNÇÃO DE TRADUÇÃO RESILIENTE ---
+  // Otimizada para detetar e limpar wrappers textuais do tipo t('...') ou t("...") de forma automática
+  const translateStoryKey = (rawKey) => {
+    if (!rawKey) return "";
+    let cleanKey = rawKey.trim();
+    
+    // CORREÇÃO: Se a chave vier envolvida na macro do parser (ex: t("choices.key")), isola apenas o interior
+    const macroMatch = cleanKey.match(/^t\(['"]([^'"]+)['"]\)$/);
+    if (macroMatch) {
+      cleanKey = macroMatch[1];
+    }
+
+    // Procura o termo traduzido dentro do dicionário dinâmico carregado
+    if (translations?.keys?.[cleanKey]?.[gameLanguage]) {
+      return translations.keys[cleanKey][gameLanguage];
+    }
+    
+    // Fallback: Se não existir na linguagem selecionada, tenta reverter para a língua mãe do projeto
+    const defaultLang = translations?.languages?.[0];
+    if (defaultLang && translations?.keys?.[cleanKey]?.[defaultLang]) {
+      return translations.keys[cleanKey][defaultLang];
+    }
+    
+    return cleanKey; // Retorna a chave limpa caso não encontre correspondência
+  };
 
   // --- ESCUTAR ATALHO GLOBAL ---
-  // Cria um event listener (Ctrl + Shift + D) para alternar o modo de desenvolvimento sem usar o rato.
   useEffect(() => {
     const handleDevHotkey = () => setIsDevMode(prev => !prev);
     window.addEventListener('triggerDevModeToggle', handleDevHotkey);
@@ -28,52 +53,75 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   }, []);
 
   // --- ARRANQUE DO JOGO ---
-  // Quando o modal abre, procura o nó inicial, limpa o estado das variáveis e aplica os valores padrão.
   useEffect(() => {
     if (isOpen) {
       const startNode = findStartNode(nodes);
       if (startNode) {
         const initialState = getInitialState(nodes);
-        // Processa as instruções do nó inicial (ex: <<set $ouro = 10>>) antes de mostrar o texto.
         const startState = applyModifiers(startNode.data.content, initialState);
         
         setCurrentNodeId(startNode.id);
         setCurrentState(startState);
         setHistory([startNode.data.label]);
+
+        if (translations?.languages?.length > 0) {
+          setGameLanguage(translations.languages[0]);
+        }
       }
     }
-  }, [isOpen, nodes]);
+  }, [isOpen, nodes, translations]);
 
-  // Bloqueia a renderização se o modal estiver fechado.
   if (!isOpen) return null;
 
   // --- OBTER DADOS DO NÓ ATUAL ---
   const currentNode = nodes.find(n => n.id === currentNodeId);
   if (!currentNode) return null;
 
-  // Converte a string de tags num array limpo para facilitar a renderização visual.
   const currentTags = currentNode.data?.tags 
     ? currentNode.data.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "") 
     : [];
 
-  // --- PROCESSAMENTO DO TEXTO ---
-  // Este algoritmo lê o conteúdo do nó, substitui variáveis pelos seus valores reais e remove código técnico.
+  // --- PROCESSAMENTO DO TEXTO NARRATIVO ---
   const processNarrativeText = (text, state) => {
     if (!text) return "";
     let processedText = text;
 
-    // Passo A: Encontra macros de impressão (ex: <<print $nome>>) e substitui pelo valor na memória.
+    // Substitui macros de tradução explícitas com aspas simples ou duplas
+    processedText = processedText.replace(/t\(['"]([^'"]+)['"]\)/g, (match, key) => {
+        return translateStoryKey(key); 
+    });
+
+    // Encontra e processa macros de impressão de variáveis ex: <<print $nome>>
     processedText = processedText.replace(/<<(?:print|=)\s+(\$|_)([a-zA-Z_][a-zA-Z0-9_]*)\s*>>/g, (match, prefix, varName) => {
       return state[varName] !== undefined ? String(state[varName]) : '';
     });
 
-    // Passo B: Limpa blocos de comentários (/% ... %/), comandos de lógica invisível (<<set ...>>) e as setas de escolha originais.
+    // Limpa blocos técnicos de código invisível e links nativos do Twine
     processedText = processedText
       .replace(/\/%[\s\S]*?%\//g, '') 
       .replace(/<<[\s\S]*?>>/g, '')   
       .replace(/\[\[.*?\]\]/g, '');   
 
-    // Passo C: Deteta variáveis expostas diretamente no texto (ex: "Tens $ouro moedas") e aplica os valores.
+    // CORREÇÃO: Limpeza de linhas órfãs que continham apenas marcadores de lista (* ) ou que ficaram vazias
+    processedText = processedText.split('\n')
+      .map(line => {
+        const trimmed = line.trim();
+        if (trimmed === '*' || trimmed === '') return null;
+        if (trimmed.startsWith('*')) {
+          const contentAfterBullet = trimmed.substring(1).trim();
+          if (contentAfterBullet === '') return null;
+        }
+        return line;
+      })
+      .filter(line => line !== null)
+      .join('\n');
+
+    // Se o resultado final da linha limpa for uma chave pura da base de dados, traduz de imediato
+    if (translations?.keys?.[processedText.trim()]) {
+      processedText = translateStoryKey(processedText.trim());
+    }
+
+    // Deteta e imprime variáveis expostas diretamente no corpo do texto (ex: $ouro)
     processedText = processedText.replace(/(\$|_)([a-zA-Z_][a-zA-Z0-9_]*)/g, (match, prefix, varName) => {
       return state[varName] !== undefined ? String(state[varName]) : match; 
     });
@@ -84,7 +132,6 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
   const narrativeText = processNarrativeText(currentNode.data.content, currentState);
 
   // --- CÁLCULO DE ESCOLHAS ---
-  // Filtra apenas as arestas que saem do nó atual e verifica se a lógica do jogo permite o seu acesso (ex: precisa de chave).
   const outgoingEdges = edges.filter(e => e.source === currentNodeId);
   const allChoices = outgoingEdges.map(edge => {
     const choice = currentNode.data.choices?.find(c => c.id === edge.sourceHandle);
@@ -93,15 +140,12 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
     return { edge, choice, isAccessible };
   }).filter(Boolean);
 
-  // No modo de desenvolvimento, todas as escolhas são listadas. No modo normal, escondem-se as escolhas inacessíveis.
   const visibleChoices = isDevMode ? allChoices : allChoices.filter(c => c.isAccessible);
 
   // --- NAVEGAÇÃO ---
-  // Processa a mudança de nó quando o jogador clica numa escolha.
   const handleChoiceClick = (targetNodeId) => {
     const nextNode = nodes.find(n => n.id === targetNodeId);
     if (!nextNode) return;
-    // Modifica as variáveis do jogo com base no conteúdo do novo nó.
     const newState = applyModifiers(nextNode.data.content, currentState);
     setCurrentState(newState);
     setCurrentNodeId(targetNodeId);
@@ -160,7 +204,8 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
                   }`}
                 >
                   {!isAccessible && <span className="mr-2 font-black tracking-widest">[{t('playMode.blocked')}]</span>}
-                  {choice.text}
+                  {/* CORREGIDO: A função agora limpa wrappers automaticamente antes de renderizar a tradução */}
+                  {translateStoryKey(choice.text)}
                 </button>
               ))
             )}
@@ -171,6 +216,26 @@ export default function PlayMode({ isOpen, onClose, nodes, edges }) {
       {/* PAINEL LATERAL DE DEPURAÇÃO */}
       <div className="w-80 bg-gray-900 border-l-4 border-gray-700 p-6 flex flex-col overflow-y-auto">
         <div className="mb-8 space-y-3">
+          
+          {translations?.languages?.length > 0 && (
+            <div className="flex flex-col gap-1 border-2 border-gray-700 bg-gray-950 p-2 rounded">
+              <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                Story Language:
+              </span>
+              <select
+                value={gameLanguage}
+                onChange={(e) => setGameLanguage(e.target.value)}
+                className="w-full bg-gray-800 text-white p-1 text-xs font-mono font-bold uppercase border border-gray-600 outline-none cursor-pointer focus:border-yellow-400"
+              >
+                {translations.languages.map(lang => (
+                  <option key={lang} value={lang}>
+                    {lang.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <button onClick={onClose} className="w-full border-2 border-gray-500 hover:border-white text-gray-300 hover:text-white font-bold py-2 uppercase tracking-widest transition-colors">
             {t('playMode.endTest')}
           </button>
