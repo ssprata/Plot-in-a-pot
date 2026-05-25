@@ -236,14 +236,6 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         </div>
 
         <div className="flex items-center gap-1">
-          {/* BOTÃO DO IDIOMA CORRIGIDO: Agora usa a função changeLanguage do i18n */}
-          <button 
-            onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'pt' : 'en')}
-            className="px-3 py-2 border-2 border-gray-800 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-200 text-xs font-bold uppercase tracking-widest transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]"
-            aria-label={t('topBar.languageToggleAria')}
-          >
-            {i18n.language === 'en' ? 'PT' : 'EN'}
-          </button>
           <button 
             onClick={openSettings}
             className="p-2 border-2 border-gray-800 bg-white hover:bg-yellow-400 dark:bg-gray-800 dark:hover:bg-yellow-400 dark:border-gray-200 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none"

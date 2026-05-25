@@ -8,7 +8,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
   // 2. Extrair a função de mostrar o popout do contexto
   const { showInfoPopout } = useInfoPopout();
   // Hook atualizado
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Se o modal não estiver aberto, o React não desenha nada no ecrã
   if (!isOpen) return null;
@@ -25,12 +25,22 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       {/* Alargado de w-80 para w-96 para acomodar os novos botões sem sobreposição */}
       <div className="bg-white dark:bg-gray-800 border-4 border-gray-900 dark:border-gray-200 p-6 w-96 shadow-[8px_8px_0px_#000] dark:shadow-[8px_8px_0px_#fff]">
-        
+
         <div className="flex justify-between items-center border-b-2 border-gray-900 dark:border-gray-200 pb-2 mb-4">
           <h2 className="font-black uppercase tracking-widest text-lg text-gray-900 dark:text-gray-100">{t('settingsModal.title')}</h2>
         </div>
 
         <div className="space-y-4">
+
+          <div className="flex items-center justify-between pb-2">
+            <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Idioma / Language</span>
+            <button
+              onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'pt' : 'en')}
+              className="px-4 py-1 border-2 border-gray-900 dark:border-gray-200 bg-gray-200 dark:bg-gray-700 font-black text-xs uppercase hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+            >
+              {i18n.language === 'en' ? 'Português (PT)' : 'English (EN)'}
+            </button>
+          </div>
 
           {/* --- SECÇÃO: VISUALIZAÇÃO --- */}
           <div className="border-t-2 border-gray-900 dark:border-gray-200 my-2 pt-2">
@@ -56,7 +66,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
               </button>
             </div>
             {/* O interruptor fica encostado à direita */}
-            <button 
+            <button
               onClick={() => toggleSetting('showSecrets')}
               className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showSecrets ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
             >
@@ -81,7 +91,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
                 ?
               </button>
             </div>
-            <button 
+            <button
               onClick={() => toggleSetting('showFlowErrors')}
               className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showFlowErrors ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
             >
@@ -112,7 +122,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
                 ?
               </button>
             </div>
-            <button 
+            <button
               onClick={() => toggleSetting('showAdjacency')}
               className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showAdjacency ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
             >
@@ -143,7 +153,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
             >
               <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showSimulationLegacy ? 'left-6' : 'left-0.5'}`} />
             </button>
-          </div>  
+          </div>
         </div>
 
         {/* --- SECÇÃO: ZONA DE PERIGO --- */}
@@ -163,7 +173,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
               !
             </button>
           </div>
-          
+
           <button
             onClick={resetProject}
             className="w-full border-2 border-red-600 bg-red-600 px-4 py-2 text-sm font-black text-white hover:bg-red-700 transition-colors shadow-[4px_4px_0px_rgba(220,38,38,0.3)] active:translate-y-0.5 active:shadow-none uppercase tracking-widest"
@@ -171,8 +181,8 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
             {t('settingsModal.resetButton')}
           </button>
         </div>
-        
-        <button 
+
+        <button
           onClick={onClose}
           className="w-full mt-6 p-2 border-2 border-gray-900 bg-gray-900 text-white font-bold uppercase text-xs hover:bg-gray-700 transition-colors shadow-[4px_4px_0px_#000] active:translate-y-0.5 active:shadow-none"
         >
