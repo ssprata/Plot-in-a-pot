@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
+// IMPORTAÇÃO CORRIGIDA: Usa o hook oficial do react-i18next
+import { useTranslation } from 'react-i18next';
 
 export default function TopBar({ addNode, openSettings, openPlayMode, openAiModal }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { isDark, toggleTheme } = useTheme();
   const { showInfoPopout } = useInfoPopout();
+  
+  // HOOK CORRIGIDO: Agora usamos o 't' para traduzir e o 'i18n' para controlar o motor
+  const { t, i18n } = useTranslation();
 
   const openHelp = (title, subtitle, content) => {
     showInfoPopout({ title, subtitle, content });
@@ -28,7 +33,6 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
     setIsDropdownOpen(false);
   };
 
-  // Classe utilitária constante para os botões de ajuda, garantindo o estilo neo-brutalista
   const helpButtonClass = "w-8 h-8 flex items-center justify-center border-2 border-gray-800 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer";
 
   return (
@@ -39,17 +43,17 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
             onClick={() => addNode('choice')} 
             className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
           >
-            + Add Cena
+            {t('topBar.addScene')}
           </button>
           <button
             type="button"
             onClick={() => openHelp(
-              'Adicionar Cena',
-              'Cria um nó de escolha',
-              <p>Usa este botão para adicionar uma nova passagem de escolha ao teu grafo. Cada cena pode ter várias opções para avançar a história.<br/><br/><b>Hotkey:</b> Ctrl + X</p>
+              t('topBar.helpTitles.addScene'),
+              t('topBar.helpSubtitles.addScene'),
+              <p>{t('topBar.helpDescription.addScene')}<br/><br/><b>{t('hotkeys.addScene')}</b></p>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Add Cena"
+            aria-label={t('topBar.helpLabels.addScene')}
           >
             ?
           </button>
@@ -60,17 +64,17 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
             onClick={() => addNode('javascript')} 
             className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-900 dark:text-indigo-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
           >
-            + Add Script
+            {t('topBar.addScript')}
           </button>
           <button
             type="button"
             onClick={() => openHelp(
-              'Adicionar Script',
-              'Cria um nó de código',
-              <p>Use este botão para adicionar um nó JavaScript. É útil para lógica avançada e manipulação de variáveis dentro da história.<br/><br/><b>Hotkey:</b> Ctrl + S</p>
+              t('topBar.helpTitles.addScript'),
+              t('topBar.helpSubtitles.addScript'),
+              <p>{t('topBar.helpDescription.addScript')}<br/><br/><b>{t('hotkeys.addScript')}</b></p>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Add Script"
+            aria-label={t('topBar.helpLabels.addScript')}
           >
             ?
           </button>
@@ -81,29 +85,28 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
             onClick={() => addNode('css')} 
             className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 text-green-900 dark:text-green-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
           >
-            + Add Estilo
+            {t('topBar.addStyle')}
           </button>
           <button
             type="button"
             onClick={() => openHelp(
-              'Adicionar Estilo',
-              'Cria um nó CSS',
-              <p>Este botão cria um nó para adicionar estilos personalizados ao teu jogo e manipular a aparência de elementos no grafo.<br/><br/><b>Hotkey:</b> Ctrl + E</p>
+              t('topBar.helpTitles.addStyle'),
+              t('topBar.helpSubtitles.addStyle'),
+              <p>{t('topBar.helpDescription.addStyle')}<br/><br/><b>{t('hotkeys.addStyle')}</b></p>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Add Estilo"
+            aria-label={t('topBar.helpLabels.addStyle')}
           >
             ?
           </button>
         </div>
 
-        {/* Menu Dropdown de Nos Especiais */}
         <div className="relative flex items-center gap-1" ref={dropdownRef}>
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-purple-100 dark:bg-purple-900 hover:bg-purple-200 dark:hover:bg-purple-800 text-purple-900 dark:text-purple-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none flex items-center gap-2"
           >
-            + Sistema
+            {t('topBar.systemMenu')}
             <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
             </svg>
@@ -111,19 +114,18 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <button
             type="button"
             onClick={() => openHelp(
-              'Nós de Sistema',
-              'Configurações Globais do Twine',
+              t('topBar.helpTitles.systemMenu'),
+              t('topBar.helpSubtitles.systemMenu'),
               <div className="space-y-2">
-                <p>Estes nós controlam o funcionamento invisível e a estrutura do teu jogo:</p>
+                <p>{t('topBar.helpSystem.intro')}</p>
                 <ul className="list-disc pl-5 space-y-2 text-sm mt-2">
-                  <li><strong>StoryInit:</strong> O motor arranca aqui. É o local obrigatório para declarares todas as variáveis iniciais da tua história (ex: <code>&lt;&lt;set $ouro = 0&gt;&gt;</code>) antes do primeiro ecrã.</li>
-                  <li><strong>StoryTitle:</strong> Define o nome oficial do teu projeto.</li>
-                  <li><strong>StoryData:</strong> Guarda metadados técnicos vitais em formato JSON (como o formato usado e qual é a cena inicial).</li>
-                  <li><strong>StoryCaption:</strong> O que escreveres aqui vai ficar permanentemente visível na barra lateral do jogo. Excelente para mostrar inventários, sanidade ou atributos em tempo real.</li>
-                  
+                  <li><strong>StoryInit:</strong> {t('topBar.helpSystem.storyInit')}</li>
+                  <li><strong>StoryTitle:</strong> {t('topBar.helpSystem.storyTitle')}</li>
+                  <li><strong>StoryData:</strong> {t('topBar.helpSystem.storyData')}</li>
+                  <li><strong>StoryCaption:</strong> {t('topBar.helpSystem.storyCaption')}</li>
                 </ul>
-                <br></br>
-                <strong>Hotkeys:</strong>
+                <br />
+                <strong>{t('topBar.helpSystem.hotkeysLabel')}</strong>
                     <ul className="list-disc pl-5 space-y-2 text-sm mt-2">
                       <li><strong>Ctrl + Alt + I:</strong> StoryInit</li>
                       <li><strong>Ctrl + Alt + T:</strong> StoryTitle</li>
@@ -133,7 +135,7 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
                </div>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Sistema"
+            aria-label={t('topBar.helpLabels.systemMenu')}
           >
             ?
           </button>
@@ -163,17 +165,17 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
             onClick={openAiModal}
             className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100 font-black text-xs uppercase tracking-widest hover:bg-purple-300 dark:hover:bg-purple-800 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none flex items-center gap-2"
           >
-            Gerar com IA
+            {t('topBar.generateAi')}
           </button>
           <button
             type="button"
             onClick={() => openHelp(
-              'Gerar com IA',
-              'Importa texto e cria grafo automaticamente',
-              <p>Use este botão para abrir a importação por IA. Ele permite gerar um grafo a partir de texto de história usando um modelo de linguagem.<br/><br/><b>Hotkey:</b> Ctrl + I</p>
+              t('topBar.helpTitles.generateAi'),
+              t('topBar.helpSubtitles.generateAi'),
+              <p>{t('topBar.helpDescription.generateAi')}<br/><br/><b>{t('hotkeys.generateAi')}</b></p>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Gerar com IA"
+            aria-label={t('topBar.helpLabels.generateAi')}
           >
             ?
           </button>
@@ -184,24 +186,24 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
             onClick={openPlayMode}
             className="px-6 py-2 border-2 border-gray-800 dark:border-gray-200 bg-yellow-400 text-gray-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-300 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
           >
-            Jogar
+            {t('topBar.play')}
           </button>
           <button
             type="button"
             onClick={() => openHelp(
-              'Jogar',
-              'Testa a história em modo de visualização',
-              <p>Este botão abre o modo de jogo. Nele pode navegar pela narrativa como um utilizador final e testar as escolhas disponíveis.<br/><br/><b>Hotkey:</b> Ctrl + P</p>
+              t('topBar.helpTitles.play'),
+              t('topBar.helpSubtitles.play'),
+              <p>{t('topBar.helpDescription.play')}<br/><br/><b>{t('hotkeys.play')}</b></p>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Jogar"
+            aria-label={t('topBar.helpLabels.play')}
           >
             ?
           </button>
         </div>
 
         <div className="hidden md:block font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 select-none">
-          Duplo clique para editar
+          {t('topBar.doubleClickHint')}
         </div>
 
         <div className="flex items-center gap-1">
@@ -222,18 +224,26 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
           <button
             type="button"
             onClick={() => openHelp(
-              'Tema',
-              'Alterna entre claro e escuro',
-              <p>Use este botão para mudar o tema da interface. O tema escuro é mais confortável para horas longas, o claro funciona bem durante o dia.<br/><br/><b>Hotkey:</b> Ctrl + M</p>
+              t('topBar.helpTitles.theme'),
+              t('topBar.helpSubtitles.theme'),
+              <p>{t('topBar.helpDescription.theme')}<br/><br/><b>{t('hotkeys.settings')}</b></p>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Tema"
+            aria-label={t('topBar.helpLabels.theme')}
           >
             ?
           </button>
         </div>
 
         <div className="flex items-center gap-1">
+          {/* BOTÃO DO IDIOMA CORRIGIDO: Agora usa a função changeLanguage do i18n */}
+          <button 
+            onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'pt' : 'en')}
+            className="px-3 py-2 border-2 border-gray-800 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-200 text-xs font-bold uppercase tracking-widest transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]"
+            aria-label={t('topBar.languageToggleAria')}
+          >
+            {i18n.language === 'en' ? 'PT' : 'EN'}
+          </button>
           <button 
             onClick={openSettings}
             className="p-2 border-2 border-gray-800 bg-white hover:bg-yellow-400 dark:bg-gray-800 dark:hover:bg-yellow-400 dark:border-gray-200 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none"
@@ -262,12 +272,12 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
           <button
             type="button"
             onClick={() => openHelp(
-              'Definições',
-              'Configurações de interface e modo dev',
-              <p>Abre o painel de definições. Aqui pode ativar os nós secretos, ver mensagens de erro de fluxo e controlar outras opções do editor.<br/><br/><b>Hotkey:</b> Ctrl + ,</p>
+              t('topBar.helpTitles.settings'),
+              t('topBar.helpSubtitles.settings'),
+              <p>{t('topBar.helpDescription.settings')}<br/><br/><b>{t('hotkeys.settings')}</b></p>
             )}
             className={helpButtonClass}
-            aria-label="Ajuda Definições"
+            aria-label={t('topBar.helpLabels.settings')}
           >
             ?
           </button>

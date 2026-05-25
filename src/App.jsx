@@ -19,6 +19,7 @@ import PlayMode from './components/PlayMode';
 import AiImportModal from './components/AiImportModal';
 import Popout from './components/Popout';
 import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
+import { useTranslation } from 'react-i18next';
 
 // Hotkey
 import { useTheme } from './contexts/ThemeContext';
@@ -54,6 +55,7 @@ const getSavedData = () => {
 
 function App() {
   const { isDark, toggleTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const savedData = getSavedData();
 
   // --- Estados Principais ---
@@ -70,11 +72,11 @@ function App() {
 
   // 1. Função de Reset Total
   const resetProject = useCallback(() => {
-    if (window.confirm("Atenção: Isto apagará todo o progresso atual. Deseja continuar?")) {
+    if (window.confirm(t('alerts.resetConfirm', 'Warning: This will delete all current progress. Continue?'))) {
       localStorage.removeItem('plot-in-a-pot-project');
       window.location.reload(); // Recarrega a página para estado limpo
     }
-  }, []);
+  }, [t]);
 
   // 2. Autosave limpo (sem counter)
   useEffect(() => {
@@ -136,9 +138,9 @@ function App() {
       setEdges(newEdges);
 
       // Feedback visual
-      alert("A IA gerou a tua história com sucesso!");
+      alert(t('alerts.aiSuccess', 'AI generated your story successfully!'));
     } catch (e) {
-      alert("A IA devolveu um formato inválido. Tenta gerar novamente.");
+      alert(t('alerts.aiInvalid', 'AI returned invalid output. Please try again.'));
       console.error(e);
     }
   }, [setNodes, setEdges]);
@@ -329,32 +331,46 @@ function App() {
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges]);
 
+  // Função para adicionar um novo nó ao grafo
   const addNode = useCallback((type, presetLabel = null, presetTags = '') => {
+    // 1. Prevenção de duplicados para nós de sistema
     if (presetLabel) {
       const existingNode = nodes.find(n => n.data.label.toLowerCase() === presetLabel.toLowerCase());
       if (existingNode) {
-        alert(`O no especial "${presetLabel}" ja existe no projeto.`);
+        // Se já existir, avisa o utilizador (com tradução) e foca nesse nó
+        alert(t('alerts.specialNodeExists', `O nó especial "${presetLabel}" já existe no projeto.`));
         setSelectedNodeId(existingNode.id);
         return;
       }
     }
 
-    // Gerador dinâmico de ID baseado no nó com número mais alto
+    // 2. Geração dinâmica de um ID numérico sequencial
     const numericIds = nodes.map(n => parseInt(n.id, 10)).filter(n => !isNaN(n));
     const nextIdNum = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
     const id = String(nextIdNum);
 
     let label = presetLabel;
 
+    // 3. Atribuição de um nome padrão (ex: "Cena 1", "Script 2") se não for fornecido um
     if (!label) {
-      let baseLabel = type === 'javascript' ? 'Script' : type === 'css' ? 'Estilo' : 'Cena';
+      let baseLabel = type === 'javascript'
+        ? 'Script'
+        : type === 'css'
+          ? t('topBar.nodeLabels.style')
+          : t('topBar.nodeLabels.scene');
+      
       label = baseLabel;
       let labelNum = 1;
       const existingLabels = new Set(nodes.map(n => n.data.label));
-      while (existingLabels.has(label)) { labelNum += 1; label = `${baseLabel} ${labelNum}`; }
+      
+      // Incrementa o número até encontrar um nome que não exista no grafo
+      while (existingLabels.has(label)) { 
+        labelNum += 1; 
+        label = `${baseLabel} ${labelNum}`; 
+      }
     }
 
-    // Posição calculada com base no número total de nós atuais
+    // 4. Cálculo da posição inicial do nó no ecrã para evitar sobreposições
     const offset = nodes.length;
     const newNode = {
       id,
@@ -363,9 +379,12 @@ function App() {
       data: { label, nodeType: type, content: '', choices: [], tags: presetTags }
     };
 
+    // 5. Atualização do estado para desenhar o nó e selecioná-lo imediatamente
     setNodes((nds) => nds.concat(newNode));
     setSelectedNodeId(id);
-  }, [nodes, setNodes]);
+    
+  // CORREÇÃO: Removemos a variável 'language' daqui, mantendo apenas o que ainda usamos
+  }, [nodes, setNodes, t]);
 
   const setStartNode = useCallback((nodeId) => {
     const targetNode = nodes.find(n => n.id === nodeId);
@@ -457,9 +476,14 @@ function App() {
     setValidationResult(result);
 
     if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && result.hasReachableEnd) {
-      alert(`História consistente! Todos os caminhos são alcançáveis.\n✓ ${result.reachableEndNodes.length} fim(s) detetado(s): ${result.reachableEndNodes.map(n => n.label).join(', ')}`);
+      const endLabels = result.reachableEndNodes.map(n => n.label).join(', ');
+      alert(
+        t('alerts.validationSuccess')
+          .replace('{count}', String(result.reachableEndNodes.length))
+          .replace('{ends}', endLabels)
+      );
     } else if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && !result.hasReachableEnd) {
-      alert(" Sem erros de fluxo, mas nenhum fim foi detetado. A história pode estar em loop infinito.");
+      alert(t('alerts.validationNoEnd'));
     }
   };
 
@@ -522,7 +546,7 @@ function App() {
     const hasSyntaxErrors = nodes.some(node => node.data.warnings && node.data.warnings.length > 0);
 
     if (hasSyntaxErrors) {
-      alert(" ACESSO BLOQUEADO:\n\nNão é possível iniciar o Modo Jogador. Tens nós com erros de sintaxe (etiquetas cor de laranja).\n\nVerifica o Inspector e corrige as ligações inválidas antes de testares a história.");
+      alert(t('alerts.playModeBlocked'));
       return;
     }
 

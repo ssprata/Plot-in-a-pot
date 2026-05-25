@@ -1,6 +1,11 @@
 import React from 'react';
+// 1. Importação atualizada para usar o motor oficial
+import { useTranslation } from 'react-i18next';
 
 export default function Popout({ isOpen, onClose, title, subtitle, children }) {
+  // 2. O Hook tem de estar sempre no topo e usar o 'useTranslation'
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
@@ -20,7 +25,7 @@ export default function Popout({ isOpen, onClose, title, subtitle, children }) {
           <button
             onClick={onClose}
             className="text-3xl font-black leading-none text-gray-900 dark:text-gray-100 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-            aria-label="Fechar informações"
+            aria-label={t('popout.close')}
           >
             ×
           </button>
@@ -35,7 +40,7 @@ export default function Popout({ isOpen, onClose, title, subtitle, children }) {
             onClick={onClose}
             className="px-4 py-2 border-2 border-gray-900 dark:border-gray-100 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold uppercase tracking-widest transition-colors hover:bg-gray-700 dark:hover:bg-gray-200"
           >
-            Fechar
+            {t('popout.close')}
           </button>
         </div>
       </div>
