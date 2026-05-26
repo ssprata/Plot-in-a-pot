@@ -8,7 +8,9 @@ export default function Inspector({
   updateSelectedNode,
   deleteNode,
   syncChoicesFromText,
-  setStartNode
+  setStartNode,
+  onOpenVariables,
+  onChangeVariables
 }) {
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
@@ -222,15 +224,20 @@ export default function Inspector({
                   >
                     ?
                   </button>
-
                 </div>
 
                 {isStoryInit ? (
-                  <button onClick={handleCreateVariable} className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000]">
+                  <button
+                    onClick={onOpenVariables ?? handleCreateVariable}
+                    className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000]"
+                  >
                     {t('inspector.createVariable')}
                   </button>
                 ) : (
-                  <button onClick={handleChangeVariable} className="px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000]">
+                  <button
+                    onClick={onChangeVariables ?? handleChangeVariable}
+                    className="px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000]"
+                  >
                     {t('inspector.changeValue')}
                   </button>
                 )}
