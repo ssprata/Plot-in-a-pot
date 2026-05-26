@@ -10,6 +10,9 @@ import { buildAdjacencyList } from './utils/graphMath';
 import { validateStoryFlow } from './utils/storyValidator';
 import { runDevSimulationLog } from './utils/storySimulator';
 
+import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
+import { useTranslation } from 'react-i18next';
+
 // Componentes da Interface Geral
 import TopBar from './components/TopBar';
 import Inspector from './components/Inspector';
@@ -19,8 +22,7 @@ import SettingsModal from './components/SettingsModal';
 import PlayMode from './components/PlayMode';
 import AiImportModal from './components/AiImportModal';
 import Popout from './components/Popout';
-import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
-import { useTranslation } from 'react-i18next';
+import TranslationMatrix from './components/TranslationMatrix';
 
 // Contexto de Tema e Carregamento de Configurações
 import { useTheme } from './contexts/ThemeContext';
@@ -72,18 +74,19 @@ function App() {
   const [importError, setImportError] = useState('');
   const [parserWarnings, setParserWarnings] = useState([]);
   const [validationResult, setValidationResult] = useState(null);
+  const [isMatrixOpen, setIsMatrixOpen] = useState(false);
 
   // CORRIGIDO: Inicialização do estado que agora lê e persiste a base de dados de localização do LocalStorage
   const [translations, setTranslations] = useState({
-    languages: savedData?.translations?.languages || ['pt', 'en'], 
-    keys: savedData?.translations?.keys || {}                      
+    languages: savedData?.translations?.languages || ['pt', 'en'],
+    keys: savedData?.translations?.keys || {}
   });
 
   // 1. Função de Reset Total do Espaço de Trabalho
   const resetProject = useCallback(() => {
     if (window.confirm(t('alerts.resetConfirm', 'Warning: This will delete all current progress. Continue?'))) {
       localStorage.removeItem('plot-in-a-pot-project');
-      window.location.reload(); 
+      window.location.reload();
     }
   }, [t]);
 
@@ -231,7 +234,7 @@ function App() {
 
       newChoices.push({
         id: choiceId,
-        text: choiceText, 
+        text: choiceText,
         target: targetNode?.id || ''
       });
 
@@ -619,6 +622,12 @@ function App() {
     return () => window.removeEventListener('triggerThemeToggle', handler);
   }, [toggleTheme]);
 
+  useEffect(() => {
+    const handleMatrixToggle = () => setIsMatrixOpen(prev => !prev);
+    window.addEventListener('triggerMatrixToggle', handleMatrixToggle);
+    return () => window.removeEventListener('triggerMatrixToggle', handleMatrixToggle);
+  }, []);
+
   return (
     <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>
       <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
@@ -635,6 +644,13 @@ function App() {
           nodes={nodes}
           edges={edges}
           translations={translations}
+        />
+
+        <TranslationMatrix
+          isOpen={isMatrixOpen}
+          onClose={() => setIsMatrixOpen(false)}
+          translations={translations}
+          setTranslations={setTranslations}
         />
 
         <SettingsModal
@@ -662,16 +678,16 @@ function App() {
             >
 
               {/* MiniMap Adaptativo Otimizado com Alto Contraste Brutalista */}
-              <MiniMap 
+              <MiniMap
                 className="!border-2 !border-gray-900 dark:!border-gray-200 !shadow-[4px_4px_0px_#000] dark:!shadow-[4px_4px_0px_#fff] !bg-white dark:!bg-gray-800 transition-colors"
                 nodeColor={(n) => {
                   const type = n.data?.nodeType || n.type;
 
                   if (type === 'javascript') {
-                    return '#2563eb'; 
+                    return '#2563eb';
                   }
                   if (type === 'css') {
-                    return '#db2777'; 
+                    return '#db2777';
                   }
 
                   return isDark ? '#f8fafc' : '#1e293b';
@@ -680,7 +696,7 @@ function App() {
                   return isDark ? '#ffffff' : '#000000';
                 }}
                 maskColor={isDark ? 'rgba(15, 23, 42, 0.7)' : 'rgba(203, 213, 225, 0.5)'}
-                nodeStrokeWidth={3} 
+                nodeStrokeWidth={3}
                 nodeBorderRadius={2}
               />
 
@@ -720,8 +736,6 @@ function App() {
           validationErrors={validationErrors}
           runSimulationLog={runSimulationLog}
           showSimulationLegacy={settings.showSimulationLegacy}
-          translations={translations}
-          setTranslations={setTranslations}
         />
 
         <Popout

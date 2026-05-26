@@ -73,6 +73,73 @@ export default function Inspector({
   const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
   const isStoryInit = selectedNode?.data.label === 'StoryInit';
 
+  const contentHelpBody = (
+    <div className="space-y-4 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
+      <p className="font-medium italic">
+        {t('inspector.help.content.help.subtitle')}
+      </p>
+
+      {/* Secção de Variáveis */}
+      <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
+        <h4 className="font-black uppercase text-xs text-blue-600 dark:text-blue-400 mb-1">
+          {t('inspector.help.content.help.variablesTitle')}
+        </h4>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+          {t('inspector.help.content.help.variablesText')}
+        </p>
+        <ul className="space-y-1 font-mono text-[11px] bg-gray-100 dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300">
+          <li>{t('inspector.help.content.help.variablesExample1')}</li>
+          <li>{t('inspector.help.content.help.variablesExample2')}</li>
+          <li>{t('inspector.help.content.help.variablesExample3')}</li>
+        </ul>
+      </div>
+
+      {/* Secção de Escolhas e Links */}
+      <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
+        <h4 className="font-black uppercase text-xs text-purple-600 dark:text-purple-400 mb-1">
+          {t('inspector.help.content.help.linksTitle')}
+        </h4>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+          {t('inspector.help.content.help.linksText')}
+        </p>
+        <ul className="space-y-1 font-mono text-[11px] bg-gray-100 dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300">
+          <li>{t('inspector.help.content.help.linksExample1')}</li>
+          <li>{t('inspector.help.content.help.linksExample2')}</li>
+          <li>{t('inspector.help.content.help.linksExample3')}</li>
+        </ul>
+      </div>
+
+      {/* Secção de Localização */}
+      <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
+        <h4 className="font-black uppercase text-xs text-yellow-600 dark:text-yellow-500 mb-1">
+          {t('inspector.help.content.help.i18nTitle')}
+        </h4>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+          {t('inspector.help.content.help.i18nText')}
+        </p>
+        <ul className="space-y-1 font-mono text-[11px] bg-gray-100 dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300">
+          <li>{t('inspector.help.content.help.i18nExample1')}</li>
+          <li>{t('inspector.help.content.help.i18nExample2')}</li>
+          <li>{t('inspector.help.content.help.i18nExample3')}</li>
+        </ul>
+      </div>
+
+      {/* Secção de Condicionais */}
+      <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
+        <h4 className="font-black uppercase text-xs text-red-600 dark:text-red-400 mb-1">
+          {t('inspector.help.content.help.logicTitle')}
+        </h4>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+          {t('inspector.help.content.help.logicText')}
+        </p>
+        <ul className="space-y-1 font-mono text-[11px] bg-gray-100 dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300">
+          <li>{t('inspector.help.content.help.logicExample1')}</li>
+          <li>{t('inspector.help.content.help.logicExample2')}</li>
+        </ul>
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-[340px] p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col h-full shadow-md">
       <h3 className="mt-0 border-b border-gray-300 dark:border-gray-600 pb-2 mb-4 text-lg font-bold text-gray-800 dark:text-gray-200">
@@ -147,7 +214,15 @@ export default function Inspector({
                   <label className="font-bold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-tight">
                     {selectedNode.data.nodeType === 'choice' ? t('inspector.narrativeText') : t('inspector.sourceCode')}
                   </label>
-                  <button type="button" onClick={() => openHelp(t('inspector.help.content.title'), t('inspector.help.content.subtitle'), <p>{t('inspector.help.content.text')}</p>)} className={helpButtonClass}>?</button>
+
+                  <button
+                    type="button"
+                    onClick={() => openHelp(t('inspector.help.content.title'), t('inspector.help.content.subtitle'), contentHelpBody)}
+                    className={helpButtonClass}
+                  >
+                    ?
+                  </button>
+
                 </div>
 
                 {isStoryInit ? (

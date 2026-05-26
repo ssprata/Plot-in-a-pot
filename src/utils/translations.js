@@ -252,7 +252,38 @@ export const translations = {
                 content: {
                     title: 'Content',
                     subtitle: 'Where the magic happens',
-                    text: 'Write your story, choices, or code here.'
+                    text: 'Write your story, choices, or code here.',
+                    help: {
+                        title: 'Content Syntax Guide',
+                        subtitle: 'Supported formats inside story nodes',
+
+                        // Secção de Variáveis
+                        variablesTitle: 'System Variables',
+                        variablesText: 'You can declare and print dynamic data in real-time within the simulator memory:',
+                        variablesExample1: 'Invisible assignment: <<set $gold = 50>>',
+                        variablesExample2: 'Manual printing: <<print $gold>> or <<= $gold>>',
+                        variablesExample3: 'Direct text injection: "You have $gold coins in your pocket."',
+
+                        // Secção de Escolhas e Links
+                        linksTitle: 'Links and Choices',
+                        linksText: 'To create connections between scenes and generate automatic navigation buttons:',
+                        linksExample1: 'Standard Twine link: [[Go to the Market]]',
+                        linksExample2: 'Link with custom display text: [[Talk to Merchant|Market]] or [[Talk to Merchant -> Market]]',
+                        linksExample3: 'Native SugarCube macro: <<link "Button Text">><<goto "Market">><</link>>',
+
+                        // Secção de Localização
+                        i18nTitle: 'Localization Keys (Multi-Language)',
+                        i18nText: 'To ensure the story adapts to active simulator locale swaps seamlessly, inject the localization macro into narratives or buttons:',
+                        i18nExample1: 'Translated narrative line: t("story.intro")',
+                        i18nExample2: 'Translated graph node button: [[t("choices.go_market")|Market]]',
+                        i18nExample3: 'Translated SugarCube macro: <<link \'t("choices.buy_key")\'>>...',
+
+                        // Secção de Condicionais
+                        logicTitle: 'Conditional Logic and Blocks',
+                        logicText: 'Control player choices visibility and access by validating system states:',
+                        logicExample1: 'Standard conditional block: <<if $gold >= 10>>Appears if condition is met<</if>>',
+                        logicExample2: 'Simulator button disabling: <<if $key is false>><<type "disabled">><</if>>'
+                    }
                 }
             },
             prompts: {
@@ -288,6 +319,31 @@ export const translations = {
             play: 'Hotkey: Ctrl + P',
             settings: 'Hotkey: Ctrl + ,',
             validator: 'Hotkey: Ctrl + V'
+        },
+        translationMatrix: {
+            title: 'Localization Matrix',
+            removeLanguageHint: 'Click to remove this language',
+            addPlaceholder: 'ADD',
+            exportCsv: 'Export CSV',
+            importCsv: 'Import CSV',
+            columnKey: 'Key',
+            sourceBadge: 'Source',
+            emptyCell: 'Empty cell',
+            inspectorTitle: 'Cell Inspector',
+            selectedKey: 'Selected Key',
+            targetLocale: 'Target Locale:',
+            referenceTextLabel: 'Reference Text',
+            noReference: 'No reference text found in source locale.',
+            inputLabel: 'Translation Input',
+            inputPlaceholder: 'Write your translation here...',
+            applyChanges: 'Apply Changes',
+            emptySelectionHint: 'Select any table cell to inspect or edit its content without popups.',
+            help: {
+                title: 'Matrix Workspace Help',
+                subtitle: 'Multi-language management configuration',
+                line1: 'Select any table cell to translate its content directly in the inspector panel.',
+                line2: 'The first configured column functions as the source language of reference for the simulation.'
+            }
         }
     },
 
@@ -548,7 +604,38 @@ export const translations = {
                 content: {
                     title: 'Conteúdo',
                     subtitle: 'Onde a magia acontece',
-                    text: 'Escreve a tua história, escolhas ou código aqui.'
+                    text: 'Escreve a tua história, escolhas ou código aqui.',
+                    help: {
+                        title: 'Guia de Sintaxe do Conteúdo',
+                        subtitle: 'Formatos suportados no corpo dos nós',
+
+                        // Secção de Variáveis
+                        variablesTitle: 'Variáveis do Sistema',
+                        variablesText: 'Podes declarar e imprimir dados dinâmicos em tempo real na memória do simulador:',
+                        variablesExample1: 'Declaração invisível: <<set $ouro = 50>>',
+                        variablesExample2: 'Impressão manual: <<print $ouro>> ou <<= $ouro>>',
+                        variablesExample3: 'Injeção direta no texto: "Tens $ouro moedas no bolso."',
+
+                        // Secção de Escolhas e Links
+                        linksTitle: 'Ligações e Escolhas',
+                        linksText: 'Para criar caminhos entre cenas e gerar botões automáticos no ecrã de jogo:',
+                        linksExample1: 'Link padrão Twine: [[Ir para o Mercado]]',
+                        linksExample2: 'Link com texto customizado: [[Falar com o Mercador|Mercado]] ou [[Falar com o Mercador -> Mercado]]',
+                        linksExample3: 'Macro nativa SugarCube: <<link "Texto do Botão">><<goto "Mercado">><</link>>',
+
+                        // Secção de Localização (A nova feature)
+                        i18nTitle: 'Chaves de Localização (Multi-Idioma)',
+                        i18nText: 'Para garantir que a história responde à troca dinâmica de idioma sem quebrar o simulador, usa a macro de tradução no corpo das cenas ou nos botões:',
+                        i18nExample1: 'Narrativa traduzida: t("story.intro")',
+                        i18nExample2: 'Botão traduzido no Grafo: [[t("choices.go_market")|Mercado]]',
+                        i18nExample3: 'Macro traduzida SugarCube: <<link \'t("choices.buy_key")\'>>...',
+
+                        // Secção de Condicionais (Lógica do Jogo)
+                        logicTitle: 'Lógica Condicional e Bloqueios',
+                        logicText: 'Controla o acesso às escolhas do jogador validando o estado das tuas variáveis:',
+                        logicExample1: 'Condicional padrão: <<if $moedas >= 10>>Aparece se tiver moedas<</if>>',
+                        logicExample2: 'Bloqueio de botões no PlayMode: <<if $chave is false>><<type "disabled">><</if>>'
+                    }
                 }
             },
             prompts: {
@@ -584,6 +671,31 @@ export const translations = {
             play: 'Hotkey: Ctrl + P',
             settings: 'Hotkey: Ctrl + ,',
             validator: 'Hotkey: Ctrl + V'
+        },
+        translationMatrix: {
+            title: 'Matriz de Localização',
+            removeLanguageHint: 'Clique para remover este idioma',
+            addPlaceholder: 'ADD',
+            exportCsv: 'Exportar CSV',
+            importCsv: 'Importar CSV',
+            columnKey: 'Chave',
+            sourceBadge: 'Base',
+            emptyCell: 'Célula vazia',
+            inspectorTitle: 'Inspetor de Célula',
+            selectedKey: 'Chave Selecionada',
+            targetLocale: 'Idioma Alvo:',
+            referenceTextLabel: 'Texto de Referência',
+            noReference: 'Nenhum texto de referência encontrado no idioma base.',
+            inputLabel: 'Tradução do Conteúdo',
+            inputPlaceholder: 'Escreve a tua tradução aqui...',
+            applyChanges: 'Aplicar Alterações',
+            emptySelectionHint: 'Clica em qualquer célula da tabela para inspecionar ou editar o seu conteúdo sem popups.',
+            help: {
+                title: 'Ajuda da Matriz de Chaves',
+                subtitle: 'Configuração da base de dados multi-idioma',
+                line1: 'Clica em qualquer célula ativa do mapa de grelha para abrir o editor e traduzir o seu texto em tempo real.',
+                line2: 'A primeira coluna configurada serve como a linguagem mestre e será injetada como referência para as restantes abas.'
+            }
         }
     }
 };
