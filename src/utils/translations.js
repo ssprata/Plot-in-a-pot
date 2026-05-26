@@ -344,6 +344,14 @@ export const translations = {
                 line1: 'Select any table cell to translate its content directly in the inspector panel.',
                 line2: 'The first configured column functions as the source language of reference for the simulation.'
             }
+        },
+        "exportModal": {
+            "title": "Exportar História Twee",
+            "description": "Selecione o formato de compilação para o ficheiro final do Twine (.twee):",
+            "selectLabel": "Formato de Compilação Alvo:",
+            "optionKeys": "Base de Dados de Chaves -> Formato t(\"...\")",
+            "optionMonolingual": "História Monolíngue -> Formato {{lang}}",
+            "confirmButton": "Exportar Ficheiro"
         }
     },
 
@@ -696,6 +704,14 @@ export const translations = {
                 line1: 'Clica em qualquer célula ativa do mapa de grelha para abrir o editor e traduzir o seu texto em tempo real.',
                 line2: 'A primeira coluna configurada serve como a linguagem mestre e será injetada como referência para as restantes abas.'
             }
+        },
+        "exportModal": {
+            "title": "Exportar História Twee",
+            "description": "Selecione o formato de compilação para o ficheiro final do Twine (.twee):",
+            "selectLabel": "Formato de Compilação Alvo:",
+            "optionKeys": "Base de Dados de Chaves -> Formato t(\"...\")",
+            "optionMonolingual": "História Monolíngue -> Formato {{lang}}",
+            "confirmButton": "Exportar Ficheiro"
         }
     }
 };

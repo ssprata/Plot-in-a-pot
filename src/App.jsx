@@ -23,6 +23,7 @@ import PlayMode from './components/PlayMode';
 import AiImportModal from './components/AiImportModal';
 import Popout from './components/Popout';
 import TranslationMatrix from './components/TranslationMatrix';
+import ExportModal from './components/ExportModal'; 
 
 // Contexto de Tema e Carregamento de Configurações
 import { useTheme } from './contexts/ThemeContext';
@@ -75,8 +76,9 @@ function App() {
   const [parserWarnings, setParserWarnings] = useState([]);
   const [validationResult, setValidationResult] = useState(null);
   const [isMatrixOpen, setIsMatrixOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  // CORRIGIDO: Inicialização do estado que agora lê e persiste a base de dados de localização do LocalStorage
+  // Inicialização do estado que agora lê e persiste a base de dados de localização do LocalStorage
   const [translations, setTranslations] = useState({
     languages: savedData?.translations?.languages || ['pt', 'en'],
     keys: savedData?.translations?.keys || {}
@@ -95,7 +97,7 @@ function App() {
     const dataToSave = {
       nodes,
       edges,
-      translations, // Inclui as chaves e línguas no snapshot do ficheiro de salvaguarda
+      translations, 
       version: "1.0"
     };
     localStorage.setItem('plot-in-a-pot-project', JSON.stringify(dataToSave));
@@ -211,7 +213,6 @@ function App() {
       let choiceText = rawText.trim();
 
       // ALGORITMO DE EXTRAÇÃO DA CHAVE DE TRADUÇÃO
-      // Limpa e isola o identificador da chave de localização t('...') antes de salvar no estado das escolhas
       const translationMatch = choiceText.match(/^t\(['"]([^'"]+)['"]\)$/);
       if (translationMatch) {
         choiceText = translationMatch[1];
@@ -306,7 +307,6 @@ function App() {
       }
     }
 
-    // Atualização síncrona atómica para evitar desfasamento nos handles do DOM das arestas
     flushSync(() => {
       setNodes((nds) =>
         nds.map((n) =>
@@ -530,17 +530,73 @@ function App() {
     }
   }, [importText, setNodes, setEdges]);
 
-  function exportToTwine() {
-    const result = exportToTwee3(nodes, edges);
-    const blob = new Blob([result], { type: 'text/plain' });
+  const exportToTwine = useCallback((targetFormat = 'keys') => {
+    const availableLanguages = translations?.languages || [];
+    const normalizedInput = targetFormat.trim().toLowerCase();
+
+    // 1. Caso Mestre: Exportação estruturada em chaves brutas de desenvolvimento
+    if (normalizedInput === 'keys' || availableLanguages.length === 0) {
+      const result = exportToTwee3(nodes, edges);
+      triggerFileDownload(result, 'story_development_keys.twee');
+      return;
+    }
+
+    // 2. Motor de Compilação Inline em Runtime Monolíngue
+    const compiledNodes = nodes.map(node => {
+      let nodeContent = node.data?.content || "";
+      if (!nodeContent) return node;
+
+      // Resolução A: Substitui as macros de narrativa t('key') ou t("key") pelo termo estático correspondente
+      nodeContent = nodeContent.replace(/t\(['"]([^'"]+)['"]\)/g, (match, key) => {
+        if (translations.keys[key]?.[normalizedInput]) {
+          return translations.keys[key][normalizedInput];
+        }
+        const fallbackLang = availableLanguages[0];
+        return translations.keys[key]?.[fallbackLang] || key;
+      });
+
+      // Resolução B: Substitui links de arestas Twine que usam t("key") dentro de [[t("key")|Destino]]
+      nodeContent = nodeContent.replace(/\[\[t\(['"]([^'"]+)['"]\)\|/g, (match, key) => {
+        const translatedText = translations.keys[key]?.[normalizedInput] || translations.keys[key]?.[availableLanguages[0]] || key;
+        return `[[${translatedText}|`;
+      });
+      nodeContent = nodeContent.replace(/\[\[t\(['"]([^'"]+)['"]\)\]\]/g, (match, key) => {
+        const translatedText = translations.keys[key]?.[normalizedInput] || translations.keys[key]?.[availableLanguages[0]] || key;
+        return `[[${translatedText}]]`;
+      });
+
+      // Resolução C: Substitui ligações de macros nativas do SugarCube <<link "t('key')">>
+      nodeContent = nodeContent.replace(/<<link\s+['"]t\(['"]([^'"]+)['"]\)['"]\s*>>/g, (match, key) => {
+        const translatedText = translations.keys[key]?.[normalizedInput] || translations.keys[key]?.[availableLanguages[0]] || key;
+        return `<<link "${translatedText}">>`;
+      });
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          content: nodeContent
+        }
+      };
+    });
+
+    // 3. Serializa o grafo traduzido e despoleta o download limpo
+    const result = exportToTwee3(compiledNodes, edges);
+    triggerFileDownload(result, `story_compiled_${normalizedInput}.twee`);
+
+  }, [nodes, edges, translations]);
+
+  // Auxiliar de injeção DOM para despoletar downloads de ficheiros limpos em sandbox
+  const triggerFileDownload = (content, filename) => {
+    const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'plot-in-a-pot.twee';
+    a.href = url; a.download = filename;
     document.body.appendChild(a); a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-  }
+  };
 
-  // Barreira de validação estrutural antes de permitir o arranque do simulador de jogo
+  // Barreira de segurança do Modo Jogador
   const handleOpenPlayMode = useCallback(() => {
     const hasSyntaxErrors = nodes.some(node => node.data.warnings && node.data.warnings.length > 0);
 
@@ -653,6 +709,13 @@ function App() {
           setTranslations={setTranslations}
         />
 
+        <ExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          languages={translations.languages}
+          onConfirm={exportToTwine}
+        />
+
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
@@ -677,7 +740,6 @@ function App() {
               selectionOnDrag
             >
 
-              {/* MiniMap Adaptativo Otimizado com Alto Contraste Brutalista */}
               <MiniMap
                 className="!border-2 !border-gray-900 dark:!border-gray-200 !shadow-[4px_4px_0px_#000] dark:!shadow-[4px_4px_0px_#fff] !bg-white dark:!bg-gray-800 transition-colors"
                 nodeColor={(n) => {
@@ -722,7 +784,8 @@ function App() {
         />
 
         <DataPanel
-          exportToTwine={exportToTwine}
+          // Altera o comportamento do botão "Export" da barra lateral para abrir o modal
+          exportToTwine={() => setIsExportModalOpen(true)} 
           importText={importText}
           setImportText={setImportText}
           handleImport={handleImport}
