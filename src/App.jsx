@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useCallback, useState, useMemo, useEffect } from 'react';
+import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 // CORREGIDO: Importada a função 'updateEdge' nativa para evitar o erro no-undef de reencaminhamento
 import ReactFlow, {
   addEdge,
@@ -94,7 +94,7 @@ const getSavedData = () => {
 function App() {
   const { isDark, toggleTheme } = useTheme();
   const { t, i18n } = useTranslation();
-  const savedData = getSavedData();
+  const savedData = useMemo(() => getSavedData(), []);
 
   // --- Estados Principais ---
   const [nodes, setNodes, onNodesChange] = useNodesState(savedData?.nodes || initialNodes);
@@ -189,13 +189,19 @@ function App() {
     setInfoPopout((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
-  // --- ALGORITMO DO MOTOR DE HISTÓRICO (UNDO / REDO) ---
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+
+  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
+  useEffect(() => { edgesRef.current = edges; }, [edges]);
+
   const takeSnapshot = useCallback(() => {
-    const nodesCopy = JSON.parse(JSON.stringify(nodes));
-    const edgesCopy = JSON.parse(JSON.stringify(edges));
-    setPast((prev) => [...prev, { nodes: nodesCopy, edges: edgesCopy }]);
+    setPast(prev => [...prev.slice(-50), {
+      nodes: JSON.parse(JSON.stringify(nodesRef.current)),
+      edges: JSON.parse(JSON.stringify(edgesRef.current))
+    }]);
     setFuture([]);
-  }, [nodes, edges]);
+  }, []); // ← sem dependências, nunca recria
 
   const undo = useCallback(() => {
     if (past.length === 0) return;
@@ -220,7 +226,7 @@ function App() {
 
     const currentNodes = JSON.parse(JSON.stringify(nodes));
     const currentEdges = JSON.parse(JSON.stringify(edges));
-    setPast((prev) => [...prev, { nodes: currentNodes, edges: currentEdges }]);
+    setPast((prev) => [...prev.slice(-50), { nodes: currentNodes, edges: currentEdges }]);
 
     setFuture(newFuture);
     setNodes(next.nodes);
@@ -320,8 +326,8 @@ function App() {
 
   const visibleEdges = useMemo(() => {
     if (settings.showSecrets) return edges;
-    const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
-    return edges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+    const ids = new Set(visibleNodes.map(n => n.id));
+    return edges.filter(e => ids.has(e.source) && ids.has(e.target));
   }, [edges, visibleNodes, settings.showSecrets]);
 
   // Sincroniza as escolhas de navegação e as arestas analisando o texto em tempo real (Padrões Twine e SugarCube)
@@ -437,12 +443,14 @@ function App() {
     }
 
     flushSync(() => {
-      setNodes((nds) =>
+      setNodes(nds => {
+        const currentNodes = nds;
         nds.map((n) =>
           n.id === nodeId
             ? { ...n, data: { ...n.data, content: text, choices: newChoices, warnings: localWarnings } }
             : n
         )
+      }
       );
     });
 
@@ -632,17 +640,6 @@ function App() {
 
   }, [nodes, edges, translations]);
 
-  // Auxiliar de injeção DOM para despoletar downloads de ficheiros limpos em sandbox
-  const triggerFileDownload = (content, filename) => {
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click();
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-  };
-
-
   const setStartNode = useCallback((nodeId) => {
     const targetNode = nodes.find(n => n.id === nodeId);
     if (!targetNode) return;
@@ -700,6 +697,15 @@ function App() {
       return updatedNodes;
     });
   }, [nodes, setNodes, takeSnapshot]);
+
+  const triggerFileDownload = (content, filename) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  };
 
   const updateSelectedNode = useCallback((patch) => {
     if (!selectedNodeId) return;
