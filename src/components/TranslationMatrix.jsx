@@ -46,6 +46,30 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
         }));
     };
 
+    const handleAddKey = () => {
+        const keyName = window.prompt(t('dataPanelPrompts.newKeyName', 'Introduza o nome da nova chave (ex: choices.my_key):'));
+        if (!keyName) return;
+        const cleanKey = keyName.trim();
+        if (translations.keys[cleanKey]) {
+            alert(t('alerts.keyExists', 'Esta chave já existe na base de dados.'));
+            return;
+        }
+        setTranslations(prev => ({
+            ...prev,
+            keys: { ...prev.keys, [cleanKey]: {} }
+        }));
+    };
+
+    const handleRemoveKey = (keyToRemove) => {
+        if (!window.confirm(t('alerts.deleteKeyConfirm', 'Tem a certeza que deseja apagar esta chave e todas as suas traduções?'))) return;
+        setTranslations(prev => {
+            const newKeys = { ...prev.keys };
+            delete newKeys[keyToRemove];
+            if (selectedCell?.key === keyToRemove) setSelectedCell(null);
+            return { ...prev, keys: newKeys };
+        });
+    };
+
     const toggleLanguage = (lang) => {
         setTranslations(prev => {
             if (prev.languages.includes(lang)) {
@@ -157,6 +181,14 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                                 >+</button>
                             </div>
                         </div>
+
+                        {/* Botão de ação direta para injetar novas Keys na matriz */}
+                        <button
+                            onClick={handleAddKey}
+                            className="px-3 py-1 bg-yellow-400 text-gray-900 border-2 border-gray-900 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] hover:bg-yellow-500 transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+                        >
+                            + {t('dataPanel.addKey', 'Add Key')}
+                        </button>
                     </div>
 
                     {/* Botões CSV */}
@@ -174,50 +206,71 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                     </div>
                 </div>
 
-                {/* Grade da Tabela Expandida */}
+                {/* CORREGIDO: MAPEAMENTO TOTAL EM BLING FLEXBOX GRELHA (Adeus tabelas nativas e esmagamentos) */}
                 <div className="flex-1 overflow-auto border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
-                    <table className="w-full text-left border-collapse table-fixed">
-                        <thead>
-                            <tr className="bg-gray-900 text-white sticky top-0 z-10">
-                                {/* CORREGIDO: Reduzido a largura da coluna de chaves para poupar espaço real */}
-                                <th className="p-3 border-b border-r border-gray-700 text-xs uppercase font-black w-[130px] bg-gray-900">{t('translationMatrix.columnKey', 'Key')}</th>
-                                {translations.languages.map(lang => (
-                                    /* CORREGIDO: Reduzido drasticamente as restrições de largura (min-w-0 e sem max-w artificial) */
-                                    /* para que as colunas caibam todas confortavelmente lado a lado no ecrã principal */
-                                    <th key={lang} className="p-3 border-b border-r border-gray-700 text-xs uppercase font-black min-w-[150px] bg-gray-900">
-                                        {lang.toUpperCase()} {lang === sourceLang && <span className="text-[9px] text-yellow-400 font-normal">({t('translationMatrix.sourceBadge', 'Source')})</span>}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
+                    
+                    {/* Contentor de largura mínima agregada dinâmica para disparar scroll de forma limpa */}
+                    <div style={{ minWidth: `${160 + (translations.languages.length * 320) + 60}px` }} className="flex flex-col">
+                        
+                        {/* FILA DE CABEÇALHOS (STICKY) */}
+                        <div className="bg-gray-900 text-white flex font-black uppercase text-xs tracking-wider sticky top-0 z-10 select-none border-b border-gray-700">
+                            <div className="p-3 w-[160px] shrink-0 border-r border-gray-700">{t('translationMatrix.columnKey', 'Key')}</div>
+                            {translations.languages.map(lang => (
+                                <div key={lang} className="p-3 w-[320px] shrink-0 border-r border-gray-700 text-left">
+                                    {lang.toUpperCase()} {lang === sourceLang && <span className="text-[9px] text-yellow-400 font-normal">({t('translationMatrix.sourceBadge', 'Source')})</span>}
+                                </div>
+                            ))}
+                            <div className="p-3 w-[60px] shrink-0 text-center">{t('translationMatrix.actions', 'Act')}</div>
+                        </div>
+
+                        {/* LINHAS DE DADOS DA MATRIZ */}
+                        <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
                             {Object.entries(translations.keys).map(([key, langs]) => (
-                                <tr key={key} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700 font-mono text-xs">
-                                    <td className="p-3 border-r border-gray-200 dark:border-gray-700 font-bold bg-gray-50 dark:bg-gray-900/50 select-all text-gray-900 dark:text-gray-300 truncate" title={key}>{key}</td>
+                                <div key={key} className="flex hover:bg-gray-50 dark:hover:bg-gray-700/30 font-mono text-xs items-stretch">
+                                    
+                                    {/* Célula Identificadora (Key) */}
+                                    <div className="p-3 w-[160px] shrink-0 border-r border-gray-200 dark:border-gray-700 font-bold bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-300 truncate select-all" title={key}>
+                                        {key}
+                                    </div>
+
+                                    {/* Células Dinâmicas de Tradução */}
                                     {translations.languages.map(lang => {
                                         const isSelected = selectedCell?.key === key && selectedCell?.lang === lang;
                                         return (
-                                            <td 
-                                                key={lang} 
+                                            <div 
+                                                key={lang}
                                                 onClick={() => setSelectedCell({ key, lang })}
-                                                className={`p-2 border-r border-gray-200 dark:border-gray-700 align-top cursor-pointer transition-colors ${
+                                                className={`p-2 w-[320px] shrink-0 border-r border-gray-200 dark:border-gray-700 align-top cursor-pointer transition-colors ${
                                                     isSelected 
                                                         ? 'bg-yellow-100 dark:bg-yellow-900/40 ring-2 ring-inset ring-yellow-500' 
-                                                        : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                                                        : 'text-gray-800 dark:text-gray-200'
                                                 }`}
                                             >
-                                                {/* CORREGIDO: O line-clamp-2 garante que vês as primeiras duas linhas de texto resumidas sem quebrar o tamanho da linha */}
-                                                <div className="line-clamp-2 break-words text-gray-800 dark:text-gray-200 leading-relaxed text-[11px]">
+                                                <div className="line-clamp-2 break-words leading-relaxed text-[11px]">
                                                     {langs[lang] || <span className="italic opacity-30 text-[10px] text-gray-400">{t('translationMatrix.emptyCell', 'Empty cell')}</span>}
                                                 </div>
-                                            </td>
+                                            </div>
                                         );
                                     })}
-                                </tr>
+
+                                    {/* Célula de Controlo e Ação Destrutiva (Remoção da Key) */}
+                                    <div className="w-[60px] shrink-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900/10">
+                                        <button
+                                            onClick={() => handleRemoveKey(key)}
+                                            className="w-6 h-6 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white font-black border border-gray-900 text-xs shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                                            title={t('translationMatrix.deleteKeyHint', 'Remover chave por completo')}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+
+                    </div>
                 </div>
+
             </div>
 
             {/* PAINEL DA DIREITA (30%): INSPETOR INTEGRADO SEM MODAIS */}
