@@ -7,7 +7,12 @@ export const translations = {
             no: 'No',
             on: 'ON',
             off: 'OFF',
-            languageToggle: 'EN / PT'
+            languageToggle: 'EN / PT',
+            deleteConfirm: {
+                title: "Confirm Deletion",
+                message: "Are you sure you want to delete this item? This action cannot be undone.",
+                confirm: "Delete"
+            }
         },
         topBar: {
             addScene: '+ Add Scene',
@@ -233,6 +238,9 @@ export const translations = {
             syntaxWarnings: 'Syntax Warnings:',
             selectNode: 'Select a node to edit.',
             deleteNode: 'Delete Node',
+            deleteConfirm: {
+                nodeMessage: "Are you sure you want to delete this story scene node? All graph edges connected to it will be purged synchronously."
+            },
             help: {
                 label: {
                     title: 'Label',
@@ -338,6 +346,9 @@ export const translations = {
             inputPlaceholder: 'Write your translation here...',
             applyChanges: 'Apply Changes',
             emptySelectionHint: 'Select any table cell to inspect or edit its content without popups.',
+            deleteConfirm: {
+                keyMessage: "Are you sure you want to completely erase this localization key? This will permanently delete its translation contents across all configuration maps."
+            },
             help: {
                 title: 'Matrix Workspace Help',
                 subtitle: 'Multi-language management configuration',
@@ -367,7 +378,12 @@ export const translations = {
             no: 'Não',
             on: 'ON',
             off: 'OFF',
-            languageToggle: 'EN / PT'
+            languageToggle: 'EN / PT',
+            deleteConfirm: {
+                title: 'Confirmar Remoção',
+                message: 'Tens a certeza que desejas apagar este item? Esta ação não pode ser desfeita.',
+                confirm: 'Eliminar'
+            }
         },
         topBar: {
             addScene: '+ Add Cena',
@@ -593,6 +609,9 @@ export const translations = {
             syntaxWarnings: 'Avisos de Sintaxe:',
             selectNode: 'Seleciona um nó para editar.',
             deleteNode: 'Apagar Nó',
+            deleteConfirm: {
+                nodeMessage: "Tens a certeza que desejas eliminar este nó de cena? Todas as ligações associadas a ele serão removidas em cascata do grafo."
+            },
             help: {
                 label: {
                     title: 'Label',
@@ -698,6 +717,9 @@ export const translations = {
             inputPlaceholder: 'Escreve a tua tradução aqui...',
             applyChanges: 'Aplicar Alterações',
             emptySelectionHint: 'Clica em qualquer célula da tabela para inspecionar ou editar o seu conteúdo sem popups.',
+            deleteConfirm: {
+                keyMessage: "Tens a certeza que desejas apagar esta chave de localização? Isto vai remover permanentemente todos os textos traduzidos correspondentes de todas as tabelas de idiomas."
+            },
             help: {
                 title: 'Ajuda da Matriz de Chaves',
                 subtitle: 'Configuração da base de dados multi-idioma',
@@ -705,13 +727,13 @@ export const translations = {
                 line2: 'A primeira coluna configurada serve como a linguagem mestre e será injetada como referência para as restantes abas.'
             }
         },
-        "exportModal": {
-            "title": "Exportar História Twee",
-            "description": "Selecione o formato de compilação para o ficheiro final do Twine (.twee):",
-            "selectLabel": "Formato de Compilação Alvo:",
-            "optionKeys": "Base de Dados de Chaves -> Formato t(\"...\")",
-            "optionMonolingual": "História Monolíngue -> Formato {{lang}}",
-            "confirmButton": "Exportar Ficheiro"
+        exportModal: {
+            title: "Exportar História Twee",
+            description: "Selecione o formato de compilação para o ficheiro final do Twine (.twee):",
+            selectLabel: "Formato de Compilação Alvo:",
+            optionKeys: "Base de Dados de Chaves -> Formato t(\"...\")",
+            optionMonolingual: "História Monolíngue -> Formato {{lang}}",
+            confirmButton: "Exportar Ficheiro"
         }
     }
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
+import DeleteConfirmModal from './DeleteConfirmModal'; // Importado o novo componente
 
 export default function Inspector({
   selectedNode,
@@ -16,6 +17,9 @@ export default function Inspector({
   const { t } = useTranslation();
 
   const [isLocalVarMode, setIsLocalVarMode] = useState(false);
+  
+  // --- ESTADO LOCAL DO MODAL DE REMOÇÃO ---
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const openHelp = (title, subtitle, content) => {
     showInfoPopout({ title, subtitle, content });
@@ -287,17 +291,17 @@ export default function Inspector({
             )}
           </div>
 
-          {/* DELETE BUTTON */}
+          {/* CORREGIDO: O botão de remoção ativa a barreira de segurança local */}
           <div className="mt-auto pt-4 border-t-2 border-gray-200 dark:border-gray-600">
             <button
-              onClick={() => deleteNode(selectedNode.id)}
+              onClick={() => setIsDeleteOpen(true)}
               className={
                 "w-full p-3 font-black text-sm uppercase tracking-widest transition-all " +
                 "active:translate-x-[2px] active:translate-y-[2px] active:shadow-none " +
                 "border-2 border-gray-900 bg-gray-100 text-gray-900 shadow-[4px_4px_0px_#000] " +
                 "hover:bg-red-600 hover:text-white " +
                 "dark:bg-gray-800 dark:border-gray-200 dark:text-gray-100 dark:shadow-[4px_4px_0px_#fff] " +
-                "dark:hover:bg-red-500 dark:hover:border-red-500 dark:hover:text-white"
+                "dark:hover:bg-red-500 dark:hover:border-red-500 dark:hover:text-white cursor-pointer"
               }
             >
               {t('inspector.deleteNode')}
@@ -309,6 +313,14 @@ export default function Inspector({
           {t('inspector.selectNode')}
         </div>
       )}
+
+      {/* RENDERIZAÇÃO DO MODAL DE REMOÇÃO SEPARADO */}
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={() => deleteNode(selectedNode.id)}
+        message={t('inspector.deleteConfirm.nodeMessage', 'Tens a certeza que desejas eliminar este nó de cena? Todas as ligações ligadas a ele serão removidas em cascata do grafo.')}
+      />
     </div>
   );
 }

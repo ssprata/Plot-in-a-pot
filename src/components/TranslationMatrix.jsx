@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
+import DeleteConfirmModal from './DeleteConfirmModal'; // Importa o componente reutilizável
 
 export default function TranslationMatrix({ isOpen, onClose, translations, setTranslations }) {
     const { t } = useTranslation();
@@ -10,6 +11,10 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
     const [selectedCell, setSelectedCell] = useState(null); // { key, lang }
     const [editValue, setEditValue] = useState('');
     const [newLang, setNewLang] = useState('');
+
+    // Estados para o controlo do modal de confirmação isolado
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [keyToDelete, setKeyToDelete] = useState(null);
 
     const sourceLang = translations?.languages?.[0] || 'pt';
 
@@ -60,14 +65,16 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
         }));
     };
 
-    const handleRemoveKey = (keyToRemove) => {
-        if (!window.confirm(t('alerts.deleteKeyConfirm', 'Tem a certeza que deseja apagar esta chave e todas as suas traduções?'))) return;
+    // Callback atómico acionado após a confirmação do modal isolado
+    const handleConfirmRemoveKey = () => {
+        if (!keyToDelete) return;
         setTranslations(prev => {
             const newKeys = { ...prev.keys };
-            delete newKeys[keyToRemove];
-            if (selectedCell?.key === keyToRemove) setSelectedCell(null);
+            delete newKeys[keyToDelete];
+            if (selectedCell?.key === keyToDelete) setSelectedCell(null);
             return { ...prev, keys: newKeys };
         });
+        setKeyToDelete(null);
     };
 
     const toggleLanguage = (lang) => {
@@ -124,216 +131,229 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
     const referenceValue = selectedCell ? translations.keys[selectedCell.key]?.[sourceLang] : '';
 
     return (
-        <div className="fixed inset-0 z-[180] flex bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
-            
-            {/* PAINEL DA ESQUERDA (70%): GESTÃO E TABELA MATRIX */}
-            <div className="flex-1 flex flex-col p-6 overflow-hidden border-r-4 border-gray-900 dark:border-gray-700">
+        <>
+            <div className="fixed inset-0 z-[180] flex bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
                 
-                {/* Cabeçalho Superior de Ações */}
-                <div className="flex justify-between items-center border-b-4 border-gray-900 dark:border-gray-600 pb-4 mb-4">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <h2 className="font-black text-xl uppercase tracking-widest bg-yellow-400 text-gray-900 px-2 py-1 border-2 border-gray-900 shadow-[2px_2px_0px_#000]">
-                                {t('translationMatrix.title', 'Localization Matrix')}
-                            </h2>
-                            <button
-                                type="button"
-                                onClick={() => openHelp(
-                                    t('translationMatrix.help.title', 'Matrix Workspace Help'),
-                                    t('translationMatrix.help.subtitle', 'Multi-language management configuration'),
-                                    <div className="space-y-2 text-sm">
-                                        <p>{t('translationMatrix.help.line1', 'Select any table cell to translate its content directly in the inspector panel.')}</p>
-                                        <p>{t('translationMatrix.help.line2', 'The first configured column functions as the source language of reference for the simulation.')}</p>
-                                    </div>
-                                )}
-                                className={helpButtonClass}
-                            >?</button>
-                        </div>
-                        
-                        {/* Gestão de Locales */}
-                        <div className="flex items-center gap-2 border-2 border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-800 p-1.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
-                            {translations.languages.map(lang => (
-                                <button 
-                                    key={lang} 
-                                    onClick={() => toggleLanguage(lang)}
-                                    className="px-1.5 py-0.5 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-black text-[9px] uppercase border border-transparent hover:border-red-500 cursor-pointer"
-                                    title={t('translationMatrix.removeLanguageHint', 'Click to remove this language')}
-                                >
-                                    {lang.toUpperCase()} ×
-                                </button>
-                            ))}
-                            <div className="flex items-center border-l-2 border-gray-300 dark:border-gray-600 pl-2 gap-1">
-                                <input 
-                                    className="w-10 bg-transparent text-[10px] font-bold uppercase outline-none text-gray-900 dark:text-gray-100" 
-                                    placeholder={t('translationMatrix.addPlaceholder', 'ADD')} 
-                                    maxLength={3}
-                                    value={newLang}
-                                    onChange={e => setNewLang(e.target.value.toUpperCase())}
-                                />
-                                <button 
-                                    onClick={() => {
-                                        if (newLang && !translations.languages.includes(newLang.toLowerCase())) {
-                                            toggleLanguage(newLang.toLowerCase());
-                                            setNewLang('');
-                                        }
-                                    }}
-                                    className="font-black text-xs px-1 text-green-600 hover:text-green-500 cursor-pointer"
-                                >+</button>
-                            </div>
-                        </div>
-
-                        {/* Botão de ação direta para injetar novas Keys na matriz */}
-                        <button
-                            onClick={handleAddKey}
-                            className="px-3 py-1 bg-yellow-400 text-gray-900 border-2 border-gray-900 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] hover:bg-yellow-500 transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
-                        >
-                            + {t('dataPanel.addKey', 'Add Key')}
-                        </button>
-                    </div>
-
-                    {/* Botões CSV */}
-                    <div className="flex gap-2">
-                        <button onClick={exportToCSV} className="px-3 py-1.5 border-2 border-gray-900 bg-white text-gray-900 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer">
-                            {t('translationMatrix.exportCsv', 'Export CSV')}
-                        </button>
-                        <label className="cursor-pointer px-3 py-1.5 border-2 border-gray-900 bg-black text-white font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none">
-                            {t('translationMatrix.importCsv', 'Import CSV')}
-                            <input type="file" accept=".csv" className="hidden" onChange={handleImport} />
-                        </label>
-                        <button onClick={onClose} className="px-3 py-1.5 border-2 border-gray-900 bg-red-500 text-white font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none ml-4 cursor-pointer">
-                            {t('common.close', 'Close')}
-                        </button>
-                    </div>
-                </div>
-
-                {/* CORREGIDO: MAPEAMENTO TOTAL EM BLING FLEXBOX GRELHA (Adeus tabelas nativas e esmagamentos) */}
-                <div className="flex-1 overflow-auto border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
+                {/* PAINEL DA ESQUERDA (70%): GESTÃO E TABELA MATRIX */}
+                <div className="flex-1 flex flex-col p-6 overflow-hidden border-r-4 border-gray-900 dark:border-gray-700">
                     
-                    {/* Contentor de largura mínima agregada dinâmica para disparar scroll de forma limpa */}
-                    <div style={{ minWidth: `${160 + (translations.languages.length * 320) + 60}px` }} className="flex flex-col">
-                        
-                        {/* FILA DE CABEÇALHOS (STICKY) */}
-                        <div className="bg-gray-900 text-white flex font-black uppercase text-xs tracking-wider sticky top-0 z-10 select-none border-b border-gray-700">
-                            <div className="p-3 w-[160px] shrink-0 border-r border-gray-700">{t('translationMatrix.columnKey', 'Key')}</div>
-                            {translations.languages.map(lang => (
-                                <div key={lang} className="p-3 w-[320px] shrink-0 border-r border-gray-700 text-left">
-                                    {lang.toUpperCase()} {lang === sourceLang && <span className="text-[9px] text-yellow-400 font-normal">({t('translationMatrix.sourceBadge', 'Source')})</span>}
+                    {/* Cabeçalho Superior de Ações */}
+                    <div className="flex justify-between items-center border-b-4 border-gray-900 dark:border-gray-600 pb-4 mb-4">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <h2 className="font-black text-xl uppercase tracking-widest bg-yellow-400 text-gray-900 px-2 py-1 border-2 border-gray-900 shadow-[2px_2px_0px_#000]">
+                                    {t('translationMatrix.title', 'Localization Matrix')}
+                                </h2>
+                                <button
+                                    type="button"
+                                    onClick={() => openHelp(
+                                        t('translationMatrix.help.title', 'Matrix Workspace Help'),
+                                        t('translationMatrix.help.subtitle', 'Multi-language management configuration'),
+                                        <div className="space-y-2 text-sm">
+                                            <p>{t('translationMatrix.help.line1', 'Select any table cell to translate its content directly in the inspector panel.')}</p>
+                                            <p>{t('translationMatrix.help.line2', 'The first configured column functions as the source language of reference for the simulation.')}</p>
+                                        </div>
+                                    )}
+                                    className={helpButtonClass}
+                                >?</button>
+                            </div>
+                            
+                            {/* Gestão de Locales */}
+                            <div className="flex items-center gap-2 border-2 border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-800 p-1.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                                {translations.languages.map(lang => (
+                                    <button 
+                                        key={lang} 
+                                        onClick={() => toggleLanguage(lang)}
+                                        className="px-1.5 py-0.5 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-black text-[9px] uppercase border border-transparent hover:border-red-500 cursor-pointer"
+                                        title={t('translationMatrix.removeLanguageHint', 'Click to remove this language')}
+                                    >
+                                        {lang.toUpperCase()} ×
+                                    </button>
+                                ))}
+                                <div className="flex items-center border-l-2 border-gray-300 dark:border-gray-300 pl-2 gap-1">
+                                    <input 
+                                        className="w-10 bg-transparent text-[10px] font-bold uppercase outline-none text-gray-900 dark:text-gray-100" 
+                                        placeholder={t('translationMatrix.addPlaceholder', 'ADD')} 
+                                        maxLength={3}
+                                        value={newLang}
+                                        onChange={e => setNewLang(e.target.value.toUpperCase())}
+                                    />
+                                    <button 
+                                        onClick={() => {
+                                            if (newLang && !translations.languages.includes(newLang.toLowerCase())) {
+                                                toggleLanguage(newLang.toLowerCase());
+                                                setNewLang('');
+                                            }
+                                        }}
+                                        className="font-black text-xs px-1 text-green-600 hover:text-green-500 cursor-pointer"
+                                    >+</button>
                                 </div>
-                            ))}
-                            <div className="p-3 w-[60px] shrink-0 text-center">{t('translationMatrix.actions', 'Act')}</div>
+                            </div>
+
+                            {/* Botão de ação direta para injetar novas Keys na matriz */}
+                            <button
+                                onClick={handleAddKey}
+                                className="px-3 py-1 bg-yellow-400 text-gray-900 border-2 border-gray-900 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] hover:bg-yellow-500 transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+                            >
+                                + {t('dataPanel.addKey', 'Add Key')}
+                            </button>
                         </div>
 
-                        {/* LINHAS DE DADOS DA MATRIZ */}
-                        <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
-                            {Object.entries(translations.keys).map(([key, langs]) => (
-                                <div key={key} className="flex hover:bg-gray-50 dark:hover:bg-gray-700/30 font-mono text-xs items-stretch">
-                                    
-                                    {/* Célula Identificadora (Key) */}
-                                    <div className="p-3 w-[160px] shrink-0 border-r border-gray-200 dark:border-gray-700 font-bold bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-300 truncate select-all" title={key}>
-                                        {key}
-                                    </div>
-
-                                    {/* Células Dinâmicas de Tradução */}
-                                    {translations.languages.map(lang => {
-                                        const isSelected = selectedCell?.key === key && selectedCell?.lang === lang;
-                                        return (
-                                            <div 
-                                                key={lang}
-                                                onClick={() => setSelectedCell({ key, lang })}
-                                                className={`p-2 w-[320px] shrink-0 border-r border-gray-200 dark:border-gray-700 align-top cursor-pointer transition-colors ${
-                                                    isSelected 
-                                                        ? 'bg-yellow-100 dark:bg-yellow-900/40 ring-2 ring-inset ring-yellow-500' 
-                                                        : 'text-gray-800 dark:text-gray-200'
-                                                }`}
-                                            >
-                                                <div className="line-clamp-2 break-words leading-relaxed text-[11px]">
-                                                    {langs[lang] || <span className="italic opacity-30 text-[10px] text-gray-400">{t('translationMatrix.emptyCell', 'Empty cell')}</span>}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* Célula de Controlo e Ação Destrutiva (Remoção da Key) */}
-                                    <div className="w-[60px] shrink-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900/10">
-                                        <button
-                                            onClick={() => handleRemoveKey(key)}
-                                            className="w-6 h-6 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white font-black border border-gray-900 text-xs shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
-                                            title={t('translationMatrix.deleteKeyHint', 'Remover chave por completo')}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-
-                                </div>
-                            ))}
+                        {/* Botões CSV */}
+                        <div className="flex gap-2">
+                            <button onClick={exportToCSV} className="px-3 py-1.5 border-2 border-gray-900 bg-white text-gray-900 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer">
+                                {t('translationMatrix.exportCsv', 'Export CSV')}
+                            </button>
+                            <label className="cursor-pointer px-3 py-1.5 border-2 border-gray-900 bg-black text-white font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none">
+                                {t('translationMatrix.importCsv', 'Import CSV')}
+                                <input type="file" accept=".csv" className="hidden" onChange={handleImport} />
+                            </label>
+                            <button onClick={onClose} className="px-3 py-1.5 border-2 border-gray-900 bg-red-500 text-white font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none ml-4 cursor-pointer">
+                                {t('common.close', 'Close')}
+                            </button>
                         </div>
-
                     </div>
+
+                    {/* Grade da Tabela Expandida em Grelha Flexbox */}
+                    <div className="flex-1 overflow-auto border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
+                        <div style={{ minWidth: `${160 + (translations.languages.length * 320) + 60}px` }} className="flex flex-col">
+                            
+                            {/* FILA DE CABEÇALHOS (STICKY) */}
+                            <div className="bg-gray-900 text-white flex font-black uppercase text-xs tracking-wider sticky top-0 z-10 select-none border-b border-gray-700">
+                                <div className="p-3 w-[160px] shrink-0 border-r border-gray-700">{t('translationMatrix.columnKey', 'Key')}</div>
+                                {translations.languages.map(lang => (
+                                    <div key={lang} className="p-3 w-[320px] shrink-0 border-r border-gray-700 text-left">
+                                        {lang.toUpperCase()} {lang === sourceLang && <span className="text-[9px] text-yellow-400 font-normal">({t('translationMatrix.sourceBadge', 'Source')})</span>}
+                                    </div>
+                                ))}
+                                <div className="p-3 w-[60px] shrink-0 text-center">{t('translationMatrix.actions', 'Act')}</div>
+                            </div>
+
+                            {/* LINHAS DE DADOS DA MATRIZ */}
+                            <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                                {Object.entries(translations.keys).map(([key, langs]) => (
+                                    <div key={key} className="flex hover:bg-gray-50 dark:hover:bg-gray-700/30 font-mono text-xs items-stretch">
+                                        
+                                        {/* Célula Identificadora (Key) */}
+                                        <div className="p-3 w-[160px] shrink-0 border-r border-gray-200 dark:border-gray-700 font-bold bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-300 truncate select-all" title={key}>
+                                            {key
+                                        }</div>
+
+                                        {/* Células Dinâmicas de Tradução */}
+                                        {translations.languages.map(lang => {
+                                            const isSelected = selectedCell?.key === key && selectedCell?.lang === lang;
+                                            return (
+                                                <div 
+                                                    key={lang}
+                                                    onClick={() => setSelectedCell({ key, lang })}
+                                                    className={`p-2 w-[320px] shrink-0 border-r border-gray-200 dark:border-gray-700 align-top cursor-pointer transition-colors ${
+                                                        isSelected 
+                                                            ? 'bg-yellow-100 dark:bg-yellow-900/40 ring-2 ring-inset ring-yellow-500' 
+                                                            : 'text-gray-800 dark:text-gray-200'
+                                                    }`}
+                                                >
+                                                    <div className="line-clamp-2 break-words leading-relaxed text-[11px]">
+                                                        {langs[lang] || <span className="italic opacity-30 text-[10px] text-gray-400">{t('translationMatrix.emptyCell', 'Empty cell')}</span>}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+
+                                        {/* Célula de Controlo e Ação Destrutiva */}
+                                        <div className="w-[60px] shrink-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900/10">
+                                            <button
+                                                onClick={() => {
+                                                    setKeyToDelete(key);
+                                                    setIsDeleteOpen(true);
+                                                }}
+                                                className="w-6 h-6 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white font-black border border-gray-900 text-xs shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                                                title={t('translationMatrix.deleteKeyHint', 'Remover chave por completo')}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                ))}
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
 
-            </div>
+                {/* PAINEL DA DIREITA (30%): INSPETOR INTEGRADO SEM MODAIS */}
+                <div className="w-96 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col overflow-y-auto border-l border-gray-200 dark:border-gray-800">
+                    <h3 className="font-black text-sm uppercase tracking-widest border-b-2 border-gray-900 dark:border-gray-700 pb-2 mb-4 text-gray-500">
+                        {t('translationMatrix.inspectorTitle', 'Cell Inspector')}
+                    </h3>
 
-            {/* PAINEL DA DIREITA (30%): INSPETOR INTEGRADO SEM MODAIS */}
-            <div className="w-96 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col overflow-y-auto border-l border-gray-200 dark:border-gray-800">
-                <h3 className="font-black text-sm uppercase tracking-widest border-b-2 border-gray-900 dark:border-gray-700 pb-2 mb-4 text-gray-500">
-                    {t('translationMatrix.inspectorTitle', 'Cell Inspector')}
-                </h3>
-
-                {selectedCell ? (
-                  <div className="flex-1 flex flex-col space-y-4">
-                      <div>
-                          <span className="block text-[10px] font-black text-gray-400 uppercase">{t('translationMatrix.selectedKey', 'Selected Key')}</span>
-                          <div className="font-mono text-xs font-bold bg-white dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 select-all text-gray-900 dark:text-gray-100">
-                              {selectedCell.key}
+                    {selectedCell ? (
+                      <div className="flex-1 flex flex-col space-y-4">
+                          <div>
+                              <span className="block text-[10px] font-black text-gray-400 uppercase">{t('translationMatrix.selectedKey', 'Selected Key')}</span>
+                              <div className="font-mono text-xs font-bold bg-white dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 select-all text-gray-900 dark:text-gray-100">
+                                  {selectedCell.key}
+                              </div>
                           </div>
-                      </div>
 
-                      <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-gray-400 uppercase">{t('translationMatrix.targetLocale', 'Target Locale:')}</span>
-                          <span className="px-2 py-0.5 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-mono font-black text-xs uppercase rounded">
-                              {selectedCell.lang}
-                          </span>
-                      </div>
-
-                      {/* Bloco de Referência */}
-                      {selectedCell.lang !== sourceLang && (
-                          <div className="p-3 bg-white dark:bg-gray-900 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded">
-                              <span className="block text-[9px] font-black text-gray-400 uppercase mb-1">
-                                  {t('translationMatrix.referenceTextLabel', 'Reference Text')} ({sourceLang.toUpperCase()}):
+                          <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black text-gray-400 uppercase">{t('translationMatrix.targetLocale', 'Target Locale:')}</span>
+                              <span className="px-2 py-0.5 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-mono font-black text-xs uppercase rounded">
+                                  {selectedCell.lang}
                               </span>
-                              <p className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words max-h-40 overflow-y-auto leading-relaxed">
-                                  {referenceValue || <span className="italic opacity-40 text-gray-500">{t('translationMatrix.noReference', 'No reference text found in source locale.')}</span>}
-                              </p>
                           </div>
-                      )}
 
-                      {/* Campo de Tradução Direta */}
-                      <div className="flex-1 flex flex-col min-h-[200px]">
-                          <span className="block text-[10px] font-black text-gray-400 uppercase mb-1">{t('translationMatrix.inputLabel', 'Translation Input')}</span>
-                          <textarea
-                              className="flex-1 w-full p-3 border-2 border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-900 font-mono text-xs text-gray-900 dark:text-gray-100 outline-none shadow-inner resize-none leading-relaxed focus:border-yellow-500"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              placeholder={selectedCell.lang !== sourceLang && referenceValue ? referenceValue : t('translationMatrix.inputPlaceholder', 'Write your translation here...')}
-                          />
-                      </div>
+                          {/* Bloco de Referência */}
+                          {selectedCell.lang !== sourceLang && (
+                              <div className="p-3 bg-white dark:bg-gray-900 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded">
+                                  <span className="block text-[9px] font-black text-gray-400 uppercase mb-1">
+                                      {t('translationMatrix.referenceTextLabel', 'Reference Text')} ({sourceLang.toUpperCase()}):
+                                  </span>
+                                  <p className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words max-h-40 overflow-y-auto leading-relaxed">
+                                      {referenceValue || <span className="italic opacity-40 text-gray-500">{t('translationMatrix.noReference', 'No reference text found in source locale.')}</span>}
+                                  </p>
+                              </div>
+                          )}
 
-                      {/* Ações do Inspetor */}
-                      <div className="pt-2">
-                          <button 
-                              onClick={saveCurrentTranslation}
-                              className="w-full py-2 border-2 border-gray-900 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
-                          >
-                              {t('translationMatrix.applyChanges', 'Apply Changes')}
-                          </button>
+                          {/* Campo de Tradução Direta */}
+                          <div className="flex-1 flex flex-col min-h-[200px]">
+                              <span className="block text-[10px] font-black text-gray-400 uppercase mb-1">{t('translationMatrix.inputLabel', 'Translation Input')}</span>
+                              <textarea
+                                  className="flex-1 w-full p-3 border-2 border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-900 font-mono text-xs text-gray-900 dark:text-gray-100 outline-none shadow-inner resize-none leading-relaxed focus:border-yellow-500"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  placeholder={selectedCell.lang !== sourceLang && referenceValue ? referenceValue : t('translationMatrix.inputPlaceholder', 'Write your translation here...')}
+                              />
+                          </div>
+
+                          {/* Ações do Inspetor */}
+                          <div className="pt-2">
+                              <button 
+                                  onClick={saveCurrentTranslation}
+                                  className="w-full py-2 border-2 border-gray-900 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                              >
+                                  {t('translationMatrix.applyChanges', 'Apply Changes')}
+                              </button>
+                          </div>
                       </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-600 italic text-xs font-mono p-4 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded">
-                      {t('translationMatrix.emptySelectionHint', 'Select any table cell to inspect or edit its content without popups.')}
-                  </div>
-                )}
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-600 italic text-xs font-mono p-4 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded">
+                          {t('translationMatrix.emptySelectionHint', 'Select any table cell to inspect or edit its content without popups.')}
+                      </div>
+                    )}
+                </div>
             </div>
-        </div>
+            
+            <DeleteConfirmModal
+                isOpen={isDeleteOpen}
+                onClose={() => {
+                    setIsDeleteOpen(false);
+                    setKeyToDelete(null);
+                }}
+                onConfirm={handleConfirmRemoveKey}
+                message={t('translationMatrix.deleteConfirm.keyMessage', 'Tens a certeza que desejas apagar esta chave de localização? Isto vai remover permanentemente todos os textos traduzidos correspondentes de todas as tabelas de idiomas.')}
+            />
+        </>
     );
 }
