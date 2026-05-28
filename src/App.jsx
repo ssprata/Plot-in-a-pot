@@ -11,6 +11,7 @@ import { validateStoryFlow } from './utils/storyValidator';
 import { runDevSimulationLog } from './utils/storySimulator';
  
 // Componentes da Interface Geral
+import EditableEdge from './components/EditableEdge';
 import TopBar from './components/TopBar';
 import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
@@ -62,6 +63,10 @@ const nodeTypes = {
   choice: StoryNode,
   javascript: StoryNode,
   css: StoryNode
+};
+
+const edgeTypes = {
+  editable: EditableEdge
 };
  
 // Função utilitária para extrair e fazer o parse seguro dos dados guardados no browser
@@ -794,6 +799,64 @@ function App() {
     window.addEventListener('triggerMatrixToggle', handleMatrixToggle);
     return () => window.removeEventListener('triggerMatrixToggle', handleMatrixToggle);
   }, []);
+
+  // Lógica de injeção de pontos de ancoragem geométricos (Waypoints) dentro da aresta
+  const onEdgeDoubleClick = useCallback((event, edge) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // 1. Obter os limites do canvas transformado do ReactFlow
+    const reactFlowBounds = document.querySelector('.react-flow').getBoundingClientRect();
+    
+    // Inverte a projeção matricial baseada no viewport transformado (zoom e pan)
+    const transformElement = document.querySelector('.react-flow__viewport');
+    let zoom = 1;
+    let panX = 0;
+    let panY = 0;
+
+    if (transformElement) {
+      const style = window.getComputedStyle(transformElement);
+      const matrix = new DOMMatrix(style.transform);
+      zoom = matrix.a;
+      panX = matrix.e;
+      panY = matrix.f;
+    }
+
+    // Calcula as coordenadas reais do clique projetadas no espaço 2D infinito do grafo
+    const x = (event.clientX - reactFlowBounds.left - panX) / zoom;
+    const y = (event.clientY - reactFlowBounds.top - panY) / zoom;
+
+    // 2. Atualizar a aresta alvo injetando o novo waypoint na lista de caminhos
+    setEdges((eds) =>
+      eds.map((e) => {
+        if (e.id === edge.id) {
+          const currentWaypoints = e.data?.waypoints || [];
+          return {
+            ...e,
+            type: 'editable', // Converte a aresta para o formato editável
+            data: {
+              ...e.data,
+              waypoints: [...currentWaypoints, { x, y }]
+            }
+          };
+        }
+        return e;
+      })
+    );
+  }, [setEdges]);
+
+  // Efeito utilitário para escutar atualizações de arrasto vindas da EditableEdge
+  useEffect(() => {
+    const handleUpdateWaypoints = (e) => {
+      const { edgeId, waypoints } = e.detail;
+      setEdges((eds) =>
+        eds.map((edge) => (edge.id === edgeId ? { ...edge, data: { ...edge.data, waypoints } } : edge))
+      );
+    };
+
+    window.addEventListener('updateEdgeWaypoints', handleUpdateWaypoints);
+    return () => window.removeEventListener('updateEdgeWaypoints', handleUpdateWaypoints);
+  }, [setEdges]);
  
   return (
     <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>
@@ -840,6 +903,7 @@ function App() {
           <div className="flex-1">
             <ReactFlow
               nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
               nodes={visibleNodes}
               edges={visibleEdges}
               onNodesChange={onNodesChange}
@@ -847,6 +911,7 @@ function App() {
               onConnect={onConnect}
               onNodeDoubleClick={onNodeClick}
               onEdgeClick={onEdgeClick}
+              onEdgeDoubleClick={onEdgeDoubleClick}
               fitView
               selectionOnDrag
             >
@@ -950,7 +1015,3 @@ function App() {
 }
  
 export default App;
- 
-
-
-
