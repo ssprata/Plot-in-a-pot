@@ -1,8 +1,81 @@
 import React, { useState } from 'react';
+import DeleteConfirmModal from './DeleteConfirmModal';
+
+// Infers the type of a variable from its raw string value
+function inferType(value) {
+  const v = String(value).trim().toLowerCase();
+  if (v === 'true' || v === 'false') return 'boolean';
+  if (v !== '' && !isNaN(Number(v))) return 'number';
+  return 'string';
+}
+
+// Returns a human-readable label + color for the type badge
+function typeLabel(type) {
+  switch (type) {
+    case 'boolean': return { label: 'bool', color: 'text-purple-600 dark:text-purple-400 border-purple-400' };
+    case 'number':  return { label: 'num',  color: 'text-blue-600 dark:text-blue-400 border-blue-400' };
+    default:        return { label: 'str',  color: 'text-green-600 dark:text-green-400 border-green-400' };
+  }
+}
+
+// Typed input for each variable in change mode
+function TypedValueInput({ varValue, onChange }) {
+  const type = inferType(varValue);
+
+  if (type === 'boolean') {
+    const isTrue = String(varValue).trim().toLowerCase() === 'true';
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onChange('true')}
+          className={`px-3 py-1 border-2 font-black text-xs uppercase rounded transition-all ${
+            isTrue
+              ? 'bg-green-600 border-green-700 text-white'
+              : 'bg-white dark:bg-gray-900 border-gray-400 text-gray-500 hover:border-green-500'
+          }`}
+        >
+          true
+        </button>
+        <button
+          onClick={() => onChange('false')}
+          className={`px-3 py-1 border-2 font-black text-xs uppercase rounded transition-all ${
+            !isTrue
+              ? 'bg-red-600 border-red-700 text-white'
+              : 'bg-white dark:bg-gray-900 border-gray-400 text-gray-500 hover:border-red-500'
+          }`}
+        >
+          false
+        </button>
+      </div>
+    );
+  }
+
+  if (type === 'number') {
+    return (
+      <input
+        type="number"
+        className="w-full px-2 py-1 border border-gray-400 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 rounded font-mono text-sm text-gray-900 dark:text-gray-100"
+        value={varValue}
+        onChange={e => onChange(e.target.value)}
+      />
+    );
+  }
+
+  // string
+  return (
+    <input
+      type="text"
+      className="w-full px-2 py-1 border border-gray-400 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 rounded font-mono text-sm text-gray-900 dark:text-gray-100"
+      value={varValue}
+      onChange={e => onChange(e.target.value)}
+    />
+  );
+}
 
 export default function VariablesModal({ isOpen, onClose, variables, setVariables, mode = 'create' }) {
   const [newVar, setNewVar] = useState('');
   const [newValue, setNewValue] = useState('');
+  const [pendingDelete, setPendingDelete] = useState(null); // key to delete | null
 
   if (!isOpen) return null;
 
@@ -20,9 +93,13 @@ export default function VariablesModal({ isOpen, onClose, variables, setVariable
   };
 
   const handleDelete = (key) => {
+    setPendingDelete(key);
+  };
+
+  const confirmDelete = () => {
     setVariables(prev => {
       const copy = { ...prev };
-      delete copy[key];
+      delete copy[pendingDelete];
       return copy;
     });
   };
@@ -33,14 +110,14 @@ export default function VariablesModal({ isOpen, onClose, variables, setVariable
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white dark:bg-gray-800 border-4 border-gray-900 dark:border-gray-200 p-6 w-[32rem] shadow-[8px_8px_0px_#000] dark:shadow-[8px_8px_0px_#fff]">
-        
+
         {/* Header */}
         <div className="flex justify-between items-center border-b-2 border-gray-900 dark:border-gray-200 pb-2 mb-4">
           <div>
             <h2 className="font-black uppercase tracking-widest text-lg text-gray-900 dark:text-gray-100">{title}</h2>
             {isChangeMode && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Edita o valor que será atribuído neste nó
+                O tipo de cada variável é inferido automaticamente e validado
               </p>
             )}
           </div>
@@ -59,6 +136,9 @@ export default function VariablesModal({ isOpen, onClose, variables, setVariable
               <thead>
                 <tr className="bg-gray-100 dark:bg-gray-700">
                   <th className="p-2 border-b border-gray-700 dark:border-gray-300 text-left">Nome</th>
+                  {isChangeMode && (
+                    <th className="p-2 border-b border-gray-700 dark:border-gray-300 text-left w-14">Tipo</th>
+                  )}
                   <th className="p-2 border-b border-gray-700 dark:border-gray-300 text-left">
                     {isChangeMode ? 'Novo Valor' : 'Valor'}
                   </th>
@@ -68,30 +148,52 @@ export default function VariablesModal({ isOpen, onClose, variables, setVariable
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(variables).map(([key, value]) => (
-                  <tr key={key}>
-                    <td className="p-2 border-b border-gray-700 dark:border-gray-300 font-mono text-gray-800 dark:text-gray-200">
-                      ${key}
-                    </td>
-                    <td className="p-2 border-b border-gray-700 dark:border-gray-300">
-                      <input
-                        className="w-full px-2 py-1 border border-gray-400 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 rounded font-mono text-sm"
-                        value={value}
-                        onChange={e => handleValueChange(key, e.target.value)}
-                      />
-                    </td>
-                    {!isChangeMode && (
-                      <td className="p-2 border-b border-gray-700 dark:border-gray-300 text-right">
-                        <button
-                          onClick={() => handleDelete(key)}
-                          className="px-2 py-1 border-2 border-red-600 text-red-600 font-black rounded hover:bg-red-600 hover:text-white transition-all"
-                        >
-                          Apagar
-                        </button>
+                {Object.entries(variables).map(([key, value]) => {
+                  const type = inferType(value);
+                  const { label, color } = typeLabel(type);
+                  return (
+                    <tr key={key}>
+                      <td className="p-2 border-b border-gray-700 dark:border-gray-300 font-mono text-gray-800 dark:text-gray-200">
+                        ${key}
                       </td>
-                    )}
-                  </tr>
-                ))}
+
+                      {/* Type badge — only in change mode */}
+                      {isChangeMode && (
+                        <td className="p-2 border-b border-gray-700 dark:border-gray-300">
+                          <span className={`px-1.5 py-0.5 border font-black text-[10px] uppercase rounded font-mono ${color}`}>
+                            {label}
+                          </span>
+                        </td>
+                      )}
+
+                      <td className="p-2 border-b border-gray-700 dark:border-gray-300">
+                        {isChangeMode ? (
+                          <TypedValueInput
+                            varValue={value}
+                            onChange={v => handleValueChange(key, v)}
+                          />
+                        ) : (
+                          <input
+                            className="w-full px-2 py-1 border border-gray-400 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 rounded font-mono text-sm text-gray-900 dark:text-gray-100"
+                            value={value}
+                            onChange={e => handleValueChange(key, e.target.value)}
+                          />
+                        )}
+                      </td>
+
+                      {!isChangeMode && (
+                        <td className="p-2 border-b border-gray-700 dark:border-gray-300 text-right">
+                          <button
+                            onClick={() => handleDelete(key)}
+                            className="px-2 py-1 border-2 border-red-600 text-red-600 font-black rounded hover:bg-red-600 hover:text-white transition-all"
+                          >
+                            Apagar
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           ) : (
@@ -139,6 +241,13 @@ export default function VariablesModal({ isOpen, onClose, variables, setVariable
           </button>
         </div>
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!pendingDelete}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+        message={`Tens a certeza que queres apagar a variável "$${pendingDelete}"? Esta ação não pode ser desfeita.`}
+      />
     </div>
   );
 }

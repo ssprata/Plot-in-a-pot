@@ -81,7 +81,7 @@ const edgeTypes = {
 // Função utilitária para extrair e fazer o parse seguro dos dados guardados no browser
 const getSavedData = () => {
   const saved = localStorage.getItem('plot-in-a-pot-project');
-  if (saved) {
+  if (saved && saved !== 'undefined') {
     try {
       return JSON.parse(saved);
     } catch (e) {
@@ -97,7 +97,9 @@ function App() {
   const savedData = useMemo(() => getSavedData(), []);
 
   // --- Estados Principais ---
-  const [nodes, setNodes, onNodesChange] = useNodesState(savedData?.nodes || initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(
+    Array.isArray(savedData?.nodes) ? savedData.nodes : initialNodes
+  );
   const [edges, setEdges, onEdgesChange] = useEdgesState(savedData?.edges || []);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState(null);
@@ -268,12 +270,12 @@ function App() {
   const [validationErrors, setValidationErrors] = useState([]);
 
   // --- Cálculos Memorizados do Ciclo do Grafo ---
-  const adjacencyList = useMemo(() => buildAdjacencyList(nodes, edges), [nodes, edges]);
-  const selectedNode = useMemo(() => nodes.find((n) => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
+  const adjacencyList = useMemo(() => buildAdjacencyList(nodes ?? [], edges ?? []), [nodes, edges]);
+  const selectedNode = useMemo(() => (nodes ?? []).find((n) => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
 
   // --- LÓGICA DE GESTÃO DE VARIÁVEIS ---
   const globalVars = useMemo(() => {
-    return nodes.reduce((acc, node) => {
+    return (nodes ?? []).reduce((acc, node) => {
       const vars = parseVariablesFromText(node.data.content);
       return { ...acc, ...vars };
     }, {});
@@ -297,22 +299,48 @@ function App() {
     if (!selectedNode) return;
     takeSnapshot();
 
-    setNodes((nds) => nds.map((node) => {
-      if (node.id === selectedNode.id) {
-        const currentVars = parseVariablesFromText(node.data.content);
-        const nextVars = typeof newVarsOrUpdater === 'function'
-          ? newVarsOrUpdater(currentVars)
-          : newVarsOrUpdater;
+    const sourceId = selectedNode.id;
 
-        const oldContent = node.data.content || '';
-        const cleanedContent = oldContent.replace(/<<set\s+\$([\w\d]+)\s*to\s*(.*?)>>\n?/g, '').trim();
-        const varBlock = stringifyVariablesToText(nextVars);
-        const newContent = varBlock ? `${varBlock}\n\n${cleanedContent}` : cleanedContent;
+    setNodes((nds) => {
+      const safeNds = nds ?? [];
+      const sourceNode = safeNds.find(n => n.id === sourceId);
+      if (!sourceNode) return safeNds;
 
-        return { ...node, data: { ...node.data, content: newContent } };
-      }
-      return node;
-    }));
+      const currentVars = parseVariablesFromText(sourceNode.data.content);
+      const nextVars = typeof newVarsOrUpdater === 'function'
+        ? newVarsOrUpdater(currentVars)
+        : newVarsOrUpdater;
+
+      const deletedKeys = Object.keys(currentVars).filter(k => !(k in nextVars));
+
+      return safeNds.map((node) => {
+        if (node.id === sourceId) {
+          const oldContent = node.data.content || '';
+          const cleanedContent = oldContent
+            .replace(/<<set\s+\$([\w\d]+)\s*(?:to|=)\s*(.*?)>>\n?/g, '')
+            .trim();
+          const varBlock = stringifyVariablesToText(nextVars);
+          const newContent = varBlock ? `${varBlock}\n\n${cleanedContent}` : cleanedContent;
+          return { ...node, data: { ...node.data, content: newContent } };
+        }
+
+        if (deletedKeys.length > 0) {
+          let content = node.data.content || '';
+          let changed = false;
+          deletedKeys.forEach(key => {
+            const before = content;
+            content = content.replace(
+              new RegExp(`<<set\\s+\\$${key}\\s*(?:to|=)\\s*.*?>>\\n?`, 'g'),
+              ''
+            );
+            if (content !== before) changed = true;
+          });
+          if (changed) return { ...node, data: { ...node.data, content: content.trim() } };
+        }
+
+        return node;
+      });
+    });
   }, [selectedNode, setNodes, takeSnapshot]);
 
   // Filtragem visual para ocultar nós marcados com a tag "secreto" no modo de visualização normal
@@ -443,14 +471,12 @@ function App() {
     }
 
     flushSync(() => {
-      setNodes(nds => {
-        const currentNodes = nds;
+      setNodes(nds =>
         nds.map((n) =>
           n.id === nodeId
             ? { ...n, data: { ...n.data, content: text, choices: newChoices, warnings: localWarnings } }
             : n
         )
-      }
       );
     });
 

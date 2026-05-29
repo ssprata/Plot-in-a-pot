@@ -33,7 +33,7 @@ function groupNodesByTag(nodes) {
 }
 
 export default function ConnectionModal({
-  isOpen, onClose, onConfirm, params, nodes, globalVars
+  isOpen, onClose, onConfirm, params, nodes = [], globalVars = {}
 }) {
   const [mode, setMode] = useState('simple'); // 'simple' | 'conditional'
   const [choiceText, setChoiceText] = useState('');
