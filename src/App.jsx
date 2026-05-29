@@ -43,7 +43,7 @@ import { loadConfig } from './utils/configLoader';
 // --- HELPERS PARA VARIÁVEIS (Regex SugarCube) ---
 const parseVariablesFromText = (text = '') => {
   const vars = {};
-  const regex = /<<set\s+\$([\w\d]+)\s*to\s*(.*?)>>/g;
+  const regex = /<<set\s+\$([\w\d]+)\s*(?:to|=)\s*(.*?)>>/g;
   let match;
   while ((match = regex.exec(text)) !== null) {
     vars[match[1]] = match[2].trim();
