@@ -1,7 +1,8 @@
+// src/components/Inspector.jsx
 import React, { useState } from 'react';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
-import DeleteConfirmModal from './DeleteConfirmModal'; // Importado o novo componente
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 export default function Inspector({
   selectedNode,
@@ -11,15 +12,17 @@ export default function Inspector({
   syncChoicesFromText,
   setStartNode,
   onOpenVariables,
-  onChangeVariables
+  onChangeVariables,
+  translations // ADICIONADO: Recebe a base mestre de tradução para ler as chaves no preview
 }) {
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
 
   const [isLocalVarMode, setIsLocalVarMode] = useState(false);
-  
-  // --- ESTADO LOCAL DO MODAL DE REMOÇÃO ---
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  
+  // --- ESTADO LOCAL PARA O PREVIEW NARRATIVO ---
+  const [previewLang, setPreviewLang] = useState(translations?.languages?.[0] || 'pt');
 
   const openHelp = (title, subtitle, content) => {
     showInfoPopout({ title, subtitle, content });
@@ -76,6 +79,44 @@ export default function Inspector({
     }
   };
 
+  // --- COMPILADOR DE PREVIEW NARRATIVO LOCALIZADO ---
+  const handleOpenTextPreview = () => {
+    let rawContent = selectedNode.data.content || "";
+    if (!rawContent) rawContent = "...";
+
+    // 1. Algoritmo de substituição: Procura padrões t('sua.chave') ou t("sua.chave")
+    const interpolatedText = rawContent.replace(/t\(['"]([^'"]+)['"]\)/g, (match, key) => {
+      if (translations?.keys?.[key]?.[previewLang]) {
+        return translations.keys[key][previewLang];
+      }
+      // Fallback em cascata: idioma base ou o nome da própria chave
+      const defaultLang = translations?.languages?.[0] || 'pt';
+      return translations?.keys?.[key]?.[defaultLang] || `[${key}]`;
+    });
+
+    // 2. Remove macros técnicas do SugarCube (como <<set>>) do texto puro de leitura da história
+    const cleanNarrative = interpolatedText
+      .replace(/<<set\s+.*?\s*to\s*.*?>>\n?/g, '')
+      .replace(/<<set\s+.*?\s*=\s*.*?>>\n?/g, '')
+      .trim();
+
+    // 3. Injeta o resultado final estruturado diretamente no teu Popout lateral reaproveitável
+    showInfoPopout({
+      title: t('inspector.preview.title', 'Narrative Preview'),
+      subtitle: `${t('inspector.preview.subtitle', 'Live simulation bundle')} [${previewLang.toUpperCase()}]`,
+      content: (
+        <div className="space-y-3 text-sm leading-relaxed text-gray-800 dark:text-gray-200 font-sans">
+          <div className="bg-gray-100 dark:bg-gray-950 p-4 border-2 border-gray-900 dark:border-gray-700 shadow-inner whitespace-pre-wrap rounded-none min-h-[150px]">
+            {cleanNarrative || <span className="italic opacity-40">Sem texto narrativo para simular nesta cena.</span>}
+          </div>
+          <span className="block text-[10px] font-mono text-gray-400 uppercase tracking-tight">
+            * Nota: Macros técnicas do tipo &lt;&lt;set&gt;&gt; e modificadores de memória foram omitidos desta visualização.
+          </span>
+        </div>
+      )
+    });
+  };
+
   const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
   const isStoryInit = selectedNode?.data.label === 'StoryInit';
 
@@ -84,8 +125,6 @@ export default function Inspector({
       <p className="font-medium italic">
         {t('inspector.help.content.help.subtitle')}
       </p>
-
-      {/* Secção de Variáveis */}
       <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
         <h4 className="font-black uppercase text-xs text-blue-600 dark:text-blue-400 mb-1">
           {t('inspector.help.content.help.variablesTitle')}
@@ -97,50 +136,6 @@ export default function Inspector({
           <li>{t('inspector.help.content.help.variablesExample1')}</li>
           <li>{t('inspector.help.content.help.variablesExample2')}</li>
           <li>{t('inspector.help.content.help.variablesExample3')}</li>
-        </ul>
-      </div>
-
-      {/* Secção de Escolhas e Links */}
-      <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
-        <h4 className="font-black uppercase text-xs text-purple-600 dark:text-purple-400 mb-1">
-          {t('inspector.help.content.help.linksTitle')}
-        </h4>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-          {t('inspector.help.content.help.linksText')}
-        </p>
-        <ul className="space-y-1 font-mono text-[11px] bg-gray-100 dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300">
-          <li>{t('inspector.help.content.help.linksExample1')}</li>
-          <li>{t('inspector.help.content.help.linksExample2')}</li>
-          <li>{t('inspector.help.content.help.linksExample3')}</li>
-        </ul>
-      </div>
-
-      {/* Secção de Localização */}
-      <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
-        <h4 className="font-black uppercase text-xs text-yellow-600 dark:text-yellow-500 mb-1">
-          {t('inspector.help.content.help.i18nTitle')}
-        </h4>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-          {t('inspector.help.content.help.i18nText')}
-        </p>
-        <ul className="space-y-1 font-mono text-[11px] bg-gray-100 dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300">
-          <li>{t('inspector.help.content.help.i18nExample1')}</li>
-          <li>{t('inspector.help.content.help.i18nExample2')}</li>
-          <li>{t('inspector.help.content.help.i18nExample3')}</li>
-        </ul>
-      </div>
-
-      {/* Secção de Condicionais */}
-      <div className="border-t border-gray-300 dark:border-gray-700 pt-3">
-        <h4 className="font-black uppercase text-xs text-red-600 dark:text-red-400 mb-1">
-          {t('inspector.help.content.help.logicTitle')}
-        </h4>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-          {t('inspector.help.content.help.logicText')}
-        </p>
-        <ul className="space-y-1 font-mono text-[11px] bg-gray-100 dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 rounded text-gray-700 dark:text-gray-300">
-          <li>{t('inspector.help.content.help.logicExample1')}</li>
-          <li>{t('inspector.help.content.help.logicExample2')}</li>
         </ul>
       </div>
     </div>
@@ -211,6 +206,33 @@ export default function Inspector({
               {t('inspector.setStart')}
             </button>
           </div>
+
+          {/* NARRATIVE TEXT LIVE PREVIEW PANEL (ADICIONADO) */}
+          {selectedNode.data.nodeType === 'choice' && (
+            <div className="mb-4 p-2 bg-gray-50 dark:bg-gray-900 border-2 border-gray-900 dark:border-gray-700 flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase text-gray-500 tracking-wider">
+                Motor de Preview Localizado
+              </span>
+              <div className="flex gap-2">
+                <select
+                  value={previewLang}
+                  onChange={(e) => setPreviewLang(e.target.value)}
+                  className="flex-1 p-1 bg-white dark:bg-gray-800 border-2 border-gray-900 text-xs font-bold uppercase text-gray-900 dark:text-white"
+                >
+                  {translations?.languages?.map((lang) => (
+                    <option key={lang} value={lang}>{lang.toUpperCase()}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleOpenTextPreview}
+                  className="px-3 py-1 bg-yellow-400 hover:bg-yellow-500 border-2 border-gray-900 text-gray-900 font-black text-xs uppercase tracking-tight shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                >
+                  {t('inspector.previewButton', 'Preview')}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* CONTENT AREA */}
           <div className="mb-4 flex-1 flex flex-col">
@@ -291,7 +313,7 @@ export default function Inspector({
             )}
           </div>
 
-          {/* CORREGIDO: O botão de remoção ativa a barreira de segurança local */}
+          {/* DELETE BUTTON */}
           <div className="mt-auto pt-4 border-t-2 border-gray-200 dark:border-gray-600">
             <button
               onClick={() => setIsDeleteOpen(true)}
@@ -314,7 +336,6 @@ export default function Inspector({
         </div>
       )}
 
-      {/* RENDERIZAÇÃO DO MODAL DE REMOÇÃO SEPARADO */}
       <DeleteConfirmModal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}

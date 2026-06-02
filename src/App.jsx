@@ -1073,6 +1073,7 @@ function App() {
           setStartNode={setStartNode}
           onOpenVariables={openVariablesEditor}
           onChangeVariables={openChangeVariablesEditor}
+          translations={translations}
         />
 
         <DataPanel
