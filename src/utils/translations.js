@@ -221,34 +221,39 @@ export const translations = {
             language: 'Current Locale'
         },
         inspector: {
-            title: 'Inspector',
+            title: 'Cell Inspector',
             id: 'ID:',
-            label: 'Label (Name)',
-            type: 'Type',
+            label: 'Node Name (Label)',
+            type: 'Node Type',
             tags: 'Tags',
-            typeChoice: 'Choice (Scene)',
-            typeJavaScript: 'JavaScript (Logic)',
-            typeCss: 'CSS (Style)',
-            setStart: 'Set as Start',
+            typeChoice: 'Scene / Choice',
+            typeJavaScript: 'Script (JS)',
+            typeCss: 'Style (CSS)',
+            setStart: 'Set as Start Node',
             narrativeText: 'Narrative Text',
             sourceCode: 'Source Code',
             createVariable: '+ Create Variable',
             changeValue: '+/- Change Value',
             localVarHint: 'Create a variable only in this node',
             syntaxWarnings: 'Syntax Warnings:',
-            selectNode: 'Select a node to edit.',
+            selectNode: 'Select a node on the graph to inspect or edit its properties.',
             deleteNode: 'Delete Node',
+            previewButton: 'Preview',
+            preview: {
+                title: 'Narrative Preview',
+                subtitle: 'Live text simulation bundle'
+            },
             deleteConfirm: {
                 nodeMessage: "Are you sure you want to delete this story scene node? All graph edges connected to it will be purged synchronously."
             },
             help: {
                 label: {
-                    title: 'Label',
-                    subtitle: 'Node Identifier',
-                    text: 'The exact name used for linking [[Target]].'
+                    title: 'Node Name',
+                    subtitle: 'Unique identifier',
+                    text: 'The node label serves as the reference destination for Twine links and navigation. Avoid duplicate names.'
                 },
                 type: {
-                    title: 'Type',
+                    title: 'Node Type',
                     subtitle: 'Block Function',
                     text: 'Defines whether this block contains narrative story or technical code.'
                 },
@@ -264,29 +269,21 @@ export const translations = {
                     help: {
                         title: 'Content Syntax Guide',
                         subtitle: 'Supported formats inside story nodes',
-
-                        // Secção de Variáveis
                         variablesTitle: 'System Variables',
                         variablesText: 'You can declare and print dynamic data in real-time within the simulator memory:',
                         variablesExample1: 'Invisible assignment: <<set $gold = 50>>',
                         variablesExample2: 'Manual printing: <<print $gold>> or <<= $gold>>',
                         variablesExample3: 'Direct text injection: "You have $gold coins in your pocket."',
-
-                        // Secção de Escolhas e Links
                         linksTitle: 'Links and Choices',
                         linksText: 'To create connections between scenes and generate automatic navigation buttons:',
                         linksExample1: 'Standard Twine link: [[Go to the Market]]',
                         linksExample2: 'Link with custom display text: [[Talk to Merchant|Market]] or [[Talk to Merchant -> Market]]',
                         linksExample3: 'Native SugarCube macro: <<link "Button Text">><<goto "Market">><</link>>',
-
-                        // Secção de Localização
                         i18nTitle: 'Localization Keys (Multi-Language)',
                         i18nText: 'To ensure the story adapts to active simulator locale swaps seamlessly, inject the localization macro into narratives or buttons:',
                         i18nExample1: 'Translated narrative line: t("story.intro")',
                         i18nExample2: 'Translated graph node button: [[t("choices.go_market")|Market]]',
                         i18nExample3: 'Translated SugarCube macro: <<link \'t("choices.buy_key")\'>>...',
-
-                        // Secção de Condicionais
                         logicTitle: 'Conditional Logic and Blocks',
                         logicText: 'Control player choices visibility and access by validating system states:',
                         logicExample1: 'Standard conditional block: <<if $gold >= 10>>Appears if condition is met<</if>>',
@@ -326,7 +323,7 @@ export const translations = {
             generateAi: 'Hotkey: Ctrl + I',
             play: 'Hotkey: Ctrl + P',
             settings: 'Hotkey: Ctrl + ,',
-            validator: 'Hotkey: Ctrl + V'
+            navigator: 'Hotkey: Ctrl + V'
         },
         translationMatrix: {
             title: 'Localization Matrix',
@@ -347,7 +344,7 @@ export const translations = {
             applyChanges: 'Apply Changes',
             emptySelectionHint: 'Select any table cell to inspect or edit its content without popups.',
             deleteConfirm: {
-                keyMessage: "Are you sure you want to completely erase this localization key? This will permanently delete its translation contents across all configuration maps."
+                keyMessage: "Are you sure you want to completely erase this localization key? This will permanently delete its translation contents across all language tables."
             },
             help: {
                 title: 'Matrix Workspace Help',
@@ -356,13 +353,13 @@ export const translations = {
                 line2: 'The first configured column functions as the source language of reference for the simulation.'
             }
         },
-        "exportModal": {
-            "title": "Exportar História Twee",
-            "description": "Selecione o formato de compilação para o ficheiro final do Twine (.twee):",
-            "selectLabel": "Formato de Compilação Alvo:",
-            "optionKeys": "Base de Dados de Chaves -> Formato t(\"...\")",
-            "optionMonolingual": "História Monolíngue -> Formato {{lang}}",
-            "confirmButton": "Exportar Ficheiro"
+        exportModal: {
+            title: "Export Twee Story",
+            description: "Select the compilation format for the final Twine file (.twee):",
+            selectLabel: "Target Compilation Format:",
+            optionKeys: "Keys Database -> Format t(\"...\")",
+            optionMonolingual: "Monolingual Story -> Format {{lang}}",
+            confirmButton: "Export File"
         }
     },
 
@@ -497,7 +494,7 @@ export const translations = {
                     title: 'Motor de Localização',
                     subtitle: 'Mapeamento de chaves dinâmicas',
                     line1: 'Cria chaves textuais unificadas para evitar texto estático. Dentro dos teus nós de história podes chamá-las usando a sintaxe:',
-                    syntaxExample: 'Estás a ver uma [[t("cena_gruta")]].'
+                    syntaxExample: 'Usa a macro t("sua_chave") nas caixas narrativas ou escolhas.'
                 }
             }
         },
@@ -522,7 +519,7 @@ export const translations = {
                 flowAlerts: {
                     title: 'Alertas de Fluxo',
                     subtitle: 'Avisos de erros lógicos',
-                    text: 'Controla a caixa vermelha no painel de dados. Se estiver ativo, o sistema avisa-te sobre opções permanentemente bloqueadas ou partes narrativas inatingíveis.',
+                    text: 'Controla a caixa vermelha no painel de dados. Se estiver ativo, o system avisa-te sobre opções permanentemente bloqueadas ou partes narrativas inatingíveis.',
                     aria: 'Ajuda Alertas de Fluxo'
                 },
                 adjacencyList: {
@@ -592,41 +589,46 @@ export const translations = {
             language: 'Idioma Atual'
         },
         inspector: {
-            title: 'Inspector',
+            title: 'Inspetor de Célula',
             id: 'ID:',
             label: 'Label (Nome)',
-            type: 'Type',
-            tags: 'Tags',
-            typeChoice: 'Choice (Cena)',
-            typeJavaScript: 'JavaScript (Lógica)',
-            typeCss: 'CSS (Estilo)',
-            setStart: 'Definir como Começo',
+            type: 'Tipo de Nó',
+            tags: 'Etiquetas (Tags)',
+            typeChoice: 'Cena / Escolha',
+            typeJavaScript: 'Script (JS)',
+            typeCss: 'Estilo (CSS)',
+            setStart: 'Definir como Nó Inicial',
             narrativeText: 'Texto Narrativo',
             sourceCode: 'Código Fonte',
             createVariable: '+ Criar Variável',
             changeValue: '+/- Alterar Valor',
             localVarHint: 'Criar uma variável só nesta node',
             syntaxWarnings: 'Avisos de Sintaxe:',
-            selectNode: 'Seleciona um nó para editar.',
-            deleteNode: 'Apagar Nó',
+            selectNode: 'Seleciona um nó no grafo para inspecionar ou editar as suas propriedades.',
+            deleteNode: 'Eliminar Nó',
+            previewButton: 'Preview',
+            preview: {
+                title: 'Preview Narrativo',
+                subtitle: 'Simulação de texto em tempo real'
+            },
             deleteConfirm: {
                 nodeMessage: "Tens a certeza que desejas eliminar este nó de cena? Todas as ligações associadas a ele serão removidas em cascata do grafo."
             },
             help: {
                 label: {
-                    title: 'Label',
-                    subtitle: 'Identificador do nó',
-                    text: 'O nome exato usado para os links [[Destino]].'
+                    title: 'Nome do Nó',
+                    subtitle: 'Identificador único',
+                    text: 'O nome do nó serve como referência para os links e navegação do Twine. Evita duplicar nomes.'
                 },
                 type: {
-                    title: 'Tipo',
-                    subtitle: 'Função do bloco',
-                    text: 'Define se este bloco contém história narrativa ou código técnico.'
+                    title: 'Tipo de Nó',
+                    subtitle: 'Comportamento no motor',
+                    text: 'Nós de cena contêm texto e escolhas. Nós de JS e CSS servem para injetar scripts globais ou estilos personalizados na história.'
                 },
                 tags: {
                     title: 'Tags',
-                    subtitle: 'Metadados',
-                    text: 'Utilizado para comportamentos especiais. Ex: start, secreto.'
+                    subtitle: 'Metadados do nó',
+                    text: 'Usa tags separadas por vírgulas. A tag \'secreto\' esconde o nó no editor caso a opção correspondente esteja ativa.'
                 },
                 content: {
                     title: 'Conteúdo',
@@ -635,29 +637,21 @@ export const translations = {
                     help: {
                         title: 'Guia de Sintaxe do Conteúdo',
                         subtitle: 'Formatos suportados no corpo dos nós',
-
-                        // Secção de Variáveis
                         variablesTitle: 'Variáveis do Sistema',
                         variablesText: 'Podes declarar e imprimir dados dinâmicos em tempo real na memória do simulador:',
                         variablesExample1: 'Declaração invisível: <<set $ouro = 50>>',
                         variablesExample2: 'Impressão manual: <<print $ouro>> ou <<= $ouro>>',
                         variablesExample3: 'Injeção direta no texto: "Tens $ouro moedas no bolso."',
-
-                        // Secção de Escolhas e Links
                         linksTitle: 'Ligações e Escolhas',
                         linksText: 'Para criar caminhos entre cenas e gerar botões automáticos no ecrã de jogo:',
                         linksExample1: 'Link padrão Twine: [[Ir para o Mercado]]',
                         linksExample2: 'Link com texto customizado: [[Falar com o Mercador|Mercado]] ou [[Falar com o Mercador -> Mercado]]',
                         linksExample3: 'Macro nativa SugarCube: <<link "Texto do Botão">><<goto "Mercado">><</link>>',
-
-                        // Secção de Localização (A nova feature)
                         i18nTitle: 'Chaves de Localização (Multi-Idioma)',
                         i18nText: 'Para garantir que a história responde à troca dinâmica de idioma sem quebrar o simulador, usa a macro de tradução no corpo das cenas ou nos botões:',
                         i18nExample1: 'Narrativa traduzida: t("story.intro")',
                         i18nExample2: 'Botão traduzido no Grafo: [[t("choices.go_market")|Mercado]]',
                         i18nExample3: 'Macro traduzida SugarCube: <<link \'t("choices.buy_key")\'>>...',
-
-                        // Secção de Condicionais (Lógica do Jogo)
                         logicTitle: 'Lógica Condicional e Bloqueios',
                         logicText: 'Controla o acesso às escolhas do jogador validando o estado das tuas variáveis:',
                         logicExample1: 'Condicional padrão: <<if $moedas >= 10>>Aparece se tiver moedas<</if>>',
