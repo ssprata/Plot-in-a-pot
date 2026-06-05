@@ -35,6 +35,7 @@ import VariablesModal from './components/VariablesModal';
 import ConnectionModal from './components/ConnectionModal';
 import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
+import TemplatePromptModal from './components/TemplatePromptModal';
 
 // Contexto de Tema e Carregamento de Configurações
 import { useTheme } from './contexts/ThemeContext';
@@ -116,6 +117,20 @@ function App() {
 
   // --- ESTADO DO MODAL DE LIGAÇÃO ---
   const [pendingConnection, setPendingConnection] = useState(null); // { source, target } | null
+
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+
+  useEffect(() => {
+    const getCookie = (name) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+      return null;
+    };
+    const seenPrompt = getCookie('seen-template-prompt');
+    if (seenPrompt === 'false' || seenPrompt === null) {
+      setIsTemplateModalOpen(true);
+    }
+  }, []);
 
   const [importError, setImportError] = useState('');
   const [parserWarnings, setParserWarnings] = useState([]);
@@ -787,6 +802,59 @@ function App() {
     }
   }, [importText, setNodes, setEdges]);
 
+  const handleLoadBaseTemplate = useCallback(async () => {
+    try {
+      // 1. Fetch Twee Template
+      const tweeResponse = await fetch('/templates/base_template.twee');
+      if (!tweeResponse.ok) {
+        throw new Error(`Failed to fetch base_template.twee (status: ${tweeResponse.status})`);
+      }
+      const tweeText = await tweeResponse.text();
+      
+      // Parse and format Twee nodes
+      const { nodes: newNodes, edges: newEdges, warnings } = parseTwee3(tweeText);
+      const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
+      const formattedNodes = newNodes.map(n => {
+        let tags = Array.isArray(n.data.tags) ? n.data.tags.join(', ') : String(n.data.tags || "");
+        if (systemNodes.includes(n.data.label.toLowerCase()) && !tags.includes('secreto')) {
+          tags = tags ? `${tags}, secreto` : 'secreto';
+        }
+        return { ...n, data: { ...n.data, tags } };
+      });
+
+      // 2. Fetch CSV Translations
+      const csvResponse = await fetch('/translations/base_template.csv');
+      if (!csvResponse.ok) {
+        throw new Error(`Failed to fetch base_template.csv (status: ${csvResponse.status})`);
+      }
+      const csvText = await csvResponse.text();
+
+      // Parse CSV
+      const [headerLine, ...lines] = csvText.split('\n');
+      const languages = headerLine.split(',').slice(1).map(l => l.trim().toLowerCase());
+      const newKeys = {};
+      lines.forEach(line => {
+        if (!line.trim()) return;
+        const [key, ...values] = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        newKeys[key] = {};
+        languages.forEach((lang, i) => {
+          newKeys[key][lang] = values[i]?.replace(/^"|"$/g, '').replace(/""/g, '"') || '';
+        });
+      });
+
+      // Update state
+      setNodes(formattedNodes);
+      setEdges(newEdges);
+      setTranslations({ languages, keys: newKeys });
+      setParserWarnings(warnings || []);
+      setImportError('');
+      
+    } catch (err) {
+      console.error("Error loading base template files:", err);
+      alert(t('alerts.loadTemplateError', `Failed to load base template files: ${err.message}`));
+    }
+  }, [setNodes, setEdges, setTranslations, setParserWarnings, setImportError, t]);
+
   // CORREGIDO: Declarada a função de duplo clique na aresta para evitar erro no-undef
   const onEdgeDoubleClick = useCallback((event, edge) => {
     event.preventDefault();
@@ -1122,6 +1190,12 @@ function App() {
           params={pendingConnection}
           nodes={nodes}
           globalVars={globalVars}
+        />
+
+        <TemplatePromptModal
+          isOpen={isTemplateModalOpen}
+          onClose={() => setIsTemplateModalOpen(false)}
+          onLoadBaseTemplate={handleLoadBaseTemplate}
         />
       </div>
     </InfoPopoutProvider>

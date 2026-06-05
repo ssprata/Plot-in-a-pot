@@ -360,6 +360,16 @@ export const translations = {
             optionKeys: "Keys Database -> Format t(\"...\")",
             optionMonolingual: "Monolingual Story -> Format {{lang}}",
             confirmButton: "Export File"
+        },
+        templatePrompt: {
+            title: "Base Template Prompt",
+            question: "Do you want to see a base template?",
+            yes: "Yes",
+            no: "No",
+            instructionsTitle: "Where to Place a Template",
+            instructionsLine1: "To add or configure a base template, you can edit the initialNodes array in:",
+            instructionsLine2: "This array defines the initial structure of nodes loaded when the local storage workspace is empty (or reset). You can customize it with your own default passages, text templates, or styling settings.",
+            gotIt: "Got it!"
         }
     },
 
@@ -728,6 +738,16 @@ export const translations = {
             optionKeys: "Base de Dados de Chaves -> Formato t(\"...\")",
             optionMonolingual: "História Monolíngue -> Formato {{lang}}",
             confirmButton: "Exportar Ficheiro"
+        },
+        templatePrompt: {
+            title: "Prompt do Modelo Base",
+            question: "Desejas ver um modelo base?",
+            yes: "Sim",
+            no: "Não",
+            instructionsTitle: "Onde colocar um Modelo",
+            instructionsLine1: "Para adicionar ou configurar um modelo base, podes editar o array initialNodes em:",
+            instructionsLine2: "Este array define a estrutura inicial dos nós carregados quando o espaço de trabalho do armazenamento local está vazio (ou após um reset). Podes personalizá-lo com as tuas próprias passagens padrão, modelos de texto ou definições de estilo.",
+            gotIt: "Entendido!"
         }
     }
 };

@@ -1,0 +1,5 @@
+Key,pt,en
+system.welcome_message,"O motor gráfico e a base de dados de localização estão sincronizados.","The graphics engine and the localization database are fully synchronized."
+choices.leave_cave,"Recuar para a Entrada","Retreat to the Entrance"
+shop.insufficient_gold,"[Bloqueado] Não tens moedas suficientes para comprar a espada no mercado.","[Locked] You do not have enough coins to purchase the sword from the market."
+story.victory_screen,"✓ VITÓRIA: O fluxo da história está consistente!","✓ VICTORY: The story flow is entirely consistent!"

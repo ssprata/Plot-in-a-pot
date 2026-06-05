@@ -1,0 +1,76 @@
+:: StoryTitle
+Plot in a Pot - Feature Showcase Template
+
+:: StoryData
+{
+  "ifid": "F3F82260-1419-48CB-B1DC-2C3C56D7324B",
+  "format": "SugarCube",
+  "format-version": "2.36.0",
+  "start": "Start",
+  "zoom": 1
+}
+
+:: StoryInit
+/* OBRIGATÓRIO: Declaração e inicialização de todas as variáveis globais */
+<<set $playerGold to 15>>
+<<set $hasKey to false>>
+<<set $playerName to "Aventureiro">>
+
+:: Start
+/* Cena Inicial: Demonstração de Variáveis, Impressão e Tradução */
+<<set $playerName to "Miguel">>
+
+// 1. Injeção Direta e Impressão de Variáveis //
+Bem-vindo ao simulador, $playerName!
+Atualmente tens <<print $playerGold>> moedas de ouro no teu inventário.
+(O teu bónus tático de ouro é: <<= setup.calcularBonus($playerGold) >>)
+
+// 2. Texto Localizado (Lido diretamente da Matriz de Localização) //
+Aviso do Sistema: t("system.welcome_message")
+
+// 3. Links de Navegação Simples (Geram arestas automáticas no Grafo) //
+Escolhe o teu caminho para continuar a simulação:
+* [[Explorar a Gruta Escura|CenaGruta]]
+* [[Ir inspecionar a Taverna|CenaTaverna]]
+
+:: CenaGruta
+/* Cena Intermédia: Demonstração de Modificadores e Links Traduzidos */
+<<set $hasKey to true>>
+
+Entraste na gruta escura. O chão está escorregadio, mas encontraste uma chave antiga no chão!
+<<set $playerGold to $playerGold + 10>>
+Recebeste mais 10 moedas de ouro.
+
+// Link usando uma chave da Matriz de Localização no botão //
+* [[t("choices.leave_cave")|Start]]
+
+:: CenaTaverna
+/* Cena Lógica: Validação de Condicionais <<if>> e desativação de botões */
+Estás no interior da Taverna do Grafo. À tua frente está uma arca trancada e o balcão do mercador.
+
+O que desejas fazer?
+
+// Bloco Condicional Padrão: Valida se o jogador tem ouro suficiente //
+<<if $playerGold >= 20>>
+  * [[Comprar Espada Lendária (Custa 20 moedas)|Start]] <<set $playerGold to $playerGold - 20>>
+<<else>>
+  // Texto alternativo caso a condição falhe //
+  t("shop.insufficient_gold")
+<</if>>
+
+// Bloco Condicional Complexo com <<else>>: Valida o estado da chave da gruta //
+<<if $hasKey is true>>
+  * [[Abrir a Arca Misteriosa|CenaVitoria]]
+<<else>>
+  /* Se o jogador não tem a chave, o botão é exibido mas fica desativado no PlayMode */
+  * [[Abrir a Arca Misteriosa (Precisas da Chave)|CenaTaverna]] <<if $hasKey is false>><<type "disabled">><</if>>
+<</if>>
+
+* [[Voltar para trás|Start]]
+
+:: CenaVitoria
+/* Ecrã de Fim Alcançável para o Validador Lógico */
+t("story.victory_screen")
+
+Parabéns! Conseguiste abrir a arca, validar o fluxo do grafo e terminar o jogo-tutorial.
+* [[Reiniciar Simulação|Start]] <<set $playerGold to 15>> <<set $hasKey to false>>
