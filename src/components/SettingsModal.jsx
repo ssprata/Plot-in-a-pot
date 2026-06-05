@@ -35,10 +35,10 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
           <div className="flex items-center justify-between pb-2">
             <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Idioma / Language</span>
             <button
-              onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'pt' : 'en')}
+              onClick={() => i18n.changeLanguage((i18n.language || 'en').startsWith('en') ? 'pt' : 'en')}
               className="px-4 py-1 border-2 border-gray-900 dark:border-gray-200 bg-gray-200 dark:bg-gray-700 font-black text-xs uppercase hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
             >
-              {i18n.language === 'en' ? 'Português (PT)' : 'English (EN)'}
+              {(i18n.language || 'en').startsWith('en') ? 'Português (PT)' : 'English (EN)'}
             </button>
           </div>
 
