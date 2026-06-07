@@ -52,11 +52,7 @@ const parseVariablesFromText = (text = '') => {
   return vars;
 };
 
-const stringifyVariablesToText = (vars) => {
-  return Object.entries(vars)
-    .map(([key, val]) => `<<set $${key} to ${val}>>`)
-    .join('\n');
-};
+
 
 // Nó de inicialização padrão caso o armazenamento local esteja vazio
 const initialNodes = [
@@ -310,53 +306,6 @@ function App() {
     setIsVarModalOpen(true);
   }, [selectedNode]);
 
-  const saveVariablesToNode = useCallback((newVarsOrUpdater) => {
-    if (!selectedNode) return;
-    takeSnapshot();
-
-    const sourceId = selectedNode.id;
-
-    setNodes((nds) => {
-      const safeNds = nds ?? [];
-      const sourceNode = safeNds.find(n => n.id === sourceId);
-      if (!sourceNode) return safeNds;
-
-      const currentVars = parseVariablesFromText(sourceNode.data.content);
-      const nextVars = typeof newVarsOrUpdater === 'function'
-        ? newVarsOrUpdater(currentVars)
-        : newVarsOrUpdater;
-
-      const deletedKeys = Object.keys(currentVars).filter(k => !(k in nextVars));
-
-      return safeNds.map((node) => {
-        if (node.id === sourceId) {
-          const oldContent = node.data.content || '';
-          const cleanedContent = oldContent
-            .replace(/<<set\s+\$([\w\d]+)\s*(?:to|=)\s*(.*?)>>\n?/g, '')
-            .trim();
-          const varBlock = stringifyVariablesToText(nextVars);
-          const newContent = varBlock ? `${varBlock}\n\n${cleanedContent}` : cleanedContent;
-          return { ...node, data: { ...node.data, content: newContent } };
-        }
-
-        if (deletedKeys.length > 0) {
-          let content = node.data.content || '';
-          let changed = false;
-          deletedKeys.forEach(key => {
-            const before = content;
-            content = content.replace(
-              new RegExp(`<<set\\s+\\$${key}\\s*(?:to|=)\\s*.*?>>\\n?`, 'g'),
-              ''
-            );
-            if (content !== before) changed = true;
-          });
-          if (changed) return { ...node, data: { ...node.data, content: content.trim() } };
-        }
-
-        return node;
-      });
-    });
-  }, [selectedNode, setNodes, takeSnapshot]);
 
   // Filtragem visual para ocultar nós marcados com a tag "secreto" no modo de visualização normal
   const visibleNodes = useMemo(() => {

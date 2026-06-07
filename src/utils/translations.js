@@ -370,6 +370,31 @@ export const translations = {
             instructionsLine1: "To add or configure a base template, you can edit the initialNodes array in:",
             instructionsLine2: "This array defines the initial structure of nodes loaded when the local storage workspace is empty (or reset). You can customize it with your own default passages, text templates, or styling settings.",
             gotIt: "Got it!"
+        },
+        variablesModal: {
+            title: 'Story Variables',
+            globalScope: 'Global Variables',
+            localScope: 'Current Scene (Local)',
+            searchPlaceholder: 'Search variables...',
+            createBtn: 'Create variable',
+            colName: 'Name',
+            colType: 'Type',
+            colValue: 'Default Value',
+            colLocalValue: 'Scene Value',
+            activeInScene: 'Active in Scene',
+            renameHint: 'Renaming propagates automatically across the entire project.',
+            noVars: 'No variables found.',
+            noVarsGlobalDesc: 'Create global variables using the "+ Create variable" button above.',
+            noVarsLocalDesc: 'Activate global variables in the current scene to modify them locally.',
+            confirmDeleteTitle: 'Delete Variable',
+            typeNumber: 'Number',
+            typeString: 'String',
+            typeBoolean: 'Boolean',
+            delete: 'Delete',
+            cancel: 'Cancel',
+            close: 'Close',
+            allTypes: 'All variables',
+            sceneContext: 'Scene:'
         }
     },
 
@@ -746,8 +771,33 @@ export const translations = {
             no: "Não",
             instructionsTitle: "Onde colocar um Modelo",
             instructionsLine1: "Para adicionar ou configurar um modelo base, podes editar o array initialNodes em:",
-            instructionsLine2: "Este array define a estrutura inicial dos nós carregados quando o espaço de trabalho do armazenamento local está vazio (ou após um reset). Podes personalizá-lo com as tuas próprias passagens padrão, modelos de texto ou definições de estilo.",
+            instructionsLine2: "Este array define a estrutura inicial dos nós carregados quando o espaço de trabalho do armazenamento local está vazio (or após um reset). Podes personalizá-lo com as tuas próprias passagens padrão, modelos de texto ou definições de estilo.",
             gotIt: "Entendido!"
+        },
+        variablesModal: {
+            title: 'Variáveis do Jogo',
+            globalScope: 'Variáveis Globais',
+            localScope: 'Cena Atual (Modificações)',
+            searchPlaceholder: 'Procurar variáveis...',
+            createBtn: 'Criar variável',
+            colName: 'Nome',
+            colType: 'Tipo',
+            colValue: 'Valor Inicial',
+            colLocalValue: 'Valor na Cena',
+            activeInScene: 'Ativo na Cena',
+            renameHint: 'A renomeação propaga-se automaticamente por todo o projeto.',
+            noVars: 'Nenhuma variável encontrada.',
+            noVarsGlobalDesc: 'Cria variáveis globais usando o botão "+ Criar variável" no topo.',
+            noVarsLocalDesc: 'Ativa variáveis globais na cena atual para as modificar localmente.',
+            confirmDeleteTitle: 'Apagar Variável',
+            typeNumber: 'Número',
+            typeString: 'Texto',
+            typeBoolean: 'Booleano',
+            delete: 'Apagar',
+            cancel: 'Cancelar',
+            close: 'Fechar',
+            allTypes: 'Todas as variáveis',
+            sceneContext: 'Cena:'
         }
     }
 };
