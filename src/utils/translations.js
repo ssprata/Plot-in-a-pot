@@ -138,6 +138,7 @@ export const translations = {
             visualization: 'Visualization',
             secretNodes: 'Secret Nodes',
             flowAlerts: 'Flow Alerts',
+            visualLogic: 'Visual Logic Editor',
             dev: 'Dev',
             adjacencyList: 'Adjacency List',
             devSimulation: 'Dev Simulation',
@@ -153,6 +154,12 @@ export const translations = {
                     subtitle: 'Logical error warnings',
                     text: 'Controls the red box in the data panel. When active, the system warns you about permanently blocked options or unreachable narrative sections.',
                     aria: 'Help Flow Alerts'
+                },
+                visualLogic: {
+                    title: 'Visual Logic Editor',
+                    subtitle: 'Simplified editing of conditions and variables',
+                    text: 'Enables a tab in the Inspector that allows you to configure narratives, variables, and choice conditions visually, without having to write SugarCube code directly.',
+                    aria: 'Help Visual Logic'
                 },
                 adjacencyList: {
                     title: 'Adjacency List',
@@ -541,6 +548,7 @@ export const translations = {
             visualization: 'Visualização',
             secretNodes: 'Nós Secretos',
             flowAlerts: 'Alertas de Fluxo',
+            visualLogic: 'Editor de Lógica Visual',
             dev: 'Dev',
             adjacencyList: 'Lista de Adjacência',
             devSimulation: 'Simulação Dev',
@@ -556,6 +564,12 @@ export const translations = {
                     subtitle: 'Avisos de erros lógicos',
                     text: 'Controla a caixa vermelha no painel de dados. Se estiver ativo, o system avisa-te sobre opções permanentemente bloqueadas ou partes narrativas inatingíveis.',
                     aria: 'Ajuda Alertas de Fluxo'
+                },
+                visualLogic: {
+                    title: 'Editor de Lógica Visual',
+                    subtitle: 'Edição simplificada de condições e variáveis',
+                    text: 'Ativa um separador no Inspetor que permite configurar as narrativas, variáveis e condições de escolhas visualmente, sem precisares de escrever código SugarCube diretamente.',
+                    aria: 'Ajuda Editor de Lógica Visual'
                 },
                 adjacencyList: {
                     title: 'Lista de Adjacência',

@@ -178,7 +178,8 @@ function App() {
       showAdjacency: config.showAdjacency,
       showSecrets: config.showSecrets,
       showFlowErrors: config.showFlowErrors,
-      showSimulationLegacy: config.showSimulationLegacy
+      showSimulationLegacy: config.showSimulationLegacy,
+      visualLogicEnabled: config.visualLogicEnabled !== false
     };
   });
 
@@ -1091,6 +1092,8 @@ function App() {
           onOpenVariables={openVariablesEditor}
           onChangeVariables={openChangeVariablesEditor}
           translations={translations}
+          visualLogicEnabled={settings.visualLogicEnabled}
+          globalVars={globalVars}
         />
 
         <DataPanel

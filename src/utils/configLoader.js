@@ -4,6 +4,7 @@ const defaultConfig = {
   showAdjacency: true,
   showSecrets: true,
   showFlowErrors: true,
+  visualLogicEnabled: true,
   theme: 'light'
 };
 
