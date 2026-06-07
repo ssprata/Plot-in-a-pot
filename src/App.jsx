@@ -1175,12 +1175,11 @@ function App() {
         <VariablesModal
           isOpen={isVarModalOpen}
           onClose={() => setIsVarModalOpen(false)}
-          variables={varModalMode === 'create'
-            ? parseVariablesFromText(selectedNode?.data.content)
-            : globalVars
-          }
-          setVariables={saveVariablesToNode}
-          mode={varModalMode}
+          selectedNode={selectedNode}
+          nodes={nodes}
+          setNodes={setNodes}
+          takeSnapshot={takeSnapshot}
+          initialMode={varModalMode}
         />
 
         <ConnectionModal
