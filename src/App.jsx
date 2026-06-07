@@ -174,12 +174,27 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState(() => {
     const config = loadConfig();
+    const saved = localStorage.getItem('plot-in-a-pot-settings');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          showAdjacency: parsed.showAdjacency ?? config.showAdjacency,
+          showSecrets: parsed.showSecrets ?? config.showSecrets,
+          showFlowErrors: parsed.showFlowErrors ?? config.showFlowErrors,
+          showSimulationLegacy: parsed.showSimulationLegacy ?? config.showSimulationLegacy,
+          visualLogicEnabled: parsed.visualLogicEnabled ?? (config.visualLogicEnabled !== false),
+          visualBlocksMode: parsed.visualBlocksMode ?? false
+        };
+      } catch (e) {}
+    }
     return {
       showAdjacency: config.showAdjacency,
       showSecrets: config.showSecrets,
       showFlowErrors: config.showFlowErrors,
       showSimulationLegacy: config.showSimulationLegacy,
-      visualLogicEnabled: config.visualLogicEnabled !== false
+      visualLogicEnabled: config.visualLogicEnabled !== false,
+      visualBlocksMode: false
     };
   });
 
@@ -275,7 +290,11 @@ function App() {
   }, [setNodes, setEdges, t, takeSnapshot]);
 
   const toggleSetting = useCallback((key) => {
-    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+    setSettings((prev) => {
+      const updated = { ...prev, [key]: !prev[key] };
+      localStorage.setItem('plot-in-a-pot-settings', JSON.stringify(updated));
+      return updated;
+    });
   }, []);
 
   // --- Estado de Erros de Validação ---
@@ -338,7 +357,7 @@ function App() {
 
     while ((match = linkRegex.exec(text))) {
       const rawText = match[1] || match[3];
-      const targetLabel = (match[2] || match[3]).trim();
+      const targetLabel = (match[2] !== undefined ? match[2] : (match[3] || '')).trim();
       let choiceText = rawText.trim();
 
       const translationMatch = choiceText.match(/^t\(['"]([^'"]+)['"]\)$/);
@@ -1093,6 +1112,7 @@ function App() {
           onChangeVariables={openChangeVariablesEditor}
           translations={translations}
           visualLogicEnabled={settings.visualLogicEnabled}
+          visualBlocksMode={settings.visualBlocksMode}
           globalVars={globalVars}
         />
 

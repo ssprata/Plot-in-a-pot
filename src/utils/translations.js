@@ -139,6 +139,7 @@ export const translations = {
             secretNodes: 'Secret Nodes',
             flowAlerts: 'Flow Alerts',
             visualLogic: 'Visual Logic Editor',
+            visualBlocksMode: 'Logic Blocks Mode',
             dev: 'Dev',
             adjacencyList: 'Adjacency List',
             devSimulation: 'Dev Simulation',
@@ -160,6 +161,12 @@ export const translations = {
                     subtitle: 'Simplified editing of conditions and variables',
                     text: 'Enables a tab in the Inspector that allows you to configure narratives, variables, and choice conditions visually, without having to write SugarCube code directly.',
                     aria: 'Help Visual Logic'
+                },
+                visualBlocksMode: {
+                    title: 'Logic Blocks Mode',
+                    subtitle: 'Scratch-style block editor',
+                    text: 'Transforms the visual editor into a structure of blocks (narrative, variables, conditions, and choices) resembling puzzle-like components.',
+                    aria: 'Help Logic Blocks Mode'
                 },
                 adjacencyList: {
                     title: 'Adjacency List',
@@ -402,6 +409,32 @@ export const translations = {
             close: 'Close',
             allTypes: 'All variables',
             sceneContext: 'Scene:'
+        },
+        visualBlocks: {
+            modalTitle: 'Visual Logic Editor',
+            narrativeTitle: 'Narrative Text Block',
+            narrativePlaceholder: 'Write your story scene text here...',
+            settersTitle: 'Variables Modified at Entry (Setters)',
+            addSetterBtn: '+ Add Variable Change',
+            setLabel: 'Set',
+            toLabel: 'to',
+            noSetters: 'No variables modified on entry.',
+            conditionalGroupsTitle: 'Conditional Choices (IF / ELSE Branches)',
+            simpleChoicesTitle: 'Simple Choices (Unconditional)',
+            addSimpleChoiceBtn: '+ Add Simple Choice',
+            addConditionalBlockBtn: '+ Add Conditional Branch (IF / ELSE)',
+            ifLabel: 'IF (Condition)',
+            thenLabel: 'THEN (If True)',
+            elseLabel: 'ELSE (If False)',
+            addChoiceThen: '+ Add Choice (Then)',
+            addChoiceElse: '+ Add Choice (Else)',
+            choicePlaceholder: 'Choice text...',
+            linkDestination: 'Links to:',
+            selectDestination: 'Select target node...',
+            deleteConditionBtn: 'Remove condition (Convert choices to simple)',
+            deleteBlockBtn: 'Delete Branch',
+            noChoices: 'No choices. Connect this node to others or click add below.',
+            deleteChoiceTooltip: 'Delete choice'
         }
     },
 
@@ -549,6 +582,7 @@ export const translations = {
             secretNodes: 'Nós Secretos',
             flowAlerts: 'Alertas de Fluxo',
             visualLogic: 'Editor de Lógica Visual',
+            visualBlocksMode: 'Modo de Blocos Lógicos',
             dev: 'Dev',
             adjacencyList: 'Lista de Adjacência',
             devSimulation: 'Simulação Dev',
@@ -570,6 +604,12 @@ export const translations = {
                     subtitle: 'Edição simplificada de condições e variáveis',
                     text: 'Ativa um separador no Inspetor que permite configurar as narrativas, variáveis e condições de escolhas visualmente, sem precisares de escrever código SugarCube diretamente.',
                     aria: 'Ajuda Editor de Lógica Visual'
+                },
+                visualBlocksMode: {
+                    title: 'Modo de Blocos Lógicos',
+                    subtitle: 'Editor em blocos estilo Scratch',
+                    text: 'Transforma o editor visual numa estrutura de blocos (narrativa, variáveis, condições e escolhas) semelhantes a peças de puzzle.',
+                    aria: 'Ajuda Modo de Blocos Lógicos'
                 },
                 adjacencyList: {
                     title: 'Lista de Adjacência',
@@ -812,6 +852,32 @@ export const translations = {
             close: 'Fechar',
             allTypes: 'Todas as variáveis',
             sceneContext: 'Cena:'
+        },
+        visualBlocks: {
+            modalTitle: 'Editor de Lógica Visual',
+            narrativeTitle: 'Bloco de Texto Narrativo',
+            narrativePlaceholder: 'Escreve o texto da cena aqui...',
+            settersTitle: 'Variáveis Modificadas ao Entrar (Setters)',
+            addSetterBtn: '+ Adicionar Modificação',
+            setLabel: 'Definir',
+            toLabel: 'para',
+            noSetters: 'Nenhuma variável é modificada ao entrar.',
+            conditionalGroupsTitle: 'Escolhas Condicionais (Ramos SE / SENÃO)',
+            simpleChoicesTitle: 'Escolhas Simples (Sem Condição)',
+            addSimpleChoiceBtn: '+ Adicionar Escolha Simples',
+            addConditionalBlockBtn: '+ Adicionar Ramo Condicional (IF / ELSE)',
+            ifLabel: 'SE (Condição)',
+            thenLabel: 'ENTÃO (Se Sim)',
+            elseLabel: 'SENÃO (Senão)',
+            addChoiceThen: '+ Adicionar Escolha (Se Sim)',
+            addChoiceElse: '+ Adicionar Escolha (Senão)',
+            choicePlaceholder: 'Texto da escolha...',
+            linkDestination: 'Liga a:',
+            selectDestination: 'Selecionar nó de destino...',
+            deleteConditionBtn: 'Remover condição (Converter escolhas em simples)',
+            deleteBlockBtn: 'Eliminar Ramo',
+            noChoices: 'Sem escolhas. Liga este nó no grafo ou clica em adicionar abaixo.',
+            deleteChoiceTooltip: 'Eliminar escolha'
         }
     }
 };

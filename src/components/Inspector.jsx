@@ -1,8 +1,257 @@
 // src/components/Inspector.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import { parseLogicFromText, serializeLogicToText } from '../utils/logicParser';
+import VisualBlocksModal from './VisualBlocksModal';
+
+function VisualLogicEditor({ selectedNode, nodes, globalVars, updateSelectedNode, syncChoicesFromText }) {
+  const { t } = useTranslation();
+  
+  const parsed = useMemo(() => {
+    return parseLogicFromText(selectedNode?.data.content || '');
+  }, [selectedNode?.data.content]);
+
+  const varNames = useMemo(() => {
+    return Object.keys(globalVars || {});
+  }, [globalVars]);
+
+  const updateNode = (updatedLogic) => {
+    const serialized = serializeLogicToText(updatedLogic);
+    if (selectedNode?.data.nodeType === 'choice') {
+      syncChoicesFromText(selectedNode.id, serialized);
+    } else {
+      updateSelectedNode({ content: serialized });
+    }
+  };
+
+  const handleNarrativeChange = (e) => {
+    updateNode({ ...parsed, narrative: e.target.value });
+  };
+
+  const handleAddSetter = () => {
+    const newSetter = { variable: varNames[0] || 'moedas', value: '0' };
+    updateNode({ ...parsed, setters: [...parsed.setters, newSetter] });
+  };
+
+  const handleUpdateSetter = (index, field, val) => {
+    const nextSetters = parsed.setters.map((s, i) => {
+      if (i === index) {
+        return { ...s, [field]: val };
+      }
+      return s;
+    });
+    updateNode({ ...parsed, setters: nextSetters });
+  };
+
+  const handleRemoveSetter = (index) => {
+    const nextSetters = parsed.setters.filter((_, i) => i !== index);
+    updateNode({ ...parsed, setters: nextSetters });
+  };
+
+  const handleUpdateChoiceText = (index, newText) => {
+    const nextChoices = parsed.choices.map((c, i) => {
+      if (i === index) {
+        return { ...c, text: newText };
+      }
+      return c;
+    });
+    updateNode({ ...parsed, choices: nextChoices });
+  };
+
+  const handleToggleCondition = (index, enabled) => {
+    const nextChoices = parsed.choices.map((c, i) => {
+      if (i === index) {
+        return {
+          ...c,
+          condition: enabled ? { variable: varNames[0] || 'moedas', operator: 'is', value: '0', isElse: false } : null
+        };
+      }
+      return c;
+    });
+    updateNode({ ...parsed, choices: nextChoices });
+  };
+
+  const handleUpdateChoiceCondition = (choiceIndex, field, val) => {
+    const nextChoices = parsed.choices.map((c, i) => {
+      if (i === choiceIndex) {
+        return {
+          ...c,
+          condition: { ...c.condition, [field]: val }
+        };
+      }
+      return c;
+    });
+    updateNode({ ...parsed, choices: nextChoices });
+  };
+
+  return (
+    <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+      {/* 1. Narrative Text */}
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-gray-750 dark:text-gray-300">
+          Texto Narrativo
+        </label>
+        <textarea
+          value={parsed.narrative}
+          onChange={handleNarrativeChange}
+          placeholder="Escreve o texto da cena aqui..."
+          className="w-full p-2 border-2 border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-none text-xs min-h-[90px] font-sans outline-none focus:border-blue-600"
+        />
+      </div>
+
+      {/* 2. Setters Section */}
+      <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-700 pt-3">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-[10px] font-black uppercase tracking-wider text-gray-750 dark:text-gray-300">
+            Ações ao Entrar (setters)
+          </label>
+          <button
+            type="button"
+            onClick={handleAddSetter}
+            className="px-2 py-0.5 bg-blue-100 hover:bg-blue-200 text-blue-900 dark:bg-blue-900 dark:text-blue-100 border-2 border-gray-900 font-black text-[9px] uppercase tracking-wider shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none"
+          >
+            + Ação
+          </button>
+        </div>
+
+        {parsed.setters.length > 0 ? (
+          <div className="space-y-2">
+            {parsed.setters.map((setter, idx) => (
+              <div key={idx} className="flex items-center gap-1 bg-gray-100 dark:bg-gray-900 p-1 border border-gray-900 dark:border-gray-650">
+                <span className="font-mono text-gray-500 dark:text-gray-400 font-bold select-none text-xs">$</span>
+                <select
+                  value={setter.variable}
+                  onChange={(e) => handleUpdateSetter(idx, 'variable', e.target.value)}
+                  className="p-0.5 border border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-800 text-[10px] font-mono w-24 focus:outline-none"
+                >
+                  {varNames.map(v => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                  {!varNames.includes(setter.variable) && (
+                    <option value={setter.variable}>{setter.variable}</option>
+                  )}
+                </select>
+                <span className="text-[10px] font-black text-gray-500 font-mono select-none">=</span>
+                <input
+                  type="text"
+                  value={setter.value}
+                  onChange={(e) => handleUpdateSetter(idx, 'value', e.target.value)}
+                  className="p-0.5 border border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-800 text-[10px] font-mono flex-1 min-w-0 focus:outline-none focus:border-blue-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveSetter(idx)}
+                  className="p-1 text-red-600 hover:text-red-500 font-black text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 italic">Sem modificadores de variáveis.</p>
+        )}
+      </div>
+
+      {/* 3. Outgoing Choices Section */}
+      <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-700 pt-3">
+        <label className="block text-[10px] font-black uppercase tracking-wider text-gray-750 dark:text-gray-300 mb-2">
+          Ligações e Escolhas
+        </label>
+        
+        {parsed.choices.length > 0 ? (
+          <div className="space-y-3">
+            {parsed.choices.map((choice, idx) => (
+              <div key={idx} className="bg-gray-50 dark:bg-gray-900 p-2.5 border-2 border-gray-900 dark:border-gray-700 space-y-2">
+                {/* Choice Name and Link target */}
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={choice.text}
+                    onChange={(e) => handleUpdateChoiceText(idx, e.target.value)}
+                    className="p-1 border border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-800 text-xs font-bold flex-1 min-w-0 focus:outline-none focus:border-blue-600"
+                    placeholder="Texto da escolha..."
+                  />
+                  <span className="text-[10px] text-gray-400 font-black select-none">→</span>
+                  <span className="bg-gray-200 dark:bg-gray-800 px-1.5 py-0.5 border border-gray-900 font-mono text-[9px] font-bold text-gray-700 dark:text-gray-300 shrink-0">
+                    {choice.target}
+                  </span>
+                </div>
+
+                {/* Condition settings toggle */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`cond-chk-${idx}`}
+                    checked={!!choice.condition}
+                    onChange={(e) => handleToggleCondition(idx, e.target.checked)}
+                    className="w-3.5 h-3.5 border border-gray-900 rounded-none cursor-pointer accent-indigo-600"
+                  />
+                  <label htmlFor={`cond-chk-${idx}`} className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider cursor-pointer">
+                    Condição (Requisito) ⚡
+                  </label>
+                </div>
+
+                {/* Condition Fields */}
+                {choice.condition && (
+                  <div className="flex gap-1 bg-white dark:bg-gray-950 p-1 border border-gray-900 dark:border-gray-650">
+                    <span className="text-[9px] text-gray-400 font-black self-center select-none mr-1">Se</span>
+                    
+                    <select
+                      value={choice.condition.variable}
+                      onChange={(e) => handleUpdateChoiceCondition(idx, 'variable', e.target.value)}
+                      className="p-0.5 border border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-850 text-[9px] font-mono w-20 focus:outline-none"
+                    >
+                      {varNames.map(v => (
+                        <option key={v} value={v}>{v}</option>
+                      ))}
+                      {!varNames.includes(choice.condition.variable) && (
+                        <option value={choice.condition.variable}>{choice.condition.variable}</option>
+                      )}
+                    </select>
+
+                    <select
+                      value={choice.condition.operator}
+                      onChange={(e) => handleUpdateChoiceCondition(idx, 'operator', e.target.value)}
+                      className="p-0.5 border border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-850 text-[9px] font-bold w-12 focus:outline-none"
+                    >
+                      <option value="is">==</option>
+                      <option value="isnot">!=</option>
+                      <option value="gt">&gt;</option>
+                      <option value="gte">&gt;=</option>
+                      <option value="lt">&lt;</option>
+                      <option value="lte">&lt;=</option>
+                    </select>
+
+                    <input
+                      type="text"
+                      value={choice.condition.value}
+                      onChange={(e) => handleUpdateChoiceCondition(idx, 'value', e.target.value)}
+                      className="p-0.5 border border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-850 text-[9px] font-mono flex-1 min-w-0 focus:outline-none focus:border-blue-600"
+                    />
+
+                    <select
+                      value={choice.condition.isElse ? 'else' : 'if'}
+                      onChange={(e) => handleUpdateChoiceCondition(idx, 'isElse', e.target.value === 'else')}
+                      className="p-0.5 border border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-850 text-[9px] font-bold w-14 focus:outline-none"
+                    >
+                      <option value="if">Se Sim</option>
+                      <option value="else">Senão</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 italic">Sem escolhas. Liga este nó a outros no grafo.</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Inspector({
   selectedNode,
@@ -13,13 +262,18 @@ export default function Inspector({
   setStartNode,
   onOpenVariables,
   onChangeVariables,
-  translations // ADICIONADO: Recebe a base mestre de tradução para ler as chaves no preview
+  translations, // ADICIONADO: Recebe a base mestre de tradução para ler as chaves no preview
+  visualLogicEnabled = true,
+  visualBlocksMode = false,
+  globalVars = {}
 }) {
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
 
   const [isLocalVarMode, setIsLocalVarMode] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isBlocksModalOpen, setIsBlocksModalOpen] = useState(false);
+  const [inspectorTab, setInspectorTab] = useState('visual');
   
   // --- ESTADO LOCAL PARA O PREVIEW NARRATIVO ---
   const [previewLang, setPreviewLang] = useState(translations?.languages?.[0] || 'pt');
@@ -285,18 +539,74 @@ export default function Inspector({
               )}
             </div>
 
-            <textarea
-              className={`w-full flex-1 min-h-[200px] p-2 border border-gray-400 dark:border-gray-600 rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
-                }`}
-              value={selectedNode.data.content || ''}
-              onChange={(e) => {
-                if (selectedNode.data.nodeType === 'choice') {
-                  syncChoicesFromText(selectedNode.id, e.target.value);
-                } else {
-                  updateSelectedNode({ content: e.target.value });
-                }
-              }}
-            />
+            {selectedNode.data.nodeType === 'choice' && visualLogicEnabled && (
+              <div className="flex gap-1.5 mb-3 select-none border-b-2 border-gray-900 dark:border-gray-200 pb-2.5">
+                <button
+                  type="button"
+                  onClick={() => setInspectorTab('visual')}
+                  className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider border-2 text-center transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${
+                    inspectorTab === 'visual'
+                      ? 'bg-yellow-400 border-gray-900 text-black shadow-none translate-y-0.5 font-black'
+                      : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-900 dark:border-gray-400 hover:bg-gray-100'
+                  }`}
+                >
+                  Visual ⚡
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInspectorTab('code')}
+                  className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider border-2 text-center transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${
+                    inspectorTab === 'code'
+                      ? 'bg-yellow-400 border-gray-900 text-black shadow-none translate-y-0.5 font-black'
+                      : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-900 dark:border-gray-400 hover:bg-gray-100'
+                  }`}
+                >
+                  Código / Texto
+                </button>
+              </div>
+            )}
+
+            {selectedNode.data.nodeType === 'choice' && visualLogicEnabled && inspectorTab === 'visual' ? (
+              visualBlocksMode ? (
+                <div className="flex flex-col gap-3">
+                  {/* Summary preview: show narrative snippet + choice count */}
+                  <div className="bg-gray-50 dark:bg-gray-900 border-2 border-gray-900 dark:border-gray-600 p-3 text-xs font-mono text-gray-600 dark:text-gray-400 min-h-[80px] leading-relaxed whitespace-pre-wrap">
+                    {(selectedNode.data.content || '').slice(0, 200) || <span className="italic opacity-50">Sem conteúdo ainda…</span>}
+                    {(selectedNode.data.content || '').length > 200 && <span className="opacity-40">…</span>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsBlocksModalOpen(true)}
+                    className="w-full py-3 border-2 border-gray-900 dark:border-gray-200 bg-yellow-400 hover:bg-yellow-300 dark:bg-yellow-500 dark:hover:bg-yellow-400 text-gray-900 font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>⚡</span>
+                    {t('visualBlocks.modalTitle', 'Abrir Editor de Lógica Visual')}
+                    <span>→</span>
+                  </button>
+                </div>
+              ) : (
+                <VisualLogicEditor
+                  selectedNode={selectedNode}
+                  nodes={nodes}
+                  globalVars={globalVars}
+                  updateSelectedNode={updateSelectedNode}
+                  syncChoicesFromText={syncChoicesFromText}
+                />
+              )
+            ) : (
+              <textarea
+                className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
+                  }`}
+                value={selectedNode.data.content || ''}
+                onChange={(e) => {
+                  if (selectedNode.data.nodeType === 'choice') {
+                    syncChoicesFromText(selectedNode.id, e.target.value);
+                  } else {
+                    updateSelectedNode({ content: e.target.value });
+                  }
+                }}
+              />
+            )}
 
             {/* SYNTAX WARNINGS */}
             {selectedNode.data.warnings && selectedNode.data.warnings.length > 0 && (
@@ -341,6 +651,16 @@ export default function Inspector({
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={() => deleteNode(selectedNode.id)}
         message={t('inspector.deleteConfirm.nodeMessage', 'Tens a certeza que desejas eliminar este nó de cena? Todas as ligações ligadas a ele serão removidas em cascata do grafo.')}
+      />
+
+      <VisualBlocksModal
+        isOpen={isBlocksModalOpen}
+        onClose={() => setIsBlocksModalOpen(false)}
+        selectedNode={selectedNode}
+        nodes={nodes}
+        globalVars={globalVars}
+        updateSelectedNode={updateSelectedNode}
+        syncChoicesFromText={syncChoicesFromText}
       />
     </div>
   );

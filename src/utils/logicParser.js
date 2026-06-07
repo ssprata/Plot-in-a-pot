@@ -73,7 +73,7 @@ export function parseLogicFromText(text = '') {
     if (linkRegex.test(trimmed)) {
       const match = trimmed.match(linkRegex);
       const rawText = match[1] || match[3];
-      const target = (match[2] || match[3]).trim();
+      const target = (match[2] !== undefined ? match[2] : (match[3] || '')).trim();
       const choiceText = rawText.trim();
       
       result.choices.push({
