@@ -418,9 +418,9 @@ export const translations = {
             }
         },
         topBar: {
-            addScene: '+ Add Cena',
-            addScript: '+ Add Script',
-            addStyle: '+ Add Estilo',
+            addScene: '+ Adicionar Cena',
+            addScript: '+ Adicionar Script',
+            addStyle: '+ Adicionar Estilo',
             systemMenu: '+ Sistema',
             generateAi: 'Gerar com IA',
             play: 'Jogar',
@@ -637,7 +637,7 @@ export const translations = {
             sourceCode: 'Código Fonte',
             createVariable: '+ Criar Variável',
             changeValue: '+/- Alterar Valor',
-            localVarHint: 'Criar uma variável só nesta node',
+            localVarHint: 'Criar uma variável só neste nó',
             syntaxWarnings: 'Avisos de Sintaxe:',
             selectNode: 'Seleciona um nó no grafo para inspecionar ou editar as suas propriedades.',
             deleteNode: 'Eliminar Nó',
@@ -699,7 +699,7 @@ export const translations = {
                 globalVarValue: 'Valor inicial para ',
                 localVarCreate: 'CRIAR VARIÁVEL LOCAL\nNome da variável (ex: $chavePorta):',
                 localVarChange: 'ALTERAR VARIÁVEL EXISTENTE\nVariáveis disponíveis: ',
-                varError: 'Erro: A variável não existe no StoryInit!\n\nCrie-a lá primeiro ou ative a checkbox "Criar uma variável só nesta node".',
+                varError: 'Erro: A variável não existe no StoryInit!\n\nCrie-a lá primeiro ou ative a checkbox "Criar uma variável só neste nó".',
                 newValue: 'Novo valor para '
             }
         },
