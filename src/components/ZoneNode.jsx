@@ -7,7 +7,7 @@ export default function ZoneNode({ data, selected }) {
 
   return (
     <div 
-      className="w-full h-full border-4 border-gray-900 dark:border-gray-200 select-none flex flex-col relative"
+      className="w-full h-full border-4 border-gray-900 dark:border-gray-200 select-none flex flex-col relative pointer-events-none"
       style={{
         backgroundColor: `${color}15`, // ~8% opacity
         borderColor: color,
@@ -18,13 +18,13 @@ export default function ZoneNode({ data, selected }) {
         minWidth={150} 
         minHeight={100} 
         isVisible={selected}
-        lineClassName="!border-dashed !border-gray-900 dark:!border-white"
-        handleClassName="!w-3.5 !h-3.5 !bg-white !border-2 !border-gray-900 !rounded-none"
+        lineClassName="!border-dashed !border-gray-900 dark:!border-white !pointer-events-auto"
+        handleClassName="!w-3.5 !h-3.5 !bg-white !border-2 !border-gray-900 !rounded-none !pointer-events-auto"
       />
       
       {/* Header bar showing the Zone label */}
       <div 
-        className="p-1 px-2 border-b-4 border-gray-900 dark:border-gray-200 font-black text-[10px] uppercase tracking-wider text-gray-900 select-none flex items-center gap-1.5"
+        className="p-1 px-2 border-b-4 border-gray-900 dark:border-gray-200 font-black text-[10px] uppercase tracking-wider text-gray-900 select-none flex items-center gap-1.5 pointer-events-auto"
         style={{
           backgroundColor: color,
         }}
@@ -33,7 +33,7 @@ export default function ZoneNode({ data, selected }) {
         <span className="truncate">{data.label}</span>
       </div>
       
-      <div className="flex-1 pointer-events-none" />
+      <div className="flex-1" />
     </div>
   );
 }

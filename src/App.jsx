@@ -331,10 +331,24 @@ function App() {
 
   // Filtragem visual para ocultar nós marcados com a tag "secreto" no modo de visualização normal
   const visibleNodes = useMemo(() => {
-    if (settings.showSecrets) return nodes;
-    return nodes.filter(n => {
-      const tags = Array.isArray(n.data.tags) ? n.data.tags.join(' ') : String(n.data.tags || "");
-      return !tags.toLowerCase().includes('secreto');
+    let filtered = nodes;
+    if (!settings.showSecrets) {
+      filtered = nodes.filter(n => {
+        const tags = Array.isArray(n.data.tags) ? n.data.tags.join(' ') : String(n.data.tags || "");
+        return !tags.toLowerCase().includes('secreto');
+      });
+    }
+    return filtered.map(n => {
+      if (n.type === 'zone' || n.data?.nodeType === 'zone') {
+        return {
+          ...n,
+          style: {
+            ...n.style,
+            pointerEvents: 'none'
+          }
+        };
+      }
+      return n;
     });
   }, [nodes, settings.showSecrets]);
 
@@ -682,7 +696,7 @@ function App() {
       id,
       type,
       position: { x: 200 + (offset % 5) * 80, y: 50 + ((offset / 5) | 0) * 80 },
-      ...(type === 'zone' ? { style: { width: 300, height: 200 } } : {}),
+      ...(type === 'zone' ? { style: { width: 300, height: 200, pointerEvents: 'none' } } : {}),
       data: { 
         label, 
         nodeType: type, 

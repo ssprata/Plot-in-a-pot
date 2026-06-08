@@ -119,7 +119,7 @@ export function parseTwee3(source) {
       id,
       type: nodeType,
       position,
-      ...(nodeType === 'zone' ? { style: size || { width: 300, height: 200 } } : {}),
+      ...(nodeType === 'zone' ? { style: { ...(size || { width: 300, height: 200 }), pointerEvents: 'none' } } : {}),
       data: { 
         label: title, 
         nodeType, 

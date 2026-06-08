@@ -6,6 +6,15 @@ import reportWebVitals from './reportWebVitals';
 import { ThemeProvider } from './contexts/ThemeContext';
 import './i18n';
 
+// Suppress benign ResizeObserver loop limit errors from webpack dev server overlay
+window.addEventListener('error', (e) => {
+  if (e.message && (e.message.includes('ResizeObserver') || e.message.includes('loop limit exceeded'))) {
+    e.stopImmediatePropagation();
+    const overlay = document.getElementById('webpack-dev-server-client-overlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+});
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
