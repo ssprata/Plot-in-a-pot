@@ -7,8 +7,9 @@ export function escapeForTweeHeader(value) {
 }
 
 export function escapeForTweeText(value) {
-  // Escapa "::" no início de uma linha para não quebrar a estrutura
-  return value.replace(/^::/gm, '\\::');
+  // FIX #8: Primeiro protege os escapes manuais já existentes (\::),
+  // depois escapa os :: literais que ainda não estão escapados.
+  return value.replace(/^\\::/gm, '\x00ESCAPED_COLONS\x00').replace(/^::/gm, '\\::').replace(/^\x00ESCAPED_COLONS\x00/gm, '\\::');
 }
 
 export function unescapeForTweeHeader(value) {
@@ -16,8 +17,8 @@ export function unescapeForTweeHeader(value) {
 }
 
 export function unescapeForTweeText(value) {
-  // Reverte "\::" para "::" para leitura limpa
-  return value.replace(/^\\:/gm, ':');
+  // FIX #1: O padrão estava errado — deve reverter \:: para ::, não \: para :
+  return value.replace(/^\\::/gm, '::');
 }
 
 // --- IMPORTAÇÃO (Leitura do Ficheiro) ---
@@ -30,7 +31,7 @@ export function parseTwee3(source) {
   const passageBlocks = source
     .split(/^::/m)
     .filter(s => s.trim() !== '')
-    .map(s => ':: ' + s);
+    .map(s => '::' + s); // FIX #2: sem espaço extra para não prefixar o nome com ' '
 
   const passages = [];
   const idMap = {};
@@ -41,20 +42,37 @@ export function parseTwee3(source) {
     const lines = block.split(/\r?\n/);
     const headerLine = lines[0];
 
-    // Regex robusta oficial para separar Nome, Tags e JSON
-    const headerBits = /^::\s*(.*?(?:\\\s)?)\s*(\[.*?\])?\s*(\{.*?\})?\s*$/.exec(headerLine);
+    // FIX #5: Em vez de regex não-greedy para o JSON (que falha com objetos aninhados),
+    // encontramos o índice do primeiro '{' e extraímos o resto manualmente.
+    // A regex continua a ser usada para Nome e Tags, mas o JSON é extraído à parte.
+    const headerWithoutJson = headerLine.replace(/\{[\s\S]*$/, '').trimEnd();
+    const headerBits = /^::\s*(.*?(?:\\\s)?)\s*(\[.*?\])?\s*$/.exec(headerWithoutJson);
 
     if (!headerBits) return; // Ignora blocos corrompidos
 
-    const [, rawName, rawTags, rawMetadata] = headerBits;
-    if (rawName.trim() === '') return;
+    const [, rawName, rawTags] = headerBits;
+    if (!rawName || rawName.trim() === '') return;
+
+    // Extrair o JSON a partir do primeiro '{' na linha original
+    const jsonStart = headerLine.indexOf('{');
+    let rawMetadata = null;
+    if (jsonStart !== -1) {
+      rawMetadata = headerLine.slice(jsonStart);
+    }
 
     const title = unescapeForTweeHeader(rawName.trim());
-    const content = lines.slice(1).join('\n').replace(/^\\:/gm, ':').trim();
+    const content = lines.slice(1).join('\n').replace(/^\\::/gm, '::').trim();
+
+    // FIX #7: Detetar nomes duplicados e emitir aviso
+    if (idMap[title] !== undefined) {
+      warnings.push(`Aviso: Passagem com o nome duplicado "${title}" encontrada — a segunda ocorrência foi ignorada.`);
+      return;
+    }
 
     let tags = [];
     if (rawTags) {
-      tags = rawTags.replace(/^\[(.*)\]$/g, '$1').split(/\s/).filter(t => t.trim() !== '').map(unescapeForTweeHeader);
+      // FIX #6: Usar /\s+/ em vez de /\s/ para tratar múltiplos espaços e tabs
+      tags = rawTags.replace(/^\[(.*)\]$/g, '$1').split(/\s+/).filter(t => t.trim() !== '').map(unescapeForTweeHeader);
     }
 
     // Identificar o tipo de nó pelas tags
@@ -90,7 +108,7 @@ export function parseTwee3(source) {
           color = metadata.color;
         }
       } catch (e) {
-        console.warn(`Aviso: Falha ao ler metadados do nó ${title}`);
+        console.warn(`Aviso: Falha ao ler metadados do nó "${title}"`);
       }
     }
 
@@ -217,8 +235,10 @@ export function parseTwee3(source) {
     }
   });
 
-  // 4. Auto-layout apenas para nós que vieram com coordenadas a zero (sem metadados)
-  const needsLayout = passages.every(p => p.position.x === 0 && p.position.y === 0);
+  // 4. FIX #3: Auto-layout — nós filhos têm posição relativa 0,0 por design,
+  // por isso só contam os nós raiz (sem parentName) para decidir se é preciso layout.
+  const rootPassages = passages.filter(p => !p.data.parentName);
+  const needsLayout = rootPassages.length > 0 && rootPassages.every(p => p.position.x === 0 && p.position.y === 0);
   let nodes = passages;
   if (needsLayout && edges.length > 0) {
     nodes = layoutNodesAndEdges(passages, edges, 'TB');
@@ -264,27 +284,23 @@ export function exportToTwee3(nodes, edges) {
 
     const tags = tagsArray.length > 0 ? ` [${tagsArray.map(escapeForTweeHeader).join(' ')}]` : '';
 
-    // Gerar JSON de posição seguro
-    // Se o nó tiver um pai, a sua posição guardada no estado é relativa. Temos de convertê-la de volta a absoluta para exportação!
+    // FIX #4: Calcular parentNode uma única vez e reutilizar nas duas operações seguintes
+    const parentNode = n.parentId ? nodes.find(p => p.id === n.parentId) : null;
+
+    // Se o nó tiver um pai, a sua posição guardada no estado é relativa.
+    // Temos de convertê-la de volta a absoluta para exportação.
     let absoluteX = n.position.x;
     let absoluteY = n.position.y;
     
-    if (n.parentId) {
-      const parentNode = nodes.find(parent => parent.id === n.parentId);
-      if (parentNode) {
-        // Posição absoluta = posição do pai + posição relativa do filho
-        absoluteX = (parentNode.position.x || 0) + (n.position.x || 0);
-        absoluteY = (parentNode.position.y || 0) + (n.position.y || 0);
-      }
+    if (parentNode) {
+      absoluteX = (parentNode.position.x || 0) + (n.position.x || 0);
+      absoluteY = (parentNode.position.y || 0) + (n.position.y || 0);
     }
 
     const metadataObj = { position: `${Math.round(absoluteX)},${Math.round(absoluteY)}` };
     
-    if (n.parentId) {
-      const parentNode = nodes.find(parent => parent.id === n.parentId);
-      if (parentNode) {
-        metadataObj.parent = parentNode.data.label;
-      }
+    if (parentNode) {
+      metadataObj.parent = parentNode.data.label;
     }
     
     if (n.type === 'zone' || n.data.nodeType === 'zone') {
