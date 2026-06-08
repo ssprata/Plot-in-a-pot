@@ -372,7 +372,7 @@ function App() {
     let match;
 
     while ((match = linkRegex.exec(text))) {
-      const rawText = match[1] || match[3];
+      const rawText = (match[1] !== undefined ? match[1] : match[3]) || '';
       const targetLabel = (match[2] !== undefined ? match[2] : (match[3] || '')).trim();
       let choiceText = rawText.trim();
 
