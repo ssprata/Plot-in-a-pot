@@ -45,6 +45,15 @@ export default function VisualBlocksEditor({
     updateNode({ ...parsed, narrative: e.target.value });
   };
 
+  // Narrative stats
+  const narrativeStats = useMemo(() => {
+    const text = parsed.narrative || '';
+    const charCount = text.length;
+    const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+    const readTimeSec = Math.ceil(wordCount / 3.3); // Avg reading speed 200 WPM
+    return { charCount, wordCount, readTimeSec };
+  }, [parsed.narrative]);
+
   // --- SETTERS MANAGEMENT ---
   const handleAddSetter = () => {
     const newSetter = { variable: varNames[0] || 'moedas', value: '0' };
@@ -202,15 +211,22 @@ export default function VisualBlocksEditor({
   };
 
   return (
-    <div className={`space-y-5 pr-1 select-none ${fullscreen ? '' : 'max-h-[380px] overflow-y-auto'}`}>
+    <div className={`space-y-5 select-none ${fullscreen ? 'pr-1 pb-4' : 'max-h-[380px] overflow-y-auto pr-1'}`}>
       
       {/* 1. Narrative Block (YELLOW BRUTALIST CARD) */}
-      <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-gray-900 dark:border-amber-400 p-3 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#f59e0b]">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm">📝</span>
-          <label className="text-[10px] font-black uppercase tracking-wider text-gray-900 dark:text-amber-300">
-            {t('visualBlocks.narrativeTitle', 'Bloco de Texto Narrativo')}
-          </label>
+      <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-gray-900 dark:border-amber-400 p-3.5 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#f59e0b] rounded-none">
+        <div className="flex items-center justify-between mb-2 select-none">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">📝</span>
+            <label className="text-[10px] font-black uppercase tracking-wider text-gray-900 dark:text-amber-300">
+              {t('visualBlocks.narrativeTitle', 'Bloco de Texto Narrativo')}
+            </label>
+          </div>
+          <div className="flex items-center gap-2 text-[9px] font-bold text-gray-500 dark:text-gray-400 font-mono">
+            <span>{narrativeStats.wordCount} {t('common.words', 'palavras')}</span>
+            <span>•</span>
+            <span>~{narrativeStats.readTimeSec}s</span>
+          </div>
         </div>
         <textarea
           value={parsed.narrative}
@@ -221,8 +237,8 @@ export default function VisualBlocksEditor({
       </div>
 
       {/* 2. Setters Block (GREEN BRUTALIST CARD) */}
-      <div className="bg-emerald-50 dark:bg-emerald-950/20 border-2 border-gray-900 dark:border-emerald-500 p-3 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#10b981]">
-        <div className="flex items-center justify-between mb-2 pb-1 border-b border-dashed border-gray-300 dark:border-emerald-800">
+      <div className="bg-emerald-50 dark:bg-emerald-950/20 border-2 border-gray-900 dark:border-emerald-500 p-3.5 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#10b981] rounded-none">
+        <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-dashed border-gray-300 dark:border-emerald-800">
           <div className="flex items-center gap-2">
             <span className="text-sm">⚙️</span>
             <label className="text-[10px] font-black uppercase tracking-wider text-gray-900 dark:text-emerald-300">
@@ -232,7 +248,7 @@ export default function VisualBlocksEditor({
           <button
             type="button"
             onClick={handleAddSetter}
-            className="px-2 py-0.5 border-2 border-gray-900 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-[9px] uppercase tracking-wider shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+            className="px-2 py-0.5 border-2 border-gray-900 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-[9px] uppercase tracking-wider shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none"
           >
             {t('visualBlocks.addSetterBtn', '+ Adicionar Ação')}
           </button>
@@ -241,13 +257,13 @@ export default function VisualBlocksEditor({
         {parsed.setters.length > 0 ? (
           <div className="space-y-2">
             {parsed.setters.map((setter, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-gray-800 p-1.5 border-2 border-gray-900 dark:border-gray-700">
+              <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-gray-800 p-1.5 border-2 border-gray-900 dark:border-gray-700 rounded-none">
                 <span className="text-[10px] font-black text-gray-500 uppercase">{t('visualBlocks.setLabel', 'Definir')}</span>
                 <span className="font-mono text-gray-400 font-bold select-none text-xs">$</span>
                 <select
                   value={setter.variable}
                   onChange={(e) => handleUpdateSetter(idx, 'variable', e.target.value)}
-                  className="p-1 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 text-[10px] font-mono w-24 focus:outline-none focus:border-blue-600 rounded-none cursor-pointer text-gray-900 dark:text-white"
+                  className="p-1 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 text-[10px] font-mono w-28 focus:outline-none focus:border-blue-600 rounded-none cursor-pointer text-gray-900 dark:text-white"
                 >
                   {varNames.map(v => (
                     <option key={v} value={v}>{v}</option>
@@ -279,14 +295,14 @@ export default function VisualBlocksEditor({
         )}
       </div>
 
-      {/* 3. Conditional Groups (PURPLE/INDIGO BRUTALIST CARDS) */}
+      {/* 3. Conditional Groups (PURPLE/INDIGO BRUTALIST GRID DESIGN) */}
       {groupedChoices.groups.map((group) => (
         <div
           key={group.key}
-          className="bg-indigo-50 dark:bg-indigo-950/20 border-2 border-gray-900 dark:border-indigo-500 p-3 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#6366f1] relative"
+          className="bg-indigo-50 dark:bg-indigo-950/20 border-2 border-gray-900 dark:border-indigo-500 p-3.5 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#6366f1] relative rounded-none"
         >
           {/* Header with Group Condition Selectors */}
-          <div className="flex flex-wrap items-center gap-1.5 pb-2 mb-3 border-b-2 border-gray-900 dark:border-indigo-800">
+          <div className="flex flex-wrap items-center gap-1.5 pb-2 mb-3 border-b-2 border-gray-900 dark:border-indigo-800 bg-transparent text-gray-900 dark:text-white">
             <span className="text-sm">⚡</span>
             <span className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wider">
               {t('visualBlocks.ifLabel', 'SE (Condição)')}
@@ -296,7 +312,7 @@ export default function VisualBlocksEditor({
             <select
               value={group.condition.variable}
               onChange={(e) => handleUpdateGroupCondition(group.key, 'variable', e.target.value)}
-              className="p-1 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 text-[9px] font-mono focus:outline-none focus:border-blue-600 rounded-none cursor-pointer text-gray-900 dark:text-white w-20"
+              className="p-1 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 text-[9px] font-mono focus:outline-none focus:border-blue-600 rounded-none cursor-pointer text-gray-900 dark:text-white w-24"
             >
               {varNames.map(v => (
                 <option key={v} value={v}>{v}</option>
@@ -331,7 +347,7 @@ export default function VisualBlocksEditor({
               <button
                 type="button"
                 onClick={() => handleConvertGroupToSimple(group.key)}
-                className="p-1 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-[9px] font-black uppercase text-indigo-600 dark:text-indigo-400 shadow-[1px_1px_0px_#000]"
+                className="p-1 border border-gray-900 dark:border-gray-650 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-[9px] font-black uppercase text-indigo-650 dark:text-indigo-400 shadow-[1px_1px_0px_#000] cursor-pointer rounded-none"
                 title={t('visualBlocks.deleteConditionBtn')}
               >
                 🔗
@@ -339,7 +355,7 @@ export default function VisualBlocksEditor({
               <button
                 type="button"
                 onClick={() => handleDeleteGroup(group.key)}
-                className="p-1 border border-red-900 bg-red-100 hover:bg-red-200 text-[9px] font-black uppercase text-red-650 shadow-[1px_1px_0px_#000] cursor-pointer"
+                className="p-1 border border-red-900 bg-red-100 hover:bg-red-200 text-[9px] font-black uppercase text-red-650 shadow-[1px_1px_0px_#000] cursor-pointer rounded-none"
                 title={t('visualBlocks.deleteBlockBtn')}
               >
                 🗑️
@@ -347,126 +363,143 @@ export default function VisualBlocksEditor({
             </div>
           </div>
 
-          <div className="space-y-3">
+          {/* Visual flowchart split-tree connector lines (Brutalist style) */}
+          <div className="hidden md:flex justify-center items-center h-8 relative select-none">
+            <div className="absolute top-0 w-0.5 h-full bg-gray-900 dark:bg-indigo-900/40"></div>
+            <div className="absolute bottom-0 left-1/4 right-1/4 h-0.5 bg-gray-900 dark:bg-indigo-900/40"></div>
+          </div>
+
+          {/* Side-by-side branch comparison grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+            
+            {/* Visual connector lines on grid columns */}
+            <div className="hidden md:block absolute top-[-8px] left-[25%] w-0.5 h-2 bg-gray-900 dark:bg-indigo-900/40"></div>
+            <div className="hidden md:block absolute top-[-8px] right-[25%] w-0.5 h-2 bg-gray-900 dark:bg-indigo-900/40"></div>
+
             {/* THEN BRANCH (If True) */}
-            <div className="border-l-4 border-emerald-500 pl-2 py-0.5">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[9px] font-black uppercase text-emerald-650 dark:text-emerald-400 tracking-wider">
+            <div className="flex flex-col border-2 border-gray-900 dark:border-gray-750 bg-emerald-50/20 dark:bg-emerald-950/10 rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#10b981]">
+              <div className="flex items-center justify-between px-3 py-2 bg-emerald-500 text-white border-b-2 border-gray-900 dark:border-emerald-800">
+                <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5">
                   ✔️ {t('visualBlocks.thenLabel', 'ENTÃO (Se Sim)')}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleAddChoiceToGroup(group.condition, false)}
-                  className="text-[8px] font-black uppercase border border-emerald-500 px-1.5 py-0.5 bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-350 cursor-pointer"
+                  className="px-2 py-0.5 border border-white bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[8px] uppercase cursor-pointer rounded-none"
                 >
                   {t('visualBlocks.addChoiceThen', '+ Escolha')}
                 </button>
               </div>
 
-              {group.thenChoices.length > 0 ? (
-                <div className="space-y-1.5">
-                  {group.thenChoices.map((choice) => (
-                    <div key={choice.originalIndex} className="flex flex-col gap-1 p-1.5 bg-white dark:bg-gray-800 border border-gray-400 dark:border-gray-700">
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={choice.text}
-                          onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
-                          placeholder={t('visualBlocks.choicePlaceholder')}
-                          className="p-1 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveChoice(choice.originalIndex)}
-                          className="p-1 text-red-600 hover:text-red-500 font-black text-xs cursor-pointer select-none"
-                          title={t('visualBlocks.deleteChoiceTooltip')}
-                        >
-                          ✕
-                        </button>
+              <div className="p-3 space-y-3 flex-1">
+                {group.thenChoices.length > 0 ? (
+                  <div className="space-y-2">
+                    {group.thenChoices.map((choice) => (
+                      <div key={choice.originalIndex} className="flex flex-col gap-1.5 p-2 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-700 rounded-none relative group">
+                        <div className="flex items-center gap-1.5 pr-5">
+                          <input
+                            type="text"
+                            value={choice.text}
+                            onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
+                            placeholder={t('visualBlocks.choicePlaceholder')}
+                            className="p-1 border border-gray-900 dark:border-gray-650 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600 rounded-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveChoice(choice.originalIndex)}
+                            className="absolute top-2 right-2 p-0.5 text-red-650 hover:text-red-500 font-black text-xs cursor-pointer select-none"
+                            title={t('visualBlocks.deleteChoiceTooltip')}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9px] text-gray-400 font-bold uppercase">{t('visualBlocks.linkDestination')}</span>
+                          <select
+                            value={choice.target}
+                            onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'target', e.target.value)}
+                            className="p-0.5 border border-gray-900 dark:border-gray-655 bg-white dark:bg-gray-950 text-[9px] font-mono flex-1 cursor-pointer text-gray-900 dark:text-white rounded-none"
+                          >
+                            <option value="">{t('visualBlocks.selectDestination', 'Sem destino')}</option>
+                            {nodeLabels.map((l) => (
+                              <option key={l} value={l}>{l}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[9px] text-gray-400 font-bold uppercase">{t('visualBlocks.linkDestination')}</span>
-                        <select
-                          value={choice.target}
-                          onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'target', e.target.value)}
-                          className="p-0.5 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[9px] font-mono flex-1 cursor-pointer text-gray-900 dark:text-white"
-                        >
-                          <option value="">{t('visualBlocks.selectDestination', 'Sem destino')}</option>
-                          {nodeLabels.map((l) => (
-                            <option key={l} value={l}>{l}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[9px] text-gray-400 dark:text-gray-500 italic pl-1">{t('visualBlocks.noChoices')}</p>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[9px] text-gray-400 dark:text-gray-500 italic pl-1 text-center py-2">{t('visualBlocks.noChoices')}</p>
+                )}
+              </div>
             </div>
 
             {/* ELSE BRANCH (If False) */}
-            <div className="border-l-4 border-orange-500 pl-2 py-0.5">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[9px] font-black uppercase text-orange-650 dark:text-orange-450 tracking-wider">
+            <div className="flex flex-col border-2 border-gray-900 dark:border-gray-750 bg-orange-50/20 dark:bg-orange-950/10 rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#f97316]">
+              <div className="flex items-center justify-between px-3 py-2 bg-orange-500 text-white border-b-2 border-gray-900 dark:border-orange-850">
+                <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5">
                   ❌ {t('visualBlocks.elseLabel', 'SENÃO (Senão)')}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleAddChoiceToGroup(group.condition, true)}
-                  className="text-[8px] font-black uppercase border border-orange-500 px-1.5 py-0.5 bg-orange-500/10 hover:bg-orange-500/25 text-orange-700 dark:text-orange-350 cursor-pointer"
+                  className="px-2 py-0.5 border border-white bg-orange-655 hover:bg-orange-550 text-white font-black text-[8px] uppercase cursor-pointer rounded-none"
                 >
                   {t('visualBlocks.addChoiceElse', '+ Escolha')}
                 </button>
               </div>
 
-              {group.elseChoices.length > 0 ? (
-                <div className="space-y-1.5">
-                  {group.elseChoices.map((choice) => (
-                    <div key={choice.originalIndex} className="flex flex-col gap-1 p-1.5 bg-white dark:bg-gray-800 border border-gray-400 dark:border-gray-700">
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={choice.text}
-                          onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
-                          placeholder={t('visualBlocks.choicePlaceholder')}
-                          className="p-1 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveChoice(choice.originalIndex)}
-                          className="p-1 text-red-600 hover:text-red-500 font-black text-xs cursor-pointer select-none"
-                          title={t('visualBlocks.deleteChoiceTooltip')}
-                        >
-                          ✕
-                        </button>
+              <div className="p-3 space-y-3 flex-1">
+                {group.elseChoices.length > 0 ? (
+                  <div className="space-y-2">
+                    {group.elseChoices.map((choice) => (
+                      <div key={choice.originalIndex} className="flex flex-col gap-1.5 p-2 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-700 rounded-none relative group">
+                        <div className="flex items-center gap-1.5 pr-5">
+                          <input
+                            type="text"
+                            value={choice.text}
+                            onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
+                            placeholder={t('visualBlocks.choicePlaceholder')}
+                            className="p-1 border border-gray-900 dark:border-gray-650 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600 rounded-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveChoice(choice.originalIndex)}
+                            className="absolute top-2 right-2 p-0.5 text-red-655 hover:text-red-500 font-black text-xs cursor-pointer select-none"
+                            title={t('visualBlocks.deleteChoiceTooltip')}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9px] text-gray-400 font-bold uppercase">{t('visualBlocks.linkDestination')}</span>
+                          <select
+                            value={choice.target}
+                            onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'target', e.target.value)}
+                            className="p-0.5 border border-gray-900 dark:border-gray-655 bg-white dark:bg-gray-950 text-[9px] font-mono flex-1 cursor-pointer text-gray-900 dark:text-white rounded-none"
+                          >
+                            <option value="">{t('visualBlocks.selectDestination', 'Sem destino')}</option>
+                            {nodeLabels.map((l) => (
+                              <option key={l} value={l}>{l}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[9px] text-gray-400 font-bold uppercase">{t('visualBlocks.linkDestination')}</span>
-                        <select
-                          value={choice.target}
-                          onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'target', e.target.value)}
-                          className="p-0.5 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[9px] font-mono flex-1 cursor-pointer text-gray-900 dark:text-white"
-                        >
-                          <option value="">{t('visualBlocks.selectDestination', 'Sem destino')}</option>
-                          {nodeLabels.map((l) => (
-                            <option key={l} value={l}>{l}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[9px] text-gray-400 dark:text-gray-500 italic pl-1">{t('visualBlocks.noChoices')}</p>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[9px] text-gray-400 dark:text-gray-500 italic pl-1 text-center py-2">{t('visualBlocks.noChoices')}</p>
+                )}
+              </div>
             </div>
+
           </div>
         </div>
       ))}
 
       {/* 4. Simple Choices Block (BLUE BRUTALIST CARD) */}
-      <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-gray-900 dark:border-blue-500 p-3 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#3b82f6]">
+      <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-gray-900 dark:border-blue-500 p-3 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#3b82f6] rounded-none">
         <div className="flex items-center justify-between mb-2 pb-1 border-b border-dashed border-gray-300 dark:border-blue-800">
           <div className="flex items-center gap-2">
             <span className="text-sm">🔗</span>
@@ -477,28 +510,28 @@ export default function VisualBlocksEditor({
           <button
             type="button"
             onClick={handleAddSimpleChoice}
-            className="px-2 py-0.5 border-2 border-gray-900 bg-blue-500 hover:bg-blue-400 text-white font-black text-[9px] uppercase tracking-wider shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+            className="px-2 py-0.5 border-2 border-gray-900 bg-blue-500 hover:bg-blue-400 text-white font-black text-[9px] uppercase tracking-wider shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none"
           >
             {t('visualBlocks.addSimpleChoiceBtn', '+ Adicionar')}
           </button>
         </div>
 
         {groupedChoices.simples.length > 0 ? (
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {groupedChoices.simples.map((choice) => (
-              <div key={choice.originalIndex} className="flex flex-col gap-1 p-2 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-700">
-                <div className="flex items-center gap-1.5">
+              <div key={choice.originalIndex} className="flex flex-col gap-1.5 p-2.5 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-700 rounded-none relative group">
+                <div className="flex items-center gap-1.5 pr-5">
                   <input
                     type="text"
                     value={choice.text}
                     onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
                     placeholder={t('visualBlocks.choicePlaceholder')}
-                    className="p-1 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600"
+                    className="p-1 border border-gray-900 dark:border-gray-650 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600 rounded-none"
                   />
                   <button
                     type="button"
                     onClick={() => handleRemoveChoice(choice.originalIndex)}
-                    className="p-1 text-red-600 hover:text-red-500 font-black text-xs cursor-pointer select-none"
+                    className="absolute top-2.5 right-2.5 p-0.5 text-red-655 hover:text-red-500 font-black text-xs cursor-pointer select-none"
                     title={t('visualBlocks.deleteChoiceTooltip')}
                   >
                     ✕
@@ -509,7 +542,7 @@ export default function VisualBlocksEditor({
                   <select
                     value={choice.target}
                     onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'target', e.target.value)}
-                    className="p-0.5 border border-gray-900 dark:border-gray-650 bg-white dark:bg-gray-950 text-[9px] font-mono flex-1 cursor-pointer text-gray-900 dark:text-white"
+                    className="p-0.5 border border-gray-900 dark:border-gray-655 bg-white dark:bg-gray-950 text-[9px] font-mono flex-1 cursor-pointer text-gray-900 dark:text-white rounded-none"
                   >
                     <option value="">{t('visualBlocks.selectDestination', 'Sem destino')}</option>
                     {nodeLabels.map((l) => (
@@ -530,7 +563,7 @@ export default function VisualBlocksEditor({
         <button
           type="button"
           onClick={handleAddConditionalBlock}
-          className="flex-1 py-1.5 border-2 border-gray-900 bg-indigo-550 dark:bg-indigo-650 hover:bg-indigo-500 text-white font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none"
+          className="flex-1 py-1.5 border-2 border-gray-900 bg-indigo-650 hover:bg-indigo-500 text-white font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none"
         >
           {t('visualBlocks.addConditionalBlockBtn', '+ Novo Bloco Condicional')}
         </button>

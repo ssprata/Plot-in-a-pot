@@ -101,6 +101,27 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
           </button>
         </div>
 
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => addNode('zone')} 
+            className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-amber-50 dark:bg-amber-900 hover:bg-amber-100 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
+          >
+            {t('topBar.addZone')}
+          </button>
+          <button
+            type="button"
+            onClick={() => openHelp(
+              t('topBar.helpTitles.addZone'),
+              t('topBar.helpSubtitles.addZone'),
+              <p>{t('topBar.helpDescription.addZone')}<br/><br/><b>{t('hotkeys.addZone')}</b></p>
+            )}
+            className={helpButtonClass}
+            aria-label={t('topBar.helpLabels.addZone')}
+          >
+            ?
+          </button>
+        </div>
+
         <div className="relative flex items-center gap-1" ref={dropdownRef}>
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}

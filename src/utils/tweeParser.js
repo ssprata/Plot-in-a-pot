@@ -61,9 +61,13 @@ export function parseTwee3(source) {
     let nodeType = 'choice';
     if (tags.includes('script')) nodeType = 'javascript';
     if (tags.includes('stylesheet')) nodeType = 'css';
+    if (tags.includes('zone')) nodeType = 'zone';
 
     // Ler coordenadas visuais (se existirem)
     let position = { x: 0, y: 0 };
+    let parent = null;
+    let size = null;
+    let color = null;
     if (rawMetadata) {
       try {
         const metadata = JSON.parse(rawMetadata);
@@ -72,6 +76,18 @@ export function parseTwee3(source) {
           if (!isNaN(left) && !isNaN(top)) {
             position = { x: left, y: top };
           }
+        }
+        if (typeof metadata.parent === 'string') {
+          parent = metadata.parent;
+        }
+        if (typeof metadata.size === 'string') {
+          const [w, h] = metadata.size.split(',').map(parseFloat);
+          if (!isNaN(w) && !isNaN(h)) {
+            size = { width: w, height: h };
+          }
+        }
+        if (typeof metadata.color === 'string') {
+          color = metadata.color;
         }
       } catch (e) {
         console.warn(`Aviso: Falha ao ler metadados do nó ${title}`);
@@ -85,8 +101,37 @@ export function parseTwee3(source) {
       id,
       type: nodeType,
       position,
-      data: { label: title, nodeType, content, tags, choices: [] }
+      ...(nodeType === 'zone' ? { style: size || { width: 300, height: 200 } } : {}),
+      data: { 
+        label: title, 
+        nodeType, 
+        content, 
+        tags, 
+        choices: [],
+        ...(parent ? { parentName: parent } : {}),
+        ...(size ? { size } : {}),
+        ...(color ? { color } : {})
+      }
     });
+  });
+
+  // 2.5 Resolver parent-child relationships e ajustar posições relativas
+  passages.forEach(p => {
+    if (p.data.parentName) {
+      const parentId = idMap[p.data.parentName];
+      if (parentId) {
+        const parentNode = passages.find(parent => parent.id === parentId);
+        if (parentNode) {
+          p.parentId = parentId;
+          p.extent = 'parent';
+          // Converter posição absoluta em relativa ao pai
+          p.position = {
+            x: p.position.x - parentNode.position.x,
+            y: p.position.y - parentNode.position.y
+          };
+        }
+      }
+    }
   });
 
   // 3. Fase do Grafo: Extrair Ligações (Arestas) e Povoar Escolhas Visuais
@@ -215,11 +260,42 @@ export function exportToTwee3(nodes, edges) {
     // Restaurar tags obrigatórias baseadas no Node Type
     if (n.data.nodeType === 'javascript' && !tagsArray.includes('script')) tagsArray.push('script');
     if (n.data.nodeType === 'css' && !tagsArray.includes('stylesheet')) tagsArray.push('stylesheet');
+    if (n.data.nodeType === 'zone' && !tagsArray.includes('zone')) tagsArray.push('zone');
 
     const tags = tagsArray.length > 0 ? ` [${tagsArray.map(escapeForTweeHeader).join(' ')}]` : '';
 
     // Gerar JSON de posição seguro
-    const metadataObj = { position: `${Math.round(n.position.x)},${Math.round(n.position.y)}` };
+    // Se o nó tiver um pai, a sua posição guardada no estado é relativa. Temos de convertê-la de volta a absoluta para exportação!
+    let absoluteX = n.position.x;
+    let absoluteY = n.position.y;
+    
+    if (n.parentId) {
+      const parentNode = nodes.find(parent => parent.id === n.parentId);
+      if (parentNode) {
+        // Posição absoluta = posição do pai + posição relativa do filho
+        absoluteX = (parentNode.position.x || 0) + (n.position.x || 0);
+        absoluteY = (parentNode.position.y || 0) + (n.position.y || 0);
+      }
+    }
+
+    const metadataObj = { position: `${Math.round(absoluteX)},${Math.round(absoluteY)}` };
+    
+    if (n.parentId) {
+      const parentNode = nodes.find(parent => parent.id === n.parentId);
+      if (parentNode) {
+        metadataObj.parent = parentNode.data.label;
+      }
+    }
+    
+    if (n.type === 'zone' || n.data.nodeType === 'zone') {
+      const w = n.style?.width || n.width || n.data.size?.width || 300;
+      const h = n.style?.height || n.height || n.data.size?.height || 200;
+      metadataObj.size = `${Math.round(w)},${Math.round(h)}`;
+      if (n.data.color) {
+        metadataObj.color = n.data.color;
+      }
+    }
+
     const metadata = ` ${JSON.stringify(metadataObj).replace(/\s+/g, '')}`;
 
     // Escapar duplos pontos no meio do texto

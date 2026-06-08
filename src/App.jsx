@@ -25,6 +25,7 @@ import TopBar from './components/TopBar';
 import Inspector from './components/Inspector';
 import DataPanel from './components/DataPanel';
 import StoryNode from './components/StoryNode';
+import ZoneNode from './components/ZoneNode';
 import SettingsModal from './components/SettingsModal';
 import PlayMode from './components/PlayMode';
 import AiImportModal from './components/AiImportModal';
@@ -68,7 +69,8 @@ const initialNodes = [
 const nodeTypes = {
   choice: StoryNode,
   javascript: StoryNode,
-  css: StoryNode
+  css: StoryNode,
+  zone: ZoneNode
 };
 
 const edgeTypes = {
@@ -492,6 +494,79 @@ function App() {
     }, 10);
   }, [nodes, setEdges, syncChoicesFromText, takeSnapshot]);
 
+  const onNodeDragStop = useCallback((event, node) => {
+    if (node.type === 'zone') return;
+
+    let absoluteX = node.position.x;
+    let absoluteY = node.position.y;
+    
+    if (node.parentId) {
+      const parent = nodes.find(n => n.id === node.parentId);
+      if (parent) {
+        absoluteX += parent.position.x;
+        absoluteY += parent.position.y;
+      }
+    }
+
+    const nodeWidth = node.width || 180;
+    const nodeHeight = node.height || 80;
+
+    const absoluteCenter = {
+      x: absoluteX + nodeWidth / 2,
+      y: absoluteY + nodeHeight / 2,
+    };
+
+    const matchingZone = nodes.find(n => {
+      if (n.type !== 'zone' || n.id === node.id) return false;
+      const zoneLeft = n.position.x;
+      const zoneTop = n.position.y;
+      const zoneWidth = n.style?.width || n.width || 300;
+      const zoneHeight = n.style?.height || n.height || 200;
+
+      return (
+        absoluteCenter.x >= zoneLeft &&
+        absoluteCenter.x <= zoneLeft + zoneWidth &&
+        absoluteCenter.y >= zoneTop &&
+        absoluteCenter.y <= zoneTop + zoneHeight
+      );
+    });
+
+    if (matchingZone) {
+      if (node.parentId !== matchingZone.id) {
+        const relativePosition = {
+          x: absoluteX - matchingZone.position.x,
+          y: absoluteY - matchingZone.position.y,
+        };
+        takeSnapshot();
+        setNodes(nds => nds.map(n => {
+          if (n.id === node.id) {
+            return {
+              ...n,
+              parentId: matchingZone.id,
+              position: relativePosition,
+              extent: 'parent',
+            };
+          }
+          return n;
+        }));
+      }
+    } else {
+      if (node.parentId) {
+        takeSnapshot();
+        setNodes(nds => nds.map(n => {
+          if (n.id === node.id) {
+            const { parentId, extent, ...rest } = n;
+            return {
+              ...rest,
+              position: { x: absoluteX, y: absoluteY }
+            };
+          }
+          return n;
+        }));
+      }
+    }
+  }, [nodes, setNodes, takeSnapshot]);
+
   const handleConnectionConfirm = useCallback(({ type, choiceText, params,
     ifVariable, ifOperator, ifValue,
     ifTargetNodeId, elseTargetNodeId }) => {
@@ -543,7 +618,25 @@ function App() {
   const deleteNode = useCallback((nodeIdToRemove) => {
     if (!nodeIdToRemove) return;
     takeSnapshot();
-    setNodes((nds) => nds.filter((n) => n.id !== nodeIdToRemove));
+    setNodes((nds) => {
+      const target = nds.find(n => n.id === nodeIdToRemove);
+      const isZone = target?.type === 'zone';
+      
+      return nds
+        .filter((n) => n.id !== nodeIdToRemove)
+        .map((n) => {
+          if (isZone && n.parentId === nodeIdToRemove) {
+            const { parentId, extent, ...rest } = n;
+            const absX = (target.position.x || 0) + (n.position.x || 0);
+            const absY = (target.position.y || 0) + (n.position.y || 0);
+            return {
+              ...rest,
+              position: { x: absX, y: absY }
+            };
+          }
+          return n;
+        });
+    });
     setEdges((eds) => eds.filter((e) => e.source !== nodeIdToRemove && e.target !== nodeIdToRemove));
     if (selectedNodeId === nodeIdToRemove) setSelectedNodeId(null);
   }, [selectedNodeId, setNodes, setEdges, takeSnapshot]);
@@ -570,7 +663,9 @@ function App() {
         ? 'Script'
         : type === 'css'
           ? t('topBar.nodeLabels.style')
-          : t('topBar.nodeLabels.scene');
+          : type === 'zone'
+            ? 'Zona'
+            : t('topBar.nodeLabels.scene');
 
       label = baseLabel;
       let labelNum = 1;
@@ -587,7 +682,15 @@ function App() {
       id,
       type,
       position: { x: 200 + (offset % 5) * 80, y: 50 + ((offset / 5) | 0) * 80 },
-      data: { label, nodeType: type, content: '', choices: [], tags: presetTags }
+      ...(type === 'zone' ? { style: { width: 300, height: 200 } } : {}),
+      data: { 
+        label, 
+        nodeType: type, 
+        content: '', 
+        choices: [], 
+        tags: presetTags || (type === 'zone' ? 'secreto, zone' : ''),
+        ...(type === 'zone' ? { color: '#f59e0b' } : {})
+      }
     };
 
     setNodes((nds) => nds.concat(newNode));
@@ -949,6 +1052,10 @@ function App() {
         e.preventDefault();
         addNode('css');
       }
+      else if (e.ctrlKey && !e.shiftKey && e.altKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        addNode('zone');
+      }
       else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'v') {
         e.preventDefault();
         runValidation();
@@ -1060,6 +1167,7 @@ function App() {
               onConnect={onConnect}
               onEdgeUpdate={onEdgeUpdate}
               onNodeDragStart={takeSnapshot}
+              onNodeDragStop={onNodeDragStop}
               onNodeDoubleClick={onNodeClick}
               onEdgeClick={onEdgeClick}
               onEdgeDoubleClick={onEdgeDoubleClick}
