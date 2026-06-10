@@ -32,9 +32,24 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
     return localStorage.getItem('gemini-api-key') || '';
   });
 
+  // FIX 1: useEffect ANTES do return condicional (Rules of Hooks)
   useEffect(() => {
     localStorage.setItem('gemini-api-key', apiKey);
   }, [apiKey]);
+
+  // FIX 2: Limpar erro ao fechar o modal (ao reabrir não fica o erro anterior)
+  useEffect(() => {
+    if (!isOpen) {
+      setError(null);
+    }
+  }, [isOpen]);
+
+  // FIX 3: Limpar erro ao mudar de fornecedor (erro de "chave em falta" não fica
+  //         visível quando o utilizador muda para Ollama e vice-versa)
+  const handleProviderChange = (newProvider) => {
+    setProvider(newProvider);
+    setError(null);
+  };
 
   if (!isOpen) return null;
 
@@ -72,7 +87,8 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
       onClose();
 
     } catch (err) {
-      setError(err.message || "Ocorreu um erro ao gerar a história.");
+      // FIX 4: Mensagem de fallback via t() em vez de string hardcoded em português
+      setError(err.message || t('aiImportModal.errors.generic'));
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +110,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
               name="provider" 
               value="gemini" 
               checked={provider === 'gemini'} 
-              onChange={() => setProvider('gemini')}
+              onChange={() => handleProviderChange('gemini')}
               className="accent-purple-600 w-4 h-4"
             />
             {t('aiImportModal.gemini')}
@@ -106,7 +122,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
               name="provider" 
               value="ollama" 
               checked={provider === 'ollama'} 
-              onChange={() => setProvider('ollama')}
+              onChange={() => handleProviderChange('ollama')}
               className="accent-purple-600 w-4 h-4"
             />
             {t('aiImportModal.ollama')}

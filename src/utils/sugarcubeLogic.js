@@ -1,23 +1,44 @@
 // src/utils/sugarcubeLogic.js
 
+// FIX #5: Constante partilhada para a tag de nós secretos/sistema
+// (deve ser a mesma usada no storyValidator.js)
+export const SECRET_TAG = 'secreto';
+
 // --- TRADUTOR SUGARCUBE -> JAVASCRIPT ---
 // Converte os operadores textuais do Twine para operadores lógicos puros
 function sanitizeSugarCubeExpression(expr) {
     return expr
-        .replace(/\bis\b/g, '===')
-        .replace(/\beq\b/g, '===')
-        .replace(/\bneq\b/g, '!==')
-        .replace(/\band\b/g, '&&')
-        .replace(/\bor\b/g, '||')
-        .replace(/\bto\b/g, '=')
+        // FIX #1: "isnot" ANTES de "is" — caso contrário "isnot" torna-se "===not"
+        .replace(/\bisnot\b/g, '!==')
+        .replace(/\bneq\b/g,   '!==')
+        .replace(/\bis\b/g,    '===')
+        .replace(/\beq\b/g,    '===')
+        .replace(/\band\b/g,   '&&')
+        .replace(/\bor\b/g,    '||')
+        // FIX #2: "to" só é substituído quando precedido de $variável e seguido de valor,
+        // para não corromper strings que contenham a palavra "to" (ex: "to the castle")
+        .replace(/(\$[\w]+)\s+\bto\b\s+/g, '$1 = ')
         .replace(/\$([a-zA-Z0-9_]+)/g, 'state.$1'); // Transforma $ouro em state.ouro
+}
+
+// FIX #4: Lista de propriedades proibidas para proteger o objeto de estado
+// contra expressões maliciosas ou mal formatadas
+const FORBIDDEN_STATE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+function safeguardState(state) {
+    FORBIDDEN_STATE_KEYS.forEach(key => {
+        if (key in state) delete state[key];
+    });
+    return state;
 }
 
 // 1. Encontrar o nó de início
 export function findStartNode(nodes) {
     // 1º Tentativa: Encontrar pela tag "start"
     let startNode = nodes.find(n => {
-        const tags = Array.isArray(n.data.tags) ? n.data.tags.join(' ').toLowerCase() : String(n.data.tags || "").toLowerCase();
+        const tags = Array.isArray(n.data.tags)
+            ? n.data.tags.join(' ').toLowerCase()
+            : String(n.data.tags || '').toLowerCase();
         return tags.includes('start');
     });
 
@@ -31,7 +52,6 @@ export function findStartNode(nodes) {
                     startNode = nodes.find(n => n.data.label === storyData.start);
                 }
             } catch (e) {
-                // Ignorar se o JSON estiver corrompido
                 console.warn("Aviso: Falha ao ler StoryData para encontrar nó de início:", e);
             }
         }
@@ -42,15 +62,22 @@ export function findStartNode(nodes) {
         startNode = nodes.find(n => n.data.label.toLowerCase() === 'start');
     }
 
-    // 4º Tentativa (Fallback de Segurança): O primeiro nó do grafo que NÃO seja um nó de sistema
+    // 4º Tentativa (Fallback de Segurança): O primeiro nó que NÃO seja de sistema
     if (!startNode) {
-        startNode = nodes.find(n => !isSystemNode(n)) || nodes[0];
+        // FIX #6: Aviso explícito quando o fallback é usado — a travessia pode começar num nó errado
+        const fallback = nodes.find(n => !isSystemNode(n)) || nodes[0];
+        if (fallback) {
+            console.warn(
+                `[sugarcubeLogic] Nenhum nó de início encontrado — a usar "${fallback.data?.label || fallback.id}" como fallback. Define uma tag 'start' ou um nó StoryData com "start" para evitar este comportamento.`
+            );
+        }
+        startNode = fallback;
     }
 
     return startNode;
 }
 
-// 2. Extrair e aplicar macros <<set>> ao estado atual (Agora suporta matemática e strings)
+// 2. Extrair e aplicar macros <<set>> ao estado atual
 export function applyModifiers(content, currentState) {
     const newState = { ...currentState };
     if (!content) return newState;
@@ -63,9 +90,10 @@ export function applyModifiers(content, currentState) {
         const jsExpression = sanitizeSugarCubeExpression(expression);
 
         try {
-            // Cria um ambiente isolado (sandbox) onde a única variável disponível é o 'state'
+            // FIX #4: Sandbox com proteção contra mutação de propriedades perigosas
             const evaluator = new Function('state', `${jsExpression};`);
             evaluator(newState);
+            safeguardState(newState);
         } catch (e) {
             console.warn("Expressão <<set>> complexa ou mal formatada ignorada:", expression);
         }
@@ -76,114 +104,94 @@ export function applyModifiers(content, currentState) {
 // 3. Obter o estado inicial lendo o StoryInit
 export function getInitialState(nodes) {
     const initNode = nodes.find(n => n.data.label.toLowerCase() === 'storyinit');
-    return applyModifiers(initNode ? initNode.data.content : "", {});
+    return applyModifiers(initNode ? initNode.data.content : '', {});
 }
 
 // 4. Testar se uma escolha passa nas condições <<if>>, <<elseif>> e <<else>>
 export function canAccessChoice(content, choiceText, currentState) {
-  // 1. VERIFICAÇÃO DE SEGURANÇA
-  // Se não houver texto condicional no nó, não há restrições. A escolha está aberta.
-  if (!content) return true;
-  
-  // Por defeito, assumimos que a escolha está livre, a não ser que a lógica prove o contrário.
-  let isAccessible = true;
+    if (!content) return true;
 
-  // 2. ENCONTRAR OS BLOCOS COMPLETOS
-  // Expressão regular para capturar tudo entre um <<if>> e o seu <</if>> final, 
-  // capturando a condição inicial e todo o texto lá dentro.
-  const fullIfRegex = /<<if\s+(.+?)\s*>>([\s\S]*?)<<\/if>>/gi;
-  let ifMatch;
+    // FIX #7: Rastrear explicitamente se a escolha foi encontrada em algum bloco
+    // Em vez de depender do valor acidental de isAccessible no final
+    let choiceFoundInAnyBlock = false;
+    let isAccessible = true;
 
-  // O ciclo percorre todos os blocos condicionais que existirem no texto do nó atual
-  while ((ifMatch = fullIfRegex.exec(content))) {
-    const entireBlock = ifMatch[0];       // O texto total do bloco (do if ao /if)
-    const initialExpression = ifMatch[1]; // A condição matemática do primeiro <<if>>
-    const innerContent = ifMatch[2];      // O texto e escolhas que estão lá dentro
+    const fullIfRegex = /<<if\s+(.+?)\s*>>([\s\S]*?)<<\/if>>/gi;
+    let ifMatch;
 
-    // 3. FILTRAGEM RÁPIDA
-    // Se a escolha que estamos a analisar não estiver escrita dentro deste bloco específico, 
-    // ignoramos este bloco inteiro para poupar processamento e passamos ao próximo.
-    if (!entireBlock.includes(choiceText)) {
-      continue;
+    while ((ifMatch = fullIfRegex.exec(content))) {
+        const entireBlock = ifMatch[0];
+        const initialExpression = ifMatch[1];
+        const innerContent = ifMatch[2];
+
+        // FIX #3: Filtragem mais robusta — verificar se a escolha está no bloco
+        // usando o formato exato de link em vez de substring livre
+        // (reduz falsos positivos com textos de escolha genéricos)
+        const choicePattern = new RegExp(
+            '\\[\\[' + choiceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[|\\]\\->]'
+        );
+        if (!choicePattern.test(entireBlock) && !entireBlock.includes(`[[${choiceText}]]`)) {
+            continue;
+        }
+
+        choiceFoundInAnyBlock = true;
+
+        const branches = [{ condition: initialExpression, text: '' }];
+        const splitRegex = /(<<elseif\s+[\s\S]+?>>|<<else>>)/gi;
+        const pieces = innerContent.split(splitRegex);
+        branches[0].text = pieces[0];
+
+        for (let i = 1; i < pieces.length; i += 2) {
+            const tag = pieces[i];
+            const text = pieces[i + 1] || '';
+            let cond = 'true';
+            if (tag.toLowerCase().startsWith('<<elseif')) {
+                const exprMatch = tag.match(/<<elseif\s+(.+?)\s*>>/i);
+                if (exprMatch) cond = exprMatch[1];
+            }
+            branches.push({ condition: cond, text });
+        }
+
+        let activeBranchIndex = -1;
+        for (let i = 0; i < branches.length; i++) {
+            const jsExpr = sanitizeSugarCubeExpression(branches[i].condition);
+            let isTrue = false;
+            try {
+                const evaluator = new Function('state', `return ${jsExpr};`);
+                isTrue = !!evaluator(currentState);
+            } catch (e) {
+                console.warn("Aviso: Falha ao avaliar condição complexa:", branches[i].condition);
+            }
+            if (isTrue) {
+                activeBranchIndex = i;
+                break;
+            }
+        }
+
+        // FIX #7: Resultado explícito — a escolha só é acessível se estiver
+        // no ramo vencedor do bloco onde foi encontrada
+        if (activeBranchIndex !== -1 && branches[activeBranchIndex].text.includes(choiceText)) {
+            isAccessible = true;
+        } else {
+            isAccessible = false;
+        }
     }
 
-    // 4. DIVISÃO EM RAMIFICAÇÕES (BRANCHES)
-    // Criamos uma lista de ramificações, começando sempre com a do <<if>> inicial.
-    const branches = [
-      { condition: initialExpression, text: '' }
-    ];
+    // FIX #7: Se a escolha não foi encontrada em nenhum bloco condicional,
+    // está livre (fora de qualquer <<if>>) — acessível por defeito
+    if (!choiceFoundInAnyBlock) return true;
 
-    // Usamos [\s\S]+? para ler qualquer tipo de carácter (incluindo quebras de linha e símbolos matemáticos como > ou <) 
-    // até encontrar estritamente os dois símbolos de fecho da etiqueta '>>'.
-    const splitRegex = /(<<elseif\s+[\s\S]+?>>|<<else>>)/gi;
-    
-    // O comando split corta o texto em fatias, criando uma lista alternada: [texto, etiqueta, texto, etiqueta...]
-    const pieces = innerContent.split(splitRegex);
-    
-    // O primeiro pedaço de texto pertence sempre à primeira condição (<<if>>)
-    branches[0].text = pieces[0];
-
-    // Este ciclo agrupa as restantes etiquetas (<<elseif>> ou <<else>>) com os seus respetivos textos
-    for (let i = 1; i < pieces.length; i += 2) {
-       const tag = pieces[i];
-       const text = pieces[i + 1] || ''; // O texto que vem logo a seguir à etiqueta
-       
-       let cond = 'true'; // Se a etiqueta for um <<else>>, a condição é considerada sempre verdadeira
-       
-       // Se for um <<elseif>>, precisamos de extrair a fórmula matemática do interior da etiqueta
-       if (tag.toLowerCase().startsWith('<<elseif')) {
-           const exprMatch = tag.match(/<<elseif\s+(.+?)\s*>>/i);
-           if (exprMatch) cond = exprMatch[1];
-       }
-       
-       // Guardamos a ramificação na nossa lista para futura avaliação
-       branches.push({ condition: cond, text: text });
-    }
-
-    // 5. AVALIAÇÃO EM CASCATA (DE CIMA PARA BAIXO)
-    // Testamos as condições pela mesma ordem rigorosa em que o autor as escreveu.
-    let activeBranchIndex = -1; // Começa a -1 porque ainda nenhuma condição foi cumprida
-
-    for (let i = 0; i < branches.length; i++) {
-       // Converte a sintaxe do SugarCube para JavaScript nativo (ex: 'is' para '===')
-       const jsExpr = sanitizeSugarCubeExpression(branches[i].condition);
-       let isTrue = false;
-       
-       try {
-          // Cria uma função isolada para testar se a condição matemática da ramificação é verdadeira com as variáveis atuais
-          const evaluator = new Function('state', `return ${jsExpr};`);
-          isTrue = !!evaluator(currentState);
-       } catch (e) {
-          // Se a fórmula estiver mal escrita no texto, avisa na consola e falha por segurança
-          console.warn("Aviso: Falha ao avaliar condição complexa:", branches[i].condition);
-       }
-
-       // A regra de ouro do SugarCube:
-       // Assim que uma condição for verdadeira, validamos esse ramo e quebramos o ciclo.
-       // Isto garante que o simulador ignora todos os <<elseif>> e <<else>> que estão abaixo.
-       if (isTrue) {
-          activeBranchIndex = i;
-          break; 
-       }
-    }
-
-    // 6. VEREDITO FINAL
-    // Se encontrámos uma ramificação vencedora e o texto da escolha habita lá dentro, a porta abre.
-    // Caso contrário (seja porque a condição da ramificação falhou ou porque a escolha está presa num bloco perdedor), a porta tranca.
-    if (activeBranchIndex !== -1 && branches[activeBranchIndex].text.includes(choiceText)) {
-        isAccessible = true;
-    } else {
-        isAccessible = false;
-    }
-  }
-
-  return isAccessible;
+    return isAccessible;
 }
+
 // 5. Verificar se é um nó de sistema
 export function isSystemNode(node) {
     const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
     const labelLower = node.data.label.toLowerCase();
-    const tags = Array.isArray(node.data.tags) ? node.data.tags.join(' ').toLowerCase() : String(node.data.tags || "").toLowerCase();
+    // FIX #5: Usar SECRET_TAG exportada em vez de string hardcoded duplicada
+    const tags = Array.isArray(node.data.tags)
+        ? node.data.tags.join(' ').toLowerCase()
+        : String(node.data.tags || '').toLowerCase();
 
-    return systemNodes.includes(labelLower) || tags.includes('secreto');
+    return systemNodes.includes(labelLower) || tags.includes(SECRET_TAG);
 }

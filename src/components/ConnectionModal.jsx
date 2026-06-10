@@ -10,8 +10,11 @@ const OPERATORS = [
 ];
 
 // Groups nodes by their tags for the dropdown. Nodes with no tags go under "Sem tag".
+// FIX 1: Cada nó é adicionado a cada grupo apenas uma vez (sem duplicados por múltiplas tags).
 function groupNodesByTag(nodes) {
   const groups = {};
+  const seen = new Set(); // rastreia nós já adicionados a um grupo
+
   nodes.forEach(n => {
     const tagsRaw = Array.isArray(n.data.tags)
       ? n.data.tags.join(',')
@@ -25,7 +28,11 @@ function groupNodesByTag(nodes) {
       (groups['Sem tag'] = groups['Sem tag'] || []).push(n);
     } else {
       tags.forEach(tag => {
-        (groups[tag] = groups[tag] || []).push(n);
+        // Só adiciona ao grupo se ainda não foi adicionado a nenhum grupo
+        if (!seen.has(n.id)) {
+          seen.add(n.id);
+          (groups[tag] = groups[tag] || []).push(n);
+        }
       });
     }
   });
@@ -53,9 +60,9 @@ export default function ConnectionModal({
   );
 
   const groupedNodes = useMemo(() => groupNodesByTag(availableNodes), [availableNodes]);
-  const varNames = Object.keys(globalVars);
+  const varNames = useMemo(() => Object.keys(globalVars), [globalVars]);
 
-  // Reset state when modal opens
+  // FIX 2: varNames adicionado às dependências para o reset usar sempre a lista atualizada
   useEffect(() => {
     if (isOpen) {
       setMode('simple');
@@ -63,13 +70,16 @@ export default function ConnectionModal({
       setIfVariable(varNames[0] || '');
       setIfOperator('is');
       setIfValue('');
-      // Default if-target to the node the user dragged to
       setIfTargetNodeId(params?.target || '');
       setElseTargetNodeId('');
     }
-  }, [isOpen]);
+  }, [isOpen, varNames]);
 
   if (!isOpen || !params) return null;
+
+  // FIX 3: Resolver os nós do preview uma vez, em vez de 4× dentro do JSX
+  const ifTargetNode = nodes.find(n => n.id === ifTargetNodeId);
+  const elseTargetNode = nodes.find(n => n.id === elseTargetNodeId);
 
   const handleConfirm = () => {
     if (mode === 'simple') {
@@ -232,18 +242,18 @@ export default function ConnectionModal({
                 <NodeSelect value={elseTargetNodeId} onChange={setElseTargetNodeId} placeholder="Sem else (nó termina aqui)" />
               </div>
 
-              {/* Preview of what will be written */}
+              {/* FIX 3 aplicado: usar ifTargetNode e elseTargetNode resolvidos acima */}
               {isConditionValid && (
                 <div className="p-3 bg-gray-900 rounded border border-gray-600 font-mono text-[11px] leading-relaxed">
                   <div className="text-purple-400">{`<<if $${ifVariable} ${ifOperator} ${ifValue}>>`}</div>
                   <div className="text-green-300 pl-2">
-                    {`[[${choiceText || nodes.find(n => n.id === ifTargetNodeId)?.data.label}|${nodes.find(n => n.id === ifTargetNodeId)?.data.label}]]`}
+                    {`[[${choiceText || ifTargetNode?.data.label}|${ifTargetNode?.data.label}]]`}
                   </div>
                   {elseTargetNodeId && (
                     <>
                       <div className="text-purple-400">{`<<else>>`}</div>
                       <div className="text-yellow-300 pl-2">
-                        {`[[${nodes.find(n => n.id === elseTargetNodeId)?.data.label}|${nodes.find(n => n.id === elseTargetNodeId)?.data.label}]]`}
+                        {`[[${elseTargetNode?.data.label}|${elseTargetNode?.data.label}]]`}
                       </div>
                     </>
                   )}
