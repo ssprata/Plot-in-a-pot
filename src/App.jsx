@@ -36,6 +36,8 @@ import ConnectionModal from './components/ConnectionModal';
 import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 import TemplatePromptModal from './components/TemplatePromptModal';
+import PlaythroughTutorial from './components/PlaythroughTutorial';
+
 
 // Contexto de Tema e Carregamento de Configurações
 import { useTheme } from './contexts/ThemeContext';
@@ -163,6 +165,8 @@ function App() {
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState(null);
   const [isPlayModeOpen, setIsPlayModeOpen] = useState(false);
+  const [playModeCurrentNodeId, setPlayModeCurrentNodeId] = useState(null);
+  const [playModeLanguage, setPlayModeLanguage] = useState('pt');
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [importText, setImportText] = useState('');
 
@@ -172,6 +176,9 @@ function App() {
   const [isVarModalOpen, setIsVarModalOpen] = useState(false);
   const [pendingConnection, setPendingConnection] = useState(null);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isTutorialPromptOpen, setIsTutorialPromptOpen] = useState(false);
+  const [isTutorialMenuOpen, setIsTutorialMenuOpen] = useState(false);
+  const [activeTutorial, setActiveTutorial] = useState(null);
 
   useEffect(() => {
     const getCookie = (name) => {
@@ -181,6 +188,17 @@ function App() {
     const seenPrompt = getCookie('seen-template-prompt');
     if (seenPrompt === 'false' || seenPrompt === null) {
       setIsTemplateModalOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const getCookie = (name) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    };
+    const seenTutorial = getCookie('seen-tutorial-prompt');
+    if (seenTutorial === 'false' || seenTutorial === null) {
+      setIsTutorialPromptOpen(true);
     }
   }, []);
 
@@ -446,17 +464,56 @@ function App() {
 
   const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
     takeSnapshot();
-    setEdges(els => updateEdge(oldEdge, newConnection, els));
 
-    setTimeout(() => {
-      const sourceNode = nodesRef.current.find(n => n.id === oldEdge.source);
-      if (sourceNode) syncChoicesFromText(sourceNode.id, sourceNode.data.content || '');
+    const currentNodes = nodesRef.current;
+    const sourceNode = currentNodes.find(n => n.id === oldEdge.source);
+    
+    // Helper definition to replace target of choiceIndex-th link
+    const updateLinkInText = (textVal, choiceIndex, newTargetLabel) => {
+      let index = 0;
+      const linkRegex = /(\[\[(.*?)(?:\||->)(.*?)\]\])|(\[\[(.*?)\]\])|(<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>)/g;
+      
+      return textVal.replace(linkRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8) => {
+        if (index === choiceIndex) {
+          index++;
+          if (p1) {
+            const separator = match.includes('->') ? '->' : '|';
+            return `[[${p2}${separator}${newTargetLabel}]]`;
+          } else if (p4) {
+            return `[[${newTargetLabel}]]`;
+          } else if (p6) {
+            let inner = p8;
+            const gotoRegex = /(<<goto\s+)(?:"[^"]+"|'[^']+'|[^>\s]+)(\s*>>)/;
+            if (gotoRegex.test(inner)) {
+              inner = inner.replace(gotoRegex, `$1"${newTargetLabel}"$2`);
+            } else {
+              const setVarRegex = /(<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*)(?:"[^"]+"|'[^']+'|[^>\s]+)(\s*>>)/;
+              if (setVarRegex.test(inner)) {
+                inner = inner.replace(setVarRegex, `$1"${newTargetLabel}"$2`);
+              }
+            }
+            return `<<link "${p7}">>${inner}<</link>>`;
+          }
+        }
+        index++;
+        return match;
+      });
+    };
 
-      if (newConnection.source !== oldEdge.source) {
-        const newSourceNode = nodesRef.current.find(n => n.id === newConnection.source);
-        if (newSourceNode) syncChoicesFromText(newSourceNode.id, newSourceNode.data.content || '');
+    if (sourceNode && oldEdge.sourceHandle) {
+      const choiceIndex = (sourceNode.data.choices || []).findIndex(c => c.id === oldEdge.sourceHandle);
+      if (choiceIndex !== -1) {
+        const targetNode = currentNodes.find(n => n.id === newConnection.target);
+        if (targetNode) {
+          const newContent = updateLinkInText(sourceNode.data.content || '', choiceIndex, targetNode.data.label);
+          syncChoicesFromText(sourceNode.id, newContent);
+          return;
+        }
       }
-    }, 10);
+    }
+
+    // Fallback: standard update
+    setEdges(els => updateEdge(oldEdge, newConnection, els));
   }, [setEdges, syncChoicesFromText, takeSnapshot]);
 
   const onNodeDragStop = useCallback((event, node) => {
@@ -525,15 +582,64 @@ function App() {
     const sourceNode = currentNodes.find(n => n.id === params.source);
     if (!sourceNode) return;
 
+    // Helper definition to replace target of choiceIndex-th link
+    const updateLinkInText = (textVal, choiceIndex, newTargetLabel, newDisplayText = null) => {
+      let index = 0;
+      const linkRegex = /(\[\[(.*?)(?:\||->)(.*?)\]\])|(\[\[(.*?)\]\])|(<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>)/g;
+      
+      return textVal.replace(linkRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8) => {
+        if (index === choiceIndex) {
+          index++;
+          if (p1) {
+            const separator = match.includes('->') ? '->' : '|';
+            const text = newDisplayText !== null && newDisplayText !== '' ? newDisplayText : p2;
+            return `[[${text}${separator}${newTargetLabel}]]`;
+          } else if (p4) {
+            if (newDisplayText !== null && newDisplayText !== '' && newDisplayText !== newTargetLabel) {
+              return `[[${newDisplayText}|${newTargetLabel}]]`;
+            }
+            return `[[${newTargetLabel}]]`;
+          } else if (p6) {
+            const text = newDisplayText !== null && newDisplayText !== '' ? newDisplayText : p7;
+            let inner = p8;
+            const gotoRegex = /(<<goto\s+)(?:"[^"]+"|'[^']+'|[^>\s]+)(\s*>>)/;
+            if (gotoRegex.test(inner)) {
+              inner = inner.replace(gotoRegex, `$1"${newTargetLabel}"$2`);
+            } else {
+              const setVarRegex = /(<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*)(?:"[^"]+"|'[^']+'|[^>\s]+)(\s*>>)/;
+              if (setVarRegex.test(inner)) {
+                inner = inner.replace(setVarRegex, `$1"${newTargetLabel}"$2`);
+              }
+            }
+            return `<<link "${text}">>${inner}<</link>>`;
+          }
+        }
+        index++;
+        return match;
+      });
+    };
+
+    // Check if we are updating an existing choice
+    const choiceIndex = params.sourceHandle && params.sourceHandle.startsWith('c-')
+      ? (sourceNode.data.choices || []).findIndex(c => c.id === params.sourceHandle)
+      : -1;
+
     if (type === 'simple') {
       const targetNode = currentNodes.find(n => n.id === params.target);
       if (!targetNode) return;
       const text = choiceText?.trim() || targetNode.data.label;
-      const linkSyntax = `[[${text}|${targetNode.data.label}]]`;
+
       let content = sourceNode.data.content || '';
-      if (!content.includes(linkSyntax)) {
-        if (content.length > 0 && !content.endsWith('\n')) content += '\n';
-        content += linkSyntax;
+      if (choiceIndex !== -1) {
+        // Update existing choice
+        content = updateLinkInText(content, choiceIndex, targetNode.data.label, choiceText?.trim());
+      } else {
+        // Append new choice
+        const linkSyntax = `[[${text}|${targetNode.data.label}]]`;
+        if (!content.includes(linkSyntax)) {
+          if (content.length > 0 && !content.endsWith('\n')) content += '\n';
+          content += linkSyntax;
+        }
       }
       setTimeout(() => syncChoicesFromText(sourceNode.id, content), 0);
     } else {
@@ -542,6 +648,8 @@ function App() {
       const ifText = choiceText?.trim() || ifNode?.data.label || 'Continuar';
       const elseText = elseNode?.data.label || 'Continuar';
 
+      let content = sourceNode.data.content || '';
+      
       let block = `<<if $${ifVariable} ${ifOperator} ${ifValue}>>\n`;
       block += `[[${ifText}|${ifNode?.data.label}]]\n`;
       if (elseNode) {
@@ -549,9 +657,12 @@ function App() {
       }
       block += `<</if>>`;
 
-      let content = sourceNode.data.content || '';
-      if (content.length > 0 && !content.endsWith('\n')) content += '\n';
-      content += block;
+      if (choiceIndex !== -1) {
+        content = updateLinkInText(content, choiceIndex, ifNode?.data.label, choiceText?.trim());
+      } else {
+        if (content.length > 0 && !content.endsWith('\n')) content += '\n';
+        content += block;
+      }
 
       setTimeout(() => syncChoicesFromText(sourceNode.id, content), 0);
     }
@@ -975,6 +1086,8 @@ function App() {
           nodes={nodes}
           edges={edges}
           translations={translations}
+          onCurrentNodeIdChange={setPlayModeCurrentNodeId}
+          onGameLanguageChange={setPlayModeLanguage}
         />
 
         <TranslationMatrix
@@ -997,6 +1110,10 @@ function App() {
           settings={settings}
           toggleSetting={toggleSetting}
           resetProject={resetProject}
+          openTutorialMenu={() => {
+            setIsSettingsOpen(false);
+            setIsTutorialMenuOpen(true);
+          }}
         />
 
         <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
@@ -1005,6 +1122,7 @@ function App() {
             openSettings={() => setIsSettingsOpen(true)}
             openPlayMode={() => handleOpenPlayMode()}
             openAiModal={() => setIsAiModalOpen(true)}
+            openTutorialMenu={() => setIsTutorialMenuOpen(true)}
             canUndo={past.length > 0}
             canRedo={future.length > 0}
           />
@@ -1111,6 +1229,30 @@ function App() {
           isOpen={isTemplateModalOpen}
           onClose={() => setIsTemplateModalOpen(false)}
           onLoadBaseTemplate={handleLoadBaseTemplate}
+        />
+
+        <PlaythroughTutorial
+          nodes={nodes}
+          setNodes={setNodes}
+          edges={edges}
+          setEdges={setEdges}
+          translations={translations}
+          setTranslations={setTranslations}
+          selectedNodeId={selectedNodeId}
+          setSelectedNodeId={setSelectedNodeId}
+          validationResult={validationResult}
+          runValidation={runValidation}
+          isPlayModeOpen={isPlayModeOpen}
+          setIsPlayModeOpen={setIsPlayModeOpen}
+          isTutorialPromptOpen={isTutorialPromptOpen}
+          setIsTutorialPromptOpen={setIsTutorialPromptOpen}
+          isTutorialMenuOpen={isTutorialMenuOpen}
+          setIsTutorialMenuOpen={setIsTutorialMenuOpen}
+          activeTutorial={activeTutorial}
+          setActiveTutorial={setActiveTutorial}
+          isVarModalOpen={isVarModalOpen}
+          playModeCurrentNodeId={playModeCurrentNodeId}
+          playModeLanguage={playModeLanguage}
         />
       </div>
     </InfoPopoutProvider>

@@ -2,16 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { findStartNode, getInitialState, applyModifiers, canAccessChoice } from '../utils/sugarcubeLogic';
 import Minimap from './Minimap';
+import VariablesModal from './VariablesModal';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 
-export default function PlayMode({ isOpen, onClose, nodes, edges, translations }) {
+export default function PlayMode({ isOpen, onClose, nodes, edges, translations, onCurrentNodeIdChange, onGameLanguageChange }) {
   // --- ESTADOS DO JOGO ---
   const [currentNodeId, setCurrentNodeId] = useState(null);
   const [currentState, setCurrentState] = useState({});
   const [history, setHistory] = useState([]);
   const [isDevMode, setIsDevMode] = useState(false);
   const [hoveredTargets, setHoveredTargets] = useState([]);
+  const [isVarModalOpen, setIsVarModalOpen] = useState(false);
   
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
@@ -70,6 +72,19 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations }
       }
     }
   }, [isOpen, nodes, translations]);
+
+  // --- NOTIFICAR ALTERAÇÃO DE ESTADO ---
+  useEffect(() => {
+    if (isOpen) {
+      onCurrentNodeIdChange?.(currentNodeId);
+    }
+  }, [currentNodeId, isOpen, onCurrentNodeIdChange]);
+
+  useEffect(() => {
+    if (isOpen) {
+      onGameLanguageChange?.(gameLanguage);
+    }
+  }, [gameLanguage, isOpen, onGameLanguageChange]);
 
   if (!isOpen) return null;
 
@@ -255,6 +270,15 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations }
           >
             {t('playMode.devMode')}: {isDevMode ? t('common.on') : t('common.off')}
           </button>
+
+          {isDevMode && (
+            <button
+              onClick={() => setIsVarModalOpen(true)}
+              className="w-full border-2 border-yellow-500 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500 hover:text-gray-900 font-bold py-2 uppercase tracking-widest transition-colors"
+            >
+              ⚙ Gerir Variáveis
+            </button>
+          )}
         </div>
 
         {isDevMode ? (
@@ -326,6 +350,22 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations }
           </div>
         )}
       </div>
+
+      {/* Variable editor — only accessible in dev mode */}
+      <VariablesModal
+        isOpen={isVarModalOpen}
+        onClose={() => setIsVarModalOpen(false)}
+        variables={currentState}
+        setVariables={(newVarsOrUpdater) => {
+          setCurrentState(prev => {
+            const next = typeof newVarsOrUpdater === 'function'
+              ? newVarsOrUpdater(prev)
+              : newVarsOrUpdater;
+            return next;
+          });
+        }}
+        mode="change"
+      />
     </div>
   );
 }

@@ -59,8 +59,8 @@ export default function StoryNode({ data }) {
       )}
 
       {/* Lista de Escolhas (Handles de Saída) */}
-      {data.choices && data.choices.length > 0 ? (
-        <div className="flex flex-col">
+      {data.choices && data.choices.length > 0 && (
+        <div className="flex flex-col border-b border-gray-100 dark:border-gray-600">
           {data.choices.map((choice, index) => (
             <div
               key={choice.id}
@@ -78,10 +78,16 @@ export default function StoryNode({ data }) {
             </div>
           ))}
         </div>
-      ) : (
-        /* Saída genérica para nós de código ou sem escolhas */
-        <div className="p-3 text-[10px] text-gray-400 dark:text-gray-500 text-center italic bg-gray-50 dark:bg-gray-700 flex flex-col items-center gap-1 font-mono">
-          <span>{isScript ? '{ Script }' : isCss ? '{ Style }' : 'End'}</span>
+      )}
+
+      {/* Saída inferior para arrastar novas conexões ou nós de código */}
+      {(!data.choices || data.choices.length === 0 || (!isScript && !isCss)) && (
+        <div className="p-2.5 text-[9px] text-gray-400 dark:text-gray-500 text-center italic bg-gray-50 dark:bg-gray-700 flex flex-col items-center gap-1 font-mono relative">
+          {!isScript && !isCss ? (
+            <span className="text-[8px] uppercase tracking-wider text-gray-450 dark:text-gray-400 select-none">Nova Escolha</span>
+          ) : (
+            <span>{isScript ? '{ Script }' : '{ Style }'}</span>
+          )}
           <Handle
             type="source"
             position={Position.Bottom}

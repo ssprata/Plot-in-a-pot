@@ -4,14 +4,14 @@ import { useInfoPopout } from '../contexts/InfoPopoutContext';
 // IMPORTAÇÃO CORRIGIDA: Usa o hook oficial do react-i18next
 import { useTranslation } from 'react-i18next';
 
-export default function TopBar({ addNode, openSettings, openPlayMode, openAiModal }) {
+export default function TopBar({ addNode, openSettings, openPlayMode, openAiModal, openTutorialMenu }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { isDark, toggleTheme } = useTheme();
   const { showInfoPopout } = useInfoPopout();
   
   // HOOK CORRIGIDO: Agora usamos o 't' para traduzir e o 'i18n' para controlar o motor
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const openHelp = (title, subtitle, content) => {
     showInfoPopout({ title, subtitle, content });
@@ -253,6 +253,15 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
             aria-label={t('topBar.helpLabels.theme')}
           >
             ?
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={openTutorialMenu}
+            className="px-3 py-2 border-2 border-gray-800 bg-white hover:bg-yellow-400 dark:bg-gray-800 dark:hover:bg-yellow-400 dark:border-gray-200 font-bold text-xs uppercase transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer"
+          >
+            🎓 {t('topBar.tutorial', 'Tutorial')}
           </button>
         </div>
 

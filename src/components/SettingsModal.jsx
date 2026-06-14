@@ -4,7 +4,7 @@ import { useInfoPopout } from '../contexts/InfoPopoutContext';
 // Importação corrigida para o motor de traduções oficial
 import { useTranslation } from 'react-i18next';
 
-export default function SettingsModal({ isOpen, onClose, settings, toggleSetting, resetProject }) {
+export default function SettingsModal({ isOpen, onClose, settings, toggleSetting, resetProject, openTutorialMenu }) {
   // 2. Extrair a função de mostrar o popout do contexto
   const { showInfoPopout } = useInfoPopout();
   // Hook atualizado
@@ -180,6 +180,20 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
             </button>
           </div>
         </div>
+
+        {/* --- SECÇÃO: TUTORIAL --- */}
+        {!localStorage.getItem('plot-in-a-pot-tutorial-completed') && (
+          <div className="mt-4 border-t-2 border-gray-900 dark:border-gray-200 pt-4">
+            <button
+              onClick={() => {
+                if (openTutorialMenu) openTutorialMenu();
+              }}
+              className="w-full border-2 border-gray-900 dark:border-gray-200 bg-yellow-400 hover:bg-yellow-500 text-gray-950 font-black px-4 py-2 text-sm transition-all shadow-[4px_4px_0px_#000] active:translate-y-0.5 active:shadow-none uppercase tracking-widest cursor-pointer font-sans"
+            >
+              🎓 {t('settingsModal.startTutorialButton', 'Fazer tutorial')}
+            </button>
+          </div>
+        )}
 
         {/* --- SECÇÃO: ZONA DE PERIGO --- */}
         <div className="mt-6 border-t-2 border-gray-900 dark:border-gray-200 pt-4">
