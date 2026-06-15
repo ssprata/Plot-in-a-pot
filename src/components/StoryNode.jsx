@@ -26,7 +26,7 @@ export default function StoryNode({ data }) {
   }
 
   return (
-    <div className={`border-2 ${borderColor} rounded bg-white dark:bg-gray-800 min-w-[180px] shadow-[4px_4px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.15)] overflow-hidden transition-all hover:shadow-[6px_6px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[6px_6px_0px_rgba(255,255,255,0.2)] ${isSecret ? 'opacity-90' : ''}`}>
+    <div className={`border-2 ${borderColor} rounded bg-white dark:bg-gray-800 min-w-[180px] shadow-[4px_4px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.15)] overflow-hidden transition-all hover:shadow-[6px_6px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[6px_6px_0px_rgba(255,255,255,0.2)] ${isSecret ? 'opacity-90' : ''} ${data.highlight ? 'tutorial-node-flash' : ''}`}>
 
       {data.warnings && data.warnings.length > 0 && (
         <div className="absolute -top-3 -right-3 z-10 bg-orange-500 border-2 border-gray-900 text-gray-900 text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-md">
@@ -38,7 +38,9 @@ export default function StoryNode({ data }) {
       <Handle
         type="target"
         position={Position.Top}
-        className={`!w-3 !h-3 border-2 border-white ${isSecret ? '!bg-purple-600' : '!bg-gray-800'}`}
+        className={`!w-3 !h-3 border-2 border-white ${isSecret ? '!bg-purple-600' : '!bg-gray-800'} ${
+          data.highlight && data.highlightHandle === 'top' ? 'tutorial-handle-flash' : ''
+        }`}
       />
 
       {/* Cabeçalho do Nó */}
@@ -73,7 +75,9 @@ export default function StoryNode({ data }) {
                 type="source"
                 position={Position.Right}
                 id={choice.id}
-                className={`!w-2.5 !h-2.5 !-right-1.5 border border-white dark:border-gray-800 hover:!scale-125 transition-transform ${isSecret ? '!bg-purple-500' : '!bg-black dark:!bg-white'}`}
+                className={`!w-2.5 !h-2.5 !-right-1.5 border border-white dark:border-gray-800 hover:!scale-125 transition-transform ${isSecret ? '!bg-purple-500' : '!bg-black dark:!bg-white'} ${
+                  data.highlight && data.highlightHandle === choice.id ? 'tutorial-handle-flash' : ''
+                }`}
               />
             </div>
           ))}
@@ -91,7 +95,9 @@ export default function StoryNode({ data }) {
           <Handle
             type="source"
             position={Position.Bottom}
-            className={`!w-3 !h-3 border-2 border-white dark:border-gray-800 ${isSecret ? '!bg-purple-600' : '!bg-gray-800 dark:!bg-gray-200'}`}
+            className={`!w-3 !h-3 border-2 border-white dark:border-gray-800 ${isSecret ? '!bg-purple-600' : '!bg-gray-800 dark:!bg-gray-200'} ${
+              data.highlight && data.highlightHandle === 'bottom' ? 'tutorial-handle-flash' : ''
+            }`}
           />
         </div>
       )}

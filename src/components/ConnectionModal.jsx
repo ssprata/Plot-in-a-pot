@@ -40,7 +40,7 @@ function groupNodesByTag(nodes) {
 }
 
 export default function ConnectionModal({
-  isOpen, onClose, onConfirm, params, nodes = [], globalVars = {}
+  isOpen, onClose, onConfirm, params, nodes = [], globalVars = {}, activeStep
 }) {
   const [mode, setMode] = useState('simple'); // 'simple' | 'conditional'
   const [choiceText, setChoiceText] = useState('');
@@ -81,6 +81,14 @@ export default function ConnectionModal({
   const ifTargetNode = nodes.find(n => n.id === ifTargetNodeId);
   const elseTargetNode = nodes.find(n => n.id === elseTargetNodeId);
 
+  const isConditionValid = ifVariable && ifValue && ifTargetNodeId;
+
+  const highlightTab = activeStep?.highlightButton === 'connectModalFields' && mode === 'simple';
+  const highlightVar = activeStep?.highlightButton === 'connectModalFields' && mode === 'conditional' && !ifVariable;
+  const highlightVal = activeStep?.highlightButton === 'connectModalFields' && mode === 'conditional' && ifVariable && !ifValue;
+  const highlightText = activeStep?.highlightButton === 'connectModalFields' && mode === 'conditional' && ifVariable && ifValue && !choiceText;
+  const highlightConfirm = activeStep?.highlightButton === 'connectModalFields' && mode === 'conditional' && isConditionValid && choiceText;
+
   const handleConfirm = () => {
     if (mode === 'simple') {
       onConfirm({ type: 'simple', choiceText, params });
@@ -117,7 +125,6 @@ export default function ConnectionModal({
   );
 
   const btnBase = "px-4 py-2 font-black text-xs uppercase border-2 transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none active:translate-y-0.5";
-  const isConditionValid = ifVariable && ifValue && ifTargetNodeId;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -152,7 +159,7 @@ export default function ConnectionModal({
             </button>
             <button
               onClick={() => setMode('conditional')}
-              className={`flex-1 py-2 text-[11px] font-black uppercase border-2 transition-colors ${mode === 'conditional'
+              className={`flex-1 py-2 text-[11px] font-black uppercase border-2 transition-colors ${highlightTab ? 'tutorial-btn-flash' : ''} ${mode === 'conditional'
                 ? 'bg-indigo-600 text-white border-indigo-800'
                 : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600'
               }`}
@@ -167,7 +174,7 @@ export default function ConnectionModal({
               Texto da escolha
             </label>
             <input
-              className="w-full p-2 border-2 border-gray-400 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm rounded font-sans"
+              className={`w-full p-2 border-2 border-gray-400 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm rounded font-sans ${highlightText ? 'tutorial-btn-flash' : ''}`}
               placeholder={directTarget?.data.label || 'Texto que o jogador vê...'}
               value={choiceText}
               onChange={e => setChoiceText(e.target.value)}
@@ -197,7 +204,7 @@ export default function ConnectionModal({
                   <select
                     value={ifVariable}
                     onChange={e => setIfVariable(e.target.value)}
-                    className="flex-1 p-2 border-2 border-gray-800 dark:border-gray-400 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs rounded"
+                    className={`flex-1 p-2 border-2 border-gray-800 dark:border-gray-400 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs rounded ${highlightVar ? 'tutorial-btn-flash' : ''}`}
                   >
                     <option value="">$variável</option>
                     {varNames.map(v => (
@@ -218,7 +225,7 @@ export default function ConnectionModal({
 
                   {/* Value */}
                   <input
-                    className="w-28 p-2 border-2 border-gray-800 dark:border-gray-400 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs rounded"
+                    className={`w-28 p-2 border-2 border-gray-800 dark:border-gray-400 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs rounded ${highlightVal ? 'tutorial-btn-flash' : ''}`}
                     placeholder="valor"
                     value={ifValue}
                     onChange={e => setIfValue(e.target.value)}
@@ -275,7 +282,7 @@ export default function ConnectionModal({
           <button
             onClick={handleConfirm}
             disabled={mode === 'conditional' && !isConditionValid}
-            className={`${btnBase} border-gray-900 dark:border-gray-100 text-white ${
+            className={`${btnBase} border-gray-900 dark:border-gray-100 text-white ${highlightConfirm ? 'tutorial-btn-flash' : ''} ${
               mode === 'conditional' && !isConditionValid
                 ? 'bg-gray-400 cursor-not-allowed shadow-none'
                 : 'bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700'

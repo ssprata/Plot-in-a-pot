@@ -179,6 +179,7 @@ function App() {
   const [isTutorialPromptOpen, setIsTutorialPromptOpen] = useState(false);
   const [isTutorialMenuOpen, setIsTutorialMenuOpen] = useState(false);
   const [activeTutorial, setActiveTutorial] = useState(null);
+  const [activeStep, setActiveStep] = useState(null);
 
   useEffect(() => {
     const getCookie = (name) => {
@@ -312,6 +313,46 @@ function App() {
       }
     });
   }, [translations, i18n]);
+
+  // Propaga realces do tutorial ativo para as propriedades dos nós
+  useEffect(() => {
+    if (!activeTutorial || !activeStep) {
+      setNodes(nds => nds.map(n => {
+        if (n.data.highlight || n.data.highlightHandle) {
+          return { ...n, data: { ...n.data, highlight: false, highlightHandle: null } };
+        }
+        return n;
+      }));
+      return;
+    }
+
+    const firstNodeId = activeStep.highlightNodeId;
+    const firstHandle = activeStep.highlightHandle;
+    const secondNodeId = activeStep.highlightNodeId2;
+    const secondHandle = activeStep.highlightHandle2;
+
+    setNodes(nds => nds.map(n => {
+      const isFirst = n.id === firstNodeId;
+      const isSecond = n.id === secondNodeId;
+      const shouldHighlight = isFirst || isSecond;
+      const handle = isFirst ? firstHandle : (isSecond ? secondHandle : null);
+
+      const currentHighlight = !!n.data.highlight;
+      const currentHandle = n.data.highlightHandle;
+
+      if (shouldHighlight !== currentHighlight || handle !== currentHandle) {
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            highlight: shouldHighlight,
+            highlightHandle: shouldHighlight ? handle : null
+          }
+        };
+      }
+      return n;
+    }));
+  }, [activeTutorial, activeStep, setNodes]);
 
   // --- Funções do Histórico ---
   const takeSnapshot = useCallback(() => {
@@ -458,11 +499,24 @@ function App() {
 
   // --- Handlers do Grafo (ReactFlow) ---
   const onConnect = useCallback((params) => {
+    if (activeTutorial) {
+      if (!activeStep?.allowConnect) {
+        alert(t('tutorial.actionBlocked', 'Esta ação está bloqueada durante este passo do tutorial.'));
+        return;
+      }
+      const isSourceMatch = params.source === activeStep.connectSource;
+      const isTargetMatch = params.target === activeStep.connectTarget;
+      if (!isSourceMatch || !isTargetMatch) {
+        alert(t('tutorial.connectBlocked', 'Liga os nós corretos indicados no tutorial.'));
+        return;
+      }
+    }
     takeSnapshot();
     setPendingConnection(params);
-  }, [takeSnapshot]);
+  }, [takeSnapshot, activeTutorial, activeStep, t]);
 
   const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
+    if (activeTutorial) return;
     takeSnapshot();
 
     const currentNodes = nodesRef.current;
@@ -696,6 +750,11 @@ function App() {
   }, [selectedNodeId, setNodes, setEdges, takeSnapshot]);
 
   const addNode = useCallback((type, presetLabel = null, presetTags = '') => {
+    if (activeTutorial) {
+      if (activeStep?.allowAddNode !== type) {
+        return;
+      }
+    }
     const currentNodes = nodesRef.current;
 
     if (presetLabel) {
@@ -748,7 +807,7 @@ function App() {
 
     setNodes(nds => [...nds, newNode]);
     setSelectedNodeId(id);
-  }, [setNodes, t, takeSnapshot]);
+  }, [setNodes, t, takeSnapshot, activeTutorial, activeStep]);
 
   const exportToTwine = useCallback((targetFormat = 'keys') => {
     const availableLanguages = translations?.languages || [];
@@ -992,6 +1051,37 @@ function App() {
       const activeTag = document.activeElement.tagName;
       const isTyping = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
 
+      if (activeTutorial) {
+        if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping) {
+          e.preventDefault();
+          return;
+        }
+        if (e.ctrlKey) {
+          const key = e.key.toLowerCase();
+          if (isTyping) return;
+          if (key === 'p' && activeStep?.allowPlay) {
+            e.preventDefault();
+            handleOpenPlayMode();
+          } else if (key === 'x' && activeStep?.allowAddNode === 'choice') {
+            e.preventDefault();
+            addNode('choice');
+          } else if (key === 'v' && activeStep?.allowValidation) {
+            e.preventDefault();
+            runValidation();
+          } else {
+            e.preventDefault();
+          }
+          return;
+        }
+        if (e.key === 'Escape') {
+          setIsPlayModeOpen(false);
+          setIsAiModalOpen(false);
+          setIsSettingsOpen(false);
+          closeInfoPopout();
+        }
+        return;
+      }
+
       if (e.ctrlKey && !e.shiftKey && !e.altKey) {
         const key = e.key.toLowerCase();
 
@@ -1042,7 +1132,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedEdgeId, selectedNodeId, setEdges, deleteNode, undo, redo, takeSnapshot, addNode, closeInfoPopout, handleOpenPlayMode, runValidation]);
+  }, [selectedEdgeId, selectedNodeId, setEdges, deleteNode, undo, redo, takeSnapshot, addNode, closeInfoPopout, handleOpenPlayMode, runValidation, activeTutorial, activeStep]);
 
   // --- Listeners de Eventos Globais (fusão dos vários useEffect anteriores) ---
   useEffect(() => {
@@ -1088,6 +1178,7 @@ function App() {
           translations={translations}
           onCurrentNodeIdChange={setPlayModeCurrentNodeId}
           onGameLanguageChange={setPlayModeLanguage}
+          activeStep={activeStep}
         />
 
         <TranslationMatrix
@@ -1125,6 +1216,7 @@ function App() {
             openTutorialMenu={() => setIsTutorialMenuOpen(true)}
             canUndo={past.length > 0}
             canRedo={future.length > 0}
+            activeStep={activeStep}
           />
           <div className="flex-1">
             <ReactFlow
@@ -1176,6 +1268,7 @@ function App() {
           visualLogicEnabled={settings.visualLogicEnabled}
           visualBlocksMode={settings.visualBlocksMode}
           globalVars={globalVars}
+          activeStep={activeStep}
         />
 
         <DataPanel
@@ -1195,6 +1288,7 @@ function App() {
           showSimulationLegacy={settings.showSimulationLegacy}
           translations={translations}
           setTranslations={setTranslations}
+          activeStep={activeStep}
         />
 
         <Popout
@@ -1214,6 +1308,7 @@ function App() {
           setNodes={setNodes}
           takeSnapshot={takeSnapshot}
           initialMode={varModalMode}
+          activeStep={activeStep}
         />
 
         <ConnectionModal
@@ -1223,6 +1318,7 @@ function App() {
           params={pendingConnection}
           nodes={nodes}
           globalVars={globalVars}
+          activeStep={activeStep}
         />
 
         <TemplatePromptModal
@@ -1253,6 +1349,7 @@ function App() {
           isVarModalOpen={isVarModalOpen}
           playModeCurrentNodeId={playModeCurrentNodeId}
           playModeLanguage={playModeLanguage}
+          onActiveStepChange={setActiveStep}
         />
       </div>
     </InfoPopoutProvider>

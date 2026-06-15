@@ -6,7 +6,7 @@ import VariablesModal from './VariablesModal';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 
-export default function PlayMode({ isOpen, onClose, nodes, edges, translations, onCurrentNodeIdChange, onGameLanguageChange }) {
+export default function PlayMode({ isOpen, onClose, nodes, edges, translations, onCurrentNodeIdChange, onGameLanguageChange, activeStep }) {
   // --- ESTADOS DO JOGO ---
   const [currentNodeId, setCurrentNodeId] = useState(null);
   const [currentState, setCurrentState] = useState({});
@@ -205,24 +205,27 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
                  {t('playMode.endOfStory')}
                </div>
             ) : (
-              visibleChoices.map(({ edge, choice, isAccessible }) => (
-                <button
-                  key={choice.id}
-                  disabled={!isAccessible}
-                  onClick={() => handleChoiceClick(edge.target)}
-                  onMouseEnter={() => setHoveredTargets([edge.target])}
-                  onMouseLeave={() => setHoveredTargets([])}
-                  className={`px-4 py-3 text-left font-bold rounded border-2 transition-colors ${
-                    isAccessible 
-                      ? 'border-blue-500 bg-blue-900/30 hover:bg-blue-600 hover:text-white cursor-pointer' 
-                      : 'border-gray-700 bg-gray-800 text-gray-500 cursor-not-allowed opacity-60'
-                  }`}
-                >
-                  {!isAccessible && <span className="mr-2 font-black tracking-widest">[{t('playMode.blocked')}]</span>}
-                  {/* CORREGIDO: A função agora limpa wrappers automaticamente antes de renderizar a tradução */}
-                  {translateStoryKey(choice.text)}
-                </button>
-              ))
+              visibleChoices.map(({ edge, choice, isAccessible }) => {
+                const isTargetChoice = activeStep?.choiceTarget === edge.target;
+                return (
+                  <button
+                    key={choice.id}
+                    disabled={!isAccessible}
+                    onClick={() => handleChoiceClick(edge.target)}
+                    onMouseEnter={() => setHoveredTargets([edge.target])}
+                    onMouseLeave={() => setHoveredTargets([])}
+                    className={`px-4 py-3 text-left font-bold rounded border-2 transition-colors ${
+                      isAccessible 
+                        ? 'border-blue-500 bg-blue-900/30 hover:bg-blue-600 hover:text-white cursor-pointer' 
+                        : 'border-gray-700 bg-gray-800 text-gray-500 cursor-not-allowed opacity-60'
+                    } ${isTargetChoice ? 'tutorial-btn-flash' : ''}`}
+                  >
+                    {!isAccessible && <span className="mr-2 font-black tracking-widest">[{t('playMode.blocked')}]</span>}
+                    {/* CORREGIDO: A função agora limpa wrappers automaticamente antes de renderizar a tradução */}
+                    {translateStoryKey(choice.text)}
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
@@ -240,7 +243,9 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
               <select
                 value={gameLanguage}
                 onChange={(e) => setGameLanguage(e.target.value)}
-                className="w-full bg-gray-800 text-white p-1 text-xs font-mono font-bold uppercase border border-gray-600 outline-none cursor-pointer focus:border-yellow-400"
+                className={`w-full bg-gray-800 text-white p-1 text-xs font-mono font-bold uppercase border border-gray-600 outline-none cursor-pointer focus:border-yellow-400 ${
+                  activeStep?.highlightButton === 'languageSelect' ? 'tutorial-btn-flash' : ''
+                }`}
               >
                 {translations.languages.map(lang => (
                   <option key={lang} value={lang}>
@@ -251,7 +256,12 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
             </div>
           )}
 
-          <button onClick={onClose} className="w-full border-2 border-gray-500 hover:border-white text-gray-300 hover:text-white font-bold py-2 uppercase tracking-widest transition-colors">
+          <button
+            onClick={onClose}
+            className={`w-full border-2 border-gray-500 hover:border-white text-gray-300 hover:text-white font-bold py-2 uppercase tracking-widest transition-colors ${
+              activeStep?.highlightButton === 'endTest' ? 'tutorial-btn-flash' : ''
+            }`}
+          >
             {t('playMode.endTest')}
           </button>
 

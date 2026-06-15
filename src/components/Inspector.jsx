@@ -18,7 +18,8 @@ export default function Inspector({
   translations, // ADICIONADO: Recebe a base mestre de tradução para ler as chaves no preview
   visualLogicEnabled = true,
   visualBlocksMode = false,
-  globalVars = {}
+  globalVars = {},
+  activeStep // ADICIONADO
 }) {
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
@@ -27,6 +28,12 @@ export default function Inspector({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isBlocksModalOpen, setIsBlocksModalOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState('visual');
+
+  const isTutorialActive = !!activeStep;
+  const isDeleteDisabled = isTutorialActive;
+  const isLabelDisabled = isTutorialActive && (!activeStep.allowEditLabel || activeStep.targetNodeId !== selectedNode?.id);
+  const isContentDisabled = isTutorialActive && (!activeStep.allowEditContent || activeStep.targetNodeId !== selectedNode?.id);
+  const isCreateVarDisabled = isTutorialActive && (activeStep.highlightButton !== 'createVar' || selectedNode?.data.label !== 'StoryInit');
   
   // --- ESTADO LOCAL PARA O PREVIEW NARRATIVO ---
   const [previewLang, setPreviewLang] = useState(translations?.languages?.[0] || 'pt');
@@ -205,7 +212,10 @@ export default function Inspector({
                   <button type="button" onClick={() => openHelp(t('inspector.help.label.title'), t('inspector.help.label.subtitle'), <p>{t('inspector.help.label.text')}</p>)} className={helpButtonClass}>?</button>
                 </div>
                 <input
-                  className="w-full p-2 border border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white rounded bg-gray-50 dark:bg-gray-700"
+                  disabled={isLabelDisabled}
+                  className={`w-full p-2 border border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white rounded bg-gray-50 dark:bg-gray-700 ${
+                    isLabelDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                  } ${activeStep?.highlightButton === 'editLabel' ? 'tutorial-btn-flash' : ''}`}
                   value={selectedNode.data.label || ''}
                   onChange={(e) => updateSelectedNode({ label: e.target.value })}
                 />
@@ -300,14 +310,20 @@ export default function Inspector({
                     {isStoryInit ? (
                       <button
                         onClick={onOpenVariables ?? handleCreateVariable}
-                        className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000]"
+                        disabled={isCreateVarDisabled}
+                        className={`px-2 py-1 bg-blue-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] ${
+                          isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                        } ${activeStep?.highlightButton === 'createVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.createVariable')}
                       </button>
                     ) : (
                       <button
                         onClick={onChangeVariables ?? handleChangeVariable}
-                        className="px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000]"
+                        disabled={isCreateVarDisabled}
+                        className={`px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] ${
+                          isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                        } ${activeStep?.highlightButton === 'changeVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.changeValue')}
                       </button>
@@ -381,8 +397,12 @@ export default function Inspector({
                   </div>
                 ) : (
                   <textarea
-                    className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
-                      }`}
+                    disabled={isContentDisabled}
+                    className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${
+                      selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
+                    } ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${
+                      activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''
+                    }`}
                     value={selectedNode.data.content || ''}
                     onChange={(e) => {
                       if (selectedNode.data.nodeType === 'choice') {
@@ -415,13 +435,15 @@ export default function Inspector({
           <div className="mt-auto pt-4 border-t-2 border-gray-200 dark:border-gray-600">
             <button
               onClick={() => setIsDeleteOpen(true)}
+              disabled={isDeleteDisabled}
               className={
                 "w-full p-3 font-black text-sm uppercase tracking-widest transition-all " +
                 "active:translate-x-[2px] active:translate-y-[2px] active:shadow-none " +
                 "border-2 border-gray-900 bg-gray-100 text-gray-900 shadow-[4px_4px_0px_#000] " +
                 "hover:bg-red-600 hover:text-white " +
                 "dark:bg-gray-800 dark:border-gray-200 dark:text-gray-100 dark:shadow-[4px_4px_0px_#fff] " +
-                "dark:hover:bg-red-500 dark:hover:border-red-500 dark:hover:text-white cursor-pointer"
+                "dark:hover:bg-red-500 dark:hover:border-red-500 dark:hover:text-white cursor-pointer " +
+                (isDeleteDisabled ? "opacity-40 cursor-not-allowed pointer-events-none" : "")
               }
             >
               {t('inspector.deleteNode')}

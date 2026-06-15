@@ -9,25 +9,11 @@ const tutorialTemplates = {
       {
         id: '1',
         type: 'choice',
-        position: { x: 100, y: 150 },
-        data: { label: 'Start', nodeType: 'choice', content: 'Estás na entrada da masmorra.\n[[Ir para a Sala 1|Sala 1]]', choices: [{ id: 'c-1-Sala-1-0', text: 'Ir para a Sala 1', target: '2' }], tags: 'start' }
-      },
-      {
-        id: '2',
-        type: 'choice',
-        position: { x: 400, y: 50 },
-        data: { label: 'Sala 1', nodeType: 'choice', content: 'Esta é a Sala 1. Tem uma passagem para a saída.\n[[Sair|Fim]]', choices: [], tags: '' }
-      },
-      {
-        id: '3',
-        type: 'choice',
-        position: { x: 400, y: 250 },
-        data: { label: 'Sala 2', nodeType: 'choice', content: 'Esta é a Sala 2. É uma sala secreta cheia de ouro!', choices: [], tags: '' }
+        position: { x: 200, y: 150 },
+        data: { label: 'Start', nodeType: 'choice', content: 'Escreve a tua história aqui...', choices: [], tags: 'start' }
       }
     ],
-    edges: [
-      { id: 'e-1-2-c-1-Sala-1-0', source: '1', sourceHandle: 'c-1-Sala-1-0', target: '2' }
-    ],
+    edges: [],
     translations: {
       languages: ['pt', 'en'],
       keys: {}
@@ -39,13 +25,13 @@ const tutorialTemplates = {
         id: '1',
         type: 'choice',
         position: { x: 100, y: 150 },
-        data: { label: 'Start', nodeType: 'choice', content: 'Chegaste a uma floresta escura.', choices: [], tags: 'start' }
+        data: { label: 'Start', nodeType: 'choice', content: 'Estás no início da aventura.', choices: [], tags: 'start' }
       },
       {
         id: '2',
         type: 'choice',
         position: { x: 400, y: 150 },
-        data: { label: 'Cabana', nodeType: 'choice', content: 'Uma cabana abandonada com as janelas partidas.', choices: [], tags: '' }
+        data: { label: 'Corredor', nodeType: 'choice', content: 'O corredor escuro leva à saída.', choices: [], tags: '' }
       }
     ],
     edges: [],
@@ -120,24 +106,30 @@ const tutorialTemplates = {
       {
         id: '1',
         type: 'choice',
-        position: { x: 100, y: 150 },
-        data: { label: 'Start', nodeType: 'choice', content: 'Encontras uma chave brilhante no chão da floresta.\n<<set $temChave to true>>\n[[Avançar para o Portão|Portão]]', choices: [{ id: 'c-1-Portão-0', text: 'Avançar para o Portão', target: '2' }], tags: 'start' }
+        position: { x: 200, y: 50 },
+        data: { label: 'StoryInit', nodeType: 'choice', content: '<<set $temChave to false>>', choices: [], tags: 'secreto' }
       },
       {
         id: '2',
         type: 'choice',
-        position: { x: 400, y: 150 },
-        data: { label: 'Portão', nodeType: 'choice', content: 'O portão do castelo está à tua frente.\n<<if $temChave is true>>[[Abrir Portão|Sucesso]]<<else>>O portão está trancado por uma fechadura pesada.<</if>>', choices: [], tags: '' }
+        position: { x: 200, y: 200 },
+        data: { label: 'Start', nodeType: 'choice', content: 'Encontras uma chave brilhante no chão da floresta.\n<<set $temChave to true>>\n[[Avançar para o Portão|Portão]]', choices: [{ id: 'c-2-Portão-0', text: 'Avançar para o Portão', target: '3' }], tags: 'start' }
       },
       {
         id: '3',
         type: 'choice',
-        position: { x: 700, y: 150 },
+        position: { x: 450, y: 200 },
+        data: { label: 'Portão', nodeType: 'choice', content: 'O portão do castelo está à tua frente.', choices: [], tags: '' }
+      },
+      {
+        id: '4',
+        type: 'choice',
+        position: { x: 700, y: 200 },
         data: { label: 'Sucesso', nodeType: 'choice', content: 'Conseguiste entrar no castelo! Parabéns!', choices: [], tags: '' }
       }
     ],
     edges: [
-      { id: 'e-1-2-c-1-Portão-0', source: '1', sourceHandle: 'c-1-Portão-0', target: '2' }
+      { id: 'e-2-3-c-2-Portão-0', source: '2', sourceHandle: 'c-2-Portão-0', target: '3' }
     ],
     translations: {
       languages: ['pt', 'en'],
@@ -167,7 +159,8 @@ export default function PlaythroughTutorial({
   setActiveTutorial,
   isVarModalOpen,
   playModeCurrentNodeId,
-  playModeLanguage
+  playModeLanguage,
+  onActiveStepChange
 }) {
   const { t } = useTranslation();
   const [stepIndex, setStepIndex] = useState(0);
@@ -178,25 +171,35 @@ export default function PlaythroughTutorial({
 
   // --- TUTORIAL STEPS DEFINITION ---
 
-  const tutorialSteps = {
+  const tutorialSteps = React.useMemo(() => ({
     t1: [
       {
         titleKey: 'tutorial.t1Step1Title',
         descKey: 'tutorial.t1Step1Desc',
-        check: (state) => state.validationResult !== null,
-        autoAdvance: true
+        check: (state) => state.selectedNodeId === '1',
+        autoAdvance: true,
+        targetNodeId: '1',
+        highlightNodeId: '1'
       },
       {
         titleKey: 'tutorial.t1Step2Title',
         descKey: 'tutorial.t1Step2Desc',
-        check: (state) => state.edges.some(e => e.source === '2' && e.target === '3'),
-        autoAdvance: true
+        check: (state) => state.nodes.find(n => n.id === '1')?.data.label === 'Entrada',
+        autoAdvance: true,
+        targetNodeId: '1',
+        highlightNodeId: '1',
+        allowEditLabel: true,
+        highlightButton: 'editLabel'
       },
       {
         titleKey: 'tutorial.t1Step3Title',
         descKey: 'tutorial.t1Step3Desc',
-        check: (state) => state.validationResult !== null && state.validationResult.orphanNodes.length === 0,
-        autoAdvance: true
+        check: (state) => state.nodes.find(n => n.id === '1')?.data.content.toLowerCase().includes('início'),
+        autoAdvance: false,
+        targetNodeId: '1',
+        highlightNodeId: '1',
+        allowEditContent: true,
+        highlightButton: 'editContent'
       },
       {
         titleKey: 'tutorial.t1Step4Title',
@@ -210,23 +213,47 @@ export default function PlaythroughTutorial({
         titleKey: 'tutorial.t2Step1Title',
         descKey: 'tutorial.t2Step1Desc',
         check: (state) => state.edges.some(e => e.source === '1' && e.target === '2'),
-        autoAdvance: true
+        autoAdvance: true,
+        allowConnect: true,
+        connectSource: '1',
+        connectTarget: '2',
+        highlightNodeId: '1',
+        highlightHandle: 'bottom',
+        highlightNodeId2: '2',
+        highlightHandle2: 'top'
       },
       {
         titleKey: 'tutorial.t2Step2Title',
         descKey: 'tutorial.t2Step2Desc',
-        check: null,
-        autoAdvance: false
+        check: (state) => state.nodes.length > 2,
+        autoAdvance: true,
+        allowAddNode: 'choice',
+        highlightButton: 'addScene'
       },
       {
         titleKey: 'tutorial.t2Step3Title',
         descKey: 'tutorial.t2Step3Desc',
-        check: (state) => state.nodes.length > 2,
-        autoAdvance: true
+        check: (state) => state.edges.some(e => e.source === '2' && state.nodes.some(n => n.id === e.target && n.id !== '1' && n.id !== '2')),
+        autoAdvance: true,
+        allowConnect: true,
+        connectSource: '2',
+        connectTarget: '3',
+        highlightNodeId: '2',
+        highlightHandle: 'bottom',
+        highlightNodeId2: '3',
+        highlightHandle2: 'top'
       },
       {
         titleKey: 'tutorial.t2Step4Title',
         descKey: 'tutorial.t2Step4Desc',
+        check: (state) => state.validationResult !== null,
+        autoAdvance: true,
+        allowValidation: true,
+        highlightButton: 'validate'
+      },
+      {
+        titleKey: 'tutorial.completeTitle',
+        descKey: 'tutorial.completeText',
         check: null,
         autoAdvance: false
       }
@@ -236,25 +263,35 @@ export default function PlaythroughTutorial({
         titleKey: 'tutorial.t3Step1Title',
         descKey: 'tutorial.t3Step1Desc',
         check: (state) => state.selectedNodeId === '1',
-        autoAdvance: true
+        autoAdvance: true,
+        targetNodeId: '1',
+        highlightNodeId: '1'
       },
       {
         titleKey: 'tutorial.t3Step2Title',
         descKey: 'tutorial.t3Step2Desc',
         check: (state) => state.selectedNodeId === '3',
-        autoAdvance: true
+        autoAdvance: true,
+        targetNodeId: '3',
+        highlightNodeId: '3'
       },
       {
         titleKey: 'tutorial.t3Step3Title',
         descKey: 'tutorial.t3Step3Desc',
         check: (state) => state.selectedNodeId === '2',
-        autoAdvance: true
+        autoAdvance: true,
+        targetNodeId: '2',
+        highlightNodeId: '2'
       },
       {
         titleKey: 'tutorial.t3Step4Title',
         descKey: 'tutorial.t3Step4Desc',
         check: (state) => state.isVarModalOpen === true,
-        autoAdvance: true
+        autoAdvance: true,
+        targetNodeId: '2',
+        highlightNodeId: '2',
+        allowVariables: true,
+        highlightButton: 'createVar'
       },
       {
         titleKey: 'tutorial.t3Step5Title',
@@ -263,13 +300,17 @@ export default function PlaythroughTutorial({
           const initNode = state.nodes.find(n => n.id === '2');
           return initNode && initNode.data.content && initNode.data.content.toLowerCase().includes('$moedas');
         },
-        autoAdvance: true
+        autoAdvance: true,
+        targetNodeId: '2',
+        allowVariables: true,
+        highlightButton: 'connectModalFields'
       },
       {
         titleKey: 'tutorial.t3Step6Title',
         descKey: 'tutorial.t3Step6Desc',
         check: null,
-        autoAdvance: false
+        autoAdvance: false,
+        highlightButton: 'closeVarModal'
       }
     ],
     t4: [
@@ -277,25 +318,33 @@ export default function PlaythroughTutorial({
         titleKey: 'tutorial.t4Step1Title',
         descKey: 'tutorial.t4Step1Desc',
         check: (state) => state.isPlayModeOpen === true,
-        autoAdvance: true
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
       },
       {
         titleKey: 'tutorial.t4Step2Title',
         descKey: 'tutorial.t4Step2Desc',
         check: (state) => state.playModeLanguage === 'pt',
-        autoAdvance: true
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'languageSelect'
       },
       {
         titleKey: 'tutorial.t4Step3Title',
         descKey: 'tutorial.t4Step3Desc',
         check: (state) => state.playModeCurrentNodeId === '2',
-        autoAdvance: true
+        autoAdvance: true,
+        allowPlay: true,
+        choiceTarget: '2'
       },
       {
         titleKey: 'tutorial.t4Step4Title',
         descKey: 'tutorial.t4Step4Desc',
         check: (state) => state.isPlayModeOpen === false,
-        autoAdvance: true
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'endTest'
       },
       {
         titleKey: 'tutorial.completeTitle',
@@ -308,23 +357,51 @@ export default function PlaythroughTutorial({
       {
         titleKey: 'tutorial.t5Step1Title',
         descKey: 'tutorial.t5Step1Desc',
-        check: (state) => state.selectedNodeId === '1',
-        autoAdvance: true
+        check: (state) => state.selectedNodeId === '3',
+        autoAdvance: true,
+        targetNodeId: '3',
+        highlightNodeId: '3'
       },
       {
         titleKey: 'tutorial.t5Step2Title',
         descKey: 'tutorial.t5Step2Desc',
-        check: (state) => state.selectedNodeId === '2',
-        autoAdvance: true
+        check: (state) => {
+          const portaoNode = state.nodes.find(n => n.id === '3');
+          const content = portaoNode?.data.content || '';
+          return (
+            state.edges.some(e => e.source === '3' && e.target === '4') &&
+            content.includes('$temChave') &&
+            content.includes('is') &&
+            content.includes('true') &&
+            content.includes('Abrir Portão')
+          );
+        },
+        autoAdvance: true,
+        allowConnect: true,
+        connectSource: '3',
+        connectTarget: '4',
+        highlightNodeId: '3',
+        highlightHandle: 'bottom',
+        highlightNodeId2: '4',
+        highlightHandle2: 'top',
+        highlightButton: 'connectModalFields'
       },
       {
         titleKey: 'tutorial.t5Step3Title',
         descKey: 'tutorial.t5Step3Desc',
+        check: (state) => state.isPlayModeOpen === true,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.completeTitle',
+        descKey: 'tutorial.completeText',
         check: null,
         autoAdvance: false
       }
     ]
-  };
+  }), []);
 
   // --- ACTIONS ---
 
@@ -382,6 +459,24 @@ export default function PlaythroughTutorial({
       setStepCompleted(false);
     } else {
       localStorage.setItem('plot-in-a-pot-tutorial-completed', 'true');
+      
+      // Auto-restore original project backup when tutorial completes
+      const backupStr = localStorage.getItem('plot-in-a-pot-project-backup');
+      if (backupStr) {
+        try {
+          const backup = JSON.parse(backupStr);
+          setNodes(backup.nodes);
+          setEdges(backup.edges);
+          setTranslations(backup.translations);
+        } catch (e) {
+          console.error("Failed to restore backup project", e);
+        }
+        localStorage.removeItem('plot-in-a-pot-project-backup');
+      }
+      
+      setActiveTutorial(null);
+      setSelectedNodeId(null);
+      setIsPlayModeOpen(false);
       setIsMenuOpen(true);
     }
   };
@@ -393,12 +488,25 @@ export default function PlaythroughTutorial({
     }
   };
 
-  // --- CHECKER EFFECT ---
-
+  // --- NOTIFY PARENT OF ACTIVE STEP CHANGE ---
   useEffect(() => {
-    if (!activeTutorial) return;
+    if (!activeTutorial) {
+      if (onActiveStepChange) onActiveStepChange(null);
+      return;
+    }
     const steps = tutorialSteps[activeTutorial];
-    const currentStep = steps[stepIndex];
+    const currentStep = steps ? steps[stepIndex] : null;
+    if (onActiveStepChange) onActiveStepChange(currentStep);
+  }, [activeTutorial, stepIndex, onActiveStepChange]);
+
+  // --- CHECKER EFFECT ---
+  useEffect(() => {
+    if (!activeTutorial) {
+      setStepCompleted(false);
+      return;
+    }
+    const steps = tutorialSteps[activeTutorial];
+    const currentStep = steps ? steps[stepIndex] : null;
     if (!currentStep || !currentStep.check) {
       setStepCompleted(true);
       return;
@@ -604,7 +712,7 @@ export default function PlaythroughTutorial({
             ) : (
               <>
                 {/* Tutorial 5 (Advanced Variables & Code) */}
-                <div className="border-4 border-gray-900 dark:border-gray-600 p-4 bg-purple-50 dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] flex flex-col justify-between col-span-1 md:col-span-2">
+                <div className="border-4 border-gray-900 dark:border-gray-600 p-4 bg-purple-50 dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] flex flex-col justify-between">
                   <div>
                     <h4 className="font-black text-sm uppercase text-gray-900 dark:text-gray-100 mb-2">
                       {t('tutorial.t5Name')}

@@ -15,3 +15,56 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Flashing animations for tutorial indicators */
+@keyframes pulse-green-border {
+  0%, 100% {
+    outline: 3px solid transparent;
+    box-shadow: 0 0 0 0px rgba(34, 197, 94, 0);
+  }
+  50% {
+    outline: 4px solid #22c55e;
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.4);
+  }
+}
+
+@keyframes pulse-green-handle {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7);
+  }
+  50% {
+    transform: scale(1.5);
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes pulse-green-button {
+  0%, 100% {
+    box-shadow: 0 0 0 0px rgba(234, 179, 8, 0.7);
+    outline: 2px solid transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(234, 179, 8, 0);
+    outline: 3px solid #eab308;
+  }
+}
+
+.tutorial-node-flash {
+  animation: pulse-green-border 1.5s infinite;
+  border-radius: 4px;
+}
+
+.tutorial-handle-flash {
+  animation: pulse-green-handle 1.5s infinite !important;
+  background-color: #22c55e !important;
+  border-color: #ffffff !important;
+  z-index: 1000 !important;
+}
+
+.tutorial-btn-flash {
+  animation: pulse-green-button 1.5s infinite;
+  border-color: #eab308 !important;
+  background-color: #fef08a !important; /* light yellow bg */
+  color: #000000 !important;
+}

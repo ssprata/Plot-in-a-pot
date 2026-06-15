@@ -63,7 +63,8 @@ export default function VariablesModal({
   nodes,
   setNodes,
   takeSnapshot,
-  initialMode
+  initialMode,
+  activeStep
 }) {
   const { t, i18n } = useTranslation();
   const isPt = i18n.language?.startsWith('pt');
@@ -436,7 +437,7 @@ export default function VariablesModal({
           </div>
           <button
             onClick={onClose}
-            className="font-black text-base px-3 py-1 border-2 border-gray-900 dark:border-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white hover:border-red-600 dark:hover:border-red-650 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none"
+            className={`font-black text-base px-3 py-1 border-2 border-gray-900 dark:border-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white hover:border-red-600 dark:hover:border-red-650 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${activeStep?.highlightButton === 'closeVarModal' ? 'tutorial-btn-flash' : ''}`}
             aria-label={txt.close}
           >
             X
@@ -572,7 +573,7 @@ export default function VariablesModal({
                 <div className="relative shrink-0" ref={createMenuRef}>
                   <button
                     onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
-                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-none font-black text-xs uppercase border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                    className={`flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-none font-black text-xs uppercase border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer ${activeStep?.highlightButton === 'connectModalFields' && !isCreateMenuOpen ? 'tutorial-btn-flash' : ''}`}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -585,7 +586,7 @@ export default function VariablesModal({
                     <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-700 rounded-none shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] py-1 z-50 flex flex-col">
                       <button
                         onClick={() => handleCreateVariable('number')}
-                        className="flex items-center gap-2 px-3.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-left font-black text-xs uppercase text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 transition-colors"
+                        className={`flex items-center gap-2 px-3.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-left font-black text-xs uppercase text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 transition-colors ${activeStep?.highlightButton === 'connectModalFields' && isCreateMenuOpen ? 'tutorial-btn-flash' : ''}`}
                       >
                         {typeStyles.number.icon}
                         <span>{txt.typeNumber}</span>

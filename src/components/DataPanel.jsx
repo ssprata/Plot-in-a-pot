@@ -7,13 +7,20 @@ export default function DataPanel({
   exportToTwine, importText, setImportText, handleImport, importError,
   adjacencyList, showAdjacencyList, runValidation, validationErrors,
   runSimulationLog, showFlowErrors, showSimulationLegacy, parserWarnings,
-  validationResult
+  validationResult,
+  activeStep // ADICIONADO
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragActive, setDragActive] = useState(false);
   const { showInfoPopout } = useInfoPopout();
 
   const { t } = useTranslation();
+
+  const isTutorialActive = !!activeStep;
+  const isValidateDisabled = isTutorialActive && activeStep?.highlightButton !== 'validate';
+  const isMatrixDisabled = isTutorialActive;
+  const isExportDisabled = isTutorialActive;
+  const isImportDisabled = isTutorialActive;
 
   const openHelp = (title, subtitle, content) => {
     showInfoPopout({ title, subtitle, content });
@@ -56,14 +63,23 @@ export default function DataPanel({
           {/* BOTÃO ADICIONADO: Ponto de entrada limpo para a matriz de tradução geral */}
           <button 
             onClick={() => {
-              window.dispatchEvent(new Event('triggerMatrixToggle'));
+              if (!isMatrixDisabled) window.dispatchEvent(new Event('triggerMatrixToggle'));
             }}
-            className="w-full p-3 border-2 border-gray-900 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+            disabled={isMatrixDisabled}
+            className={`w-full p-3 border-2 border-gray-900 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer ${
+              isMatrixDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            }`}
           >
             {t('dataPanel.translationTableTitle')}
           </button>
 
-          <button onClick={exportToTwine} className="w-full p-3 border-2 border-gray-900 dark:border-gray-200 bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors rounded shadow-md">
+          <button
+            onClick={exportToTwine}
+            disabled={isExportDisabled}
+            className={`w-full p-3 border-2 border-gray-900 dark:border-gray-200 bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors rounded shadow-md ${
+              isExportDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            }`}
+          >
             {t('dataPanel.export')}
           </button>
 
@@ -101,7 +117,13 @@ export default function DataPanel({
               placeholder={t('dataPanel.placeholder')}
             />
             
-            <button onClick={handleImport} className="w-full mt-2 p-2 border-2 border-gray-800 dark:border-gray-200 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 font-bold text-xs uppercase transition-all">
+            <button
+              onClick={handleImport}
+              disabled={isImportDisabled}
+              className={`w-full mt-2 p-2 border-2 border-gray-800 dark:border-gray-200 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 font-bold text-xs uppercase transition-all ${
+                isImportDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+              }`}
+            >
               {t('dataPanel.importButton')}
             </button>
           </div>
@@ -109,7 +131,10 @@ export default function DataPanel({
           <div className="flex items-stretch gap-2">
             <button
               onClick={runValidation}
-              className="flex-1 p-3 border-2 border-gray-900 dark:border-gray-200 text-gray-900 dark:!font-black bg-yellow-400 hover:bg-yellow-500 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none"
+              disabled={isValidateDisabled}
+              className={`flex-1 p-3 border-2 border-gray-900 dark:border-gray-200 text-gray-900 dark:!font-black bg-yellow-400 hover:bg-yellow-500 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none ${
+                isValidateDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+              } ${activeStep?.highlightButton === 'validate' ? 'tutorial-btn-flash' : ''}`}
             >
               {t('dataPanel.validateLogic')}
             </button>

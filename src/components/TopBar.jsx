@@ -4,7 +4,10 @@ import { useInfoPopout } from '../contexts/InfoPopoutContext';
 // IMPORTAÇÃO CORRIGIDA: Usa o hook oficial do react-i18next
 import { useTranslation } from 'react-i18next';
 
-export default function TopBar({ addNode, openSettings, openPlayMode, openAiModal, openTutorialMenu }) {
+export default function TopBar({
+  addNode, openSettings, openPlayMode, openAiModal, openTutorialMenu,
+  canUndo, canRedo, activeStep
+}) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { isDark, toggleTheme } = useTheme();
@@ -33,6 +36,18 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
     setIsDropdownOpen(false);
   };
 
+  const isTutorialActive = !!activeStep;
+
+  // Checks for disabling buttons during walkthrough
+  const isAddSceneDisabled = isTutorialActive && activeStep?.allowAddNode !== 'choice';
+  const isAddScriptDisabled = isTutorialActive && activeStep?.allowAddNode !== 'javascript';
+  const isAddStyleDisabled = isTutorialActive && activeStep?.allowAddNode !== 'css';
+  const isAddZoneDisabled = isTutorialActive && activeStep?.allowAddNode !== 'zone';
+  const isSystemMenuDisabled = isTutorialActive && !activeStep?.allowSystemMenu;
+  const isAiDisabled = isTutorialActive && !activeStep?.allowAi;
+  const isPlayDisabled = isTutorialActive && !activeStep?.allowPlay;
+  const isSettingsDisabled = isTutorialActive && !activeStep?.allowSettings;
+
   const helpButtonClass = "w-8 h-8 flex items-center justify-center border-2 border-gray-800 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer";
 
   return (
@@ -41,7 +56,10 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <div className="flex items-center gap-1">
           <button 
             onClick={() => addNode('choice')} 
-            className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
+            disabled={isAddSceneDisabled}
+            className={`px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none ${
+              isAddSceneDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            } ${activeStep?.highlightButton === 'addScene' ? 'tutorial-btn-flash' : ''}`}
           >
             {t('topBar.addScene')}
           </button>
@@ -62,7 +80,10 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <div className="flex items-center gap-1">
           <button 
             onClick={() => addNode('javascript')} 
-            className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-900 dark:text-indigo-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
+            disabled={isAddScriptDisabled}
+            className={`px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-900 dark:text-indigo-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none ${
+              isAddScriptDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            }`}
           >
             {t('topBar.addScript')}
           </button>
@@ -83,7 +104,10 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <div className="flex items-center gap-1">
           <button 
             onClick={() => addNode('css')} 
-            className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 text-green-900 dark:text-green-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
+            disabled={isAddStyleDisabled}
+            className={`px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 text-green-900 dark:text-green-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none ${
+              isAddStyleDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            }`}
           >
             {t('topBar.addStyle')}
           </button>
@@ -104,7 +128,10 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <div className="flex items-center gap-1">
           <button 
             onClick={() => addNode('zone')} 
-            className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-amber-50 dark:bg-amber-900 hover:bg-amber-100 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
+            disabled={isAddZoneDisabled}
+            className={`px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-amber-50 dark:bg-amber-900 hover:bg-amber-100 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none ${
+              isAddZoneDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            }`}
           >
             {t('topBar.addZone')}
           </button>
@@ -124,8 +151,11 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
 
         <div className="relative flex items-center gap-1" ref={dropdownRef}>
           <button 
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-purple-100 dark:bg-purple-900 hover:bg-purple-200 dark:hover:bg-purple-800 text-purple-900 dark:text-purple-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none flex items-center gap-2"
+            onClick={() => { if (!isSystemMenuDisabled) setIsDropdownOpen(!isDropdownOpen); }}
+            disabled={isSystemMenuDisabled}
+            className={`px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-purple-100 dark:bg-purple-900 hover:bg-purple-200 dark:hover:bg-purple-800 text-purple-900 dark:text-purple-100 font-bold text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none flex items-center gap-2 ${
+              isSystemMenuDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            } ${activeStep?.highlightButton === 'systemMenu' ? 'tutorial-btn-flash' : ''}`}
           >
             {t('topBar.systemMenu')}
             <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -184,7 +214,10 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <div className="flex items-center gap-1">
           <button 
             onClick={openAiModal}
-            className="px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100 font-black text-xs uppercase tracking-widest hover:bg-purple-300 dark:hover:bg-purple-800 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none flex items-center gap-2"
+            disabled={isAiDisabled}
+            className={`px-4 py-2 border-2 border-gray-800 dark:border-gray-200 bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100 font-black text-xs uppercase tracking-widest hover:bg-purple-300 dark:hover:bg-purple-800 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none flex items-center gap-2 ${
+              isAiDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            }`}
           >
             {t('topBar.generateAi')}
           </button>
@@ -205,7 +238,10 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <div className="flex items-center gap-1">
           <button 
             onClick={openPlayMode}
-            className="px-6 py-2 border-2 border-gray-800 dark:border-gray-200 bg-yellow-400 text-gray-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-300 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none"
+            disabled={isPlayDisabled}
+            className={`px-6 py-2 border-2 border-gray-800 dark:border-gray-200 bg-yellow-400 text-gray-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-300 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none ${
+              isPlayDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            } ${activeStep?.highlightButton === 'play' ? 'tutorial-btn-flash' : ''}`}
           >
             {t('topBar.play')}
           </button>
@@ -268,7 +304,10 @@ export default function TopBar({ addNode, openSettings, openPlayMode, openAiModa
         <div className="flex items-center gap-1">
           <button 
             onClick={openSettings}
-            className="p-2 border-2 border-gray-800 bg-white hover:bg-yellow-400 dark:bg-gray-800 dark:hover:bg-yellow-400 dark:border-gray-200 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none"
+            disabled={isSettingsDisabled}
+            className={`p-2 border-2 border-gray-800 bg-white hover:bg-yellow-400 dark:bg-gray-800 dark:hover:bg-yellow-400 dark:border-gray-200 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none ${
+              isSettingsDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            } ${activeStep?.highlightButton === 'settings' ? 'tutorial-btn-flash' : ''}`}
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
