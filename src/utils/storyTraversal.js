@@ -1,6 +1,9 @@
 // src/utils/storyTraversal.js
 import { findStartNode, getInitialState, applyModifiers, canAccessChoice } from './sugarcubeLogic';
 
+const safeClone = typeof structuredClone === 'function' ? structuredClone : (obj) => JSON.parse(JSON.stringify(obj));
+
+
 export function traverseGraph(nodes, edges) {
   const reachableNodes = new Set();
   const reachableEdges = new Set();
@@ -78,7 +81,7 @@ export function traverseGraph(nodes, edges) {
         queue.push({
           nodeId: edge.target,
           // FIX #6: structuredClone para garantir deep copy independente por ramo
-          state: structuredClone(newState),
+          state: safeClone(newState),
           // FIX #5: Limitar o path a 50 entradas para evitar crescimento descontrolado em ciclos
           path: path.length < 50 ? [...path, nextLabel] : [...path.slice(-49), nextLabel]
         });

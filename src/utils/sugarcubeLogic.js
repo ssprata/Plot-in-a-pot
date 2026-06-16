@@ -16,6 +16,10 @@ function sanitizeSugarCubeExpression(expr) {
         .replace(/\beq\b/g,    '===')
         .replace(/\band\b/g,   '&&')
         .replace(/\bor\b/g,    '||')
+        .replace(/\bgte\b/g,   '>=')
+        .replace(/\bgt\b/g,    '>')
+        .replace(/\blte\b/g,   '<=')
+        .replace(/\blt\b/g,    '<')
         // FIX #2: "to" só é substituído quando precedido de $variável e seguido de valor,
         // para não corromper strings que contenham a palavra "to" (ex: "to the castle")
         .replace(/(\$[\w]+)\s+\bto\b\s+/g, '$1 = ')
