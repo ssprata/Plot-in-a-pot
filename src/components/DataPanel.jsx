@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 // Importação oficial para o motor de traduções
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,37 @@ export default function DataPanel({
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragActive, setDragActive] = useState(false);
   const { showInfoPopout } = useInfoPopout();
+
+  const sidebarRef = useRef(null);
+  const [width, setWidth] = useState(360);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const startResizing = useCallback((mouseDownEvent) => {
+    mouseDownEvent.preventDefault();
+    setIsResizing(true);
+
+    const startWidth = sidebarRef.current ? sidebarRef.current.offsetWidth : 360;
+    const startX = mouseDownEvent.clientX;
+
+    const doDrag = (mouseMoveEvent) => {
+      const deltaX = mouseMoveEvent.clientX - startX;
+      const nextWidth = Math.max(220, Math.min(700, startWidth - deltaX));
+      setWidth(nextWidth);
+    };
+
+    const stopDrag = () => {
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', doDrag);
+      document.removeEventListener('mouseup', stopDrag);
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', stopDrag);
+  }, []);
 
   const { t } = useTranslation();
 
@@ -40,10 +71,23 @@ export default function DataPanel({
     }
   };
 
-  const panelWidthClass = isExpanded ? 'w-[360px]' : 'w-12';
-
   return (
-    <div className={`relative transition-all duration-300 ease-in-out border-l border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex flex-col h-full shadow-inner ${panelWidthClass}`}>
+    <div
+      ref={sidebarRef}
+      style={{ width: isExpanded ? `${width}px` : '48px' }}
+      className={`relative border-l border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex flex-col h-full shadow-inner shrink-0 ${
+        isResizing ? '' : 'transition-all duration-300 ease-in-out'
+      }`}
+    >
+      {/* Resize Handle (only active/visible when expanded) */}
+      {isExpanded && (
+        <div
+          onMouseDown={startResizing}
+          className={`absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 transition-colors duration-150 ${
+            isResizing ? 'bg-yellow-400 dark:bg-yellow-500' : 'hover:bg-yellow-400/80 dark:hover:bg-yellow-500/80'
+          }`}
+        />
+      )}
 
       <button
         onClick={() => setIsExpanded(!isExpanded)}

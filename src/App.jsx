@@ -154,7 +154,7 @@ const buildInitialSettings = () => {
 
 function App() {
   const { isDark, toggleTheme } = useTheme();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   // --- Estados Principais ---
   const [nodes, setNodes, onNodesChange] = useNodesState(
@@ -303,15 +303,6 @@ function App() {
       version: '1.0'
     }));
   }, [nodes, edges, translations]);
-
-  // Sincroniza chaves de tradução no motor global do i18next
-  useEffect(() => {
-    translations.languages.forEach(lang => {
-      if (!i18n.hasResourceBundle(lang, 'translation')) {
-        i18n.addResourceBundle(lang, 'translation', translations.keys);
-      }
-    });
-  }, [translations, i18n]);
 
   // Propaga realces do tutorial ativo para as propriedades dos nós
   useEffect(() => {

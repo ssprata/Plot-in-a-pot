@@ -184,7 +184,7 @@ export default function PlaythroughTutorial({
       {
         titleKey: 'tutorial.t1Step2Title',
         descKey: 'tutorial.t1Step2Desc',
-        check: (state) => state.nodes.find(n => n.id === '1')?.data.label === 'Entrada',
+        check: (state) => state.nodes.find(n => n.id === '1')?.data.label?.trim().toLowerCase() === 'entrada',
         autoAdvance: true,
         targetNodeId: '1',
         highlightNodeId: '1',
@@ -194,7 +194,10 @@ export default function PlaythroughTutorial({
       {
         titleKey: 'tutorial.t1Step3Title',
         descKey: 'tutorial.t1Step3Desc',
-        check: (state) => state.nodes.find(n => n.id === '1')?.data.content.toLowerCase().includes('início'),
+        check: (state) => {
+          const content = state.nodes.find(n => n.id === '1')?.data.content?.toLowerCase() || '';
+          return content.includes('início') || content.includes('inicio');
+        },
         autoAdvance: false,
         targetNodeId: '1',
         highlightNodeId: '1',
@@ -368,12 +371,13 @@ export default function PlaythroughTutorial({
         check: (state) => {
           const portaoNode = state.nodes.find(n => n.id === '3');
           const content = portaoNode?.data.content || '';
+          const lowerContent = content.toLowerCase();
           return (
             state.edges.some(e => e.source === '3' && e.target === '4') &&
-            content.includes('$temChave') &&
-            content.includes('is') &&
-            content.includes('true') &&
-            content.includes('Abrir Portão')
+            lowerContent.includes('$temchave') &&
+            lowerContent.includes('is') &&
+            lowerContent.includes('true') &&
+            (lowerContent.includes('abrir portão') || lowerContent.includes('abrir portao'))
           );
         },
         autoAdvance: true,
@@ -617,7 +621,7 @@ export default function PlaythroughTutorial({
               className={`px-4 py-2 text-xs font-black uppercase border-t-2 border-l-2 border-r-2 border-gray-900 dark:border-gray-200 transition-colors cursor-pointer ${
                 activeTab === 'basic'
                   ? 'bg-yellow-400 text-gray-900 translate-y-[2px]'
-                  : 'bg-gray-150 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-750'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               🎓 Básico
@@ -627,7 +631,7 @@ export default function PlaythroughTutorial({
               className={`px-4 py-2 text-xs font-black uppercase border-t-2 border-l-2 border-r-2 border-gray-900 dark:border-gray-200 transition-colors cursor-pointer ${
                 activeTab === 'advanced'
                   ? 'bg-indigo-600 text-white translate-y-[2px]'
-                  : 'bg-gray-150 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-750'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               ⚡ Avançado
@@ -818,13 +822,13 @@ export default function PlaythroughTutorial({
           <div className="flex gap-2">
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="px-2 py-1.5 border border-gray-900 bg-gray-100 hover:bg-gray-200 dark:bg-gray-850 dark:text-gray-200 text-[10px] font-bold uppercase transition-all shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"
+              className="px-2 py-1.5 border border-gray-900 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 text-[10px] font-bold uppercase transition-all shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"
             >
               {t('tutorial.backToMenu', 'Menu')}
             </button>
             <button
               onClick={exitTutorial}
-              className="px-2 py-1.5 border border-gray-900 bg-red-100 hover:bg-red-200 text-red-750 text-[10px] font-bold uppercase transition-all shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"
+              className="px-2 py-1.5 border border-gray-900 bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-bold uppercase transition-all shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"
             >
               {t('tutorial.exitTutorial', 'Exit')}
             </button>
@@ -840,7 +844,15 @@ export default function PlaythroughTutorial({
               </button>
             )}
             
-            {(!currentStep.check || stepCompleted) && (
+            {currentStep.check && !stepCompleted ? (
+              <button
+                onClick={nextStep}
+                className="px-3 py-1.5 border border-gray-900 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 text-gray-700 text-[10px] font-bold uppercase transition-all shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"
+                title={t('tutorial.skipStep', 'Saltar Passo')}
+              >
+                {t('tutorial.skipStep', 'Saltar')} →
+              </button>
+            ) : (
               <button
                 onClick={nextStep}
                 className="px-3 py-1.5 border-2 border-gray-900 bg-yellow-400 text-gray-900 text-[10px] font-black uppercase transition-all shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"

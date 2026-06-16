@@ -452,6 +452,7 @@
     "exitTutorial": "Exit Tutorial",
     "backToMenu": "Tutorial Menu",
     "nextStep": "Next Step",
+    "skipStep": "Skip Step",
     "completeTitle": "Tutorial Completed!",
     "completeText": "Excellent job! You have completed this tutorial. Feel free to try another or start building your own story.",
     "t1Name": "1. Basic Editing & Inspector",

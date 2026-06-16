@@ -423,12 +423,11 @@ export default function VariablesModal({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <div>
-              <h2 className="font-black uppercase tracking-widest text-lg text-gray-900 dark:text-gray-100">{txt.title}</h2>
+            <div>              <h2 className="font-black uppercase tracking-widest text-lg text-gray-900 dark:text-gray-100">{txt.title}</h2>
               {selectedNode && (
                 <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-bold uppercase tracking-wider">
                   <span>{txt.sceneContext}</span>
-                  <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-gray-850 dark:text-gray-250 border border-gray-900 dark:border-gray-400 font-mono">
+                  <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-gray-800 dark:text-gray-300 border border-gray-900 dark:border-gray-400 font-mono">
                     {selectedNode.data.label}
                   </span>
                 </div>
@@ -437,7 +436,7 @@ export default function VariablesModal({
           </div>
           <button
             onClick={onClose}
-            className={`font-black text-base px-3 py-1 border-2 border-gray-900 dark:border-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white hover:border-red-600 dark:hover:border-red-650 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${activeStep?.highlightButton === 'closeVarModal' ? 'tutorial-btn-flash' : ''}`}
+            className={`font-black text-base px-3 py-1 border-2 border-gray-900 dark:border-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-red-500 dark:hover:bg-red-500 hover:text-white hover:border-red-600 dark:hover:border-red-600 transition-colors shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${activeStep?.highlightButton === 'closeVarModal' ? 'tutorial-btn-flash' : ''}`}
             aria-label={txt.close}
           >
             X
@@ -640,24 +639,22 @@ export default function VariablesModal({
                     {displayedVars.map(({ key, value, type, isLocalActive, localValue }) => {
                       const displayVal = activeCollection === 'global' ? value : (isLocalActive ? localValue : value);
                       const displayValClean = stripQuotes(displayVal);
-                      const style = typeStyles[type] || typeStyles.string;
-
-                      return (
-                        <tr key={key} className="border-b-2 border-gray-900 dark:border-gray-850 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 group">
+                      const style = typeStyles[type] || typeStyles.string;                      return (
+                        <tr key={key} className="border-b-2 border-gray-900 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 group">
                           {/* Active state in Local override collection */}
                           {activeCollection === 'local' && (
-                            <td className="py-3 px-3 text-center border-r-2 border-gray-900 dark:border-gray-850">
+                            <td className="py-3 px-3 text-center border-r-2 border-gray-900 dark:border-gray-800">
                               <input
                                 type="checkbox"
                                 checked={isLocalActive}
                                 onChange={(e) => handleToggleLocalActive(key, e.target.checked)}
-                                className="h-4 w-4 text-blue-650 border-2 border-gray-900 rounded-none focus:ring-0 accent-blue-600 cursor-pointer"
+                                className="h-4 w-4 text-blue-600 border-2 border-gray-900 rounded-none focus:ring-0 accent-blue-600 cursor-pointer"
                               />
                             </td>
                           )}
 
                           {/* Variable Name field */}
-                          <td className="py-3 px-3 border-r-2 border-gray-900 dark:border-gray-850">
+                          <td className="py-3 px-3 border-r-2 border-gray-900 dark:border-gray-800">
                             <div className="flex items-center gap-1 font-mono text-sm">
                               <span className="text-gray-900 dark:text-gray-200 font-black select-none">$</span>
                               {activeCollection === 'global' ? (
@@ -681,12 +678,12 @@ export default function VariablesModal({
                           </td>
 
                           {/* Type Column */}
-                          <td className="py-3 px-3 border-r-2 border-gray-900 dark:border-gray-850">
+                          <td className="py-3 px-3 border-r-2 border-gray-900 dark:border-gray-800">
                             {activeCollection === 'global' ? (
                               <div className="relative">
                                 <button
                                   onClick={() => setActiveTypeDropdown(activeTypeDropdown === key ? null : key)}
-                                  className={`flex items-center px-2.5 py-1 border-2 border-gray-900 dark:border-gray-250 font-black text-[10px] uppercase cursor-pointer rounded-none transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none ${style.badge}`}
+                                  className={`flex items-center px-2.5 py-1 border-2 border-gray-900 dark:border-gray-300 font-black text-[10px] uppercase cursor-pointer rounded-none transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none ${style.badge}`}
                                 >
                                   {style.icon}
                                   <span>{style.label}</span>
@@ -712,7 +709,7 @@ export default function VariablesModal({
                                 )}
                               </div>
                             ) : (
-                              <span className={`inline-flex items-center px-2.5 py-1 border-2 border-gray-900 dark:border-gray-250 font-black text-[10px] uppercase select-none rounded-none ${style.badge}`}>
+                              <span className={`inline-flex items-center px-2.5 py-1 border-2 border-gray-900 dark:border-gray-300 font-black text-[10px] uppercase select-none rounded-none ${style.badge}`}>
                                 {style.icon}
                                 <span>{style.label}</span>
                               </span>
@@ -720,7 +717,7 @@ export default function VariablesModal({
                           </td>
 
                           {/* Value Input Column */}
-                          <td className="py-3 px-3 border-r-2 border-gray-900 dark:border-gray-850 last:border-r-0">
+                          <td className="py-3 px-3 border-r-2 border-gray-900 dark:border-gray-800 last:border-r-0">
                             <div className="w-full">
                               {/* Boolean: Toggle true/false */}
                               {type === 'boolean' && (
@@ -811,7 +808,7 @@ export default function VariablesModal({
 
             {/* Footer inside main panel */}
             <div className="flex items-center justify-between px-6 py-3.5 border-t-2 border-gray-900 dark:border-gray-200 bg-gray-100 dark:bg-gray-800">
-              <div className="flex items-center gap-1.5 text-xs text-gray-650 dark:text-gray-300 font-bold uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 font-bold uppercase tracking-wider">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>

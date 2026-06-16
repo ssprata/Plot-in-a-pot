@@ -9,12 +9,14 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
+    supportedLngs: ['en', 'pt'],
+    load: 'languageOnly',
     debug: process.env.NODE_ENV === 'development', 
     interpolation: {
       escapeValue: false, 
     },
     backend: {
-      loadPath: '/locales/{{lng}}/translation.json',
+      loadPath: '/locales/{{lng}}/translation.json?v=' + Date.now(),
     },
     react: {
       useSuspense: false, // Prevents app crash when translations are loading asynchronously

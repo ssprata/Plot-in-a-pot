@@ -1,5 +1,5 @@
 // src/components/Inspector.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -23,6 +23,37 @@ export default function Inspector({
 }) {
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
+
+  const sidebarRef = useRef(null);
+  const [width, setWidth] = useState(340);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const startResizing = useCallback((mouseDownEvent) => {
+    mouseDownEvent.preventDefault();
+    setIsResizing(true);
+
+    const startWidth = sidebarRef.current ? sidebarRef.current.offsetWidth : 340;
+    const startX = mouseDownEvent.clientX;
+
+    const doDrag = (mouseMoveEvent) => {
+      const deltaX = mouseMoveEvent.clientX - startX;
+      const nextWidth = Math.max(220, Math.min(700, startWidth - deltaX));
+      setWidth(nextWidth);
+    };
+
+    const stopDrag = () => {
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', doDrag);
+      document.removeEventListener('mouseup', stopDrag);
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', stopDrag);
+  }, []);
 
   const [isLocalVarMode, setIsLocalVarMode] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -156,7 +187,18 @@ export default function Inspector({
   );
 
   return (
-    <div className="w-[340px] p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col h-full shadow-md">
+    <div
+      ref={sidebarRef}
+      style={{ width: `${width}px` }}
+      className="relative shrink-0 p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col h-full shadow-md"
+    >
+      {/* Resize Handle */}
+      <div
+        onMouseDown={startResizing}
+        className={`absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 transition-colors duration-150 ${
+          isResizing ? 'bg-yellow-400 dark:bg-yellow-500' : 'hover:bg-yellow-400/80 dark:hover:bg-yellow-500/80'
+        }`}
+      />
       <h3 className="mt-0 border-b border-gray-300 dark:border-gray-600 pb-2 mb-4 text-lg font-bold text-gray-800 dark:text-gray-200">
         {t('inspector.title')}
       </h3>
@@ -379,7 +421,7 @@ export default function Inspector({
                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       <span>📝</span> {t('inspector.preview.title', 'Narrative Preview')}
                     </div>
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-850 border-2 border-gray-900 dark:border-gray-600 p-3.5 text-xs text-gray-750 dark:text-gray-300 min-h-[90px] max-h-[140px] overflow-y-auto leading-relaxed whitespace-pre-wrap rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-800 border-2 border-gray-900 dark:border-gray-600 p-3.5 text-xs text-gray-700 dark:text-gray-300 min-h-[90px] max-h-[140px] overflow-y-auto leading-relaxed whitespace-pre-wrap rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
                       {(selectedNode.data.content || '').slice(0, 300) || <span className="italic opacity-50">Sem conteúdo ainda…</span>}
                       {(selectedNode.data.content || '').length > 300 && <span className="opacity-40">…</span>}
                     </div>
@@ -388,7 +430,7 @@ export default function Inspector({
                     <button
                       type="button"
                       onClick={() => setIsBlocksModalOpen(true)}
-                      className="w-full py-3 border-2 border-gray-900 dark:border-gray-200 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-350 hover:to-amber-350 text-gray-950 font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+                      className="w-full py-3 border-2 border-gray-900 dark:border-gray-200 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-gray-950 font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 group"
                     >
                       <span className="transition-transform group-hover:scale-125">⚡</span>
                       {t('visualBlocks.modalTitle', 'Abrir Editor de Lógica Visual')}
