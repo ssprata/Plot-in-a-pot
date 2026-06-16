@@ -497,7 +497,7 @@ export default function PlaythroughTutorial({
     const steps = tutorialSteps[activeTutorial];
     const currentStep = steps ? steps[stepIndex] : null;
     if (onActiveStepChange) onActiveStepChange(currentStep);
-  }, [activeTutorial, stepIndex, onActiveStepChange]);
+  }, [activeTutorial, stepIndex, onActiveStepChange, tutorialSteps]);
 
   // --- CHECKER EFFECT ---
   useEffect(() => {

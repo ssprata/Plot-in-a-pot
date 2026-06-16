@@ -1,4 +1,5 @@
 // src/utils/sugarcubeLogic.js
+/* eslint-disable no-new-func */
 
 // FIX #5: Constante partilhada para a tag de nós secretos/sistema
 // (deve ser a mesma usada no storyValidator.js)

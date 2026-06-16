@@ -73,7 +73,7 @@ export default function ConnectionModal({
       setIfTargetNodeId(params?.target || '');
       setElseTargetNodeId('');
     }
-  }, [isOpen, varNames]);
+  }, [isOpen, varNames, params?.target]);
 
   if (!isOpen || !params) return null;
 

@@ -1,7 +1,6 @@
 // src/App.jsx
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, {
-  addEdge,
   MiniMap,
   Controls,
   Background,
@@ -418,7 +417,7 @@ function App() {
       if (
         targetLabel.startsWith('$') ||
         targetLabel.startsWith('_') ||
-        targetLabel.match(/[\(\)\+\-\*\/\=]/)
+        targetLabel.match(/[()+\-*/=]/)
       ) {
         localWarnings.push(`A ligação para "${targetLabel}" foi bloqueada. Não uses variáveis no destino.`);
         continue;
@@ -568,7 +567,7 @@ function App() {
 
     // Fallback: standard update
     setEdges(els => updateEdge(oldEdge, newConnection, els));
-  }, [setEdges, syncChoicesFromText, takeSnapshot]);
+  }, [setEdges, syncChoicesFromText, takeSnapshot, activeTutorial]);
 
   const onNodeDragStop = useCallback((event, node) => {
     if (node.type === 'zone') return;

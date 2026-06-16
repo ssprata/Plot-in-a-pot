@@ -9,6 +9,7 @@ export function escapeForTweeHeader(value) {
 export function escapeForTweeText(value) {
   // FIX #8: Primeiro protege os escapes manuais já existentes (\::),
   // depois escapa os :: literais que ainda não estão escapados.
+  // eslint-disable-next-line no-control-regex
   return value.replace(/^\\::/gm, '\x00ESCAPED_COLONS\x00').replace(/^::/gm, '\\::').replace(/^\x00ESCAPED_COLONS\x00/gm, '\\::');
 }
 
@@ -184,7 +185,7 @@ export function parseTwee3(source) {
       }
 
       // BARREIRA ANTI-VARIÁVEIS
-      if (targetTitle.startsWith('$') || targetTitle.startsWith('_') || targetTitle.match(/[\(\)\+\-\*\/\=]/)) {
+      if (targetTitle.startsWith('$') || targetTitle.startsWith('_') || targetTitle.match(/[()+\-*/=]/)) {
         warnings.push(`Em [${p.data.label}], o link para "${targetTitle}" foi ignorado por conter variáveis ou matemática.`);
         continue;
       }
