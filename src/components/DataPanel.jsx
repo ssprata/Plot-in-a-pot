@@ -28,6 +28,7 @@ export default function DataPanel({
     const doDrag = (mouseMoveEvent) => {
       const deltaX = mouseMoveEvent.clientX - startX;
       const nextWidth = Math.max(220, Math.min(700, startWidth - deltaX));
+      console.log('[DataPanel Drag]', { deltaX, nextWidth, clientX: mouseMoveEvent.clientX, startX, startWidth });
       setWidth(nextWidth);
     };
 

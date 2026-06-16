@@ -1197,7 +1197,7 @@ function App() {
           }}
         />
 
-        <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
+        <div className="flex-1 min-w-0 flex flex-col border-r-2 border-gray-300 relative z-0">
           <TopBar
             addNode={addNode}
             openSettings={() => setIsSettingsOpen(true)}
@@ -1208,7 +1208,7 @@ function App() {
             canRedo={future.length > 0}
             activeStep={activeStep}
           />
-          <div className="flex-1">
+          <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
             <ReactFlow
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
