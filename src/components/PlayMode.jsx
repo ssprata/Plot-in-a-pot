@@ -1,4 +1,5 @@
 // src/components/PlayMode.jsx
+/* eslint-disable no-new-func */
 import React, { useState, useEffect } from 'react';
 import { findStartNode, getInitialState, applyModifiers, canAccessChoice } from '../utils/sugarcubeLogic';
 import Minimap from './Minimap';
@@ -54,12 +55,55 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
     return () => window.removeEventListener('triggerDevModeToggle', handleDevHotkey);
   }, []);
 
+  // --- INJEÇÃO DE STYLESHEETS (CSS) ---
+  useEffect(() => {
+    if (isOpen) {
+      const styleNodes = nodes.filter(n => n.data?.nodeType === 'css' || n.type === 'css');
+      const cssContent = styleNodes.map(n => n.data?.content || '').join('\n');
+      
+      const existing = document.getElementById('playmode-stylesheet');
+      if (existing) existing.remove();
+      
+      if (cssContent) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'playmode-stylesheet';
+        styleEl.textContent = cssContent;
+        document.head.appendChild(styleEl);
+      }
+    } else {
+      const existing = document.getElementById('playmode-stylesheet');
+      if (existing) existing.remove();
+    }
+    
+    return () => {
+      const existing = document.getElementById('playmode-stylesheet');
+      if (existing) existing.remove();
+    };
+  }, [isOpen, nodes]);
+
   // --- ARRANQUE DO JOGO ---
   useEffect(() => {
     if (isOpen) {
       const startNode = findStartNode(nodes);
       if (startNode) {
-        const initialState = getInitialState(nodes);
+        let initialState = getInitialState(nodes);
+        
+        // Executar nós de script (Javascript) para inicializar/modificar o estado
+        const scriptNodes = nodes.filter(n => n.data?.nodeType === 'javascript' || n.type === 'javascript');
+        scriptNodes.forEach(node => {
+          try {
+            const scriptContent = node.data?.content || '';
+            const State = {
+              variables: initialState
+            };
+            const setup = {};
+            const evaluator = new Function('state', 'State', 'setup', scriptContent);
+            evaluator(initialState, State, setup);
+          } catch (e) {
+            console.error(`Erro ao executar nó de script "${node.data?.label}":`, e);
+          }
+        });
+
         const startState = applyModifiers(startNode.data.content, initialState);
         
         setCurrentNodeId(startNode.id);

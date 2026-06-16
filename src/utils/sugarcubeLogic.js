@@ -194,5 +194,12 @@ export function isSystemNode(node) {
         ? node.data.tags.join(' ').toLowerCase()
         : String(node.data.tags || '').toLowerCase();
 
-    return systemNodes.includes(labelLower) || tags.includes(SECRET_TAG);
+    return (
+        systemNodes.includes(labelLower) ||
+        tags.includes(SECRET_TAG) ||
+        node.type === 'javascript' ||
+        node.type === 'css' ||
+        node.data?.nodeType === 'javascript' ||
+        node.data?.nodeType === 'css'
+    );
 }
