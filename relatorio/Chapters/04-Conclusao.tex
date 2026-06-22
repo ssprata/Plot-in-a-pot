@@ -1,0 +1,29 @@
+\chapter{Conclusão e Trabalho Futuro}
+\label{cp:conclusao}
+
+Este capítulo encerra o relatório, apresentando um balanço das conquistas do projeto, as suas limitações e as principais perspetivas para desenvolvimentos futuros.
+
+\section{Conclusões}
+O desenvolvimento do \textbf{Plot in a Pot} alcançou com êxito os objetivos propostos. A plataforma conseguiu colmatar as falhas identificadas no estado da arte ao unir as vantagens de uma interface puramente visual baseada em grafos direcionados gerais à robustez lógica de variáveis e macros da especificação Twee 3 (SugarCube).
+
+Ao implementar a representação em \textbf{Lista de Adjacência Bidirecional}, o editor conseguiu manter um desempenho fluido mesmo com o aumento do número de nós no canvas, facilitando a navegação reversa e o mapeamento de fluxos. O parser síncrono demonstrou ser fiável, mantendo a compatibilidade retroativa absoluta e resolvendo os problemas de cálculo de coordenadas espaciais para nós agrupados em zonas.
+
+Do ponto de vista da acessibilidade, a criação de estilos visuais baseados em espessuras e tracejados de arestas, aliada à identidade neo-brutalista de alto contraste, provou ser uma solução eficaz para mitigar as limitações de utilização por pessoas daltónicas, assegurando que a distinção entre fluxos de entrada e saída é feita de forma geométrica e inequívoca.
+
+Por fim, as ferramentas de validação baseadas em travessias BFS e o ambiente de simulação PlayMode (com injeção dinâmica de CSS e sandbox em Javascript) proporcionaram aos autores um ambiente de testes completo, robusto e livre de bloqueios inesperados.
+
+\section{Limitações da Implementação}
+Apesar do sucesso geral da solução, identificaram-se algumas limitações técnicas durante o ciclo de desenvolvimento:
+\begin{enumerate}
+    \item \textbf{Análise Sintática baseada em Expressões Regulares:} O motor de análise lógica de macros e variáveis assenta fortemente no uso de expressões regulares (\textit{Regex}). Embora seja rápido, este método apresenta fragilidades na leitura de expressões lógicas com múltiplos níveis de aninhamento de condicionais complexas ou parêntesis em SugarCube.
+    \item \textbf{Gestão de Pesos das Arestas:} O modelo atual suporta o conceito de grafos direcionados lógicos, mas ainda não permite a atribuição visual de pesos numéricos diretos nas arestas do grafo de forma a modelar custos ou probabilidades sem recorrer a macros textuais.
+\end{enumerate}
+
+\section{Trabalho Futuro}
+Para desenvolvimentos futuros no \textbf{Plot in a Pot}, propõem-se as seguintes linhas de investigação e implementação:
+\begin{itemize}
+    \item \textbf{Migração para um Parser baseado em Árvore de Sintaxe Abstrata (AST):} Substituir a análise baseada em Regex por um analisador léxico e sintático (\textit{tokenizer}) formal. Isto permitirá suportar o aninhamento ilimitado de blocos lógicos SugarCube e fornecer erros de sintaxe detalhados na linha exata de escrita.
+    \item \textbf{Implementação Visual de Grafos Ponderados:} Introduzir um campo de edição direto nas arestas customizadas para definir pesos e custos de forma visual.
+    \item \textbf{Exploração Automatizada com Agente Inteligente:} Expandir a lógica do Smart Walker do simulador para criar testes automáticos que percorram o grafo simulando escolhas em paralelo, gerando um relatório PDF de caminhos bem-sucedidos e falhados.
+    \item \textbf{Integração com Modelos de Linguagem (LLM):} Consolidar a funcionalidade de geração automática assistida por IA (Gemini API) para permitir a co-escrita em tempo real, onde o modelo sugere continuações e nós de história com base na lógica de ramificação já desenhada no canvas.
+\end{itemize}

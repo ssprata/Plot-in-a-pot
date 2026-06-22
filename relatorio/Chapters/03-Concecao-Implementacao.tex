@@ -1,0 +1,133 @@
+\chapter{Conceção e Implementação}
+\label{cp:concecao-implementacao}
+
+Este capítulo descreve a arquitetura geral do \textbf{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
+
+\section{Arquitetura Geral do Sistema}
+O \textbf{Plot in a Pot} foi concebido como uma aplicação web de página única (SPA - \textit{Single Page Application}) desenvolvida em \textbf{React 19}. A interface utiliza a biblioteca \textbf{ReactFlow 11} para o motor gráfico do canvas de grafos, e \textbf{Tailwind CSS 3} para a aplicação de uma identidade visual neo-brutalista (caracterizada por sombras sólidas pretas, contornos escuros de espessura elevada e ausência de cantos arredondados).
+
+O sistema de internacionalização baseia-se na biblioteca \textbf{i18next}, com uma arquitetura de carregamento estático assíncrono. Os dicionários de tradução residem em ficheiros JSON estáticos na diretoria pública da aplicação (\texttt{locales/pt/translation.json} e \texttt{locales/en/translation.json}), sendo carregados dinamicamente via requisições HTTP em runtime através do módulo \texttt{i18next-http-backend}, o que reduz o tamanho do bundle principal de JavaScript.
+
+\section{Modelação de Dados: Lista de Adjacência Bidirecional}
+Para representar o fluxo da história no editor, evitou-se o uso de uma Matriz de Adjacência convencional devido ao desperdício de memória ($\mathcal{O}(V^2)$) e à fraca escalabilidade com o crescimento do número de nós. Em vez disso, implementou-se uma \textbf{Lista de Adjacência Bidirecional} com complexidade $\mathcal{O}(V + E)$.
+
+Cada cena no modelo de dados armazena de forma independente dois conjuntos de caminhos:
+\begin{enumerate}
+    \item \textbf{Saídas (Sucessores):} Um vetor que contém as escolhas explícitas disponíveis para o leitor, mapeando o texto da opção e o ID do nó de destino.
+    \item \textbf{Entradas (Predecessores):} Um vetor que regista as referências de todos os outros nós que contêm escolhas a apontar para o nó atual.
+\end{enumerate}
+
+Esta representação bidirecional permite à aplicação realizar mapeamento reverso instantâneo (\textit{backward mapping}), fornecendo na barra lateral de propriedades os painéis ``Vens de...'' e ``Vais para...'', facilitando ao autor a navegação e a validação rápida de interconexões sem ter de vasculhar visualmente o canvas.
+
+A estrutura de dados JSON representativa de um nó e das suas ligações apresenta o seguinte formato:
+\begin{code}
+{
+  "cenas": [
+    {
+      "id": "cena_praca",
+      "titulo": "A Praça Central",
+      "conteudo": "O sol brilha no mercado central.",
+      "saidas": [
+        { "texto_escolha": "Entrar na taberna", "destino": "cena_taberna" },
+        { "texto_escolha": "Aguardar um momento", "destino": "cena_praca" }
+      ],
+      "entradas": ["cena_praca", "cena_taberna"]
+    },
+    {
+      "id": "cena_taberna",
+      "titulo": "Interior da Taberna",
+      "conteudo": "O cheiro a vinho enche o ar.",
+      "saidas": [
+        { "texto_escolha": "Voltar lá fora", "destino": "cena_praca" }
+      ],
+      "entradas": ["cena_praca"]
+    }
+  ]
+}
+\end{code}
+
+\section{Parser Síncrono e Especificação Twee 3}
+O analisador desenvolvido em [tweeParser.js](file:///E:/DEV/Projects/Plot-in-a-pot/src/utils/tweeParser.js) realiza o mapeamento bidirecional em tempo real entre a interface gráfica do React Flow e a representação textual no formato Twee 3.
+
+\subsection{Importação e Conversão de Coordenadas em Zonas}
+No formato Twee 3, as coordenadas de posição guardadas nos metadados JSON das passagens são sempre absolutas no espaço do ecrã:
+\[
+(X_{\text{absoluto}}, Y_{\text{absoluto}})
+\]
+Quando um nó é importado como filho de uma Zona de Agrupamento Visual (\textit{ZoneNode}), o React Flow exige que a sua posição seja definida em coordenadas relativas ao canto superior esquerdo da zona mãe. O parser realiza esta conversão no momento da leitura:
+\[
+X_{\text{relativo}} = X_{\text{absoluto}} - X_{\text{zona}}
+\]
+\[
+Y_{\text{relativo}} = Y_{\text{absoluto}} - Y_{\text{zona}}
+\]
+Ao exportar o grafo novamente para o formato \texttt{.twee}, o parser faz a conversão inversa para garantir a compatibilidade com outros compiladores de Twine tradicionais:
+\[
+X_{\text{absoluto}} = X_{\text{zona}} + X_{\text{relativo}}
+\]
+\[
+Y_{\text{absoluto}} = Y_{\text{zona}} + Y_{\text{relativo}}
+\]
+
+\subsection{Passagens Especiais}
+O parser reconhece passagens reservadas de metadados da especificação Twee 3:
+\begin{itemize}
+    \item \texttt{:: StoryTitle}: Define o título do projeto.
+    \item \texttt{:: StoryData}: Contém as configurações globais em formato JSON, incluindo o identificador único da história (\texttt{ifid}), o formato de compilação (\texttt{SugarCube}), o nó de arranque (\texttt{start}) e o nível de zoom.
+    \item \texttt{:: StoryInit}: Nó especial não-narrativo onde são declaradas e inicializadas as variáveis de controlo de estado da simulação.
+\end{itemize}
+
+\subsection{Modelo SugarCube (Ligações e Macros)}
+As arestas são extraídas do texto narrativo de cada nó através de expressões regulares que identificam ligações no formato clássico:
+\begin{itemize}
+    \item \textbf{Arestas Simples:} \texttt{[[Cena2]]}
+    \item \textbf{Arestas com Alias/Texto de Opção:} \texttt{[[Ir para a Taverna|cena\_taberna]]} ou \texttt{[[Abrir porta->cena\_interior]]}
+\end{itemize}
+As alterações de estado são definidas em macros como \texttt{<<set \$moedas += 10>>}, e as condições lógicas que limitam a visibilidade de opções são declaradas através de blocos \texttt{<<if \$tem\_chave>> ... <</if>>}.
+
+\section{Interação Visual, Edição e Acessibilidade}
+
+\subsection{Zonas de Agrupamento Visual}
+A implementação de Zonas como nós customizados de grupo (\textit{ZoneNode}) exigiu uma resolução específica para um problema clássico de captura de cliques no React Flow. Como o contentor nativo das Zonas cobre uma área retangular considerável sobrepondo-se aos nós de cena interiores, os pointer events capturavam os cliques na tela, impedindo o arrasto ou seleção dos nós filhos.
+
+A solução consistiu em definir a propriedade CSS \texttt{pointer-events: none} dinamicamente na configuração global do React Flow para o contentor da Zona em [App.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/App.jsx). Em paralelo, no componente [ZoneNode.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/ZoneNode.jsx), forçou-se \texttt{pointer-events: auto} exclusivamente nas pegas de redimensionamento (\textit{NodeResizer}) e na barra de cabeçalho da zona (utilizada para arrastar a zona em bloco com todos os seus filhos).
+
+\subsection{Arestas Curvadas com Waypoints}
+Para evitar a sobreposição caótica de ligações em grafos com elevado volume de cruzamentos, implementaram-se arestas customizadas baseadas em \textbf{Splines Catmull-Rom} em [EditableEdge.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/EditableEdge.jsx). As arestas disponibilizam marcadores circulares (\textit{waypoints}) interativos que o autor pode arrastar para curvar a linha no ecrã. A geometria da aresta é recalculada em tempo de execução gerando curvas Bézier cúbicas que contornam os nós do grafo.
+
+\subsection{Gestão de Variáveis Estilo Figma}
+O componente [VariablesModal.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/VariablesModal.jsx) centraliza a gestão de variáveis globais e locais da história através de uma interface inspirada na ferramenta Figma. Quando uma variável é renomeada no painel global (ex: de \texttt{\$ouro} para \texttt{\$moedas}), um mecanismo automático executa uma expressão regular compilada:
+\begin{code}
+new RegExp('\\$' + antigo + '\\b', 'g')
+\end{code}
+Esta regex varre e atualiza em tempo real todas as referências da variável dentro das macros \texttt{<<set>>}, \texttt{<<if>>} e inserções de texto em todos os nós da aplicação, prevenindo a quebra de referências em projetos grandes.
+
+\subsection{Acessibilidade para Autores Daltónicos}
+Tendo em conta que o autor principal da ferramenta, Miguel, apresenta daltonismo, desenhou-se uma estratégia de representação de fluxo que não depende da cor:
+\begin{itemize}
+    \item \textbf{Arestas de Entrada:} Quando um nó é selecionado, as arestas que entram no nó mudam o seu padrão visual para uma linha tracejada de espessura elevada.
+    \item \textbf{Arestas de Saída:} As ligações que saem do nó mantêm-se em traço contínuo com setas direcionais acentuadas a apontar para os destinos.
+    \item \textbf{Alto Contraste:} Cores de contraste elevado e símbolos iconográficos acompanham o feedback visual em detrimento de códigos de cores simples (verde/vermelho).
+\end{itemize}
+
+\section{Validação Estática e Simulação}
+
+\subsection{Validador Estático de Lógica (BFS)}
+O ficheiro [storyValidator.js](file:///E:/DEV/Projects/Plot-in-a-pot/src/utils/storyValidator.js) executa testes estáticos sobre a estrutura do grafo através de uma travessia BFS. A verificação analisa:
+\begin{itemize}
+    \item \textbf{Nós Órfãos:} Nós inacessíveis a partir da cena de início da história (ignora nós rotulados com a etiqueta especial \texttt{secreto}).
+    \item \textbf{Becos sem Saída (Dead Ends):} Distingue nós terminais legítimos (onde a história conclui propositadamente) de nós que contêm ligações que apontam para IDs de nós apagados ou inexistentes no grafo.
+    \item \textbf{Traces de Arestas Bloqueadas:} Valida se existem condições lógicas impossíveis de satisfazer em determinados ramos.
+\end{itemize}
+
+\subsection{Simulador em Tempo Real (PlayMode) e Smart Walker}
+O simulador interativo ([PlayMode.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/PlayMode.jsx)) recria a experiência de jogo do leitor. 
+
+Durante a inicialização da simulação, os nós classificados como \texttt{css} têm o seu conteúdo concatenado e injetado na diretoria principal da página como um elemento de estilo \texttt{<style id="playmode-stylesheet">}, sendo removido ao encerrar a simulação. Os nós classificados como \texttt{javascript} são executados através de uma função isolada com a assinatura \texttt{new Function('state', 'State', 'setup', código)}, permitindo que scripts criados pelo autor manipulem diretamente a fita de dados da simulação.
+
+Para testes automatizados de rotas, a inteligência do simulador implementa um algoritmo de \textbf{Exploração de Novidade (Smart Walker)} que substitui a seleção aleatória de escolhas por uma abordagem heurística:
+\begin{enumerate}
+    \item O simulador mantém um conjunto de caminhos já visitados em memória (\textit{Global Memory Set}).
+    \item Perante um nó com múltiplas escolhas, efetua-se uma poda da árvore de decisão (\textit{Pruning}), dando prioridade absoluta às opções que conduzem a nós com menor taxa de visita histórica.
+    \item Permite simular caminhos de equilíbrio (como Cabo de Guerra ou mecânicas de sobrevivência) e identificar becos sem saída de forma automatizada e rápida.
+\end{enumerate}

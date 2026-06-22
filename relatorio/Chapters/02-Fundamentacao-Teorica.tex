@@ -1,0 +1,91 @@
+\chapter{Fundamentação Teórica e Estado da Arte}
+\label{cp:fundamentacao-teorica}
+
+Neste capítulo são expostos os fundamentos teóricos relativos à modelação matemática de fluxos narrativos interativos, bem como a análise do estado da arte sobre as ferramentas de autoria existentes, destacando os seus pontos fortes e limitações.
+
+\section{Teoria de Grafos na Narrativa Interativa}
+A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$, onde:
+\begin{itemize}
+    \item $V$ representa o conjunto de \textbf{Vértices} (ou nós), que correspondem a cenas, passagens de texto ou estados lógicos da história.
+    \item $E$ representa o conjunto de \textbf{Arestas} (ou ligações direcionadas), que representam as escolhas disponibilizadas ao leitor para transitar de uma cena para a outra.
+\end{itemize}
+
+\subsection{Tipos de Grafos e Aplicação Narrativa}
+Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de estruturas de grafos:
+\begin{enumerate}
+    \item \textbf{Grafo Direcionado (Directed Graph):} Uma estrutura onde as ligações têm direção, ou seja, a existência de um caminho de $A \to B$ não implica o retorno de $B \to A$. Na matriz de adjacência, isto traduz-se numa estrutura não-simétrica:
+    \[
+    M[i][j] \neq M[j][i]
+    \]
+    Representa o fluxo narrativo puro, onde cada escolha conduz o leitor numa direção específica.
+    
+    \item \textbf{Grafo Não-Direcionado (Undirected Graph):} Representa relações simétricas e bidirecionais ($A - B$). Embora seja menos comum em narrativa linear, é útil para modelar redes de relacionamento social entre personagens ou conexões espaciais de livre exploração (ex: salas adjacentes de uma masmorra). Na matriz de adjacência, a estrutura é simétrica:
+    \[
+    M[i][j] = M[j][i]
+    \]
+
+    \item \textbf{Grafo de Conhecimento (Knowledge Graph):} Modela relações semânticas complexas entre entidades (ex: ``personagem conhece objeto'', ``porta depende de chave''). Exige múltiplas matrizes de adjacência ou uma estrutura tridimensional:
+    \[
+    M_{relation}[i][j]
+    \]
+    É ideal para jogos com inventários complexos e decisões baseadas em conhecimento indireto acumulado pelo utilizador.
+
+    \item \textbf{Grafo Ponderado (Weighted Graph):} Atribui valores (pesos) às arestas:
+    \[
+    M[i][j] = \text{peso}
+    \]
+    Estes pesos podem representar custos de recursos (tempo, pontos de vida), custos emocionais do personagem, ou a probabilidade de uma escolha ter sucesso.
+\end{enumerate}
+
+\subsection{Grafos Direcionados Acíclicos (DAGs) vs. Grafos com Ciclos}
+Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Acíclicos (\textit{Directed Acyclic Graphs} - DAGs). A propriedade acíclica garante que é impossível iniciar num vértice $V_i$ e, através de arestas direcionadas, regressar a $V_i$. Isto garante um fluxo estritamente unidirecional e progressivo de causa e efeito, facilitando a aplicação de algoritmos como a Ordenação Topológica (\textit{Topological Sorting}) com complexidade linear:
+\[
+\mathcal{O}(V + E)
+\]
+A ordenação topológica (através de abordagens como o algoritmo de Kahn) alinha os vértices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
+
+No entanto, em narrativas complexas, a imposição de DAGs é altamente limitadora. A impossibilidade de introduzir ciclos impede a criação de:
+\begin{itemize}
+    \item \textbf{Estruturas de Cubo (Hubs):} Onde o jogador explora vários caminhos secundários a partir de uma praça ou menu central e regressa recorrentemente ao mesmo ponto.
+    \item \textbf{Mecânicas de Simulação e Tempo:} Eventos baseados em estados lógicos recorrentes, como ``aguardar um turno'' no mesmo local para fazer avançar variáveis temporais.
+\end{itemize}
+
+Por esta razão, o \textbf{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
+
+\section{Estado da Arte}
+Diversas ferramentas têm sido desenvolvidas para auxiliar autores e programadores na escrita de narrativas não-lineares. Apresenta-se uma análise das principais referências do mercado:
+
+\subsection{Twine}
+Lançado em 2009 por Chris Klimas, o Twine é a ferramenta mais popular na comunidade de ficção interativa baseada em texto.
+\begin{itemize}
+    \item \textbf{Vantagens:} Extremamente acessível (sem barreira de programação para escrita básica); visualização clara baseada em nós gráficos no canvas; open-source e gratuito; rápido para prototipagem rápida.
+    \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
+\end{itemize}
+
+\subsection{Ink (Inkle Studios)}
+O Ink é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}).
+\begin{itemize}
+    \item \textbf{Vantagens:} Altamente poderosa para controlo fino de estados narrativos, condicionais complexas e ramificações complexas; excelente integração técnica com motores de jogo; escala muito bem para projetos de grande envergadura.
+    \item \textbf{Limitações:} Não é uma ferramenta visual, o que dificulta o planeamento geográfico e a deteção de redundâncias de caminhos por autores não-técnicos; exige conhecimentos de lógica de programação.
+\end{itemize}
+
+\subsection{Yarn Spinner}
+Ferramenta focada na integração de diálogos em jogos interativos com motor gráfico.
+\begin{itemize}
+    \item \textbf{Vantagens:} Sintaxe simples (semelhante a scripts de teatro); suporte nativo para variáveis; excelente portabilidade direta para Unity e Unreal Engine.
+    \item \textbf{Limitações:} Carece de um planeador visual abstrato robusto fora do motor de jogo principal; não é adequado para desenhar fluxogramas abstratos de histórias antes da fase de produção do jogo.
+\end{itemize}
+
+\subsection{Narrative Flow}
+Uma ferramenta emergente que tenta colmatar a lacuna entre Twine e Ink.
+\begin{itemize}
+    \item \textbf{Vantagens:} Oferece melhor organização estrutural do que o Twine e uma visualização mais clara que o Ink; ajuda a gerir a consistência da escrita.
+    \item \textbf{Limitações:} É um software pago, com menor maturidade técnica e uma comunidade de utilizadores consideravelmente mais reduzida.
+\end{itemize}
+
+\subsection{Articy Draft}
+A solução comercial líder da indústria de videojogos AAA para planeamento de narrativas e bases de dados de escrita.
+\begin{itemize}
+    \item \textbf{Vantagens:} Altamente estruturado e profissional; gestão integrada de personagens, inventários e diálogos; escala com eficácia para equipas de desenvolvimento de grandes dimensões.
+    \item \textbf{Limitações:} Curva de aprendizagem acentuada; software dispendioso (licença comercial paga); excessivamente complexo e pesado para autores independentes ou projetos pequenos.
+\end{itemize}

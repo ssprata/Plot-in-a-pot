@@ -1,0 +1,31 @@
+\chapter{Introdução}
+\label{cp:introduction}
+
+O desenvolvimento de jogos e narrativas interativas tem vindo a ganhar uma importância crescente no panorama do entretenimento e da educação. Diferente do cinema ou da literatura tradicional, a Ficção Interativa (FI) coloca o utilizador no centro da tomada de decisões, permitindo-lhe moldar o rumo dos acontecimentos através das suas escolhas. Esta não-linearidade narrativa, no entanto, introduz uma complexidade acrescida na escrita e no planeamento das histórias, exigindo ferramentas capazes de gerir fluxos de informação complexos e lógica de estados dinâmicos.
+
+Neste contexto surge o \textbf{Plot in a Pot}, um editor visual e simulador de narrativas interativas. O projeto foi concebido para resolver os principais desafios enfrentados pelos autores de histórias não-lineares, combinando uma interface visual de alto desempenho baseada em grafos direcionados com um motor de simulação que suporta a execução de código e lógica em tempo real.
+
+\section{Contexto e Motivação}
+Historicamente, as ferramentas de autoria para ficção interativa têm-se dividido em dois extremos: ou são puramente textuais e baseadas em código (exigindo competências de programação e dificultando a visualização global do fluxo), ou são visuais mas limitadas na capacidade de lidar com variáveis complexas e condições de lógica avançadas.
+
+A especificação plain-text \textbf{Twee3} e o motor de execução \textbf{SugarCube} constituem a base tecnológica do Twine, uma das plataformas mais populares na área. Contudo, a ferramenta oficial do Twine apresenta lacunas significativas ao nível da acessibilidade (como a ausência de modos adaptados a utilizadores daltónicos) e da gestão de dependências e caminhos de retrocesso (\textit{backward mapping}). 
+
+O desenvolvimento do \textbf{Plot in a Pot} foi motivado pela necessidade de criar uma plataforma de autoria moderna, acessível, e que proporcione aos autores um controlo absoluto e bidirecional sobre o fluxo narrativo, permitindo-lhes visualizar facilmente não só para onde o leitor pode ir, mas também de onde ele pode vir em cada cena da história.
+
+\section{Objetivos do Projeto}
+Os principais objetivos estabelecidos para o desenvolvimento do \textbf{Plot in a Pot} foram:
+\begin{enumerate}
+    \item \textbf{Interface Visual Brutalista e Acessível:} Criar uma interface gráfica baseada no estilo neo-brutalista, com forte contraste visual e representação gráfica de arestas que não dependa unicamente de cores, facilitando a utilização por pessoas com daltonismo.
+    \item \textbf{Parser Bidirecional Twee3:} Implementar um analisador síncrono capaz de importar e exportar histórias em formato Twee3 padrão, mantendo compatibilidade retroativa e convertendo coordenadas globais absolutas em posições relativas para nós agrupados.
+    \item \textbf{Suporte a Zonas de Agrupamento Visual:} Permitir a organização do canvas através de caixas delimitadoras de grupo (\textit{zones}), nas quais os nós podem ser arrastados, movidos em bloco e organizados de forma hierárquica.
+    \item \textbf{Validador de Fluxo baseado em Listas de Adjacência:} Construir um motor de verificação estática que detete nós órfãos, becos sem saída narrativos e potenciais loops infinitos de simulação através de pesquisas BFS.
+    \item \textbf{Simulador Imersivo (PlayMode):} Criar um ambiente de simulação e depuração em tempo real que execute scripts personalizados em Javascript e stylesheets dinâmicas de CSS no contexto da simulação.
+\end{enumerate}
+
+\section{Estrutura do Documento}
+Este relatório está estruturado em quatro capítulos principais. Além desta introdução, o documento apresenta:
+\begin{itemize}
+    \item \textbf{Capítulo~\ref{cp:fundamentacao-teorica}: Fundamentação Teórica e Estado da Arte}, onde se efetua uma análise comparativa das ferramentas existentes no mercado e se descrevem os conceitos matemáticos de teoria de grafos aplicados à narrativa.
+    \item \textbf{Capítulo~\ref{cp:concecao-implementacao}: Conceção e Implementação do Plot in a Pot}, detalhando a arquitetura do software, a especificação Twee3, o modelo de lista de adjacências bidirecional, os modos de visualização e acessibilidade, e a simulação lógica.
+    \item \textbf{Capítulo~\ref{cp:conclusao}: Conclusão e Trabalho Futuro}, onde são sumariados os resultados alcançados, as limitações da implementação e as propostas para futuros desenvolvimentos.
+\end{itemize}
