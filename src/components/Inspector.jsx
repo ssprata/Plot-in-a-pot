@@ -226,14 +226,14 @@ export default function Inspector({
                 </div>
               </div>
 
-              <div className="mb-4 text-xs text-gray-550 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-900 p-3 border-2 border-gray-900 dark:border-gray-700 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+              <div className="mb-4 text-xs text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-900 p-3 border-2 border-gray-900 dark:border-gray-700 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
                 <strong>Info:</strong> Arraste outras passagens para dentro desta zona para as agrupar. Ao mover a zona, as passagens agrupadas mover-se-ão com ela.
               </div>
             </div>
           ) : (
             <>
               {/* IMAGE SECTION */}
-              <div className="mb-4 border-2 border-gray-900 dark:border-gray-650 bg-gray-50 dark:bg-gray-900 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+              <div className="mb-4 border-2 border-gray-900 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
                 <button
                   type="button"
                   onClick={() => setIsImageSectionOpen(!isImageSectionOpen)}
@@ -243,7 +243,7 @@ export default function Inspector({
                   <span className="font-mono">{isImageSectionOpen ? '▲' : '▼'}</span>
                 </button>
                     {isImageSectionOpen && (
-                  <div className="p-3 border-t-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-850 space-y-3">
+                  <div className="p-3 border-t-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-3">
                     {/* Preset list/grid of buttons */}
                     <div>
                       <span className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1.5">
@@ -253,10 +253,10 @@ export default function Inspector({
                         <button
                           type="button"
                           onClick={() => updateSelectedNode({ bgImage: '' })}
-                          className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 text-left transition-colors cursor-pointer ${
+                          className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-600 text-left transition-colors cursor-pointer ${
                             !selectedNode.data.bgImage
                               ? 'bg-blue-600 text-white dark:bg-blue-500'
-                              : 'bg-gray-50 dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
+                              : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100'
                           }`}
                         >
                           {t('inspector.imageNone', 'Nenhuma')}
@@ -270,10 +270,10 @@ export default function Inspector({
                               key={filename}
                               type="button"
                               onClick={() => updateSelectedNode({ bgImage: filename })}
-                              className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 text-left transition-colors cursor-pointer ${
+                              className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-600 text-left transition-colors cursor-pointer ${
                                 isActive
                                   ? 'bg-blue-600 text-white dark:bg-blue-500'
-                                  : 'bg-gray-50 dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
+                                  : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100'
                               }`}
                             >
                               {capitalizedName}
@@ -289,7 +289,7 @@ export default function Inspector({
                     </div>
 
                     {/* URL section */}
-                    <div className="pt-2 border-t border-gray-205 dark:border-gray-700">
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                       <label className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">
                         {t('inspector.imageUrlLabel', 'Ou URL personalizada')}
                       </label>
@@ -303,7 +303,7 @@ export default function Inspector({
                     </div>
 
                     {/* File upload section */}
-                    <div className="pt-2 border-t border-gray-205 dark:border-gray-700">
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                       <label className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">
                         {t('inspector.imageUploadLabel', 'Ou carregar ficheiro')}
                       </label>
@@ -499,7 +499,7 @@ export default function Inspector({
                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       <span>📝</span> {t('inspector.preview.title', 'Narrative Preview')}
                     </div>
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-850 border-2 border-gray-900 dark:border-gray-600 p-3.5 text-xs text-gray-750 dark:text-gray-300 min-h-[90px] max-h-[140px] overflow-y-auto leading-relaxed whitespace-pre-wrap rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-800 border-2 border-gray-900 dark:border-gray-600 p-3.5 text-xs text-gray-700 dark:text-gray-300 min-h-[90px] max-h-[140px] overflow-y-auto leading-relaxed whitespace-pre-wrap rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
                       {(selectedNode.data.content || '').slice(0, 300) || <span className="italic opacity-50">Sem conteúdo ainda…</span>}
                       {(selectedNode.data.content || '').length > 300 && <span className="opacity-40">…</span>}
                     </div>

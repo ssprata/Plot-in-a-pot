@@ -85,7 +85,7 @@ export default function StoryNode({ data }) {
       {tags.filter(t => t !== 'secreto').length > 0 && (
         <div className={`relative z-10 flex flex-wrap gap-1 p-1.5 border-b border-gray-200 dark:border-gray-600 ${data.bgImage ? 'bg-gray-50/40 dark:bg-gray-700/40' : 'bg-gray-50 dark:bg-gray-700'}`}>
           {tags.filter(t => t !== 'secreto').map(tag => (
-            <span key={tag} className="px-1.5 py-0.5 rounded-sm bg-gray-200/80 dark:bg-gray-650/80 text-gray-650 dark:text-gray-300 text-[8px] font-black uppercase tracking-tighter border border-gray-300 dark:border-gray-500">
+            <span key={tag} className="px-1.5 py-0.5 rounded-sm bg-gray-200/80 dark:bg-gray-700/80 text-gray-600 dark:text-gray-300 text-[8px] font-black uppercase tracking-tighter border border-gray-300 dark:border-gray-500">
               #{tag}
             </span>
           ))}
@@ -122,7 +122,7 @@ export default function StoryNode({ data }) {
       {(!data.choices || data.choices.length === 0 || (!isScript && !isCss)) && (
         <div className={`p-2.5 text-[9px] text-gray-400 dark:text-gray-500 text-center italic flex flex-col items-center gap-1 font-mono relative z-10 ${data.bgImage ? 'bg-gray-50/40 dark:bg-gray-700/40' : 'bg-gray-50 dark:bg-gray-700'}`}>
           {!isScript && !isCss ? (
-            <span className="text-[8px] uppercase tracking-wider text-gray-450 dark:text-gray-400 select-none">Nova Escolha</span>
+            <span className="text-[8px] uppercase tracking-wider text-gray-400 dark:text-gray-400 select-none">Nova Escolha</span>
           ) : (
             <span>{isScript ? '{ Script }' : '{ Style }'}</span>
           )}
