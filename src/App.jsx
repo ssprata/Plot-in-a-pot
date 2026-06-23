@@ -32,6 +32,7 @@ import TranslationMatrix from './components/TranslationMatrix';
 import ExportModal from './components/ExportModal';
 import VariablesModal from './components/VariablesModal';
 import ConnectionModal from './components/ConnectionModal';
+import ValidationModal from './components/ValidationModal';
 import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 import TemplatePromptModal from './components/TemplatePromptModal';
@@ -175,6 +176,8 @@ function App() {
   const [isMatrixOpen, setIsMatrixOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVarModalOpen, setIsVarModalOpen] = useState(false);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [validationModalResult, setValidationModalResult] = useState(null);
   const [pendingConnection, setPendingConnection] = useState(null);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isTutorialPromptOpen, setIsTutorialPromptOpen] = useState(false);
@@ -308,11 +311,35 @@ function App() {
 
   // Sincroniza chaves de tradução no motor global do i18next
   useEffect(() => {
-    translations.languages.forEach(lang => {
-      if (!i18n.hasResourceBundle(lang, 'translation')) {
-        i18n.addResourceBundle(lang, 'translation', translations.keys);
-      }
-    });
+    const syncStoryTranslations = () => {
+      translations.languages.forEach(lang => {
+        if (i18n.hasResourceBundle(lang, 'translation')) {
+          const formattedKeys = {};
+          Object.keys(translations.keys || {}).forEach(key => {
+            if (translations.keys[key] && translations.keys[key][lang] !== undefined) {
+              formattedKeys[key] = translations.keys[key][lang];
+            }
+          });
+          i18n.addResourceBundle(lang, 'translation', formattedKeys, true, true);
+        }
+      });
+    };
+
+    // Executa sincronização inicialmente
+    syncStoryTranslations();
+
+    // Regista listeners para sincronizar quando os ficheiros de idioma terminam de carregar via HTTP
+    const handleEvents = () => {
+      syncStoryTranslations();
+    };
+
+    i18n.on('loaded', handleEvents);
+    i18n.on('languageChanged', handleEvents);
+
+    return () => {
+      i18n.off('loaded', handleEvents);
+      i18n.off('languageChanged', handleEvents);
+    };
   }, [translations, i18n]);
 
   // Propaga realces do tutorial ativo para as propriedades dos nós
@@ -981,18 +1008,9 @@ function App() {
     const result = validateStoryFlow(nodesRef.current, edgesRef.current);
     setValidationErrors(result.unreachableEdges);
     setValidationResult(result);
-
-    if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && result.hasReachableEnd) {
-      const endLabels = result.reachableEndNodes.map(n => n.label).join(', ');
-      alert(
-        t('alerts.validationSuccess')
-          .replace('{count}', String(result.reachableEndNodes.length))
-          .replace('{ends}', endLabels)
-      );
-    } else if (result.unreachableEdges.length === 0 && result.orphanNodes.length === 0 && !result.hasReachableEnd) {
-      alert(t('alerts.validationNoEnd'));
-    }
-  }, [t]);
+    setValidationModalResult(result);
+    setIsValidationModalOpen(true);
+  }, []);
 
   const runSimulationLog = useCallback(() => {
     runDevSimulationLog(nodesRef.current, edgesRef.current);
@@ -1265,18 +1283,26 @@ function App() {
           onConfirm={exportToTwine}
         />
 
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          settings={settings}
-          toggleSetting={toggleSetting}
-          updateSetting={updateSetting}
-          resetProject={resetProject}
-          openTutorialMenu={() => {
-            setIsSettingsOpen(false);
-            setIsTutorialMenuOpen(true);
-          }}
+        <ValidationModal
+          isOpen={isValidationModalOpen}
+          onClose={() => setIsValidationModalOpen(false)}
+          result={validationModalResult}
         />
+
+        {isSettingsOpen && (
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            settings={settings}
+            toggleSetting={toggleSetting}
+            updateSetting={updateSetting}
+            resetProject={resetProject}
+            openTutorialMenu={() => {
+              setIsSettingsOpen(false);
+              setIsTutorialMenuOpen(true);
+            }}
+          />
+        )}
 
         <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
           <TopBar
@@ -1361,6 +1387,7 @@ function App() {
           translations={translations}
           setTranslations={setTranslations}
           activeStep={activeStep}
+          openPlayMode={() => handleOpenPlayMode()}
         />
 
         <Popout

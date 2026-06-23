@@ -10,6 +10,18 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
   // Hook atualizado
   const { t, i18n } = useTranslation();
 
+  const [currentLang, setCurrentLang] = React.useState(i18n.language || 'en');
+
+  React.useEffect(() => {
+    const handleLanguageChanged = (lng) => {
+      setCurrentLang(lng);
+    };
+    i18n.on('languageChanged', handleLanguageChanged);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, [i18n]);
+
   // Se o modal não estiver aberto, o React não desenha nada no ecrã
   if (!isOpen) return null;
 
@@ -19,7 +31,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
   };
 
   // 4. Estilo unificado para os botões de ajuda (versão mais pequena para caber nas listas)
-  const helpButtonClass = "w-6 h-6 flex items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
+  const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-yellow-400 dark:hover:bg-yellow-400 transition-all active:translate-y-0.5 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] active:shadow-none rounded-full cursor-pointer text-xs";
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -32,14 +44,32 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
 
         <div className="space-y-4">
 
-          <div className="flex items-center justify-between pb-2">
+          <div className="flex flex-col gap-2 pb-2">
             <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">Idioma / Language</span>
-            <button
-              onClick={() => i18n.changeLanguage((i18n.language || 'en').startsWith('en') ? 'pt' : 'en')}
-              className="px-4 py-1 border-2 border-gray-900 dark:border-gray-200 bg-gray-200 dark:bg-gray-700 font-black text-xs uppercase hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
-            >
-              {(i18n.language || 'en').startsWith('en') ? 'Português (PT)' : 'English (EN)'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => i18n.changeLanguage('en')}
+                className={`flex-1 py-1.5 border-2 border-gray-900 dark:border-gray-200 font-black text-xs uppercase transition-all cursor-pointer shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none ${
+                  currentLang.startsWith('en')
+                    ? 'bg-yellow-400 text-gray-950 dark:bg-yellow-400 dark:text-gray-950'
+                    : 'bg-gray-200 text-gray-500 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                }`}
+              >
+                English (EN)
+              </button>
+              <button
+                type="button"
+                onClick={() => i18n.changeLanguage('pt')}
+                className={`flex-1 py-1.5 border-2 border-gray-900 dark:border-gray-200 font-black text-xs uppercase transition-all cursor-pointer shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none ${
+                  currentLang.startsWith('pt')
+                    ? 'bg-yellow-400 text-gray-950 dark:bg-yellow-400 dark:text-gray-950'
+                    : 'bg-gray-200 text-gray-500 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                }`}
+              >
+                Português (PT)
+              </button>
+            </div>
           </div>
 
           {/* --- SECÇÃO: VISUALIZAÇÃO --- */}
@@ -209,7 +239,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
               onClick={() => {
                 if (openTutorialMenu) openTutorialMenu();
               }}
-              className="w-full border-2 border-gray-900 dark:border-gray-200 bg-yellow-400 hover:bg-yellow-500 text-gray-950 font-black px-4 py-2 text-sm transition-all shadow-[4px_4px_0px_#000] active:translate-y-0.5 active:shadow-none uppercase tracking-widest cursor-pointer font-sans"
+              className="w-full border-2 border-gray-900 dark:border-gray-200 bg-yellow-400 hover:bg-yellow-500 text-gray-950 font-black px-4 py-2 text-sm transition-all shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none uppercase tracking-widest cursor-pointer font-sans"
             >
               🎓 {t('settingsModal.startTutorialButton', 'Fazer tutorial')}
             </button>
@@ -227,7 +257,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
                 t('settingsModal.help.dangerZone.subtitle'),
                 <p>{t('settingsModal.help.dangerZone.text')}</p>
               )}
-              className="w-6 h-6 flex items-center justify-center border-2 border-red-600 bg-red-100 text-red-600 font-black hover:bg-red-200 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#dc2626] active:shadow-none cursor-pointer text-xs"
+              className="w-6 h-6 flex items-center justify-center border-2 border-red-600 bg-red-100 text-red-600 font-black hover:bg-red-200 transition-all active:translate-y-0.5 shadow-[1px_1px_0px_#dc2626] dark:shadow-[1px_1px_0px_#fff] active:shadow-none rounded-full cursor-pointer text-xs"
               aria-label={t('settingsModal.help.dangerZone.aria')}
             >
               !
@@ -236,7 +266,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
 
           <button
             onClick={resetProject}
-            className="w-full border-2 border-red-600 bg-red-600 px-4 py-2 text-sm font-black text-white hover:bg-red-700 transition-colors shadow-[4px_4px_0px_rgba(220,38,38,0.3)] active:translate-y-0.5 active:shadow-none uppercase tracking-widest"
+            className="w-full border-2 border-red-600 dark:border-red-400 bg-red-600 px-4 py-2 text-sm font-black text-white hover:bg-red-750 transition-all shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none uppercase tracking-widest cursor-pointer"
           >
             {t('settingsModal.resetButton')}
           </button>
@@ -244,7 +274,7 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
 
         <button
           onClick={onClose}
-          className="w-full mt-6 p-2 border-2 border-gray-900 bg-gray-900 text-white font-bold uppercase text-xs hover:bg-gray-700 transition-colors shadow-[4px_4px_0px_#000] active:translate-y-0.5 active:shadow-none"
+          className="w-full mt-6 p-2 border-2 border-gray-900 bg-gray-950 text-white font-bold uppercase text-xs hover:bg-gray-850 dark:border-gray-200 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 transition-all shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer"
         >
           {t('settingsModal.close')}
         </button>

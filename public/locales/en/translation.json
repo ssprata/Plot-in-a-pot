@@ -19,8 +19,8 @@
     "addScript": "+ Add Script",
     "addStyle": "+ Add Style",
     "addZone": "+ Add Zone",
-    "systemMenu": "+ System",
-    "generateAi": "Generate with AI",
+    "systemMenu": "+ System / Code",
+    "generateAi": "Convert",
     "play": "Play",
     "doubleClickHint": "Double click to edit",
     "theme": "Theme",
@@ -30,7 +30,7 @@
       "addScript": "Add Script",
       "addStyle": "Add Style",
       "addZone": "Add Zone",
-      "systemMenu": "System Nodes",
+      "systemMenu": "System & Code Nodes",
       "generateAi": "AI Generation",
       "play": "Play Mode",
       "theme": "Theme",
@@ -45,7 +45,7 @@
       "addScript": "Add Script",
       "addStyle": "Add Style",
       "addZone": "Add Zone",
-      "systemMenu": "System Nodes",
+      "systemMenu": "System & Code Nodes",
       "generateAi": "AI Generation",
       "play": "Play Mode",
       "theme": "Theme",
@@ -57,7 +57,7 @@
       "addScript": "Creates a code node",
       "addStyle": "Creates a CSS node",
       "addZone": "Creates a visual zone for grouping nodes",
-      "systemMenu": "Twine global configuration nodes",
+      "systemMenu": "System configuration and scripting nodes",
       "generateAi": "Imports text and builds the graph automatically",
       "play": "Tests the story in preview mode",
       "theme": "Switches between light and dark mode",
@@ -73,6 +73,7 @@
       "play": "This button opens play mode. You can navigate the narrative as a player and test available choices.",
       "theme": "Use this button to change the interface theme. Dark mode is easier on the eyes at night, light mode works well during the day.",
       "settings": "Opens the settings panel. Here you can toggle secret nodes, view flow errors, and control editor options.",
+      "systemMenu": "Provides access to Twine system nodes (StoryInit, StoryTitle, StoryData, StoryCaption) as well as JavaScript (Script) and CSS (Style) custom nodes.",
       "tutorial": "Opens the interactive guided tutorial menu to help you learn how to use the tool step by step."
     },
     "helpSystem": {
@@ -568,5 +569,13 @@
     "t7Step13Desc": "This time, the conditional check fails and you are presented with 'Ir para o Fim' as the choice. Click it to read the ending.",
     "t7Step14Title": "Complete Tutorial",
     "t7Step14Desc": "Excellent! Both conditions are evaluated dynamically from your code. Click 'End Test' in the right sidebar to conclude the walkthrough."
+  },
+  "validationModal": {
+    "statusProblems": "Problems Detected",
+    "problemsDescription": "Problems or inconsistencies were detected in the logical flow of your project.",
+    "statusOk": "Valid Structure",
+    "successDescription": "Congratulations! The structure of your graph is logical, connected, and has reachable endpoints.",
+    "reachableEnds": "Reachable Ends",
+    "noEnds": "No reachable endpoints detected!"
   }
 }

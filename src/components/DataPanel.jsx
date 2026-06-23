@@ -8,7 +8,8 @@ export default function DataPanel({
   adjacencyList, showAdjacencyList, runValidation, validationErrors,
   runSimulationLog, showFlowErrors, showSimulationLegacy, parserWarnings,
   validationResult,
-  activeStep // ADICIONADO
+  activeStep, // ADICIONADO
+  openPlayMode
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragActive, setDragActive] = useState(false);
@@ -53,6 +54,7 @@ export default function DataPanel({
   const isMatrixDisabled = isTutorialActive;
   const isExportDisabled = isTutorialActive;
   const isImportDisabled = isTutorialActive;
+  const isPlayDisabled = isTutorialActive && !activeStep?.allowPlay;
 
   const openHelp = (title, subtitle, content) => {
     showInfoPopout({ title, subtitle, content });
@@ -106,6 +108,17 @@ export default function DataPanel({
         {/* --- CONTEÚDO ÚNICO E DIRETO --- */}
         <div className="flex-1 overflow-y-auto space-y-4">
           
+          {/* PLAY MODE BUTTON */}
+          <button 
+            onClick={openPlayMode}
+            disabled={isPlayDisabled}
+            className={`w-full p-3 border-2 border-gray-900 dark:border-gray-200 bg-emerald-500 hover:bg-emerald-400 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] transition-all active:translate-y-0.5 active:shadow-none rounded-none cursor-pointer flex items-center justify-center gap-2 ${
+              isPlayDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+            } ${activeStep?.highlightButton === 'play' ? 'tutorial-btn-flash' : ''}`}
+          >
+            {t('topBar.play', 'Play')}
+          </button>
+
           {/* BOTÃO ADICIONADO: Ponto de entrada limpo para a matriz de tradução geral */}
           <button 
             onClick={() => {

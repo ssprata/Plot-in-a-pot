@@ -34,6 +34,37 @@ export default function Inspector({
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
 
+  const [width, setWidth] = useState(340);
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = React.useRef(null);
+
+  const startResizing = React.useCallback((mouseDownEvent) => {
+    mouseDownEvent.preventDefault();
+    setIsResizing(true);
+
+    const startWidth = sidebarRef.current ? sidebarRef.current.offsetWidth : 340;
+    const startX = mouseDownEvent.clientX;
+
+    const doDrag = (mouseMoveEvent) => {
+      const deltaX = mouseMoveEvent.clientX - startX;
+      const nextWidth = Math.max(280, Math.min(700, startWidth - deltaX));
+      setWidth(nextWidth);
+    };
+
+    const stopDrag = () => {
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', doDrag);
+      document.removeEventListener('mouseup', stopDrag);
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', stopDrag);
+  }, []);
+
   const [isLocalVarMode, setIsLocalVarMode] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isBlocksModalOpen, setIsBlocksModalOpen] = useState(false);
@@ -217,14 +248,29 @@ export default function Inspector({
   );
 
   return (
-    <div className="w-[340px] p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-900 flex flex-col h-full shadow-md">
-      <h3 className="mt-0 border-b-2 border-gray-900 dark:border-gray-700 pb-3 mb-4 text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
-        <span className="inline-block w-2.5 h-2.5 bg-yellow-400 mr-2 border border-gray-900 dark:border-gray-205 shadow-[1px_1px_0px_#000]"></span>
-        {t('inspector.title', 'CELL INSPECTOR').toUpperCase()}
-      </h3>
+    <div
+      ref={sidebarRef}
+      style={{ width: `${width}px` }}
+      className={`relative border-r-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 flex flex-col h-full shadow-md shrink-0 ${
+        isResizing ? '' : 'transition-[width] duration-150'
+      }`}
+    >
+      {/* Resize Handle */}
+      <div
+        onMouseDown={startResizing}
+        className={`absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 transition-colors duration-150 ${
+          isResizing ? 'bg-yellow-400 dark:bg-yellow-500' : 'hover:bg-yellow-400/80 dark:hover:bg-yellow-500/80'
+        }`}
+      />
 
-      {selectedNode ? (
-        <div className="flex-1 flex flex-col">
+      <div className="flex-1 overflow-y-auto p-3 flex flex-col">
+        <h3 className="mt-0 border-b-2 border-gray-900 dark:border-gray-700 pb-3 mb-4 text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
+          <span className="inline-block w-2.5 h-2.5 bg-yellow-400 mr-2 border border-gray-900 dark:border-gray-205 shadow-[1px_1px_0px_#000]"></span>
+          {t('inspector.title', 'CELL INSPECTOR').toUpperCase()}
+        </h3>
+
+        {selectedNode ? (
+          <div className="flex-1 flex flex-col">
           {selectedNode.type === 'zone' || selectedNode.data.nodeType === 'zone' ? (
             <div className="flex-1 flex flex-col">
               {/* NODE ID */}
@@ -683,6 +729,7 @@ export default function Inspector({
           {t('inspector.selectNode')}
         </div>
       )}
+      </div>
 
       <DeleteConfirmModal
         isOpen={isDeleteOpen}

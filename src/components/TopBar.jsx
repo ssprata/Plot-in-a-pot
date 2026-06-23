@@ -79,54 +79,6 @@ export default function TopBar({
 
         <div className="flex items-center gap-1">
           <button 
-            onClick={() => addNode('javascript')} 
-            disabled={isAddScriptDisabled}
-            className={`px-4 py-2 border-2 border-gray-900 dark:border-gray-200 bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-900 dark:text-indigo-100 font-black text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none rounded-none ${
-              isAddScriptDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-            }`}
-          >
-            {t('topBar.addScript')}
-          </button>
-          <button
-            type="button"
-            onClick={() => openHelp(
-              t('topBar.helpTitles.addScript'),
-              t('topBar.helpSubtitles.addScript'),
-              <p>{t('topBar.helpDescription.addScript')}<br/><br/><b>{t('hotkeys.addScript')}</b></p>
-            )}
-            className={helpButtonClass}
-            aria-label={t('topBar.helpLabels.addScript')}
-          >
-            ?
-          </button>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button 
-            onClick={() => addNode('css')} 
-            disabled={isAddStyleDisabled}
-            className={`px-4 py-2 border-2 border-gray-900 dark:border-gray-200 bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 text-green-900 dark:text-green-100 font-black text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none rounded-none ${
-              isAddStyleDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-            }`}
-          >
-            {t('topBar.addStyle')}
-          </button>
-          <button
-            type="button"
-            onClick={() => openHelp(
-              t('topBar.helpTitles.addStyle'),
-              t('topBar.helpSubtitles.addStyle'),
-              <p>{t('topBar.helpDescription.addStyle')}<br/><br/><b>{t('hotkeys.addStyle')}</b></p>
-            )}
-            className={helpButtonClass}
-            aria-label={t('topBar.helpLabels.addStyle')}
-          >
-            ?
-          </button>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button 
             onClick={() => addNode('zone')} 
             disabled={isAddZoneDisabled}
             className={`px-4 py-2 border-2 border-gray-900 dark:border-gray-200 bg-amber-50 dark:bg-amber-900 hover:bg-amber-100 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-100 font-black text-xs uppercase tracking-wider transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none rounded-none ${
@@ -162,6 +114,18 @@ export default function TopBar({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
+          <button
+            type="button"
+            onClick={() => openHelp(
+              t('topBar.helpTitles.systemMenu', 'System & Code Nodes'),
+              t('topBar.helpSubtitles.systemMenu', 'System config and scripting nodes'),
+              <p>{t('topBar.helpDescription.systemMenu', 'StoryInit, StoryTitle, StoryData, StoryCaption, JavaScript and CSS styles.')}</p>
+            )}
+            className={helpButtonClass}
+            aria-label={t('topBar.helpLabels.systemMenu', 'Help System & Code')}
+          >
+            ?
+          </button>
           {isDropdownOpen && (
             <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 border-2 border-gray-800 dark:border-gray-200 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] flex flex-col z-50">
               <button onClick={() => handleSpecialNode('StoryInit')} className="p-2 text-left text-xs font-bold uppercase hover:bg-gray-100 dark:hover:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-200" title="StoryInit (Ctrl + Alt + I)">
@@ -173,8 +137,28 @@ export default function TopBar({
               <button onClick={() => handleSpecialNode('StoryData')} className="p-2 text-left text-xs font-bold uppercase hover:bg-gray-100 dark:hover:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-200" title="StoryData (Ctrl + Alt + D)">
                 StoryData
               </button>
-              <button onClick={() => handleSpecialNode('StoryCaption')} className="p-2 text-left text-xs font-bold uppercase hover:bg-gray-100 dark:hover:bg-gray-700" title="StoryCaption (Ctrl + Alt + C)">
+              <button onClick={() => handleSpecialNode('StoryCaption')} className="p-2 text-left text-xs font-bold uppercase hover:bg-gray-100 dark:hover:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-200" title="StoryCaption (Ctrl + Alt + C)">
                 StoryCaption
+              </button>
+              <button 
+                onClick={() => { addNode('javascript'); setIsDropdownOpen(false); }} 
+                disabled={isAddScriptDisabled}
+                className={`p-2 text-left text-xs font-bold uppercase hover:bg-gray-100 dark:hover:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-200 ${
+                  isAddScriptDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                }`}
+                title="JavaScript"
+              >
+                {t('topBar.addScript')}
+              </button>
+              <button 
+                onClick={() => { addNode('css'); setIsDropdownOpen(false); }} 
+                disabled={isAddStyleDisabled}
+                className={`p-2 text-left text-xs font-bold uppercase hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                  isAddStyleDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                }`}
+                title="CSS"
+              >
+                {t('topBar.addStyle')}
               </button>
             </div>
           )}
@@ -207,17 +191,7 @@ export default function TopBar({
           </button>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button 
-            onClick={openPlayMode}
-            disabled={isPlayDisabled}
-            className={`px-6 py-2 border-2 border-gray-900 dark:border-gray-200 bg-yellow-400 text-gray-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-350 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none rounded-none ${
-              isPlayDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-            } ${activeStep?.highlightButton === 'play' ? 'tutorial-btn-flash' : ''}`}
-          >
-            {t('topBar.play')}
-          </button>
-        </div>
+
 
         <div className="hidden md:block font-black text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 select-none">
           {t('topBar.doubleClickHint')}

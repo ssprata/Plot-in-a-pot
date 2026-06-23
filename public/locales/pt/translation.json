@@ -19,8 +19,8 @@
     "addScript": "+ Adicionar Script",
     "addStyle": "+ Adicionar Estilo",
     "addZone": "+ Adicionar Zona",
-    "systemMenu": "+ Sistema",
-    "generateAi": "Gerar com IA",
+    "systemMenu": "+ Sistema / Código",
+    "generateAi": "Converter",
     "play": "Jogar",
     "doubleClickHint": "Duplo clique para editar",
     "theme": "Tema",
@@ -30,7 +30,7 @@
       "addScript": "Adicionar Script",
       "addStyle": "Adicionar Estilo",
       "addZone": "Adicionar Zona",
-      "systemMenu": "Nós de Sistema",
+      "systemMenu": "Nós de Sistema e Código",
       "generateAi": "Gerar com IA",
       "play": "Jogar",
       "theme": "Tema",
@@ -45,7 +45,7 @@
       "addScript": "Adicionar Script",
       "addStyle": "Adicionar Estilo",
       "addZone": "Adicionar Zona",
-      "systemMenu": "Nós de Sistema",
+      "systemMenu": "Nós de Sistema e Código",
       "generateAi": "Gerar com IA",
       "play": "Jogar",
       "theme": "Tema",
@@ -57,7 +57,7 @@
       "addScript": "Cria um nó de código",
       "addStyle": "Cria um nó CSS",
       "addZone": "Cria uma zona visual para agrupar nós",
-      "systemMenu": "Nós de configuração global do Twine",
+      "systemMenu": "Nós de configuração do sistema e de script",
       "generateAi": "Importa texto e cria o grafo automaticamente",
       "play": "Testa a história em modo de visualização",
       "theme": "Alterna entre claro e escuro",
@@ -73,6 +73,7 @@
       "play": "Este botão abre o modo de jogo. Pode navegar pela narrativa como jogador e testar as escolhas disponíveis.",
       "theme": "Use este botão para mudar o tema da interface. O modo escuro é mais confortável à noite, o modo claro funciona bem durante o dia.",
       "settings": "Abre o painel de definições. Aqui pode ativar nós secretos, ver erros de fluxo e controlar opções do editor.",
+      "systemMenu": "Fornece acesso aos nós de sistema do Twine (StoryInit, StoryTitle, StoryData, StoryCaption) bem como aos nós personalizados de JavaScript (Script) e CSS (Estilo).",
       "tutorial": "Abre o menu de tutoriais interativos para aprenderes a criar a tua história passo a passo."
     },
     "helpSystem": {
@@ -568,5 +569,13 @@
     "t7Step13Desc": "Desta vez a condição falhou, pelo que a escolha visível deve ser a de ir para o Fim. Clica nela para concluir o jogo.",
     "t7Step14Title": "Concluir Tutorial",
     "t7Step14Desc": "Excelente! Ambas as condições funcionam perfeitamente no teu código. Clica em 'Terminar Teste' na barra lateral direita para concluir este tutorial avançado."
+  },
+  "validationModal": {
+    "statusProblems": "Problemas Detetados",
+    "problemsDescription": "Foram detetados problemas ou inconsistências no fluxo lógico do teu projeto.",
+    "statusOk": "Estrutura Válida",
+    "successDescription": "Parabéns! A estrutura do teu grafo é lógica, conectada e tem finais acessíveis.",
+    "reachableEnds": "Finais Acessíveis",
+    "noEnds": "Nenhum final acessível detetado!"
   }
 }
