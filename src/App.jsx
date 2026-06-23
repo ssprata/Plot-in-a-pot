@@ -138,7 +138,8 @@ const buildInitialSettings = () => {
         showFlowErrors: parsed.showFlowErrors ?? config.showFlowErrors,
         showSimulationLegacy: parsed.showSimulationLegacy ?? config.showSimulationLegacy,
         visualLogicEnabled: parsed.visualLogicEnabled ?? (config.visualLogicEnabled !== false),
-        visualBlocksMode: parsed.visualBlocksMode ?? false
+        visualBlocksMode: parsed.visualBlocksMode ?? false,
+        bgImageBlur: parsed.bgImageBlur ?? 5
       };
     } catch (e) { /* ignora parse inválido */ }
   }
@@ -148,13 +149,14 @@ const buildInitialSettings = () => {
     showFlowErrors: config.showFlowErrors,
     showSimulationLegacy: config.showSimulationLegacy,
     visualLogicEnabled: config.visualLogicEnabled !== false,
-    visualBlocksMode: false
+    visualBlocksMode: false,
+    bgImageBlur: 5
   };
 };
 
 function App() {
   const { isDark, toggleTheme } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // --- Estados Principais ---
   const [nodes, setNodes, onNodesChange] = useNodesState(
@@ -304,6 +306,15 @@ function App() {
     }));
   }, [nodes, edges, translations]);
 
+  // Sincroniza chaves de tradução no motor global do i18next
+  useEffect(() => {
+    translations.languages.forEach(lang => {
+      if (!i18n.hasResourceBundle(lang, 'translation')) {
+        i18n.addResourceBundle(lang, 'translation', translations.keys);
+      }
+    });
+  }, [translations, i18n]);
+
   // Propaga realces do tutorial ativo para as propriedades dos nós
   useEffect(() => {
     if (!activeTutorial || !activeStep) {
@@ -343,6 +354,22 @@ function App() {
       return n;
     }));
   }, [activeTutorial, activeStep, setNodes]);
+
+  // Sincroniza a propriedade bgImageBlur dos nós sempre que o setting mudar
+  useEffect(() => {
+    setNodes(nds => nds.map(n => {
+      if (n.data.bgImageBlur !== settings.bgImageBlur) {
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            bgImageBlur: settings.bgImageBlur
+          }
+        };
+      }
+      return n;
+    }));
+  }, [settings.bgImageBlur, setNodes]);
 
   // --- Funções do Histórico ---
   const takeSnapshot = useCallback(() => {
@@ -408,7 +435,7 @@ function App() {
       if (
         targetLabel.startsWith('$') ||
         targetLabel.startsWith('_') ||
-        targetLabel.match(/[()+\-*/=]/)
+        targetLabel.match(/[()+\-*\/=]/)
       ) {
         localWarnings.push(`A ligação para "${targetLabel}" foi bloqueada. Não uses variáveis no destino.`);
         continue;
@@ -511,12 +538,12 @@ function App() {
 
     const currentNodes = nodesRef.current;
     const sourceNode = currentNodes.find(n => n.id === oldEdge.source);
-    
+
     // Helper definition to replace target of choiceIndex-th link
     const updateLinkInText = (textVal, choiceIndex, newTargetLabel) => {
       let index = 0;
       const linkRegex = /(\[\[(.*?)(?:\||->)(.*?)\]\])|(\[\[(.*?)\]\])|(<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>)/g;
-      
+
       return textVal.replace(linkRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8) => {
         if (index === choiceIndex) {
           index++;
@@ -558,7 +585,7 @@ function App() {
 
     // Fallback: standard update
     setEdges(els => updateEdge(oldEdge, newConnection, els));
-  }, [setEdges, syncChoicesFromText, takeSnapshot, activeTutorial]);
+  }, [setEdges, syncChoicesFromText, takeSnapshot]);
 
   const onNodeDragStop = useCallback((event, node) => {
     if (node.type === 'zone') return;
@@ -630,7 +657,7 @@ function App() {
     const updateLinkInText = (textVal, choiceIndex, newTargetLabel, newDisplayText = null) => {
       let index = 0;
       const linkRegex = /(\[\[(.*?)(?:\||->)(.*?)\]\])|(\[\[(.*?)\]\])|(<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>)/g;
-      
+
       return textVal.replace(linkRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8) => {
         if (index === choiceIndex) {
           index++;
@@ -693,7 +720,7 @@ function App() {
       const elseText = elseNode?.data.label || 'Continuar';
 
       let content = sourceNode.data.content || '';
-      
+
       let block = `<<if $${ifVariable} ${ifOperator} ${ifValue}>>\n`;
       block += `[[${ifText}|${ifNode?.data.label}]]\n`;
       if (elseNode) {
@@ -998,6 +1025,14 @@ function App() {
     });
   }, []);
 
+  const updateSetting = useCallback((key, value) => {
+    setSettings(prev => {
+      const updated = { ...prev, [key]: value };
+      localStorage.setItem('plot-in-a-pot-settings', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const handleOpenPlayMode = useCallback(() => {
     const hasSyntaxErrors = nodesRef.current.some(node => node.data.warnings?.length > 0);
     if (hasSyntaxErrors) {
@@ -1190,6 +1225,7 @@ function App() {
           onClose={() => setIsSettingsOpen(false)}
           settings={settings}
           toggleSetting={toggleSetting}
+          updateSetting={updateSetting}
           resetProject={resetProject}
           openTutorialMenu={() => {
             setIsSettingsOpen(false);
@@ -1197,7 +1233,7 @@ function App() {
           }}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col border-r-2 border-gray-300 relative z-0">
+        <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
           <TopBar
             addNode={addNode}
             openSettings={() => setIsSettingsOpen(true)}
@@ -1208,7 +1244,7 @@ function App() {
             canRedo={future.length > 0}
             activeStep={activeStep}
           />
-          <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
+          <div className="flex-1">
             <ReactFlow
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}

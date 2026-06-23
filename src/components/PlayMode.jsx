@@ -7,6 +7,15 @@ import VariablesModal from './VariablesModal';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 
+const getImageUrl = (bgImage) => {
+  if (!bgImage) return '';
+  if (bgImage.startsWith('data:') || bgImage.startsWith('http://') || bgImage.startsWith('https://')) {
+    return bgImage;
+  }
+  const publicUrl = process.env.PUBLIC_URL || '';
+  return `${publicUrl}/presets/${bgImage}`;
+};
+
 export default function PlayMode({ isOpen, onClose, nodes, edges, translations, onCurrentNodeIdChange, onGameLanguageChange, activeStep }) {
   // --- ESTADOS DO JOGO ---
   const [currentNodeId, setCurrentNodeId] = useState(null);
@@ -219,10 +228,22 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-gray-950 text-gray-100 font-sans">
-      
+    <div className="fixed inset-0 z-50 flex bg-gray-950 text-gray-100 font-sans overflow-hidden">
+      {/* Blurred background image element */}
+      {currentNode.data?.bgImage && (
+        <div
+          className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center transition-all duration-500"
+          style={{
+            backgroundImage: `url(${getImageUrl(currentNode.data.bgImage)})`,
+            filter: `blur(${currentNode.data.bgImageBlur ?? 5}px)`,
+            transform: 'scale(1.15)',
+            opacity: 0.25
+          }}
+        />
+      )}
+
       {/* ÁREA DO JOGO PRINCIPAL */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto relative">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto relative z-10 bg-transparent">
         {isDevMode && (
           <div style={{position: 'absolute', right: -80, bottom: 16, transform: 'translateX(-50%)', zIndex: 10}}>
             <Minimap
@@ -234,7 +255,11 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
           </div>
         )}
 
-        <div className="max-w-2xl w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-8 shadow-2xl">
+        <div className={`max-w-2xl w-full border-2 rounded-lg p-8 shadow-2xl transition-all duration-300 relative z-10 ${
+          currentNode.data?.bgImage
+            ? 'bg-gray-900/80 border-gray-700/80 backdrop-blur-[2px]'
+            : 'bg-gray-900 border-gray-700'
+        }`}>
           <h2 className="text-2xl font-bold border-b-2 border-gray-700 pb-4 mb-6 uppercase tracking-wider text-yellow-400">
             {currentNode.data.label}
           </h2>
@@ -276,7 +301,11 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
       </div>
 
       {/* PAINEL LATERAL DE DEPURAÇÃO */}
-      <div className="w-80 bg-gray-900 border-l-4 border-gray-700 p-6 flex flex-col overflow-y-auto">
+      <div className={`w-80 border-l-4 p-6 flex flex-col overflow-y-auto relative z-10 transition-all duration-300 ${
+        currentNode.data?.bgImage
+          ? 'bg-gray-900/80 border-gray-700/80 backdrop-blur-[2px]'
+          : 'bg-gray-900 border-gray-700'
+      }`}>
         <div className="mb-8 space-y-3">
           
           {translations?.languages?.length > 0 && (

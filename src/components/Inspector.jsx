@@ -1,9 +1,18 @@
 // src/components/Inspector.jsx
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
 import { useTranslation } from 'react-i18next';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import VisualBlocksModal from './VisualBlocksModal';
+
+const getImageUrl = (bgImage) => {
+  if (!bgImage) return '';
+  if (bgImage.startsWith('data:') || bgImage.startsWith('http://') || bgImage.startsWith('https://')) {
+    return bgImage;
+  }
+  const publicUrl = process.env.PUBLIC_URL || '';
+  return `${publicUrl}/presets/${bgImage}`;
+};
 
 
 export default function Inspector({
@@ -24,49 +33,35 @@ export default function Inspector({
   const { showInfoPopout } = useInfoPopout();
   const { t } = useTranslation();
 
-  const sidebarRef = useRef(null);
-  const [width, setWidth] = useState(340);
-  const [isResizing, setIsResizing] = useState(false);
-
-  const startResizing = useCallback((mouseDownEvent) => {
-    mouseDownEvent.preventDefault();
-    setIsResizing(true);
-
-    const startWidth = sidebarRef.current ? sidebarRef.current.offsetWidth : 340;
-    const startX = mouseDownEvent.clientX;
-
-    const doDrag = (mouseMoveEvent) => {
-      const deltaX = mouseMoveEvent.clientX - startX;
-      const nextWidth = Math.max(220, Math.min(700, startWidth - deltaX));
-      console.log('[Inspector Drag]', { deltaX, nextWidth, clientX: mouseMoveEvent.clientX, startX, startWidth });
-      setWidth(nextWidth);
-    };
-
-    const stopDrag = () => {
-      setIsResizing(false);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-      document.removeEventListener('mousemove', doDrag);
-      document.removeEventListener('mouseup', stopDrag);
-    };
-
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', doDrag);
-    document.addEventListener('mouseup', stopDrag);
-  }, []);
-
   const [isLocalVarMode, setIsLocalVarMode] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isBlocksModalOpen, setIsBlocksModalOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState('visual');
+  const [isImageSectionOpen, setIsImageSectionOpen] = useState(false);
+  const [presets, setPresets] = useState([]);
+
+  useEffect(() => {
+    fetch(`${process.env.PUBLIC_URL || ''}/presets/manifest.json`)
+      .then(res => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setPresets(data);
+        }
+      })
+      .catch(err => {
+        console.warn('Could not load dynamic image presets:', err);
+      });
+  }, []);
 
   const isTutorialActive = !!activeStep;
   const isDeleteDisabled = isTutorialActive;
   const isLabelDisabled = isTutorialActive && (!activeStep.allowEditLabel || activeStep.targetNodeId !== selectedNode?.id);
   const isContentDisabled = isTutorialActive && (!activeStep.allowEditContent || activeStep.targetNodeId !== selectedNode?.id);
   const isCreateVarDisabled = isTutorialActive && (activeStep.highlightButton !== 'createVar' || selectedNode?.data.label !== 'StoryInit');
-  
+
   // --- ESTADO LOCAL PARA O PREVIEW NARRATIVO ---
   const [previewLang, setPreviewLang] = useState(translations?.languages?.[0] || 'pt');
 
@@ -188,18 +183,7 @@ export default function Inspector({
   );
 
   return (
-    <div
-      ref={sidebarRef}
-      style={{ width: `${width}px` }}
-      className="relative shrink-0 p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col h-full shadow-md"
-    >
-      {/* Resize Handle */}
-      <div
-        onMouseDown={startResizing}
-        className={`absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 transition-colors duration-150 ${
-          isResizing ? 'bg-yellow-400 dark:bg-yellow-500' : 'hover:bg-yellow-400/80 dark:hover:bg-yellow-500/80'
-        }`}
-      />
+    <div className="w-[340px] p-3 border-r-2 border-gray-300 dark:border-gray-600 overflow-y-auto bg-white dark:bg-gray-800 flex flex-col h-full shadow-md">
       <h3 className="mt-0 border-b border-gray-300 dark:border-gray-600 pb-2 mb-4 text-lg font-bold text-gray-800 dark:text-gray-200">
         {t('inspector.title')}
       </h3>
@@ -248,6 +232,104 @@ export default function Inspector({
             </div>
           ) : (
             <>
+              {/* IMAGE SECTION */}
+              <div className="mb-4 border-2 border-gray-900 dark:border-gray-650 bg-gray-50 dark:bg-gray-900 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                <button
+                  type="button"
+                  onClick={() => setIsImageSectionOpen(!isImageSectionOpen)}
+                  className="w-full p-2 flex items-center justify-between font-black text-xs uppercase text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  <span>🖼️ {t('inspector.imageSection', 'Imagem de Fundo')}</span>
+                  <span className="font-mono">{isImageSectionOpen ? '▲' : '▼'}</span>
+                </button>
+                    {isImageSectionOpen && (
+                  <div className="p-3 border-t-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-850 space-y-3">
+                    {/* Preset list/grid of buttons */}
+                    <div>
+                      <span className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1.5">
+                        {t('inspector.imagePresets', 'Imagens Predefinidas')}
+                      </span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateSelectedNode({ bgImage: '' })}
+                          className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 text-left transition-colors cursor-pointer ${
+                            !selectedNode.data.bgImage
+                              ? 'bg-blue-600 text-white dark:bg-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
+                          }`}
+                        >
+                          {t('inspector.imageNone', 'Nenhuma')}
+                        </button>
+                        {presets.map((filename) => {
+                          const isActive = selectedNode.data.bgImage === filename;
+                          const displayName = filename.split('.')[0];
+                          const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+                          return (
+                            <button
+                              key={filename}
+                              type="button"
+                              onClick={() => updateSelectedNode({ bgImage: filename })}
+                              className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 text-left transition-colors cursor-pointer ${
+                                isActive
+                                  ? 'bg-blue-600 text-white dark:bg-blue-500'
+                                  : 'bg-gray-50 dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
+                              }`}
+                            >
+                              {capitalizedName}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {presets.length === 0 && (
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-1.5">
+                          Coloca imagens em <code className="bg-gray-100 dark:bg-gray-950 px-1 py-0.5 font-mono">public/presets/</code> para veres opções predefinidas aqui.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* URL section */}
+                    <div className="pt-2 border-t border-gray-205 dark:border-gray-700">
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">
+                        {t('inspector.imageUrlLabel', 'Ou URL personalizada')}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="https://exemplo.com/imagem.jpg"
+                        value={(!selectedNode.data.bgImage?.startsWith('data:') && !presets.includes(selectedNode.data.bgImage)) ? selectedNode.data.bgImage || '' : ''}
+                        onChange={(e) => updateSelectedNode({ bgImage: e.target.value })}
+                        className="w-full p-1.5 border-2 border-gray-900 dark:border-gray-600 text-gray-900 dark:text-white rounded-none bg-gray-50 dark:bg-gray-700 text-xs font-mono"
+                      />
+                    </div>
+
+                    {/* File upload section */}
+                    <div className="pt-2 border-t border-gray-205 dark:border-gray-700">
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">
+                        {t('inspector.imageUploadLabel', 'Ou carregar ficheiro')}
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              updateSelectedNode({ bgImage: reader.result });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="w-full text-xs text-gray-500 dark:text-gray-400 file:mr-2 file:py-1 file:px-2 file:border-2 file:border-gray-900 file:bg-gray-100 dark:file:bg-gray-700 dark:file:text-white dark:file:border-gray-500 text-clip overflow-hidden cursor-pointer"
+                      />
+                      {selectedNode.data.bgImage && (
+                        <div className="relative w-full h-16 border-2 border-gray-900 dark:border-gray-600 overflow-hidden bg-cover bg-center mt-1.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]" style={{ backgroundImage: `url(${getImageUrl(selectedNode.data.bgImage)})` }} />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* LABEL FIELD */}
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-1">
@@ -256,9 +338,8 @@ export default function Inspector({
                 </div>
                 <input
                   disabled={isLabelDisabled}
-                  className={`w-full p-2 border border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white rounded bg-gray-50 dark:bg-gray-700 ${
-                    isLabelDisabled ? 'opacity-50 cursor-not-allowed' : ''
-                  } ${activeStep?.highlightButton === 'editLabel' ? 'tutorial-btn-flash' : ''}`}
+                  className={`w-full p-2 border border-gray-400 dark:border-gray-600 text-gray-900 dark:text-white rounded bg-gray-50 dark:bg-gray-700 ${isLabelDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                    } ${activeStep?.highlightButton === 'editLabel' ? 'tutorial-btn-flash' : ''}`}
                   value={selectedNode.data.label || ''}
                   onChange={(e) => updateSelectedNode({ label: e.target.value })}
                 />
@@ -354,9 +435,8 @@ export default function Inspector({
                       <button
                         onClick={onOpenVariables ?? handleCreateVariable}
                         disabled={isCreateVarDisabled}
-                        className={`px-2 py-1 bg-blue-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] ${
-                          isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                        } ${activeStep?.highlightButton === 'createVar' ? 'tutorial-btn-flash' : ''}`}
+                        className={`px-2 py-1 bg-blue-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                          } ${activeStep?.highlightButton === 'createVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.createVariable')}
                       </button>
@@ -364,9 +444,8 @@ export default function Inspector({
                       <button
                         onClick={onChangeVariables ?? handleChangeVariable}
                         disabled={isCreateVarDisabled}
-                        className={`px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] ${
-                          isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                        } ${activeStep?.highlightButton === 'changeVar' ? 'tutorial-btn-flash' : ''}`}
+                        className={`px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000] ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                          } ${activeStep?.highlightButton === 'changeVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.changeValue')}
                       </button>
@@ -394,22 +473,20 @@ export default function Inspector({
                     <button
                       type="button"
                       onClick={() => setInspectorTab('visual')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider border-2 text-center transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${
-                        inspectorTab === 'visual'
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider border-2 text-center transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${inspectorTab === 'visual'
                           ? 'bg-yellow-400 border-gray-900 text-black shadow-none translate-y-0.5 font-black'
                           : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-900 dark:border-gray-400 hover:bg-gray-100'
-                      }`}
+                        }`}
                     >
                       Visual ⚡
                     </button>
                     <button
                       type="button"
                       onClick={() => setInspectorTab('code')}
-                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider border-2 text-center transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${
-                        inspectorTab === 'code'
+                      className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider border-2 text-center transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer rounded-none ${inspectorTab === 'code'
                           ? 'bg-yellow-400 border-gray-900 text-black shadow-none translate-y-0.5 font-black'
                           : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-900 dark:border-gray-400 hover:bg-gray-100'
-                      }`}
+                        }`}
                     >
                       Código / Texto
                     </button>
@@ -422,16 +499,16 @@ export default function Inspector({
                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       <span>📝</span> {t('inspector.preview.title', 'Narrative Preview')}
                     </div>
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-800 border-2 border-gray-900 dark:border-gray-600 p-3.5 text-xs text-gray-700 dark:text-gray-300 min-h-[90px] max-h-[140px] overflow-y-auto leading-relaxed whitespace-pre-wrap rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-850 border-2 border-gray-900 dark:border-gray-600 p-3.5 text-xs text-gray-750 dark:text-gray-300 min-h-[90px] max-h-[140px] overflow-y-auto leading-relaxed whitespace-pre-wrap rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
                       {(selectedNode.data.content || '').slice(0, 300) || <span className="italic opacity-50">Sem conteúdo ainda…</span>}
                       {(selectedNode.data.content || '').length > 300 && <span className="opacity-40">…</span>}
                     </div>
-                    
+
                     {/* Visual block edit button */}
                     <button
                       type="button"
                       onClick={() => setIsBlocksModalOpen(true)}
-                      className="w-full py-3 border-2 border-gray-900 dark:border-gray-200 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-gray-950 font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+                      className="w-full py-3 border-2 border-gray-900 dark:border-gray-200 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-350 hover:to-amber-350 text-gray-950 font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2 group"
                     >
                       <span className="transition-transform group-hover:scale-125">⚡</span>
                       {t('visualBlocks.modalTitle', 'Abrir Editor de Lógica Visual')}
@@ -441,11 +518,9 @@ export default function Inspector({
                 ) : (
                   <textarea
                     disabled={isContentDisabled}
-                    className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${
-                      selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
-                    } ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${
-                      activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''
-                    }`}
+                    className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
+                      } ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''
+                      }`}
                     value={selectedNode.data.content || ''}
                     onChange={(e) => {
                       if (selectedNode.data.nodeType === 'choice') {

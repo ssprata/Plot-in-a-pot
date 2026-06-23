@@ -4,7 +4,7 @@ import { useInfoPopout } from '../contexts/InfoPopoutContext';
 // Importação corrigida para o motor de traduções oficial
 import { useTranslation } from 'react-i18next';
 
-export default function SettingsModal({ isOpen, onClose, settings, toggleSetting, resetProject, openTutorialMenu }) {
+export default function SettingsModal({ isOpen, onClose, settings, toggleSetting, updateSetting, resetProject, openTutorialMenu }) {
   // 2. Extrair a função de mostrar o popout do contexto
   const { showInfoPopout } = useInfoPopout();
   // Hook atualizado
@@ -122,6 +122,27 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
             >
               <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.visualLogicEnabled ? 'left-6' : 'left-0.5'}`} />
             </button>
+          </div>
+
+          {/* Opção: Desfoque da Imagem */}
+          <div className="flex flex-col gap-1 pb-2 border-b border-gray-100 dark:border-gray-700/50">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">
+                {t('settingsModal.bgImageBlur', 'Desfoque da Imagem')}
+              </span>
+              <span className="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 border-2 border-gray-900 dark:border-gray-200 text-gray-900 dark:text-gray-100 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff]">
+                {settings.bgImageBlur ?? 5}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="20"
+              step="1"
+              value={settings.bgImageBlur ?? 5}
+              onChange={(e) => updateSetting('bgImageBlur', parseInt(e.target.value, 10))}
+              className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-none appearance-none cursor-pointer accent-blue-600 border-2 border-gray-900 dark:border-gray-200"
+            />
           </div>
 
 
