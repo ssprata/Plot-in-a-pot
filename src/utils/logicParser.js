@@ -16,9 +16,9 @@ export function parseLogicFromText(text = '') {
 
   // FIX #1: Adicionado suporte a <- para consistência com o twee3Parser
   // FIX #2: Regex dividida em casos distintos para evitar ambiguidade de grupos
-  const linkRegexPipe = /^\[\[([^|\]]+)\|([^\]]+)\]\]$/;        // [[Texto|Destino]]
-  const linkRegexArrow = /^\[\[([^>\]]+)->([^\]]+)\]\]$/;         // [[Texto->Destino]]
-  const linkRegexBack = /^\[\[([^<\]]+)<-([^\]]+)\]\]$/;        // [[Destino<-Texto]]
+  const linkRegexPipe = /^\[\[([^|\]]*)\|([^\]]+)\]\]$/;        // [[Texto|Destino]]
+  const linkRegexArrow = /^\[\[([^>\]]*)->([^\]]+)\]\]$/;         // [[Texto->Destino]]
+  const linkRegexBack = /^\[\[([^<\]]+)<-([^\]]*)\]\]$/;        // [[Destino<-Texto]]
   const linkRegexSimpl = /^\[\[([^\]|<>]+)\]\]$/;                 // [[Destino]]
 
   // FIX #8: [\w\d] → \w

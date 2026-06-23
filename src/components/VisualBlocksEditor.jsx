@@ -402,7 +402,11 @@ export default function VisualBlocksEditor({
                             value={choice.text}
                             onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
                             placeholder={t('visualBlocks.choicePlaceholder')}
-                            className="p-1 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600 rounded-none"
+                            className={`p-1 border bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none rounded-none ${
+                              !choice.text?.trim()
+                                ? 'border-2 border-red-500 dark:border-red-400 focus:border-red-600'
+                                : 'border-gray-900 dark:border-gray-600 focus:border-blue-600'
+                            }`}
                           />
                           <button
                             type="button"
@@ -413,6 +417,11 @@ export default function VisualBlocksEditor({
                             ✕
                           </button>
                         </div>
+                        {!choice.text?.trim() && (
+                          <span className="text-[8px] text-red-600 dark:text-red-400 font-bold uppercase -mt-1 pl-1">
+                            {t('visualBlocks.emptyTitleError', 'O título não pode estar vazio')}
+                          </span>
+                        )}
                         <div className="flex items-center gap-1.5">
                           <span className="text-[9px] text-gray-400 font-bold uppercase">{t('visualBlocks.linkDestination')}</span>
                           <select
@@ -461,7 +470,11 @@ export default function VisualBlocksEditor({
                             value={choice.text}
                             onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
                             placeholder={t('visualBlocks.choicePlaceholder')}
-                            className="p-1 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600 rounded-none"
+                            className={`p-1 border bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none rounded-none ${
+                              !choice.text?.trim()
+                                ? 'border-2 border-red-500 dark:border-red-400 focus:border-red-600'
+                                : 'border-gray-900 dark:border-gray-600 focus:border-blue-600'
+                            }`}
                           />
                           <button
                             type="button"
@@ -472,6 +485,11 @@ export default function VisualBlocksEditor({
                             ✕
                           </button>
                         </div>
+                        {!choice.text?.trim() && (
+                          <span className="text-[8px] text-red-600 dark:text-red-400 font-bold uppercase -mt-1 pl-1">
+                            {t('visualBlocks.emptyTitleError', 'O título não pode estar vazio')}
+                          </span>
+                        )}
                         <div className="flex items-center gap-1.5">
                           <span className="text-[9px] text-gray-400 font-bold uppercase">{t('visualBlocks.linkDestination')}</span>
                           <select
@@ -526,7 +544,11 @@ export default function VisualBlocksEditor({
                     value={choice.text}
                     onChange={(e) => handleUpdateChoiceField(choice.originalIndex, 'text', e.target.value)}
                     placeholder={t('visualBlocks.choicePlaceholder')}
-                    className="p-1 border border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none focus:border-blue-600 rounded-none"
+                    className={`p-1 border bg-white dark:bg-gray-950 text-[10px] font-bold flex-1 min-w-0 text-gray-900 dark:text-white outline-none rounded-none ${
+                      !choice.text?.trim()
+                        ? 'border-2 border-red-500 dark:border-red-400 focus:border-red-600'
+                        : 'border-gray-900 dark:border-gray-600 focus:border-blue-600'
+                    }`}
                   />
                   <button
                     type="button"
@@ -537,6 +559,11 @@ export default function VisualBlocksEditor({
                     ✕
                   </button>
                 </div>
+                {!choice.text?.trim() && (
+                  <span className="text-[8px] text-red-600 dark:text-red-400 font-bold uppercase -mt-1 pl-1">
+                    {t('visualBlocks.emptyTitleError', 'O título não pode estar vazio')}
+                  </span>
+                )}
                 <div className="flex items-center gap-1.5">
                   <span className="text-[9px] text-gray-400 font-bold uppercase">{t('visualBlocks.linkDestination')}</span>
                   <select

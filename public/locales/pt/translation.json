@@ -440,7 +440,9 @@
     "deleteConditionBtn": "Remover condição (Converter escolhas em simples)",
     "deleteBlockBtn": "Eliminar Ramo",
     "noChoices": "Sem escolhas. Liga este nó no grafo ou clica em adicionar abaixo.",
-    "deleteChoiceTooltip": "Eliminar escolha"
+    "deleteChoiceTooltip": "Eliminar escolha",
+    "emptyChoiceWarning": "Existem escolhas sem título",
+    "emptyTitleError": "O título não pode estar vazio"
   },
   "tutorial": {
     "promptTitle": "Playthrough Interativo",

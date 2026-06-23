@@ -1,7 +1,8 @@
 // src/components/VisualBlocksModal.jsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import VisualBlocksEditor from './VisualBlocksEditor';
+import { parseLogicFromText } from '../utils/logicParser';
 
 export default function VisualBlocksModal({
   isOpen,
@@ -14,12 +15,25 @@ export default function VisualBlocksModal({
 }) {
   const { t } = useTranslation();
 
+  const parsed = useMemo(() => {
+    return parseLogicFromText(selectedNode?.data.content || '');
+  }, [selectedNode?.data.content]);
+
+  const hasEmptyChoiceText = useMemo(() => {
+    return parsed.choices.some(c => !c.text || c.text.trim() === '');
+  }, [parsed.choices]);
+
+  const handleClose = () => {
+    if (hasEmptyChoiceText) return;
+    onClose();
+  };
+
   if (!isOpen || !selectedNode) return null;
 
   return (
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
       <div className="bg-white dark:bg-gray-900 border-4 border-gray-900 dark:border-gray-100 shadow-[12px_12px_0px_#000] dark:shadow-[12px_12px_0px_#fff] flex flex-col w-[1100px] max-w-[96vw] max-h-[90vh]">
 
@@ -39,8 +53,13 @@ export default function VisualBlocksModal({
           </div>
 
           <button
-            onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center border-2 border-gray-900 bg-white dark:bg-gray-800 hover:bg-red-600 hover:text-white hover:border-red-700 text-gray-900 dark:text-gray-100 font-black text-lg transition-all shadow-[2px_2px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 cursor-pointer rounded-none"
+            onClick={handleClose}
+            disabled={hasEmptyChoiceText}
+            className={`w-9 h-9 flex items-center justify-center border-2 font-black text-lg transition-all rounded-none ${
+              hasEmptyChoiceText
+                ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed shadow-none active:translate-x-0 active:translate-y-0'
+                : 'border-gray-900 bg-white dark:bg-gray-800 hover:bg-red-600 hover:text-white hover:border-red-700 text-gray-900 dark:text-gray-100 shadow-[2px_2px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 cursor-pointer'
+            }`}
             aria-label="Fechar editor"
           >
             ✕
@@ -60,10 +79,22 @@ export default function VisualBlocksModal({
         </div>
 
         {/* ── Footer ── */}
-        <div className="shrink-0 px-5 py-3 border-t-4 border-gray-900 dark:border-gray-100 flex justify-end bg-gray-50 dark:bg-gray-800">
+        <div className="shrink-0 px-5 py-3 border-t-4 border-gray-900 dark:border-gray-100 flex items-center justify-between bg-gray-50 dark:bg-gray-800">
+          <div>
+            {hasEmptyChoiceText && (
+              <span className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-400 flex items-center gap-1.5 animate-pulse">
+                ⚠️ {t('visualBlocks.emptyChoiceWarning', 'Existem escolhas sem título')}
+              </span>
+            )}
+          </div>
           <button
-            onClick={onClose}
-            className="px-6 py-2 border-2 border-gray-900 dark:border-gray-100 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-black uppercase text-xs tracking-widest shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#fff] hover:bg-gray-700 dark:hover:bg-gray-300 active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer rounded-none"
+            onClick={handleClose}
+            disabled={hasEmptyChoiceText}
+            className={`px-6 py-2 border-2 font-black uppercase text-xs tracking-widest transition-all rounded-none ${
+              hasEmptyChoiceText
+                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-400 dark:border-gray-600 cursor-not-allowed shadow-none active:translate-x-0 active:translate-y-0'
+                : 'border-gray-900 dark:border-gray-100 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#fff] hover:bg-gray-700 dark:hover:bg-gray-300 active:shadow-none active:translate-x-0.5 active:translate-y-0.5 cursor-pointer'
+            }`}
           >
             {t('common.close', 'Fechar')}
           </button>

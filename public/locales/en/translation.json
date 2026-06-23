@@ -440,7 +440,9 @@
     "deleteConditionBtn": "Remove condition (Convert choices to simple)",
     "deleteBlockBtn": "Delete Branch",
     "noChoices": "No choices. Connect this node to others or click add below.",
-    "deleteChoiceTooltip": "Delete choice"
+    "deleteChoiceTooltip": "Delete choice",
+    "emptyChoiceWarning": "There are choices with empty titles",
+    "emptyTitleError": "Title cannot be empty"
   },
   "tutorial": {
     "promptTitle": "Interactive Playthrough",
