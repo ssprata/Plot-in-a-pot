@@ -49,7 +49,8 @@
       "generateAi": "Gerar com IA",
       "play": "Jogar",
       "theme": "Tema",
-      "settings": "Definições"
+      "settings": "Definições",
+      "tutorial": "Tutorial"
     },
     "helpSubtitles": {
       "addScene": "Cria um nó de escolha",
@@ -60,7 +61,8 @@
       "generateAi": "Importa texto e cria o grafo automaticamente",
       "play": "Testa a história em modo de visualização",
       "theme": "Alterna entre claro e escuro",
-      "settings": "Configurações de interface e modo dev"
+      "settings": "Configurações de interface e modo dev",
+      "tutorial": "Aprende a usar o Plot-in-a-pot"
     },
     "helpDescription": {
       "addScene": "Usa este botão para adicionar uma nova passagem de escolha ao teu grafo. Cada cena pode ter várias opções para avançar a história.",
@@ -70,7 +72,8 @@
       "generateAi": "Use este botão para abrir a importação por IA. Ele gera um grafo a partir de texto de história utilizando um modelo de linguagem.",
       "play": "Este botão abre o modo de jogo. Pode navegar pela narrativa como jogador e testar as escolhas disponíveis.",
       "theme": "Use este botão para mudar o tema da interface. O modo escuro é mais confortável à noite, o modo claro funciona bem durante o dia.",
-      "settings": "Abre o painel de definições. Aqui pode ativar nós secretos, ver erros de fluxo e controlar opções do editor."
+      "settings": "Abre o painel de definições. Aqui pode ativar nós secretos, ver erros de fluxo e controlar opções do editor.",
+      "tutorial": "Abre o menu de tutoriais interativos para aprenderes a criar a tua história passo a passo."
     },
     "helpSystem": {
       "intro": "Estes nós controlam o motor invisível e a estrutura do teu jogo:",

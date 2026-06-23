@@ -58,7 +58,7 @@ export default function DataPanel({
     showInfoPopout({ title, subtitle, content });
   };
 
-  const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
+  const helpButtonClass = "w-5 h-5 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-yellow-400 dark:hover:bg-yellow-400 transition-all active:translate-y-0.5 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] active:shadow-none rounded-full cursor-pointer text-[9px]";
 
   const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); };
   const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); };
@@ -76,7 +76,7 @@ export default function DataPanel({
     <div
       ref={sidebarRef}
       style={{ width: isExpanded ? `${width}px` : '48px' }}
-      className={`relative border-l border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex flex-col h-full shadow-inner shrink-0 ${
+      className={`relative border-l-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col h-full shadow-md shrink-0 ${
         isResizing ? '' : 'transition-all duration-300 ease-in-out'
       }`}
     >
@@ -98,8 +98,9 @@ export default function DataPanel({
       </button>
 
       <div className={`flex flex-col h-full p-4 transition-opacity duration-200 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <h3 className="mt-0 border-b border-gray-300 dark:border-gray-600 pb-2 mb-4 text-lg font-bold text-gray-800 dark:text-gray-200 uppercase tracking-tight">
-          {t('dataPanel.title')}
+        <h3 className="mt-0 border-b-2 border-gray-900 dark:border-gray-750 pb-3 mb-4 text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
+          <span className="inline-flex w-5 h-5 items-center justify-center bg-indigo-600 text-white mr-2 border border-gray-900 dark:border-indigo-400 shadow-[1px_1px_0px_#000] text-xs font-bold font-mono">→</span>
+          {t('dataPanel.title', 'DATA ENGINE').toUpperCase()}
         </h3>
 
         {/* --- CONTEÚDO ÚNICO E DIRETO --- */}
@@ -111,7 +112,7 @@ export default function DataPanel({
               if (!isMatrixDisabled) window.dispatchEvent(new Event('triggerMatrixToggle'));
             }}
             disabled={isMatrixDisabled}
-            className={`w-full p-3 border-2 border-gray-900 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer ${
+            className={`w-full p-3 border-2 border-gray-900 dark:border-gray-200 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] transition-all active:translate-y-0.5 active:shadow-none rounded-none cursor-pointer ${
               isMatrixDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
             }`}
           >
@@ -121,16 +122,16 @@ export default function DataPanel({
           <button
             onClick={exportToTwine}
             disabled={isExportDisabled}
-            className={`w-full p-3 border-2 border-gray-900 dark:border-gray-200 bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors rounded shadow-md ${
+            className={`w-full p-3 border-2 border-gray-900 dark:border-gray-200 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] transition-all active:translate-y-0.5 active:shadow-none rounded-none cursor-pointer ${
               isExportDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
             }`}
           >
             {t('dataPanel.export')}
           </button>
 
-          <div className="border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 rounded shadow-sm">
+          <div className="border-2 border-gray-900 dark:border-gray-700 bg-gray-100/55 dark:bg-gray-950 p-4 rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
             <div className="flex items-center justify-between mb-2">
-              <div className="font-bold text-sm text-gray-700 dark:text-gray-300 uppercase">{t('dataPanel.importTitle')}</div>
+              <div className="font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">{t('dataPanel.importTitle')}</div>
               <button
                 type="button"
                 onClick={() => openHelp(
@@ -153,7 +154,7 @@ export default function DataPanel({
             
             <textarea
               rows={4}
-              className={`w-full font-mono text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-600 outline-none focus:ring-1 focus:ring-indigo-500 ${dragActive ? 'ring-2 ring-indigo-400 border-indigo-400' : ''}`}
+              className={`w-full font-mono text-xs p-2.5 border-2 border-gray-900 dark:border-gray-700 rounded-none bg-white dark:bg-gray-950 text-gray-900 dark:text-white outline-none focus:border-blue-600 dark:focus:border-blue-400 transition-colors shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] ${dragActive ? 'ring-2 ring-indigo-400 border-indigo-400' : ''}`}
               value={importText}
               onChange={e => setImportText(e.target.value)}
               onDragOver={handleDragOver}
@@ -165,7 +166,7 @@ export default function DataPanel({
             <button
               onClick={handleImport}
               disabled={isImportDisabled}
-              className={`w-full mt-2 p-2 border-2 border-gray-800 dark:border-gray-200 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 font-bold text-xs uppercase transition-all ${
+              className={`w-full mt-2.5 p-2 border-2 border-gray-900 dark:border-gray-200 bg-gray-900 dark:bg-transparent hover:bg-gray-800 dark:hover:bg-gray-900 text-white dark:text-white font-black text-xs uppercase tracking-widest shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none rounded-none cursor-pointer ${
                 isImportDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
               }`}
             >
@@ -173,11 +174,11 @@ export default function DataPanel({
             </button>
           </div>
 
-          <div className="flex items-stretch gap-2">
+          <div className="flex items-center gap-2">
             <button
               onClick={runValidation}
               disabled={isValidateDisabled}
-              className={`flex-1 p-3 border-2 border-gray-900 dark:border-gray-200 text-gray-900 dark:!font-black bg-yellow-400 hover:bg-yellow-500 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none ${
+              className={`flex-1 p-3 border-2 border-gray-900 dark:border-gray-200 text-gray-900 dark:!font-black bg-yellow-400 hover:bg-yellow-300 font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:translate-y-0.5 active:shadow-none rounded-none ${
                 isValidateDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
               } ${activeStep?.highlightButton === 'validate' ? 'tutorial-btn-flash' : ''}`}
             >
@@ -195,7 +196,7 @@ export default function DataPanel({
                   <p><strong>{t('dataPanel.validationHelp.hotkeyLabel')}</strong></p>
                 </div>
               )}
-              className="w-12 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none cursor-pointer"
+              className={helpButtonClass}
             >
               ?
             </button>
@@ -203,7 +204,7 @@ export default function DataPanel({
 
           {/* --- EXIBIÇÕES DE MONITORIZAÇÃO E ERROS --- */}
           {parserWarnings?.length > 0 && (
-            <div className="p-3 bg-orange-950 text-orange-100 rounded border-2 border-orange-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
+            <div className="p-3 bg-orange-950 text-orange-100 rounded-none border-2 border-orange-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
               <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter text-orange-400">{t('dataPanel.syntaxWarnings')}</h4>
               <ul className="text-[9px] space-y-3 uppercase font-mono leading-tight">
                 {parserWarnings.map((warn, i) => <li key={i} className="border-b border-orange-800 pb-3 last:border-0 text-orange-200"><span className="font-bold text-orange-500 mr-2">[!]</span>{warn}</li>)}
@@ -212,7 +213,7 @@ export default function DataPanel({
           )}
 
           {validationResult?.orphanNodes?.length > 0 && (
-            <div className="p-3 bg-orange-950 text-orange-100 rounded border-2 border-orange-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
+            <div className="p-3 bg-orange-950 text-orange-100 rounded-none border-2 border-orange-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
               <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter text-orange-400">
                 {t('dataPanel.unreachableNodes')} {validationResult.orphanNodes.length}
               </h4>
@@ -223,13 +224,13 @@ export default function DataPanel({
           )}
 
           {validationResult && !validationResult.hasReachableEnd && validationResult.unreachableEdges.length === 0 && (
-            <div className="p-3 bg-yellow-900 text-yellow-100 rounded border-2 border-yellow-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
+            <div className="p-3 bg-yellow-900 text-yellow-100 rounded-none border-2 border-yellow-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
               <h4 className="font-bold text-[10px] uppercase mb-1 underline tracking-tighter text-yellow-400">{t('dataPanel.noEndDetected')}</h4>
             </div>
           )}
 
           {validationResult?.hasReachableEnd && (
-            <div className="p-3 bg-green-900 text-green-100 rounded border-2 border-green-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
+            <div className="p-3 bg-green-900 text-green-100 rounded-none border-2 border-green-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
               <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter text-green-400">
                 {t('dataPanel.reachableEnds')} {validationResult.reachableEndNodes.length}
               </h4>
@@ -240,7 +241,7 @@ export default function DataPanel({
           )}
 
           {showFlowErrors && validationErrors?.length > 0 && (
-            <div className="p-3 bg-red-900 text-red-100 rounded border-2 border-red-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
+            <div className="p-3 bg-red-900 text-red-100 rounded-none border-2 border-red-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
               <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter">{t('dataPanel.flowErrors')}</h4>
               <ul className="text-[9px] space-y-4 uppercase font-mono leading-tight">
                 {validationErrors.map((err, i) => <li key={i} className="border-b border-red-800 pb-3 last:border-0"><div className="mb-1 text-sm">{err.sourceLabel} → {err.targetLabel}</div></li>)}
@@ -250,10 +251,10 @@ export default function DataPanel({
 
           {showAdjacencyList && (
             <div className="w-full min-h-0 flex flex-col pt-2">
-              <div className="flex items-center justify-between border-b border-gray-300 dark:border-gray-600 pb-1 mb-2">
+              <div className="flex items-center justify-between border-b border-gray-900 dark:border-gray-200 pb-1 mb-2">
                 <h4 className="font-bold text-gray-700 dark:text-gray-300 text-xs uppercase">{t('dataPanel.adjacencyList')}</h4>
               </div>
-              <div className="w-full font-mono text-[10px] bg-gray-900 text-green-400 p-3 rounded shadow-inner overflow-y-auto max-h-[150px]">
+              <div className="w-full font-mono text-[10px] bg-gray-900 text-green-400 p-3 rounded-none border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] overflow-y-auto max-h-[150px]">
                 {Object.keys(adjacencyList).map((id) => (
                   <div key={id} className="mb-1"><span className="text-blue-400">$ {id}:</span> [{(adjacencyList[id] || []).join(', ')}]</div>
                 ))}
@@ -263,7 +264,7 @@ export default function DataPanel({
 
           {showSimulationLegacy && (
             <div className="pt-2">
-              <button onClick={runSimulationLog} className="w-full p-2 border-2 border-gray-800 bg-gray-800 text-white hover:bg-black font-mono text-[10px] uppercase tracking-tighter transition-all shadow-[2px_2px_0px_#ccc] active:shadow-none">
+              <button onClick={runSimulationLog} className="w-full p-2 border-2 border-gray-900 dark:border-gray-200 bg-gray-800 dark:bg-gray-700 text-white hover:bg-black font-black text-[10px] uppercase tracking-widest transition-all shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none rounded-none cursor-pointer">
                 {t('dataPanel.simulateLegacy')}
               </button>
             </div>

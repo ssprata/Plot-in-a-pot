@@ -49,7 +49,8 @@
       "generateAi": "AI Generation",
       "play": "Play Mode",
       "theme": "Theme",
-      "settings": "Settings"
+      "settings": "Settings",
+      "tutorial": "Tutorial"
     },
     "helpSubtitles": {
       "addScene": "Creates a choice node",
@@ -60,7 +61,8 @@
       "generateAi": "Imports text and builds the graph automatically",
       "play": "Tests the story in preview mode",
       "theme": "Switches between light and dark mode",
-      "settings": "Interface and dev mode settings"
+      "settings": "Interface and dev mode settings",
+      "tutorial": "Learn how to use Plot-in-a-pot"
     },
     "helpDescription": {
       "addScene": "Use this button to add a new choice passage to your graph. Each scene can have several options to advance the story.",
@@ -70,7 +72,8 @@
       "generateAi": "Use this button to open the AI import. It generates a graph from story text using a language model.",
       "play": "This button opens play mode. You can navigate the narrative as a player and test available choices.",
       "theme": "Use this button to change the interface theme. Dark mode is easier on the eyes at night, light mode works well during the day.",
-      "settings": "Opens the settings panel. Here you can toggle secret nodes, view flow errors, and control editor options."
+      "settings": "Opens the settings panel. Here you can toggle secret nodes, view flow errors, and control editor options.",
+      "tutorial": "Opens the interactive guided tutorial menu to help you learn how to use the tool step by step."
     },
     "helpSystem": {
       "intro": "These nodes control the invisible engine and structure of your game:",

@@ -927,6 +927,51 @@ function App() {
     });
   }, [setNodes, takeSnapshot]);
 
+  const duplicateNode = useCallback((nodeId) => {
+    const nodeToDuplicate = nodesRef.current.find(n => n.id === nodeId);
+    if (!nodeToDuplicate) return;
+
+    takeSnapshot();
+    const currentNodes = nodesRef.current;
+    const numericIds = currentNodes.map(n => parseInt(n.id, 10)).filter(n => !isNaN(n));
+    const nextIdNum = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+    const id = String(nextIdNum);
+
+    let baseLabel = nodeToDuplicate.data.label;
+    let label = `${baseLabel} Copy`;
+    let labelNum = 1;
+    const existingLabels = new Set(currentNodes.map(n => n.data.label));
+    while (existingLabels.has(label)) {
+      label = `${baseLabel} Copy ${++labelNum}`;
+    }
+
+    const newNode = {
+      id,
+      type: nodeToDuplicate.type,
+      position: {
+        x: (nodeToDuplicate.position?.x || 0) + 40,
+        y: (nodeToDuplicate.position?.y || 0) + 40
+      },
+      ...(nodeToDuplicate.type === 'zone' ? { style: { ...nodeToDuplicate.style } } : {}),
+      data: {
+        ...nodeToDuplicate.data,
+        label,
+        choices: [],
+        warnings: []
+      }
+    };
+
+    setNodes(nds => [...nds, newNode]);
+    setSelectedNodeId(id);
+
+    // Sync connections if it's a choice node and has content text
+    if (nodeToDuplicate.data?.nodeType === 'choice' && nodeToDuplicate.data?.content) {
+      setTimeout(() => {
+        syncChoicesFromText(id, nodeToDuplicate.data.content);
+      }, 0);
+    }
+  }, [setNodes, takeSnapshot, syncChoicesFromText]);
+
   const updateSelectedNode = useCallback((patch) => {
     if (!selectedNodeId) return;
     setNodes(nds => nds.map(n => n.id === selectedNodeId ? { ...n, data: { ...n.data, ...patch } } : n));
@@ -1286,6 +1331,7 @@ function App() {
           nodes={nodes}
           updateSelectedNode={updateSelectedNode}
           deleteNode={deleteNode}
+          duplicateNode={duplicateNode}
           syncChoicesFromText={syncChoicesFromText}
           setStartNode={setStartNode}
           onOpenVariables={openVariablesEditor}
