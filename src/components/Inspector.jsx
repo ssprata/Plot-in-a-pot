@@ -197,6 +197,104 @@ export default function Inspector({
 
           {selectedNode.type === 'zone' || selectedNode.data.nodeType === 'zone' ? (
             <div className="flex-1 flex flex-col">
+              {/* IMAGE SECTION */}
+              <div className="mb-4 border-2 border-gray-900 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                <button
+                  type="button"
+                  onClick={() => setIsImageSectionOpen(!isImageSectionOpen)}
+                  className="w-full p-2 flex items-center justify-between font-black text-xs uppercase text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  <span>🖼️ {t('inspector.imageSection', 'Imagem de Fundo')}</span>
+                  <span className="font-mono">{isImageSectionOpen ? '▲' : '▼'}</span>
+                </button>
+                {isImageSectionOpen && (
+                  <div className="p-3 border-t-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-3">
+                    {/* Preset list/grid of buttons */}
+                    <div>
+                      <span className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1.5">
+                        {t('inspector.imagePresets', 'Imagens Predefinidas')}
+                      </span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateSelectedNode({ bgImage: '' })}
+                          className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-600 text-left transition-colors cursor-pointer ${
+                            !selectedNode.data.bgImage
+                              ? 'bg-blue-600 text-white dark:bg-blue-500'
+                              : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100'
+                          }`}
+                        >
+                          {t('inspector.imageNone', 'Nenhuma')}
+                        </button>
+                        {presets.map((filename) => {
+                          const isActive = selectedNode.data.bgImage === filename;
+                          const displayName = filename.split('.')[0];
+                          const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+                          return (
+                            <button
+                              key={filename}
+                              type="button"
+                              onClick={() => updateSelectedNode({ bgImage: filename })}
+                              className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-600 text-left transition-colors cursor-pointer ${
+                                isActive
+                                  ? 'bg-blue-600 text-white dark:bg-blue-500'
+                                  : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100'
+                              }`}
+                            >
+                              {capitalizedName}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {presets.length === 0 && (
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-1.5">
+                          Coloca imagens em <code className="bg-gray-100 dark:bg-gray-950 px-1 py-0.5 font-mono">public/presets/</code> para veres opções predefinidas aqui.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* URL section */}
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">
+                        {t('inspector.imageUrlLabel', 'Ou URL personalizada')}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="https://exemplo.com/imagem.jpg"
+                        value={(!selectedNode.data.bgImage?.startsWith('data:') && !presets.includes(selectedNode.data.bgImage)) ? selectedNode.data.bgImage || '' : ''}
+                        onChange={(e) => updateSelectedNode({ bgImage: e.target.value })}
+                        className="w-full p-1.5 border-2 border-gray-900 dark:border-gray-600 text-gray-900 dark:text-white rounded-none bg-gray-50 dark:bg-gray-700 text-xs font-mono"
+                      />
+                    </div>
+
+                    {/* File upload section */}
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-1">
+                        {t('inspector.imageUploadLabel', 'Ou carregar ficheiro')}
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              updateSelectedNode({ bgImage: reader.result });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="w-full text-xs text-gray-500 dark:text-gray-400 file:mr-2 file:py-1 file:px-2 file:border-2 file:border-gray-900 file:bg-gray-100 dark:file:bg-gray-700 dark:file:text-white dark:file:border-gray-500 text-clip overflow-hidden cursor-pointer"
+                      />
+                      {selectedNode.data.bgImage && (
+                        <div className="relative w-full h-16 border-2 border-gray-900 dark:border-gray-600 overflow-hidden bg-cover bg-center mt-1.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]" style={{ backgroundImage: `url(${getImageUrl(selectedNode.data.bgImage)})` }} />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* LABEL FIELD */}
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-1">
@@ -521,13 +619,51 @@ export default function Inspector({
                     const hasGhostText = activeStep && activeStep.targetNodeId === selectedNode.id && activeStep.ghostText;
                     const isChoice = selectedNode.data.nodeType === 'choice';
                     const wrapperBg = isChoice ? 'bg-white dark:bg-gray-700' : 'bg-gray-900';
-                    const textareaFontClass = isChoice ? 'font-sans text-sm text-gray-900 dark:text-white' : 'font-mono text-xs text-green-400';
+                    const textareaFontClass = isChoice ? 'font-sans text-sm' : 'font-mono text-xs';
+                    const textareaColorClass = isChoice ? 'text-gray-900 dark:text-white' : 'text-green-400';
                     const textareaBgClass = hasGhostText ? 'bg-transparent' : wrapperBg;
+
+                    const typedText = selectedNode.data.content || '';
+
+                    const renderGhostSpans = () => {
+                      const ghostText = activeStep.ghostText || '';
+                      const spans = [];
+                      for (let i = 0; i < ghostText.length; i++) {
+                        const char = ghostText[i];
+                        let className = '';
+                        
+                        if (i < typedText.length) {
+                          if (typedText[i] === char) {
+                            // Correct character: render transparent to align layout but keep invisible
+                            className = 'text-transparent';
+                          } else {
+                            // Mismatched character: highlight in red
+                            if (char === ' ') {
+                              className = 'bg-red-500/30 text-red-500 dark:text-red-400 font-bold underline';
+                            } else if (char === '\n') {
+                              className = 'bg-red-500/30 text-red-500 dark:text-red-400 font-bold';
+                            } else {
+                              className = 'text-red-500 dark:text-red-400 font-black bg-red-500/20 dark:bg-red-500/40 rounded-sm';
+                            }
+                          }
+                        } else {
+                          // Not typed yet: normal ghost text color (gray)
+                          className = 'text-gray-500 dark:text-gray-300 opacity-85';
+                        }
+                        
+                        spans.push(
+                          <span key={i} className={className}>
+                            {char}
+                          </span>
+                        );
+                      }
+                      return spans;
+                    };
 
                     const textareaElement = (
                       <textarea
                         disabled={isContentDisabled}
-                        className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${textareaFontClass} ${textareaBgClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''}`}
+                        className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 rounded-none outline-none focus:border-blue-600 transition-all resize-y ${textareaFontClass} ${textareaColorClass} ${textareaBgClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''}`}
                         value={selectedNode.data.content || ''}
                         onChange={(e) => {
                           if (isChoice) {
@@ -543,16 +679,16 @@ export default function Inspector({
                       return (
                         <div className={`relative w-full flex-1 flex flex-col min-h-[200px] border-2 border-gray-900 dark:border-gray-500 ${wrapperBg} overflow-hidden`}>
                           {/* Ghost Text Overlay */}
-                          <textarea
-                            disabled
+                          <div
                             ref={ghostScrollRef}
-                            className={`absolute inset-0 pointer-events-none p-2 border-0 bg-transparent text-gray-400 dark:text-gray-500 opacity-55 resize-none overflow-hidden select-none z-0 ${textareaFontClass}`}
-                            value={activeStep.ghostText}
-                          />
+                            className={`absolute inset-0 pointer-events-none p-2 border-0 bg-transparent whitespace-pre-wrap break-words overflow-hidden select-none z-0 ${textareaFontClass}`}
+                          >
+                            {renderGhostSpans()}
+                          </div>
                           {/* Real interactive Textarea overlaying on top */}
                           <textarea
                             disabled={isContentDisabled}
-                            className={`w-full flex-1 h-full p-2 bg-transparent border-0 text-gray-900 dark:text-white rounded-none outline-none focus:outline-none resize-none z-10 ${textareaFontClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''}`}
+                            className={`w-full flex-1 h-full p-2 bg-transparent border-0 rounded-none outline-none focus:outline-none resize-none z-10 ${textareaFontClass} ${textareaColorClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''}`}
                             value={selectedNode.data.content || ''}
                             onChange={(e) => {
                               if (isChoice) {
@@ -564,6 +700,7 @@ export default function Inspector({
                             onScroll={(e) => {
                               if (ghostScrollRef.current) {
                                 ghostScrollRef.current.scrollTop = e.target.scrollTop;
+                                ghostScrollRef.current.scrollLeft = e.target.scrollLeft;
                               }
                             }}
                           />
