@@ -24,11 +24,11 @@
 % Indicates that a writing guide will be displayed.
 \newcommand{\guideinfo}[1]{%
     \ifthenelse{\equal{\LanguageOption}{portuguese}}{%
-        \noindent\textcolor{note}{\faInfoCircle\ \textbf{Orientação Para a Escrita}}%
+        \noindent\textcolor{note}{\textbf{i}\ \textbf{Orientação Para a Escrita}}%
     }{\ifthenelse{\equal{\LanguageOption}{spanish}}{%
-        \noindent\textcolor{note}{\faInfoCircle\ \textbf{Guía de Escritura}}%
+        \noindent\textcolor{note}{\textbf{i}\ \textbf{Guía de Escritura}}%
     }{
-        \noindent\textcolor{note}{\faInfoCircle\ \textbf{Writing Guidance}}%
+        \noindent\textcolor{note}{\textbf{i}\ \textbf{Writing Guidance}}%
     }}
     \\[.55em]%
     \noindent #1%
@@ -36,11 +36,11 @@
 
 \newcommand{\exampleinfo}[1]{%
     \ifthenelse{\equal{\LanguageOption}{portuguese}}{%
-        \noindent\textcolor{black}{\faInfoCircle\ \textbf{Exemplo de Utilização}}%
+        \noindent\textcolor{black}{\textbf{i}\ \textbf{Exemplo de Utilização}}%
     }{\ifthenelse{\equal{\LanguageOption}{spanish}}{%
-        \noindent\textcolor{black}{\faInfoCircle\ \textbf{Ejemplo de Uso}}%
+        \noindent\textcolor{black}{\textbf{i}\ \textbf{Ejemplo de Uso}}%
     }{
-        \noindent\textcolor{black}{\faInfoCircle\ \textbf{Example of Use}}%
+        \noindent\textcolor{black}{\textbf{i}\ \textbf{Example of Use}}%
     }}
     \\[.55em]%
     \noindent #1%

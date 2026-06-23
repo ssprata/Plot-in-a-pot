@@ -9,6 +9,7 @@
 \ProvidesClass{IPLeiriaThesis}[2023/12/12 IPLeiria Thesis Class]
 
 \RequirePackage{expl3} % Required for writing LaTeX3 code in this class.
+\RequirePackage{l3keys2e} % Required for processing LaTeX3 class options.
 
 %%% Handle Class Options %%%
 \ExplSyntaxOn
@@ -127,7 +128,7 @@
 \newcommand{\AiAckOption}{\g_IPLeiriaThesis_aiacknowledgement_tl}
 \newcommand{\ListPrefixOption}{\g_IPLeiriaThesis_listprefix_tl}
 
-\ProcessKeyOptions[IPLeiriaThesis]
+\ProcessKeysOptions { IPLeiriaThesis }
 \ExplSyntaxOff
 
 %%% Load Master Class %%%
@@ -163,14 +164,15 @@
 \RequirePackage{typearea} % Page layout adjustments (KOMA-Script).
 \RequirePackage{eso-pic} % Adding elements to the page background.
 \RequirePackage{setspace} % Adjust line spacing.
-\RequirePackage[newfloat]{minted} % Syntax highlighting for code.
+\RequirePackage{listings} % Syntax highlighting for code.
+\RequirePackage{newfloat} % For defining new floating environments.
 \RequirePackage{silence} % Suppress specific package warnings.
-\RequirePackage{fontawesome5} % Font awesome icons.
+% \RequirePackage{fontawesome5} % Font awesome icons.
 \RequirePackage{calc} % Infix notation arithmetic.
 \RequirePackage{soul} % A better underline.
 \RequirePackage{mfirstuc} % Capitalise words in a sentence.
 \RequirePackage{tikz} % Create high-quality graphics programmatically.
-\RequirePackage{psvectorian} % To include in-text ornamatentions. 
+% \RequirePackage{psvectorian} % To include in-text ornamatentions. 
 \RequirePackage{blindtext} % Generate placeholder text.
 
 \tcbuselibrary{most} % Load most libraries from the tcolorbox package.

@@ -4,7 +4,7 @@
 Neste capítulo são expostos os fundamentos teóricos relativos à modelação matemática de fluxos narrativos interativos, bem como a análise do estado da arte sobre as ferramentas de autoria existentes, destacando os seus pontos fortes e limitações.
 
 \section{Teoria de Grafos na Narrativa Interativa}
-A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$, onde:
+A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$ \citep{BondyMurty2008}, onde:
 \begin{itemize}
     \item $V$ representa o conjunto de \textbf{Vértices} (ou nós), que correspondem a cenas, passagens de texto ou estados lógicos da história.
     \item $E$ representa o conjunto de \textbf{Arestas} (ou ligações direcionadas), que representam as escolhas disponibilizadas ao leitor para transitar de uma cena para a outra.
@@ -42,7 +42,7 @@ Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Ac�
 \[
 \mathcal{O}(V + E)
 \]
-A ordenação topológica (através de abordagens como o algoritmo de Kahn) alinha os vértices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
+A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vértices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
 
 No entanto, em narrativas complexas, a imposição de DAGs é altamente limitadora. A impossibilidade de introduzir ciclos impede a criação de:
 \begin{itemize}
@@ -50,42 +50,77 @@ No entanto, em narrativas complexas, a imposição de DAGs é altamente limitado
     \item \textbf{Mecânicas de Simulação e Tempo:} Eventos baseados em estados lógicos recorrentes, como ``aguardar um turno'' no mesmo local para fazer avançar variáveis temporais.
 \end{itemize}
 
-Por esta razão, o \textbf{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
+Por esta razão, o \textbf{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
 
 \section{Estado da Arte}
-Diversas ferramentas têm sido desenvolvidas para auxiliar autores e programadores na escrita de narrativas não-lineares. Apresenta-se uma análise das principais referências do mercado:
+O conceito de ficção interativa refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
+
+Apresenta-se, de seguida, uma análise detalhada das principais referências do mercado académico e profissional.
 
 \subsection{Twine}
-Lançado em 2009 por Chris Klimas, o Twine é a ferramenta mais popular na comunidade de ficção interativa baseada em texto.
+Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferramenta mais popular na comunidade de ficção interativa baseada em texto.
 \begin{itemize}
-    \item \textbf{Vantagens:} Extremamente acessível (sem barreira de programação para escrita básica); visualização clara baseada em nós gráficos no canvas; open-source e gratuito; rápido para prototipagem rápida.
+    \item \textbf{Vantagens:} Extremamente acessível (sem barreira de programação para escrita básica); visualização clara baseada em nós gráficos no canvas; open-source e gratuito (distribuído sob a licença GPL v3, permitindo qualquer utilização, incluindo comercial, sem restrições); rápido para prototipagem rápida.
     \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
 \end{itemize}
 
+O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da história) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TheToolpickerTeam2026}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
+
 \subsection{Ink (Inkle Studios)}
-O Ink é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}).
+O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}).
 \begin{itemize}
-    \item \textbf{Vantagens:} Altamente poderosa para controlo fino de estados narrativos, condicionais complexas e ramificações complexas; excelente integração técnica com motores de jogo; escala muito bem para projetos de grande envergadura.
-    \item \textbf{Limitações:} Não é uma ferramenta visual, o que dificulta o planeamento geográfico e a deteção de redundâncias de caminhos por autores não-técnicos; exige conhecimentos de lógica de programação.
+    \item \textbf{Vantagens:} Altamente poderosa para controlo fino de estados narrativos, condicionais complexas e ramificações complexas; excelente integração técnica com motores de jogo; licenciada sob a licença MIT (totalmente livre); escala muito bem para projetos de grande envergadura.
+    \item \textbf{Limitações:} Não é uma ferramenta visual (opera de forma textual como scripting acoplado a motores de jogo), o que dificulta o planeamento geográfico e a deteção de redundâncias de caminhos por autores não-técnicos; exige conhecimentos de lógica de programação.
+\end{itemize}
+
+\subsection{ChoiceScript}
+Desenvolvido pela Choice of Games, o ChoiceScript é uma linguagem de programação simples e baseada em texto para a escrita de romances interativos baseados em escolhas.
+\begin{itemize}
+    \item \textbf{Vantagens:} Sintaxe simples e linear de fácil compreensão para escritores; possui excelentes ferramentas de teste automático (como \lstinline|quicktest| e \lstinline|randomtest|) que facilitam a validação de caminhos e a robustez lógica de romances longos.
+    \item \textbf{Limitações:} Não é uma ferramenta visual; o formato de ficheiro é proprietário; a sua licença (CSL) proíbe explicitamente a utilização comercial sem autorização prévia e acordo de distribuição comercial com a Choice of Games \citep{ChoiceOfGamesLicensing}, limitando a autonomia de autores independentes.
 \end{itemize}
 
 \subsection{Yarn Spinner}
-Ferramenta focada na integração de diálogos em jogos interativos com motor gráfico.
+O Yarn Spinner \citep{YarnSpinnerReference} é uma ferramenta focada na integração de diálogos em jogos interativos com motor gráfico.
 \begin{itemize}
     \item \textbf{Vantagens:} Sintaxe simples (semelhante a scripts de teatro); suporte nativo para variáveis; excelente portabilidade direta para Unity e Unreal Engine.
     \item \textbf{Limitações:} Carece de um planeador visual abstrato robusto fora do motor de jogo principal; não é adequado para desenhar fluxogramas abstratos de histórias antes da fase de produção do jogo.
 \end{itemize}
 
 \subsection{Narrative Flow}
-Uma ferramenta emergente que tenta colmatar a lacuna entre Twine e Ink.
+O Narrative Flow \citep{NarrativeFlowReference} é uma ferramenta emergente que tenta colmatar a lacuna entre Twine e Ink.
 \begin{itemize}
     \item \textbf{Vantagens:} Oferece melhor organização estrutural do que o Twine e uma visualização mais clara que o Ink; ajuda a gerir a consistência da escrita.
     \item \textbf{Limitações:} É um software pago, com menor maturidade técnica e uma comunidade de utilizadores consideravelmente mais reduzida.
 \end{itemize}
 
 \subsection{Articy Draft}
-A solução comercial líder da indústria de videojogos AAA para planeamento de narrativas e bases de dados de escrita.
+O Articy Draft \citep{ArticyDraftReference} é a solução comercial líder da indústria de videojogos AAA para planeamento de narrativas e bases de dados de escrita.
 \begin{itemize}
     \item \textbf{Vantagens:} Altamente estruturado e profissional; gestão integrada de personagens, inventários e diálogos; escala com eficácia para equipas de desenvolvimento de grandes dimensões.
     \item \textbf{Limitações:} Curva de aprendizagem acentuada; software dispendioso (licença comercial paga); excessivamente complexo e pesado para autores independentes ou projetos pequenos.
 \end{itemize}
+
+\subsection{Análise Comparativa}
+A fim de estruturar a comparação entre as diferentes abordagens, apresenta-se na Tabela~\ref{tab:comparacao-motores} uma síntese comparativa das três principais ferramentas de ficção interativa baseadas nos critérios extraídos da literatura e da prática de desenvolvimento.
+
+\begin{table}[htpb]
+\centering
+\caption{Análise comparativa de motores de ficção interativa.}
+\label{tab:comparacao-motores}
+\begin{tabularx}{\textwidth}{lXXX}
+\toprule
+\textbf{Critério} & \textbf{Twine} & \textbf{Ink/Inky} & \textbf{ChoiceScript} \\
+\midrule
+Licença & GPL v3 — livre (incl. comercial) & MIT — totalmente livre & CSL — não-comercial sem licença \\
+Interface de Edição & Visual (grafo de nós/arestas) & Textual (scripting em IDE) & Textual (scripting linear) \\
+Exportação Standalone & HTML autónomo (sem engine) & Requer engine externa (Unity/Unreal) & Web via plataforma CoG \\
+Adoção Académica/Indie & Muito elevada & Média (foco profissional) & Média (foco romances interativos) \\
+Integração com Motores & Limitada (plugins de terceiros) & Nativa (Unity, Unreal — oficial) & Nenhuma \\
+Ferramentas de Teste & Limitadas & Básicas & Avançadas (quicktest, randomtest) \\
+Formato Aberto & Sim (Twee3 — spec pública) & Sim (JSON compilado) & Não (proprietário CoG) \\
+Curva de Aprendizagem & Baixa (visual, sem código) & Alta (linguagem scripting) & Média (sintaxe simples) \\
+Mapeamento para Grafo & Direto (passagem = nó, link = aresta) & Indireto (estrutura textual) & Indireto (estrutura textual) \\
+\bottomrule
+\end{tabularx}
+\end{table}

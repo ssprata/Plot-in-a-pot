@@ -4,7 +4,7 @@
 Este capítulo descreve a arquitetura geral do \textbf{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
 
 \section{Arquitetura Geral do Sistema}
-O \textbf{Plot in a Pot} foi concebido como uma aplicação web de página única (SPA - \textit{Single Page Application}) desenvolvida em \textbf{React 19}. A interface utiliza a biblioteca \textbf{ReactFlow 11} para o motor gráfico do canvas de grafos, e \textbf{Tailwind CSS 3} para a aplicação de uma identidade visual neo-brutalista (caracterizada por sombras sólidas pretas, contornos escuros de espessura elevada e ausência de cantos arredondados).
+O \textbf{Plot in a Pot} foi concebido como uma aplicação web de página única (SPA - \textit{Single Page Application}) desenvolvida em \textbf{React 19} \citep{ReactReference}. A interface utiliza a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference} para o motor gráfico do canvas de grafos, e \textbf{Tailwind CSS 3} \citep{TailwindCSSReference} para a aplicação de uma identidade visual neo-brutalista (caracterizada por sombras sólidas pretas, contornos escuros de espessura elevada e ausência de cantos arredondados).
 
 O sistema de internacionalização baseia-se na biblioteca \textbf{i18next}, com uma arquitetura de carregamento estático assíncrono. Os dicionários de tradução residem em ficheiros JSON estáticos na diretoria pública da aplicação (\texttt{locales/pt/translation.json} e \texttt{locales/en/translation.json}), sendo carregados dinamicamente via requisições HTTP em runtime através do módulo \texttt{i18next-http-backend}, o que reduz o tamanho do bundle principal de JavaScript.
 
@@ -47,10 +47,10 @@ A estrutura de dados JSON representativa de um nó e das suas ligações apresen
 \end{code}
 
 \section{Parser Síncrono e Especificação Twee 3}
-O analisador desenvolvido em [tweeParser.js](file:///E:/DEV/Projects/Plot-in-a-pot/src/utils/tweeParser.js) realiza o mapeamento bidirecional em tempo real entre a interface gráfica do React Flow e a representação textual no formato Twee 3.
+O analisador desenvolvido em [tweeParser.js](file:///E:/DEV/Projects/Plot-in-a-pot/src/utils/tweeParser.js) realiza o mapeamento síncrono em tempo real entre a interface gráfica do React Flow e a representação textual no formato Twee 3 \citep{Twee3Reference}.
 
 \subsection{Importação e Conversão de Coordenadas em Zonas}
-No formato Twee 3, as coordenadas de posição guardadas nos metadados JSON das passagens são sempre absolutas no espaço do ecrã:
+No formato Twee 3 \citep{Twee3Reference}, as coordenadas de posição guardadas nos metadados JSON das passagens são sempre absolutas no espaço do ecrã:
 \[
 (X_{\text{absoluto}}, Y_{\text{absoluto}})
 \]
@@ -93,7 +93,7 @@ A implementação de Zonas como nós customizados de grupo (\textit{ZoneNode}) e
 A solução consistiu em definir a propriedade CSS \texttt{pointer-events: none} dinamicamente na configuração global do React Flow para o contentor da Zona em [App.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/App.jsx). Em paralelo, no componente [ZoneNode.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/ZoneNode.jsx), forçou-se \texttt{pointer-events: auto} exclusivamente nas pegas de redimensionamento (\textit{NodeResizer}) e na barra de cabeçalho da zona (utilizada para arrastar a zona em bloco com todos os seus filhos).
 
 \subsection{Arestas Curvadas com Waypoints}
-Para evitar a sobreposição caótica de ligações em grafos com elevado volume de cruzamentos, implementaram-se arestas customizadas baseadas em \textbf{Splines Catmull-Rom} em [EditableEdge.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/EditableEdge.jsx). As arestas disponibilizam marcadores circulares (\textit{waypoints}) interativos que o autor pode arrastar para curvar a linha no ecrã. A geometria da aresta é recalculada em tempo de execução gerando curvas Bézier cúbicas que contornam os nós do grafo.
+Para evitar a sobreposição caótica de ligações em grafos com elevado volume de cruzamentos, implementaram-se arestas customizadas baseadas em \textbf{Splines Catmull-Rom} \citep{CatmullRom1974} em [EditableEdge.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/EditableEdge.jsx). As arestas disponibilizam marcadores circulares (\textit{waypoints}) interativos que o autor pode arrastar para curvar a linha no ecrã. A geometria da aresta é recalculada em tempo de execução gerando curvas Bézier cúbicas que contornam os nós do grafo.
 
 \subsection{Gestão de Variáveis Estilo Figma}
 O componente [VariablesModal.jsx](file:///E:/DEV/Projects/Plot-in-a-pot/src/components/VariablesModal.jsx) centraliza a gestão de variáveis globais e locais da história através de uma interface inspirada na ferramenta Figma. Quando uma variável é renomeada no painel global (ex: de \texttt{\$ouro} para \texttt{\$moedas}), um mecanismo automático executa uma expressão regular compilada:
@@ -113,7 +113,7 @@ Tendo em conta que o autor principal da ferramenta, Miguel, apresenta daltonismo
 \section{Validação Estática e Simulação}
 
 \subsection{Validador Estático de Lógica (BFS)}
-O ficheiro [storyValidator.js](file:///E:/DEV/Projects/Plot-in-a-pot/src/utils/storyValidator.js) executa testes estáticos sobre a estrutura do grafo através de uma travessia BFS. A verificação analisa:
+O ficheiro [storyValidator.js](file:///E:/DEV/Projects/Plot-in-a-pot/src/utils/storyValidator.js) executa testes estáticos sobre a estrutura do grafo através de uma travessia BFS \citep{CLRS2009}. A verificação analisa:
 \begin{itemize}
     \item \textbf{Nós Órfãos:} Nós inacessíveis a partir da cena de início da história (ignora nós rotulados com a etiqueta especial \texttt{secreto}).
     \item \textbf{Becos sem Saída (Dead Ends):} Distingue nós terminais legítimos (onde a história conclui propositadamente) de nós que contêm ligações que apontam para IDs de nós apagados ou inexistentes no grafo.

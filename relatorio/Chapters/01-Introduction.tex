@@ -5,22 +5,36 @@ O desenvolvimento de jogos e narrativas interativas tem vindo a ganhar uma impor
 
 Neste contexto surge o \textbf{Plot in a Pot}, um editor visual e simulador de narrativas interativas. O projeto foi concebido para resolver os principais desafios enfrentados pelos autores de histórias não-lineares, combinando uma interface visual de alto desempenho baseada em grafos direcionados com um motor de simulação que suporta a execução de código e lógica em tempo real.
 
-\section{Contexto e Motivação}
-Historicamente, as ferramentas de autoria para ficção interativa têm-se dividido em dois extremos: ou são puramente textuais e baseadas em código (exigindo competências de programação e dificultando a visualização global do fluxo), ou são visuais mas limitadas na capacidade de lidar com variáveis complexas e condições de lógica avançadas.
+\section{Objeto do Trabalho}
+O objeto deste projeto consiste no desenvolvimento do \gls{piap}, uma aplicação e ambiente de desenvolvimento concebido para a criação, estruturação, simulação e tradução de narrativas interativas e não-lineares. O sistema foca-se na integração e suporte nativo ao ecossistema do motor Twine, operando especificamente com o formato de ficheiros Twee (versão 3) e com a macro-linguagem SugarCube. Através de uma interface gráfica baseada em grafos, a ferramenta permite a autores e \textit{game designers} gerir ramificações complexas e bases de dados de localização de uma forma unificada.
 
-A especificação plain-text \textbf{Twee3} e o motor de execução \textbf{SugarCube} constituem a base tecnológica do Twine, uma das plataformas mais populares na área. Contudo, a ferramenta oficial do Twine apresenta lacunas significativas ao nível da acessibilidade (como a ausência de modos adaptados a utilizadores daltónicos) e da gestão de dependências e caminhos de retrocesso (\textit{backward mapping}). 
+\section{Justificação e Pertinência do Tema}
+O \textit{design} de narrativas para jogos não-lineares enfrenta frequentemente problemas severos de escala, onde árvores de diálogo e escolhas crescem exponencialmente, tornando-se difíceis de rastrear e propensas a erros lógicos. Embora o Twine seja uma das ferramentas de referência da comunidade independente e académica \citep{IFTFGDC2026} para a prototipagem rápida de ficção interativa, o desenvolvimento de projetos profissionais de grande escala é severamente limitado pela falta de ferramentas nativas para a gestão multi-idioma (localização) e pela ausência de validadores estáticos de fluxo que previnam caminhos mortos antes da compilação.
 
-O desenvolvimento do \textbf{Plot in a Pot} foi motivado pela necessidade de criar uma plataforma de autoria moderna, acessível, e que proporcione aos autores um controlo absoluto e bidirecional sobre o fluxo narrativo, permitindo-lhes visualizar facilmente não só para onde o leitor pode ir, mas também de onde ele pode vir em cada cena da história.
+O \gls{piap} justifica-se ao resolver esta lacuna, introduzindo uma estética neo-brutalista de alto contraste que otimiza o espaço de trabalho, permitindo isolar cadeias de texto rígidas (\textit{hardcoded}) através de um sistema abstrato de chaves de tradução dinâmicas e oferecendo segurança matemática no mapeamento de rotas narrativas.
 
-\section{Objetivos do Projeto}
-Os principais objetivos estabelecidos para o desenvolvimento do \textbf{Plot in a Pot} foram:
+\section{Objetivos do Trabalho}
+\subsection{Objetivo Geral}
+Desenvolver uma plataforma \textit{web} modular que unifique a edição visual de grafos de histórias interativas Twee com um motor (\textit{engine}) integrado de localização multi-idioma e validação de caminhos lógicos.
+
+\subsection{Objetivos Específicos}
+Para a concretização do objetivo geral, definiram-se os seguintes objetivos específicos:
 \begin{enumerate}
-    \item \textbf{Interface Visual Brutalista e Acessível:} Criar uma interface gráfica baseada no estilo neo-brutalista, com forte contraste visual e representação gráfica de arestas que não dependa unicamente de cores, facilitando a utilização por pessoas com daltonismo.
-    \item \textbf{Parser Bidirecional Twee3:} Implementar um analisador síncrono capaz de importar e exportar histórias em formato Twee3 padrão, mantendo compatibilidade retroativa e convertendo coordenadas globais absolutas em posições relativas para nós agrupados.
-    \item \textbf{Suporte a Zonas de Agrupamento Visual:} Permitir a organização do canvas através de caixas delimitadoras de grupo (\textit{zones}), nas quais os nós podem ser arrastados, movidos em bloco e organizados de forma hierárquica.
-    \item \textbf{Validador de Fluxo baseado em Listas de Adjacência:} Construir um motor de verificação estática que detete nós órfãos, becos sem saída narrativos e potenciais loops infinitos de simulação através de pesquisas BFS.
-    \item \textbf{Simulador Imersivo (PlayMode):} Criar um ambiente de simulação e depuração em tempo real que execute scripts personalizados em Javascript e stylesheets dinâmicas de CSS no contexto da simulação.
+    \item \textbf{Interface Visual Neo-Brutalista e Acessível:} Implementar um \textit{canvas} de grafos interativo e de alto desempenho no estilo neo-brutalista com forte contraste visual, que suporte a criação de nós de cena, zonas de agrupamento visual, \textit{scripts} (JavaScript) e folhas de estilo (CSS), facilitando a utilização por pessoas com daltonismo.
+    \item \textbf{Otimização Visual com Waypoints:} Desenvolver um algoritmo de rota interativo através de \textit{waypoints} geométricos nas arestas para otimização visual e organização do espaço de trabalho.
+    \item \textbf{Parser Bidirecional Twee3:} Construir um analisador (\textit{parser}) bidirecional síncrono em tempo real capaz de ler a sintaxe Twine (\lstinline|[[Link|Destino]]|) e reconstruir a topologia do grafo instantaneamente, mantendo a compatibilidade e convertendo coordenadas.
+    \item \textbf{Matriz de Localização Integrada:} Criar uma matriz de localização baseada em grelha \textit{Flexbox} com suporte para importação/exportação em formato CSV e tradução \textit{inline} por células.
+    \item \textbf{Validador de Fluxo baseado em Listas de Adjacência:} Desenvolver um motor de verificação estática baseado em listas de adjacência para detetar nós inacessíveis/órfãos, becos sem saída ou \textit{loops} infinitos na narrativa.
+    \item \textbf{Simulador Imersivo e Tutorial Jogável:} Implementar um ambiente de simulação em tempo real (\textit{PlayMode}) e um tutorial jogável (\textit{Playable Tutorial}) para validação pedagógica das regras do editor.
 \end{enumerate}
+
+\section{Métodos e Técnicas Utilizadas}
+O desenvolvimento do projeto apoiou-se em metodologias ágeis com ciclos rápidos de prototipagem e testes de esforço (\textit{stress}) de dados. Ao nível tecnológico e arquitetural, foram utilizadas as seguintes ferramentas e conceitos:
+\begin{itemize}
+    \item \textbf{Frontend e Canvas de Grafos:} Desenvolvimento baseado na biblioteca React \citep{ReactReference}, devido a ser uma das mais populares \citep{StatistaFrameworks2025}, utilizando o ecossistema React Flow \citep{ReactFlowReference} para a renderização, manipulação e cálculo de coordenadas de grafos, escolhido pela sua integração nativa com React.
+    \item \textbf{Algoritmia e Teoria de Grafos:} Utilização de estruturas de dados baseadas em listas de adjacências para a implementação de algoritmos de pesquisa (BFS e DFS) que validam de forma estática e iterativa a integridade dos caminhos e simulam estados de variáveis em memória.
+    \item \textbf{Internacionalização e Parsing:} Integração da biblioteca i18next em conjunto com algoritmos de substituição baseados em \glspl{regex} para intercetar macros SugarCube e injetar as chaves da base de dados de localização em tempo real.
+\end{itemize}
 
 \section{Estrutura do Documento}
 Este relatório está estruturado em quatro capítulos principais. Além desta introdução, o documento apresenta:
