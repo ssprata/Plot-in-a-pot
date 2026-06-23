@@ -124,3 +124,52 @@ Mapeamento para Grafo & Direto (passagem = nó, link = aresta) & Indireto (estru
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\section{Integração de Modelos de Linguagem de Grande Escala (LLMs) Locais}
+\label{sec:integracao-llms}
+Com o avanço recente no campo da Inteligência Artificial Generativa, a integração de Modelos de Linguagem de Grande Escala (\textit{Large Language Models} - LLMs) tornou-se um recurso valioso para auxiliar autores na expansão automática e co-criação de narrativas interativas. No entanto, para garantir a viabilidade prática do projeto \gls{piap} sem dependências financeiras ou de conectividade externa, focou-se a pesquisa em modelos de execução local e gratuita.
+
+\subsection{Análise de Famílias de Modelos e Recomendações}
+Foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de ficção interativa:
+
+\begin{enumerate}
+    \item \textbf{Família Llama 3 e 3.1 (Meta AI):}
+    \begin{itemize}
+        \item \textbf{Versão Recomendada:} Llama 3.1 (8B).
+        \item \textbf{Justificação:} Representa um dos modelos leves mais capazes do estado da arte. A versão de 8 mil milhões de parâmetros corre com excelente desempenho na maioria dos computadores modernos equipados com placa gráfica dedicada ou em arquiteturas Mac Apple Silicon (M1/M2/M3), requerendo investimentos de hardware reduzidos.
+        \item \textbf{Vantagem Narrativa:} Demonstra uma capacidade excecional no cumprimento estrito de diretrizes de formatação (\textit{system prompts} rígidos). Esta fiabilidade torna-o ideal para gerar respostas estruturadas (por exemplo, em formato JSON contendo a sugestão de cena e as escolhas de saída), facilitando a integração direta no motor lógico do software.
+    \end{itemize}
+
+    \item \textbf{Família Mistral (Mistral AI):}
+    \begin{itemize}
+        \item \textbf{Versão Recomendada:} Mistral NeMo (12B) ou Mistral v0.3 (7B).
+        \item \textbf{Justificação:} Os modelos desenvolvidos pela empresa europeia Mistral AI são amplamente reconhecidos pela comunidade de escrita criativa pelo seu tom mais orgânico e natural. Adicionalmente, tendem a apresentar menor nível de censura prévia, facilitando a escrita livre em géneros literários como ficção geral, mistério ou terror.
+        \item \textbf{Vantagem Narrativa:} Apresentam janelas de contexto extremamente eficientes. A janela de contexto atua como a memória de curto prazo do modelo; numa narrativa ramificada, é fundamental que o LLM recorde o histórico de cenas e as decisões anteriores tomadas pelo utilizador para garantir a coerência semântica global do texto gerado.
+    \end{itemize}
+
+    \item \textbf{Gemma 2 (Google):}
+    \begin{itemize}
+        \item \textbf{Versão Recomendada:} Gemma 2 (9B).
+        \item \textbf{Justificação:} Apesar do seu tamanho compacto de 9 mil milhões de parâmetros, destaca-se pelo seu desempenho elevado em raciocínio abstrato e análises textuais comparativas.
+        \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (ex: ``descreve os principais acontecimentos deste arco narrativo'').
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Modelo de Integração Local sem Custos}
+Para evitar a necessidade de desenvolver e compilar motores de inferência de raiz, o \gls{piap} adota uma arquitetura baseada em servidores de inferência locais prontos a usar, nomeadamente o \textit{Ollama} ou o \textit{LM Studio}. O fluxo de comunicação processa-se conforme descrito de seguida:
+
+\begin{enumerate}
+    \item \textbf{Instalação Local:} O autor/utilizador instala o servidor \textit{Ollama} na sua máquina local.
+    \item \textbf{Execução em Segundo Plano:} O \textit{Ollama} descarrega o modelo pretendido (ex: \lstinline|llama3.1:8b|) e executa a inferência local em segundo plano.
+    \item \textbf{Simulação de API:} O servidor expõe uma API REST local na porta padrão (tipicamente \lstinline|http://localhost:11434|), que simula a interface padrão de chat da OpenAI.
+    \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por APIs proprietárias na nuvem.
+\end{enumerate}
+
+\subsection{Divisão de Responsabilidades: LLM vs. Arquitetura Lógica}
+Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não possuem fiabilidade suficiente para gerir a coerência estrutural de um grafo de estado de forma autónoma. Os modelos de linguagem tendem a esquecer nós, criar ligações logicamente impossíveis, ignorar restrições de ciclos e perder o mapeamento geral da árvore narrativa. 
+
+Deste modo, o \gls{piap} estabelece uma separação rígida de responsabilidades:
+\begin{itemize}
+    \item \textbf{Lista de Adjacência Bidirecional (Código Proprietário):} Funciona como a autoridade de dados do grafo. Gere as regras lógicas, rastreia a posição ativa do leitor, impede becos sem saída acidentais e reconstrói as ligações do canvas visual.
+    \item \textbf{LLM (Assistente de Conteúdo):} Atua estritamente ao nível do conteúdo do vértice (Cena). O código do software extrai o texto do percurso atual no grafo e envia-o ao modelo acompanhado de uma instrução simplificada: \textit{``Lê o texto anterior. Sugere três opções de ação para a personagem principal fazer a seguir.''}. As escolhas geradas são devolvidas ao software, que se encarrega de criar e registar as respetivas arestas e ligações físicas no grafo.
+\end{itemize}
