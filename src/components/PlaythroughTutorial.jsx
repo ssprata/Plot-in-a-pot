@@ -135,6 +135,39 @@ const tutorialTemplates = {
       languages: ['pt', 'en'],
       keys: {}
     }
+  },
+  t6: {
+    nodes: [
+      {
+        id: '1',
+        type: 'choice',
+        position: { x: 100, y: 50 },
+        data: { label: 'StoryInit', nodeType: 'choice', content: '<<set $moedas to 50>>', choices: [], tags: 'secreto' }
+      },
+      {
+        id: '2',
+        type: 'choice',
+        position: { x: 300, y: 50 },
+        data: { label: 'Start', nodeType: 'choice', content: 'Tens $moedas moedas.', choices: [], tags: 'start' }
+      },
+      {
+        id: '3',
+        type: 'choice',
+        position: { x: 150, y: 250 },
+        data: { label: 'Loja', nodeType: 'choice', content: 'Bem-vindo à Loja! Podes comprar o item.', choices: [], tags: '' }
+      },
+      {
+        id: '4',
+        type: 'choice',
+        position: { x: 450, y: 250 },
+        data: { label: 'Rua', nodeType: 'choice', content: 'Não tens moedas suficientes para entrar na Loja. Ficas na rua.', choices: [], tags: '' }
+      }
+    ],
+    edges: [],
+    translations: {
+      languages: ['pt', 'en'],
+      keys: {}
+    }
   }
 };
 
@@ -397,6 +430,122 @@ export default function PlaythroughTutorial({
         autoAdvance: true,
         allowPlay: true,
         highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.completeTitle',
+        descKey: 'tutorial.completeText',
+        check: null,
+        autoAdvance: false
+      }
+    ],
+    t6: [
+      {
+        titleKey: 'tutorial.t6Step1Title',
+        descKey: 'tutorial.t6Step1Desc',
+        check: (state) => state.selectedNodeId === '2',
+        autoAdvance: true,
+        targetNodeId: '2',
+        highlightNodeId: '2'
+      },
+      {
+        titleKey: 'tutorial.t6Step2Title',
+        descKey: 'tutorial.t6Step2Desc',
+        check: (state) => {
+          const startNode = state.nodes.find(n => n.id === '2');
+          const content = startNode?.data.content || '';
+          const lowerContent = content.toLowerCase();
+          return (
+            lowerContent.includes('$moedas') &&
+            (lowerContent.includes('gt') || lowerContent.includes('>')) &&
+            lowerContent.includes('25') &&
+            state.edges.some(e => e.source === '2' && e.target === '3') &&
+            state.edges.some(e => e.source === '2' && e.target === '4')
+          );
+        },
+        autoAdvance: true,
+        allowConnect: true,
+        connectSource: '2',
+        connectTarget: '3',
+        highlightNodeId: '2',
+        highlightHandle: 'bottom',
+        highlightNodeId2: '3',
+        highlightHandle2: 'top',
+        highlightButton: 'connectModalFields'
+      },
+      {
+        titleKey: 'tutorial.t6Step3Title',
+        descKey: 'tutorial.t6Step3Desc',
+        check: (state) => state.isPlayModeOpen === true,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.t6Step4Title',
+        descKey: 'tutorial.t6Step4Desc',
+        check: (state) => state.playModeCurrentNodeId === '3',
+        autoAdvance: true,
+        allowPlay: true,
+        choiceTarget: '3'
+      },
+      {
+        titleKey: 'tutorial.t6Step5Title',
+        descKey: 'tutorial.t6Step5Desc',
+        check: (state) => state.isPlayModeOpen === false,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'endTest'
+      },
+      {
+        titleKey: 'tutorial.t6Step6Title',
+        descKey: 'tutorial.t6Step6Desc',
+        check: (state) => state.selectedNodeId === '1',
+        autoAdvance: true,
+        targetNodeId: '1',
+        highlightNodeId: '1'
+      },
+      {
+        titleKey: 'tutorial.t6Step7Title',
+        descKey: 'tutorial.t6Step7Desc',
+        check: (state) => {
+          const initNode = state.nodes.find(n => n.id === '1');
+          const content = initNode?.data.content || '';
+          const match = content.match(/<<set\s+\$moedas\s*(?:to|=)\s*(\d+)>>/i);
+          if (match) {
+            const val = parseInt(match[1], 10);
+            return val <= 25;
+          }
+          return false;
+        },
+        autoAdvance: true,
+        targetNodeId: '1',
+        highlightNodeId: '1',
+        allowEditContent: true,
+        highlightButton: 'editContent'
+      },
+      {
+        titleKey: 'tutorial.t6Step8Title',
+        descKey: 'tutorial.t6Step8Desc',
+        check: (state) => state.isPlayModeOpen === true,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.t6Step9Title',
+        descKey: 'tutorial.t6Step9Desc',
+        check: (state) => state.playModeCurrentNodeId === '4',
+        autoAdvance: true,
+        allowPlay: true,
+        choiceTarget: '4'
+      },
+      {
+        titleKey: 'tutorial.t6Step10Title',
+        descKey: 'tutorial.t6Step10Desc',
+        check: (state) => state.isPlayModeOpen === false,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'endTest'
       },
       {
         titleKey: 'tutorial.completeTitle',
@@ -728,6 +877,24 @@ export default function PlaythroughTutorial({
                   <button
                     onClick={() => startTutorial('t5')}
                     className="mt-4 w-full py-2 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs uppercase border-2 border-gray-900 shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                  >
+                    {t('tutorial.yes', 'Começar')}
+                  </button>
+                </div>
+
+                {/* Tutorial 6 (Advanced Conditional Connections) */}
+                <div className="border-4 border-gray-900 dark:border-gray-600 p-4 bg-blue-50 dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-black text-sm uppercase text-gray-900 dark:text-gray-100 mb-2">
+                      {t('tutorial.t6Name')}
+                    </h4>
+                    <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-mono">
+                      {t('tutorial.t6Desc')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => startTutorial('t6')}
+                    className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase border-2 border-gray-900 shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
                   >
                     {t('tutorial.yes', 'Começar')}
                   </button>
