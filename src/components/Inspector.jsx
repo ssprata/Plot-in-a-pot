@@ -445,9 +445,10 @@ export default function Inspector({
                 <input
                   disabled={isLabelDisabled}
                   className={`w-full p-2.5 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-white font-mono text-sm font-bold border-l-4 border-l-yellow-400 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] focus:outline-none focus:border-gray-900 ${isLabelDisabled ? 'opacity-55 cursor-not-allowed' : ''}`}
-                  value={selectedNode.data.label || ''}
-                  onChange={(e) => updateSelectedNode({ label: e.target.value })}
-                /              {/* PASSAGE TEXT / SOURCE CODE */}
+                />
+              </div>
+
+              {/* PASSAGE TEXT / SOURCE CODE */}
               <div className="mb-4 flex flex-col">
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-black text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -627,7 +628,6 @@ export default function Inspector({
                     </ul>
                   </div>
                 )}
-              </div>              )}
               </div>
 
               {/* LOCAL VARIABLE MODE HINT */}
@@ -818,9 +818,9 @@ export default function Inspector({
                     >
                       {t('inspector.previewButton', 'Preview')}
                     </button>
-                              )}
-              </div>
->>>>>>> origin/modifications
+                  </div>
+                </div>
+              )}
             </>
           )}
 
