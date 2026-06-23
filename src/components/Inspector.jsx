@@ -39,6 +39,7 @@ export default function Inspector({
   const [inspectorTab, setInspectorTab] = useState('visual');
   const [isImageSectionOpen, setIsImageSectionOpen] = useState(false);
   const [presets, setPresets] = useState([]);
+  const ghostScrollRef = React.useRef(null);
 
   useEffect(() => {
     fetch(`${process.env.PUBLIC_URL || ''}/presets/manifest.json`)
@@ -516,20 +517,62 @@ export default function Inspector({
                     </button>
                   </div>
                 ) : (
-                  <textarea
-                    disabled={isContentDisabled}
-                    className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${selectedNode.data.nodeType === 'choice' ? 'font-sans text-sm bg-white dark:bg-gray-700' : 'font-mono text-xs bg-gray-900 text-green-400'
-                      } ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''
-                      }`}
-                    value={selectedNode.data.content || ''}
-                    onChange={(e) => {
-                      if (selectedNode.data.nodeType === 'choice') {
-                        syncChoicesFromText(selectedNode.id, e.target.value);
-                      } else {
-                        updateSelectedNode({ content: e.target.value });
-                      }
-                    }}
-                  />
+                  (() => {
+                    const hasGhostText = activeStep && activeStep.targetNodeId === selectedNode.id && activeStep.ghostText;
+                    const isChoice = selectedNode.data.nodeType === 'choice';
+                    const wrapperBg = isChoice ? 'bg-white dark:bg-gray-700' : 'bg-gray-900';
+                    const textareaFontClass = isChoice ? 'font-sans text-sm text-gray-900 dark:text-white' : 'font-mono text-xs text-green-400';
+                    const textareaBgClass = hasGhostText ? 'bg-transparent' : wrapperBg;
+
+                    const textareaElement = (
+                      <textarea
+                        disabled={isContentDisabled}
+                        className={`w-full flex-1 min-h-[200px] p-2 border-2 border-gray-900 dark:border-gray-500 text-gray-900 dark:text-white rounded-none outline-none focus:border-blue-600 transition-all resize-y ${textareaFontClass} ${textareaBgClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''}`}
+                        value={selectedNode.data.content || ''}
+                        onChange={(e) => {
+                          if (isChoice) {
+                            syncChoicesFromText(selectedNode.id, e.target.value);
+                          } else {
+                            updateSelectedNode({ content: e.target.value });
+                          }
+                        }}
+                      />
+                    );
+
+                    if (hasGhostText) {
+                      return (
+                        <div className={`relative w-full flex-1 flex flex-col min-h-[200px] border-2 border-gray-900 dark:border-gray-500 ${wrapperBg} overflow-hidden`}>
+                          {/* Ghost Text Overlay */}
+                          <textarea
+                            disabled
+                            ref={ghostScrollRef}
+                            className={`absolute inset-0 pointer-events-none p-2 border-0 bg-transparent text-gray-400 dark:text-gray-500 opacity-55 resize-none overflow-hidden select-none z-0 ${textareaFontClass}`}
+                            value={activeStep.ghostText}
+                          />
+                          {/* Real interactive Textarea overlaying on top */}
+                          <textarea
+                            disabled={isContentDisabled}
+                            className={`w-full flex-1 h-full p-2 bg-transparent border-0 text-gray-900 dark:text-white rounded-none outline-none focus:outline-none resize-none z-10 ${textareaFontClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''}`}
+                            value={selectedNode.data.content || ''}
+                            onChange={(e) => {
+                              if (isChoice) {
+                                syncChoicesFromText(selectedNode.id, e.target.value);
+                              } else {
+                                updateSelectedNode({ content: e.target.value });
+                              }
+                            }}
+                            onScroll={(e) => {
+                              if (ghostScrollRef.current) {
+                                ghostScrollRef.current.scrollTop = e.target.scrollTop;
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    }
+
+                    return textareaElement;
+                  })()
                 )}
 
                 {/* SYNTAX WARNINGS */}

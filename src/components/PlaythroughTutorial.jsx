@@ -168,6 +168,57 @@ const tutorialTemplates = {
       languages: ['pt', 'en'],
       keys: {}
     }
+  },
+  t7: {
+    nodes: [
+      {
+        id: '1',
+        type: 'choice',
+        position: { x: 50, y: 50 },
+        data: { label: 'StoryTitle', nodeType: 'choice', content: 'Masmorra do Código', choices: [], tags: 'secreto' }
+      },
+      {
+        id: '2',
+        type: 'choice',
+        position: { x: 250, y: 50 },
+        data: { label: 'StoryInit', nodeType: 'choice', content: '', choices: [], tags: 'secreto' }
+      },
+      {
+        id: '3',
+        type: 'choice',
+        position: { x: 450, y: 50 },
+        data: { label: 'StoryData', nodeType: 'choice', content: '{\n  "ifid": "CODE-TUTORIAL-999",\n  "format": "SugarCube",\n  "format-version": "2.36.1",\n  "start": "Start"\n}', choices: [], tags: 'secreto' }
+      },
+      {
+        id: '4',
+        type: 'choice',
+        position: { x: 250, y: 200 },
+        data: { label: 'Start', nodeType: 'choice', content: 'Início da aventura.', choices: [], tags: 'start' }
+      },
+      {
+        id: '5',
+        type: 'choice',
+        position: { x: 250, y: 350 },
+        data: { label: 'Quarto', nodeType: 'choice', content: 'O quarto escuro.', choices: [], tags: '' }
+      },
+      {
+        id: '6',
+        type: 'choice',
+        position: { x: 100, y: 500 },
+        data: { label: 'Cofre', nodeType: 'choice', content: 'Um cofre cheio de ouro!', choices: [], tags: '' }
+      },
+      {
+        id: '7',
+        type: 'choice',
+        position: { x: 400, y: 500 },
+        data: { label: 'Fim', nodeType: 'choice', content: 'O fim da aventura.', choices: [], tags: '' }
+      }
+    ],
+    edges: [],
+    translations: {
+      languages: ['pt', 'en'],
+      keys: {}
+    }
   }
 };
 
@@ -201,6 +252,7 @@ export default function PlaythroughTutorial({
   const setIsMenuOpen = setIsTutorialMenuOpen;
   const [stepCompleted, setStepCompleted] = useState(false);
   const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'advanced'
+  const [showCodeWarning, setShowCodeWarning] = useState(false);
 
   // --- TUTORIAL STEPS DEFINITION ---
 
@@ -235,7 +287,8 @@ export default function PlaythroughTutorial({
         targetNodeId: '1',
         highlightNodeId: '1',
         allowEditContent: true,
-        highlightButton: 'editContent'
+        highlightButton: 'editContent',
+        ghostText: 'Estás no início da aventura.'
       },
       {
         titleKey: 'tutorial.t1Step4Title',
@@ -521,7 +574,8 @@ export default function PlaythroughTutorial({
         targetNodeId: '1',
         highlightNodeId: '1',
         allowEditContent: true,
-        highlightButton: 'editContent'
+        highlightButton: 'editContent',
+        ghostText: '<<set $moedas to 10>>'
       },
       {
         titleKey: 'tutorial.t6Step8Title',
@@ -542,6 +596,170 @@ export default function PlaythroughTutorial({
       {
         titleKey: 'tutorial.t6Step10Title',
         descKey: 'tutorial.t6Step10Desc',
+        check: (state) => state.isPlayModeOpen === false,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'endTest'
+      },
+      {
+        titleKey: 'tutorial.completeTitle',
+        descKey: 'tutorial.completeText',
+        check: null,
+        autoAdvance: false
+      }
+    ],
+    t7: [
+      {
+        titleKey: 'tutorial.t7Step1Title',
+        descKey: 'tutorial.t7Step1Desc',
+        check: (state) => state.selectedNodeId === '2',
+        autoAdvance: true,
+        targetNodeId: '2',
+        highlightNodeId: '2'
+      },
+      {
+        titleKey: 'tutorial.t7Step2Title',
+        descKey: 'tutorial.t7Step2Desc',
+        check: (state) => {
+          const initNode = state.nodes.find(n => n.id === '2');
+          const content = initNode?.data.content || '';
+          const hasText = content.match(/<<set\s+\$nome\s+(?:to|=)\s+["']Heroi["']\s*>>/i);
+          const hasNum = content.match(/<<set\s+\$ouro\s+(?:to|=)\s+15\s*>>/i);
+          const hasBool = content.match(/<<set\s+\$temChave\s+(?:to|=)\s+false\s*>>/i);
+          return !!(hasText && hasNum && hasBool);
+        },
+        autoAdvance: true,
+        targetNodeId: '2',
+        highlightNodeId: '2',
+        allowEditContent: true,
+        highlightButton: 'editContent',
+        ghostText: '<<set $nome to "Heroi">>\n<<set $ouro to 15>>\n<<set $temChave to false>>'
+      },
+      {
+        titleKey: 'tutorial.t7Step3Title',
+        descKey: 'tutorial.t7Step3Desc',
+        check: (state) => state.selectedNodeId === '4',
+        autoAdvance: true,
+        targetNodeId: '4',
+        highlightNodeId: '4'
+      },
+      {
+        titleKey: 'tutorial.t7Step4Title',
+        descKey: 'tutorial.t7Step4Desc',
+        check: (state) => {
+          const startNode = state.nodes.find(n => n.id === '4');
+          const content = startNode?.data.content || '';
+          const hasLink = content.includes('[[Explorar o Quarto->Quarto]]') || content.includes('[[Quarto]]');
+          const hasEdge = state.edges.some(e => e.source === '4' && e.target === '5');
+          return !!(hasLink && hasEdge);
+        },
+        autoAdvance: true,
+        targetNodeId: '4',
+        highlightNodeId: '4',
+        allowEditContent: true,
+        highlightButton: 'editContent',
+        ghostText: 'Olá, $nome! Bem-vindo ao calabouço.\n[[Explorar o Quarto->Quarto]]'
+      },
+      {
+        titleKey: 'tutorial.t7Step5Title',
+        descKey: 'tutorial.t7Step5Desc',
+        check: (state) => state.selectedNodeId === '5',
+        autoAdvance: true,
+        targetNodeId: '5',
+        highlightNodeId: '5'
+      },
+      {
+        titleKey: 'tutorial.t7Step6Title',
+        descKey: 'tutorial.t7Step6Desc',
+        check: (state) => {
+          const roomNode = state.nodes.find(n => n.id === '5');
+          const content = roomNode?.data.content || '';
+          const hasSetChave = content.match(/<<set\s+\$temChave\s+(?:to|=)\s+true\s*>>/i);
+          const hasIf = content.match(/<<if\s+\$ouro\s+gte\s+10\s*>>/i);
+          const hasElse = content.includes('<<else>>');
+          const hasLinkCofre = content.includes('[[Ir para o Cofre->Cofre]]') || content.includes('[[Cofre]]');
+          const hasLinkFim = content.includes('[[Ir para o Fim->Fim]]') || content.includes('[[Fim]]');
+          const hasEndIf = content.includes('<</if>>');
+          return !!(hasSetChave && hasIf && hasElse && hasLinkCofre && hasLinkFim && hasEndIf);
+        },
+        autoAdvance: true,
+        targetNodeId: '5',
+        highlightNodeId: '5',
+        allowEditContent: true,
+        highlightButton: 'editContent',
+        ghostText: 'Estás no Quarto. Tens $ouro moedas.\n<<set $temChave to true>>\n\n<<if $ouro gte 10>>\n  [[Ir para o Cofre->Cofre]]\n<<else>>\n  [[Ir para o Fim->Fim]]\n<</if>>'
+      },
+      {
+        titleKey: 'tutorial.t7Step7Title',
+        descKey: 'tutorial.t7Step7Desc',
+        check: (state) => state.isPlayModeOpen === true,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.t7Step8Title',
+        descKey: 'tutorial.t7Step8Desc',
+        check: (state) => state.playModeCurrentNodeId === '6',
+        autoAdvance: true,
+        allowPlay: true,
+        choiceTarget: '6'
+      },
+      {
+        titleKey: 'tutorial.t7Step9Title',
+        descKey: 'tutorial.t7Step9Desc',
+        check: (state) => state.isPlayModeOpen === false,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'endTest'
+      },
+      {
+        titleKey: 'tutorial.t7Step10Title',
+        descKey: 'tutorial.t7Step10Desc',
+        check: (state) => state.selectedNodeId === '2',
+        autoAdvance: true,
+        targetNodeId: '2',
+        highlightNodeId: '2'
+      },
+      {
+        titleKey: 'tutorial.t7Step11Title',
+        descKey: 'tutorial.t7Step11Desc',
+        check: (state) => {
+          const initNode = state.nodes.find(n => n.id === '2');
+          const content = initNode?.data.content || '';
+          const match = content.match(/<<set\s+\$ouro\s+(?:to|=)\s*(\d+)\s*>>/i);
+          if (match) {
+            const val = parseInt(match[1], 10);
+            return val < 10;
+          }
+          return false;
+        },
+        autoAdvance: true,
+        targetNodeId: '2',
+        highlightNodeId: '2',
+        allowEditContent: true,
+        highlightButton: 'editContent',
+        ghostText: '<<set $nome to "Heroi">>\n<<set $ouro to 5>>\n<<set $temChave to false>>'
+      },
+      {
+        titleKey: 'tutorial.t7Step12Title',
+        descKey: 'tutorial.t7Step12Desc',
+        check: (state) => state.isPlayModeOpen === true,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.t7Step13Title',
+        descKey: 'tutorial.t7Step13Desc',
+        check: (state) => state.playModeCurrentNodeId === '7',
+        autoAdvance: true,
+        allowPlay: true,
+        choiceTarget: '7'
+      },
+      {
+        titleKey: 'tutorial.t7Step14Title',
+        descKey: 'tutorial.t7Step14Desc',
         check: (state) => state.isPlayModeOpen === false,
         autoAdvance: true,
         allowPlay: true,
@@ -899,6 +1117,24 @@ export default function PlaythroughTutorial({
                     {t('tutorial.yes', 'Começar')}
                   </button>
                 </div>
+
+                {/* Tutorial 7 (Pure Twine Code) */}
+                <div className="border-4 border-gray-900 dark:border-gray-600 p-4 bg-red-50 dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-black text-sm uppercase text-gray-900 dark:text-gray-100 mb-2">
+                      {t('tutorial.t7Name')}
+                    </h4>
+                    <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-mono">
+                      {t('tutorial.t7Desc')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowCodeWarning(true)}
+                    className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase border-2 border-gray-900 shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                  >
+                    {t('tutorial.yes', 'Começar')}
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -921,6 +1157,42 @@ export default function PlaythroughTutorial({
             )}
           </div>
         </div>
+
+        {/* Code Warning Popup Confirmation */}
+        {showCodeWarning && (
+          <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-gray-950/70 backdrop-blur-xs font-sans">
+            <div className="w-full max-w-md bg-white dark:bg-gray-900 border-4 border-gray-900 dark:border-gray-100 p-6 shadow-[8px_8px_0px_#000] dark:shadow-[8px_8px_0px_#fff]">
+              <h4 className="text-sm font-black uppercase tracking-wider text-red-600 dark:text-red-400 border-b-2 border-gray-900 dark:border-gray-700 pb-2 mb-4">
+                ⚠️ {t('tutorial.t7WarningTitle', 'Aviso: Código Puro')}
+              </h4>
+              
+              <p className="text-xs font-mono mb-6 text-gray-700 dark:text-gray-300 leading-relaxed">
+                {t('tutorial.t7WarningText', 'Este tutorial é recomendado apenas para quem quer aprender a programar do zero ou já tem experiência com linguagens de programação. Queres mesmo continuar?')}
+              </p>
+              
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCodeWarning(false)}
+                  className="px-4 py-2 border-2 border-gray-900 dark:border-gray-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 font-bold text-xs uppercase shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"
+                >
+                  {t('common.cancel', 'Cancelar')}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCodeWarning(false);
+                    startTutorial('t7');
+                  }}
+                  className="px-4 py-2 border-2 border-gray-900 bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5 active:shadow-none"
+                >
+                  {t('tutorial.yes', 'Confirmar e Entrar')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
