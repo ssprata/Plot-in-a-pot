@@ -34,7 +34,7 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
         showInfoPopout({ title, subtitle, content });
     };
 
-    const helpButtonClass = "w-5 h-5 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] text-[10px]";
+    const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-yellow-400 dark:hover:bg-yellow-400 hover:text-gray-950 dark:hover:text-gray-950 transition-all active:translate-y-0.5 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] active:shadow-none rounded-full cursor-pointer text-xs";
 
     // --- OPERAÇÕES DA BASE DE DADOS ---
     const saveCurrentTranslation = () => {
@@ -132,13 +132,13 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
 
     return (
         <>
-            <div className="fixed inset-0 z-[180] flex bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+            <div className="fixed inset-0 z-[180] flex bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans transition-colors">
                 
                 {/* PAINEL DA ESQUERDA (70%): GESTÃO E TABELA MATRIX */}
-                <div className="flex-1 flex flex-col p-6 overflow-hidden border-r-4 border-gray-900 dark:border-gray-700">
+                <div className="flex-1 flex flex-col p-6 overflow-hidden border-r-4 border-gray-900 dark:border-gray-200">
                     
                     {/* Cabeçalho Superior de Ações */}
-                    <div className="flex justify-between items-center border-b-4 border-gray-900 dark:border-gray-600 pb-4 mb-4">
+                    <div className="flex justify-between items-center border-b-4 border-gray-900 dark:border-gray-200 pb-4 mb-4">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <h2 className="font-black text-xl uppercase tracking-widest bg-yellow-400 text-gray-900 px-2 py-1 border-2 border-gray-900 shadow-[2px_2px_0px_#000]">
@@ -159,20 +159,20 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                             </div>
                             
                             {/* Gestão de Locales */}
-                            <div className="flex items-center gap-2 border-2 border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-800 p-1.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                            <div className="flex items-center gap-2 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-800 p-1.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
                                 {translations.languages.map(lang => (
                                     <button 
                                         key={lang} 
                                         onClick={() => toggleLanguage(lang)}
-                                        className="px-1.5 py-0.5 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-black text-[9px] uppercase border border-transparent hover:border-red-500 cursor-pointer"
+                                        className="px-2 py-0.5 border border-gray-900 dark:border-gray-200 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-black text-[10px] uppercase shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] hover:bg-red-500 hover:text-white dark:hover:bg-red-650 dark:hover:text-white transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
                                         title={t('translationMatrix.removeLanguageHint', 'Click to remove this language')}
                                     >
                                         {lang.toUpperCase()} ×
                                     </button>
                                 ))}
-                                <div className="flex items-center border-l-2 border-gray-300 dark:border-gray-300 pl-2 gap-1">
+                                <div className="flex items-center border-l-2 border-gray-300 dark:border-gray-700 pl-2 gap-2">
                                     <input 
-                                        className="w-10 bg-transparent text-[10px] font-bold uppercase outline-none text-gray-900 dark:text-gray-100" 
+                                        className="w-12 px-1 py-0.5 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-[10px] font-bold uppercase outline-none text-gray-900 dark:text-gray-100 rounded-sm focus:border-gray-900 dark:focus:border-gray-200" 
                                         placeholder={t('translationMatrix.addPlaceholder', 'ADD')} 
                                         maxLength={3}
                                         value={newLang}
@@ -185,7 +185,7 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                                                 setNewLang('');
                                             }
                                         }}
-                                        className="font-black text-xs px-1 text-green-600 hover:text-green-500 cursor-pointer"
+                                        className="w-5 h-5 flex items-center justify-center font-black text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 border border-green-600 dark:border-green-400 rounded-sm cursor-pointer transition-all active:translate-y-0.5"
                                     >+</button>
                                 </div>
                             </div>
@@ -193,7 +193,7 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                             {/* Botão de ação direta para injetar novas Keys na matriz */}
                             <button
                                 onClick={handleAddKey}
-                                className="px-3 py-1 bg-yellow-400 text-gray-900 border-2 border-gray-900 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] hover:bg-yellow-500 transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
+                                className="px-3 py-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-2 border-gray-900 dark:border-gray-200 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] transition-all active:translate-y-0.5 active:shadow-none cursor-pointer"
                             >
                                 + {t('dataPanel.addKey', 'Add Key')}
                             </button>
@@ -201,28 +201,34 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
 
                         {/* Botões CSV */}
                         <div className="flex gap-2">
-                            <button onClick={exportToCSV} className="px-3 py-1.5 border-2 border-gray-900 bg-white text-gray-900 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer">
+                            <button 
+                                onClick={exportToCSV} 
+                                className="px-3 py-1.5 border-2 border-gray-900 dark:border-gray-200 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                            >
                                 {t('translationMatrix.exportCsv', 'Export CSV')}
                             </button>
-                            <label className="cursor-pointer px-3 py-1.5 border-2 border-gray-900 bg-black text-white font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none">
+                            <label className="cursor-pointer px-3 py-1.5 border-2 border-gray-900 dark:border-gray-200 bg-gray-950 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-950 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none transition-all">
                                 {t('translationMatrix.importCsv', 'Import CSV')}
                                 <input type="file" accept=".csv" className="hidden" onChange={handleImport} />
                             </label>
-                            <button onClick={onClose} className="px-3 py-1.5 border-2 border-gray-900 bg-red-500 text-white font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none ml-4 cursor-pointer">
+                            <button 
+                                onClick={onClose} 
+                                className="px-3 py-1.5 border-2 border-gray-900 dark:border-gray-200 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-650 text-white font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none ml-4 transition-all cursor-pointer"
+                            >
                                 {t('common.close', 'Close')}
                             </button>
                         </div>
                     </div>
 
                     {/* Grade da Tabela Expandida em Grelha Flexbox */}
-                    <div className="flex-1 overflow-auto border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
+                    <div className="flex-1 overflow-auto border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
                         <div style={{ minWidth: `${160 + (translations.languages.length * 320) + 60}px` }} className="flex flex-col">
                             
                             {/* FILA DE CABEÇALHOS (STICKY) */}
-                            <div className="bg-gray-900 text-white flex font-black uppercase text-xs tracking-wider sticky top-0 z-10 select-none border-b border-gray-700">
-                                <div className="p-3 w-[160px] shrink-0 border-r border-gray-700">{t('translationMatrix.columnKey', 'Key')}</div>
+                            <div className="bg-gray-900 dark:bg-gray-950 text-white flex font-black uppercase text-xs tracking-wider sticky top-0 z-10 select-none border-b-2 border-gray-900 dark:border-gray-200">
+                                <div className="p-3 w-[160px] shrink-0 border-r-2 border-gray-900 dark:border-gray-200">{t('translationMatrix.columnKey', 'Key')}</div>
                                 {translations.languages.map(lang => (
-                                    <div key={lang} className="p-3 w-[320px] shrink-0 border-r border-gray-700 text-left">
+                                    <div key={lang} className="p-3 w-[320px] shrink-0 border-r-2 border-gray-900 dark:border-gray-200 text-left">
                                         {lang.toUpperCase()} {lang === sourceLang && <span className="text-[9px] text-yellow-400 font-normal">({t('translationMatrix.sourceBadge', 'Source')})</span>}
                                     </div>
                                 ))}
@@ -230,14 +236,14 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                             </div>
 
                             {/* LINHAS DE DADOS DA MATRIZ */}
-                            <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                            <div className="flex flex-col divide-y-2 divide-gray-900 dark:divide-gray-200">
                                 {Object.entries(translations.keys).map(([key, langs]) => (
-                                    <div key={key} className="flex hover:bg-gray-50 dark:hover:bg-gray-700/30 font-mono text-xs items-stretch">
+                                    <div key={key} className="flex hover:bg-gray-100 dark:hover:bg-gray-700/50 font-mono text-xs items-stretch">
                                         
                                         {/* Célula Identificadora (Key) */}
-                                        <div className="p-3 w-[160px] shrink-0 border-r border-gray-200 dark:border-gray-700 font-bold bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-300 truncate select-all" title={key}>
-                                            {key
-                                        }</div>
+                                        <div className="p-3 w-[160px] shrink-0 border-r-2 border-gray-900 dark:border-gray-200 font-bold bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-300 truncate select-all" title={key}>
+                                            {key}
+                                        </div>
 
                                         {/* Células Dinâmicas de Tradução */}
                                         {translations.languages.map(lang => {
@@ -246,9 +252,9 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                                                 <div 
                                                     key={lang}
                                                     onClick={() => setSelectedCell({ key, lang })}
-                                                    className={`p-2 w-[320px] shrink-0 border-r border-gray-200 dark:border-gray-700 align-top cursor-pointer transition-colors ${
+                                                    className={`p-2 w-[320px] shrink-0 border-r-2 border-gray-900 dark:border-gray-200 align-top cursor-pointer transition-colors ${
                                                         isSelected 
-                                                            ? 'bg-yellow-100 dark:bg-yellow-900/40 ring-2 ring-inset ring-yellow-500' 
+                                                            ? 'bg-yellow-100 dark:bg-yellow-950/70 ring-2 ring-inset ring-yellow-500' 
                                                             : 'text-gray-800 dark:text-gray-200'
                                                     }`}
                                                 >
@@ -266,7 +272,7 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                                                     setKeyToDelete(key);
                                                     setIsDeleteOpen(true);
                                                 }}
-                                                className="w-6 h-6 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white font-black border border-gray-900 text-xs shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                                                className="w-6 h-6 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white font-black border border-gray-900 dark:border-gray-200 text-xs shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer"
                                                 title={t('translationMatrix.deleteKeyHint', 'Remover chave por completo')}
                                             >
                                                 ×
@@ -283,31 +289,31 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                 </div>
 
                 {/* PAINEL DA DIREITA (30%): INSPETOR INTEGRADO SEM MODAIS */}
-                <div className="w-96 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col overflow-y-auto border-l border-gray-200 dark:border-gray-800">
-                    <h3 className="font-black text-sm uppercase tracking-widest border-b-2 border-gray-900 dark:border-gray-700 pb-2 mb-4 text-gray-500">
+                <div className="w-96 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col overflow-y-auto border-l-4 border-gray-900 dark:border-gray-200">
+                    <h3 className="font-black text-sm uppercase tracking-widest border-b-2 border-gray-900 dark:border-gray-200 pb-2 mb-4 text-gray-900 dark:text-white">
                         {t('translationMatrix.inspectorTitle', 'Cell Inspector')}
                     </h3>
 
                     {selectedCell ? (
                       <div className="flex-1 flex flex-col space-y-4">
                           <div>
-                              <span className="block text-[10px] font-black text-gray-400 uppercase">{t('translationMatrix.selectedKey', 'Selected Key')}</span>
-                              <div className="font-mono text-xs font-bold bg-white dark:bg-gray-900 p-2 border border-gray-300 dark:border-gray-700 select-all text-gray-900 dark:text-gray-100">
+                              <span className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase mb-1">{t('translationMatrix.selectedKey', 'Selected Key')}</span>
+                              <div className="font-mono text-xs font-bold bg-white dark:bg-gray-900 p-2 border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] select-all text-gray-900 dark:text-gray-100">
                                   {selectedCell.key}
                               </div>
                           </div>
 
                           <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-black text-gray-400 uppercase">{t('translationMatrix.targetLocale', 'Target Locale:')}</span>
-                              <span className="px-2 py-0.5 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-mono font-black text-xs uppercase rounded">
+                              <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase">{t('translationMatrix.targetLocale', 'Target Locale:')}</span>
+                              <span className="px-2 py-0.5 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-mono font-black text-xs uppercase border border-gray-900 dark:border-gray-200 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff]">
                                   {selectedCell.lang}
                               </span>
                           </div>
 
                           {/* Bloco de Referência */}
                           {selectedCell.lang !== sourceLang && (
-                              <div className="p-3 bg-white dark:bg-gray-900 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded">
-                                  <span className="block text-[9px] font-black text-gray-400 uppercase mb-1">
+                              <div className="p-3 bg-white dark:bg-gray-900 border-2 border-dashed border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+                                  <span className="block text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase mb-1">
                                       {t('translationMatrix.referenceTextLabel', 'Reference Text')} ({sourceLang.toUpperCase()}):
                                   </span>
                                   <p className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words max-h-40 overflow-y-auto leading-relaxed">
@@ -318,9 +324,9 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
 
                           {/* Campo de Tradução Direta */}
                           <div className="flex-1 flex flex-col min-h-[200px]">
-                              <span className="block text-[10px] font-black text-gray-400 uppercase mb-1">{t('translationMatrix.inputLabel', 'Translation Input')}</span>
+                              <span className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase mb-1">{t('translationMatrix.inputLabel', 'Translation Input')}</span>
                               <textarea
-                                  className="flex-1 w-full p-3 border-2 border-gray-900 dark:border-gray-600 bg-white dark:bg-gray-900 font-mono text-xs text-gray-900 dark:text-gray-100 outline-none shadow-inner resize-none leading-relaxed focus:border-yellow-500"
+                                  className="flex-1 w-full p-3 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 font-mono text-xs text-gray-900 dark:text-gray-100 outline-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] resize-none leading-relaxed focus:border-yellow-500 focus:dark:border-yellow-400"
                                   value={editValue}
                                   onChange={(e) => setEditValue(e.target.value)}
                                   placeholder={selectedCell.lang !== sourceLang && referenceValue ? referenceValue : t('translationMatrix.inputPlaceholder', 'Write your translation here...')}
@@ -331,14 +337,14 @@ export default function TranslationMatrix({ isOpen, onClose, translations, setTr
                           <div className="pt-2">
                               <button 
                                   onClick={saveCurrentTranslation}
-                                  className="w-full py-2 border-2 border-gray-900 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                                  className="w-full py-2 border-2 border-gray-900 dark:border-gray-200 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#000] dark:shadow-[3px_3px_0px_#fff] active:translate-y-0.5 active:shadow-none cursor-pointer transition-all"
                               >
                                   {t('translationMatrix.applyChanges', 'Apply Changes')}
                               </button>
                           </div>
                       </div>
                     ) : (
-                      <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-600 italic text-xs font-mono p-4 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded">
+                      <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-600 italic text-xs font-mono p-4 border-2 border-dashed border-gray-900 dark:border-gray-200">
                           {t('translationMatrix.emptySelectionHint', 'Select any table cell to inspect or edit its content without popups.')}
                       </div>
                     )}

@@ -1,5 +1,5 @@
 {
-  "showAdjacency": true,
+  "showAdjacency": false,
   "showSecrets": true,
   "showFlowErrors": true,
   "theme": "dark"

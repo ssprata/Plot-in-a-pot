@@ -1,7 +1,7 @@
 import config from '../config.json';
 
 const defaultConfig = {
-  showAdjacency: true,
+  showAdjacency: false,
   showSecrets: true,
   showFlowErrors: true,
   visualLogicEnabled: true,
