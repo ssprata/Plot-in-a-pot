@@ -16,7 +16,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
     showInfoPopout({ title, subtitle, content });
   };
 
-  const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:translate-y-0.5 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:shadow-none cursor-pointer text-xs";
+  const helpButtonClass = "w-6 h-6 flex shrink-0 items-center justify-center border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-yellow-400 dark:hover:bg-yellow-400 hover:text-gray-950 dark:hover:text-gray-950 transition-all active:translate-y-0.5 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff] active:shadow-none rounded-full cursor-pointer text-xs";
 
   // 1. ESTADOS DA INTERFACE
   const [storyText, setStoryText] = useState('');
@@ -96,36 +96,48 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-[600px] max-w-[90vw] bg-white dark:bg-gray-800 border-4 border-gray-900 dark:border-gray-200 shadow-[8px_8px_0px_#000] dark:shadow-[8px_8px_0px_#fff] flex flex-col p-6">
+      <div className="w-[600px] max-w-[90vw] bg-white dark:bg-gray-800 border-4 border-gray-900 dark:border-gray-200 shadow-[8px_8px_0px_#000] dark:shadow-[8px_8px_0px_#fff] flex flex-col p-6 transition-all">
         
-        <h2 className="text-2xl font-black uppercase tracking-widest mb-6 border-b-2 border-gray-900 dark:border-gray-200 pb-2">
+        <h2 className="text-2xl font-black uppercase tracking-widest mb-6 border-b-2 border-gray-900 dark:border-gray-200 pb-2 text-gray-900 dark:text-gray-100">
           {t('aiImportModal.title')}
         </h2>
 
         {/* ÁREA DE SELEÇÃO DO FORNECEDOR */}
-        <div className="flex gap-6 mb-4">
-          <label className="flex items-center gap-2 font-bold cursor-pointer">
+        <div className="flex gap-4 mb-4">
+          <label className="flex-1 cursor-pointer">
             <input 
               type="radio" 
               name="provider" 
               value="gemini" 
               checked={provider === 'gemini'} 
               onChange={() => handleProviderChange('gemini')}
-              className="accent-purple-600 w-4 h-4"
+              className="sr-only"
             />
-            {t('aiImportModal.gemini')}
+            <span className={`block w-full py-2 border-2 border-gray-900 dark:border-gray-200 font-black text-xs uppercase text-center transition-all cursor-pointer shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none ${
+              provider === 'gemini'
+                ? 'bg-purple-600 text-white dark:bg-purple-600 dark:text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            }`}>
+              {t('aiImportModal.gemini')}
+            </span>
           </label>
 
-          <label className="flex items-center gap-2 font-bold cursor-pointer">
+          <label className="flex-1 cursor-pointer">
             <input 
               type="radio" 
               name="provider" 
               value="ollama" 
               checked={provider === 'ollama'} 
               onChange={() => handleProviderChange('ollama')}
-              className="accent-purple-600 w-4 h-4"
+              className="sr-only"
             />
-            {t('aiImportModal.ollama')}
+            <span className={`block w-full py-2 border-2 border-gray-900 dark:border-gray-200 font-black text-xs uppercase text-center transition-all cursor-pointer shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none ${
+              provider === 'ollama'
+                ? 'bg-purple-600 text-white dark:bg-purple-600 dark:text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            }`}>
+              {t('aiImportModal.ollama')}
+            </span>
           </label>
         </div>
 
@@ -133,7 +145,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
         {provider === 'gemini' ? (
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <label className="block text-xs font-black uppercase tracking-wider">{t('aiImportModal.apiKey')}</label>
+              <label className="block text-xs font-black uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('aiImportModal.apiKey')}</label>
               <button
                 type="button"
                 onClick={() => openHelp(
@@ -154,13 +166,13 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="AIzaSy..."
-              className="w-full p-2 border-2 border-gray-900 dark:border-gray-200 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-purple-500 font-mono"
+              className="w-full p-2 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none focus:border-purple-500 font-mono shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] transition-all"
             />
           </div>
         ) : (
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <label className="block text-xs font-black uppercase tracking-wider">{t('aiImportModal.model')}</label>
+              <label className="block text-xs font-black uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('aiImportModal.model')}</label>
               <button
                 type="button"
                 onClick={() => openHelp(
@@ -186,7 +198,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
               value={ollamaModel}
               onChange={(e) => setOllamaModel(e.target.value)}
               placeholder="ex: llama3, mistral"
-              className="w-full p-2 border-2 border-gray-900 dark:border-gray-200 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-purple-500 font-mono"
+              className="w-full p-2 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none focus:border-purple-500 font-mono shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] transition-all"
             />
           </div>
         )}
@@ -194,7 +206,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
         {/* TEXTO DA HISTÓRIA */}
         <div className="flex-1 flex flex-col min-h-[200px] mb-4">
           <div className="flex items-center gap-2 mb-1">
-            <label className="block text-xs font-black uppercase tracking-wider">{t('aiImportModal.storyText')}</label>
+            <label className="block text-xs font-black uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('aiImportModal.storyText')}</label>
             <button
               type="button"
               onClick={() => openHelp(
@@ -215,12 +227,12 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
             value={storyText}
             onChange={(e) => setStoryText(e.target.value)}
             placeholder={t('aiImportModal.storyPlaceholder')}
-            className="flex-1 resize-none p-3 border-2 border-gray-900 dark:border-gray-200 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-purple-500 leading-relaxed"
+            className="flex-1 resize-none p-3 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-900 text-gray-900 dark:text-white outline-none focus:border-purple-500 leading-relaxed shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] transition-all"
           />
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border-2 border-red-600 text-red-900 font-bold text-sm shadow-[2px_2px_0px_#dc2626]">
+          <div className="mb-4 p-3 bg-red-100 dark:bg-red-950/70 border-2 border-red-600 dark:border-red-400 text-red-900 dark:text-red-200 font-bold text-sm shadow-[2px_2px_0px_#dc2626] dark:shadow-[2px_2px_0px_#ef4444]">
             {error}
           </div>
         )}
@@ -229,7 +241,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
           <button 
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 font-bold uppercase tracking-wider text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 border-2 border-gray-900 dark:border-gray-200 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 font-bold uppercase tracking-wider shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
           >
             {t('common.cancel')}
           </button>
@@ -237,7 +249,7 @@ export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
           <button 
             onClick={handleGenerate}
             disabled={isLoading}
-            className="px-6 py-2 border-2 border-gray-900 dark:border-gray-200 bg-purple-500 hover:bg-purple-400 text-white font-black uppercase tracking-widest transition-transform active:translate-y-1 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] active:shadow-none disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2 border-2 border-gray-900 dark:border-gray-200 bg-purple-600 hover:bg-purple-500 text-white font-black uppercase tracking-widest transition-all active:translate-y-0.5 active:shadow-none disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]"
           >
             {isLoading ? t('aiImportModal.processing') : t('aiImportModal.generateGraph')}
           </button>
