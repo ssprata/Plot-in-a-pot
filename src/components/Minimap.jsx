@@ -50,7 +50,7 @@ function getCameraCenteredPositions(nodes, currentNodeId) {
 }
 
 export default function Minimap({ nodes, edges, currentNodeId, hoveredOptionTargets }) {
-  const visibleNodes = nodes.filter(n => !isSecret(n));
+  const visibleNodes = nodes.filter(n => !isSecret(n) && n.type !== 'zone' && n.data?.nodeType !== 'zone');
   const nodePositions = getCameraCenteredPositions(visibleNodes, currentNodeId);
   
   // Checking both 'from/to' and 'source/target' just in case of library mismatches

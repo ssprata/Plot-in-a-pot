@@ -145,6 +145,11 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
   const currentNode = nodes.find(n => n.id === currentNodeId);
   if (!currentNode) return null;
 
+  const parentZone = currentNode.parentId ? nodes.find(n => n.id === currentNode.parentId) : null;
+  const parentBgImage = currentNode.data?.bgImage ? null : parentZone?.data?.bgImage;
+  const parentBgImageBlur = parentZone?.data?.bgImageBlur;
+  const hasBgImage = !!(currentNode.data?.bgImage || parentBgImage);
+
   const currentTags = currentNode.data?.tags 
     ? currentNode.data.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "") 
     : [];
@@ -229,10 +234,23 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
 
   return (
     <div className="fixed inset-0 z-50 flex bg-gray-950 text-gray-100 font-sans overflow-hidden">
-      {/* Blurred background image element */}
-      {currentNode.data?.bgImage && (
+      {/* Parent Zone Blurred background image element */}
+      {parentBgImage && (
         <div
           className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center transition-all duration-500"
+          style={{
+            backgroundImage: `url(${getImageUrl(parentBgImage)})`,
+            filter: `blur(${parentBgImageBlur ?? 5}px)`,
+            transform: 'scale(1.15)',
+            opacity: 0.25
+          }}
+        />
+      )}
+
+      {/* Blurred background image element (rendered above zone background) */}
+      {currentNode.data?.bgImage && (
+        <div
+          className="absolute inset-0 z-[1] pointer-events-none bg-cover bg-center transition-all duration-500"
           style={{
             backgroundImage: `url(${getImageUrl(currentNode.data.bgImage)})`,
             filter: `blur(${currentNode.data.bgImageBlur ?? 5}px)`,
@@ -256,7 +274,7 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
         )}
 
         <div className={`max-w-2xl w-full border-2 rounded-lg p-8 shadow-2xl transition-all duration-300 relative z-10 ${
-          currentNode.data?.bgImage
+          hasBgImage
             ? 'bg-gray-900/80 border-gray-700/80 backdrop-blur-[2px]'
             : 'bg-gray-900 border-gray-700'
         }`}>
@@ -302,7 +320,7 @@ export default function PlayMode({ isOpen, onClose, nodes, edges, translations, 
 
       {/* PAINEL LATERAL DE DEPURAÇÃO */}
       <div className={`w-80 border-l-4 p-6 flex flex-col overflow-y-auto relative z-10 transition-all duration-300 ${
-        currentNode.data?.bgImage
+        hasBgImage
           ? 'bg-gray-900/80 border-gray-700/80 backdrop-blur-[2px]'
           : 'bg-gray-900 border-gray-700'
       }`}>

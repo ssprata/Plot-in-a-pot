@@ -1330,6 +1330,7 @@ function App() {
               onNodeDoubleClick={onNodeClick}
               onEdgeClick={onEdgeClick}
               onEdgeDoubleClick={onEdgeDoubleClick}
+              deleteKeyCode={activeStep ? null : ['Backspace', 'Delete']}
               fitView
               selectionOnDrag
             >
@@ -1337,11 +1338,21 @@ function App() {
                 className="!border-2 !border-gray-900 dark:!border-gray-200 !shadow-[4px_4px_0px_#000] dark:!shadow-[4px_4px_0px_#fff] !bg-white dark:!bg-gray-800 transition-colors"
                 nodeColor={(n) => {
                   const type = n.data?.nodeType || n.type;
+                  if (type === 'zone') {
+                    const zoneColor = n.data?.color || '#f59e0b';
+                    return `${zoneColor}22`; // ~13% opacity
+                  }
                   if (type === 'javascript') return '#2563eb';
                   if (type === 'css') return '#db2777';
                   return isDark ? '#f8fafc' : '#1e293b';
                 }}
-                nodeStrokeColor={() => isDark ? '#ffffff' : '#000000'}
+                nodeStrokeColor={(n) => {
+                  const type = n.data?.nodeType || n.type;
+                  if (type === 'zone') {
+                    return n.data?.color || '#f59e0b';
+                  }
+                  return isDark ? '#ffffff' : '#000000';
+                }}
                 maskColor={isDark ? 'rgba(15, 23, 42, 0.7)' : 'rgba(203, 213, 225, 0.5)'}
                 nodeStrokeWidth={3}
                 nodeBorderRadius={2}

@@ -273,6 +273,104 @@ export default function Inspector({
           <div className="flex-1 flex flex-col">
           {selectedNode.type === 'zone' || selectedNode.data.nodeType === 'zone' ? (
             <div className="flex-1 flex flex-col">
+              {/* IMAGE SECTION */}
+              <div className="mb-4 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff]">
+                <button
+                  type="button"
+                  onClick={() => setIsImageSectionOpen(!isImageSectionOpen)}
+                  className="w-full p-2 flex items-center justify-between font-black text-[10px] uppercase text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors cursor-pointer"
+                >
+                  <span>🖼️ {t('inspector.imageSection', 'Imagem de Fundo')}</span>
+                  <span className="font-mono">{isImageSectionOpen ? '▲' : '▼'}</span>
+                </button>
+                {isImageSectionOpen && (
+                  <div className="p-3 border-t-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 space-y-3">
+                    {/* Preset list/grid of buttons */}
+                    <div>
+                      <span className="block text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
+                        {t('inspector.imagePresets', 'Imagens Predefinidas')}
+                      </span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateSelectedNode({ bgImage: '' })}
+                          className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-755 text-left transition-colors cursor-pointer ${
+                            !selectedNode.data.bgImage
+                              ? 'bg-blue-600 text-white dark:bg-blue-500 border-gray-900'
+                              : 'bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
+                          }`}
+                        >
+                          {t('inspector.imageNone', 'Nenhuma')}
+                        </button>
+                        {presets.map((filename) => {
+                          const isActive = selectedNode.data.bgImage === filename;
+                          const displayName = filename.split('.')[0];
+                          const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+                          return (
+                            <button
+                              key={filename}
+                              type="button"
+                              onClick={() => updateSelectedNode({ bgImage: filename })}
+                              className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-755 text-left transition-colors cursor-pointer ${
+                                isActive
+                                  ? 'bg-blue-600 text-white dark:bg-blue-500 border-gray-900'
+                                  : 'bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
+                              }`}
+                            >
+                              {capitalizedName}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {presets.length === 0 && (
+                        <div className="text-[9px] text-gray-500 dark:text-gray-400 italic mt-1.5">
+                          Coloca imagens em <code className="bg-gray-150 dark:bg-gray-900 px-1 py-0.5 font-mono">public/presets/</code> para veres opções.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* URL section */}
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <label className="block text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+                        {t('inspector.imageUrlLabel', 'Ou URL personalizada')}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="https://exemplo.com/imagem.jpg"
+                        value={(!selectedNode.data.bgImage?.startsWith('data:') && !presets.includes(selectedNode.data.bgImage)) ? selectedNode.data.bgImage || '' : ''}
+                        onChange={(e) => updateSelectedNode({ bgImage: e.target.value })}
+                        className="w-full p-1.5 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-white rounded-none text-xs font-mono shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff]"
+                      />
+                    </div>
+
+                    {/* File upload section */}
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <label className="block text-[9px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+                        {t('inspector.imageUploadLabel', 'Ou carregar ficheiro')}
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              updateSelectedNode({ bgImage: reader.result });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="w-full text-[10px] text-gray-500 dark:text-gray-400 file:mr-2 file:py-0.5 file:px-2 file:border-2 file:border-gray-900 file:bg-gray-100 dark:file:bg-gray-900 dark:file:text-white dark:file:border-gray-750 text-clip overflow-hidden cursor-pointer"
+                      />
+                      {selectedNode.data.bgImage && (
+                        <div className="relative w-full h-16 border-2 border-gray-900 dark:border-gray-700 overflow-hidden bg-cover bg-center mt-1.5 shadow-[1px_1px_0px_#000] dark:shadow-[1px_1px_0px_#fff]" style={{ backgroundImage: `url(${getImageUrl(selectedNode.data.bgImage)})` }} />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* NODE ID */}
               <div className="mb-4">
                 <label className="block font-black text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
@@ -349,10 +447,7 @@ export default function Inspector({
                   className={`w-full p-2.5 border-2 border-gray-900 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-white font-mono text-sm font-bold border-l-4 border-l-yellow-400 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] focus:outline-none focus:border-gray-900 ${isLabelDisabled ? 'opacity-55 cursor-not-allowed' : ''}`}
                   value={selectedNode.data.label || ''}
                   onChange={(e) => updateSelectedNode({ label: e.target.value })}
-                />
-              </div>
-
-              {/* PASSAGE TEXT / SOURCE CODE */}
+                /              {/* PASSAGE TEXT / SOURCE CODE */}
               <div className="mb-4 flex flex-col">
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-black text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -364,7 +459,7 @@ export default function Inspector({
                         type="button"
                         onClick={onOpenVariables ?? handleCreateVariable}
                         disabled={isCreateVarDisabled}
-                        className={`px-2 py-0.5 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
+                        className={`px-2 py-0.5 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''} ${activeStep?.highlightButton === 'createVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.createVariable')}
                       </button>
@@ -373,7 +468,7 @@ export default function Inspector({
                         type="button"
                         onClick={onChangeVariables ?? handleChangeVariable}
                         disabled={isCreateVarDisabled}
-                        className={`px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
+                        className={`px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''} ${activeStep?.highlightButton === 'changeVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.changeValue')}
                       </button>
@@ -412,7 +507,7 @@ export default function Inspector({
 
                   {selectedNode.data.nodeType === 'choice' && visualLogicEnabled && inspectorTab === 'visual' ? (
                     <div className="flex flex-col gap-2 mt-1">
-                      <div className="bg-gray-100 dark:bg-gray-950 border-2 border-gray-900 dark:border-gray-700 p-2.5 text-xs text-gray-750 dark:text-gray-300 max-h-[100px] overflow-y-auto leading-relaxed whitespace-pre-wrap font-mono">
+                      <div className="bg-gray-100 dark:bg-gray-950 border-2 border-gray-900 dark:border-gray-700 p-2.5 text-xs text-gray-755 dark:text-gray-300 max-h-[100px] overflow-y-auto leading-relaxed whitespace-pre-wrap font-mono">
                         {(selectedNode.data.content || '').slice(0, 150) || <span className="italic opacity-55">Sem conteúdo…</span>}
                         {(selectedNode.data.content || '').length > 150 && <span className="opacity-40">…</span>}
                       </div>
@@ -428,14 +523,48 @@ export default function Inspector({
                     (() => {
                       const hasGhostText = activeStep && activeStep.targetNodeId === selectedNode.id && activeStep.ghostText;
                       const isChoice = selectedNode.data.nodeType === 'choice';
-                      const wrapperBg = isChoice ? 'bg-white dark:bg-gray-950' : 'bg-gray-950';
+                      const wrapperBg = isChoice ? 'bg-white dark:bg-gray-955' : 'bg-gray-955';
                       const textareaFontClass = isChoice ? 'font-sans text-sm text-gray-900 dark:text-white' : 'font-mono text-xs text-emerald-400';
                       const textareaBgClass = hasGhostText ? 'bg-transparent' : wrapperBg;
+
+                      const typedText = selectedNode.data.content || '';
+
+                      const renderGhostSpans = () => {
+                        const ghostText = activeStep.ghostText || '';
+                        const spans = [];
+                        for (let i = 0; i < ghostText.length; i++) {
+                          const char = ghostText[i];
+                          let className = '';
+                          
+                          if (i < typedText.length) {
+                            if (typedText[i] === char) {
+                              className = 'text-transparent';
+                            } else {
+                              if (char === ' ') {
+                                className = 'bg-red-500/30 text-red-500 dark:text-red-400 font-bold underline';
+                              } else if (char === '\n') {
+                                className = 'bg-red-500/30 text-red-500 dark:text-red-400 font-bold';
+                              } else {
+                                className = 'text-red-500 dark:text-red-400 font-black bg-red-500/20 dark:bg-red-500/40 rounded-sm';
+                              }
+                            }
+                          } else {
+                            className = 'text-gray-550 dark:text-gray-400 opacity-85';
+                          }
+                          
+                          spans.push(
+                            <span key={i} className={className}>
+                              {char}
+                            </span>
+                          );
+                        }
+                        return spans;
+                      };
 
                       const textareaElement = (
                         <textarea
                           disabled={isContentDisabled}
-                          className={`w-full flex-1 p-2.5 border-2 border-gray-900 dark:border-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:outline-none transition-all resize-y min-h-[140px] ${textareaFontClass} ${textareaBgClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''}`}
+                          className={`w-full flex-1 p-2.5 border-2 border-gray-900 dark:border-gray-705 text-gray-900 dark:text-white rounded-none outline-none focus:outline-none transition-all resize-y min-h-[140px] ${textareaFontClass} ${textareaBgClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''}`}
                           value={selectedNode.data.content || ''}
                           onChange={(e) => {
                             if (isChoice) {
@@ -449,13 +578,15 @@ export default function Inspector({
 
                       if (hasGhostText) {
                         return (
-                          <div className={`relative w-full flex-1 flex flex-col min-h-[140px] border-2 border-gray-900 dark:border-gray-700 ${wrapperBg} overflow-hidden`}>
-                            <textarea
-                              disabled
+                          <div className={`relative w-full flex-1 flex flex-col min-h-[140px] border-2 border-gray-900 dark:border-gray-705 ${wrapperBg} overflow-hidden`}>
+                            {/* Ghost Text Overlay */}
+                            <div
                               ref={ghostScrollRef}
-                              className={`absolute inset-0 pointer-events-none p-2 border-0 bg-transparent text-gray-400 dark:text-gray-500 opacity-55 resize-none overflow-hidden select-none z-0 ${textareaFontClass}`}
-                              value={activeStep.ghostText}
-                            />
+                              className={`absolute inset-0 pointer-events-none p-2 border-0 bg-transparent whitespace-pre-wrap break-words overflow-hidden select-none z-0 ${textareaFontClass}`}
+                            >
+                              {renderGhostSpans()}
+                            </div>
+                            {/* Real interactive Textarea overlaying on top */}
                             <textarea
                               disabled={isContentDisabled}
                               className={`w-full flex-1 h-full p-2 bg-transparent border-0 text-gray-900 dark:text-white rounded-none outline-none focus:outline-none resize-none z-10 ${textareaFontClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''}`}
@@ -470,6 +601,7 @@ export default function Inspector({
                               onScroll={(e) => {
                                 if (ghostScrollRef.current) {
                                   ghostScrollRef.current.scrollTop = e.target.scrollTop;
+                                  ghostScrollRef.current.scrollLeft = e.target.scrollLeft;
                                 }
                               }}
                             />
@@ -484,7 +616,7 @@ export default function Inspector({
 
                 {/* SYNTAX WARNINGS */}
                 {selectedNode.data.warnings && selectedNode.data.warnings.length > 0 && (
-                  <div className="mt-2 p-2 bg-orange-900/50 dark:bg-orange-950 border-2 border-orange-500">
+                  <div className="mt-2 p-2 bg-orange-900/50 dark:bg-orange-955 border-2 border-orange-500">
                     <span className="block mb-1 font-black uppercase text-[9px] text-orange-400 tracking-widest">{t('inspector.syntaxWarnings')}</span>
                     <ul className="space-y-1 text-orange-100 font-mono text-[10px]">
                       {selectedNode.data.warnings.map((w, i) => (
@@ -495,6 +627,7 @@ export default function Inspector({
                     </ul>
                   </div>
                 )}
+              </div>              )}
               </div>
 
               {/* LOCAL VARIABLE MODE HINT */}
@@ -685,9 +818,9 @@ export default function Inspector({
                     >
                       {t('inspector.previewButton', 'Preview')}
                     </button>
-                  </div>
-                </div>
-              )}
+                              )}
+              </div>
+>>>>>>> origin/modifications
             </>
           )}
 
