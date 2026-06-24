@@ -7,27 +7,64 @@ Este capítulo descreve a arquitetura geral do \textbf{Plot in a Pot}, detalhand
 \label{sec:arquitetura-geral}
 O sistema foi desenhado segundo uma arquitetura modular dividida em três camadas conceptuais independentes de tecnologia. Esta abordagem garante a separação de responsabilidades entre a recolha de comandos, o processamento de dados e a sua persistência, promovendo a manutenibilidade e a evolução isolada de cada módulo:
 \begin{enumerate}
-    \item \textbf{Camada de Apresentação (Interface):} Responsável por gerir a interação direta com o utilizador. Disponibiliza três interfaces fundamentais: o canvas interativo para manipulação visual do grafo, a matriz de localização para tradução de conteúdos por chaves dinâmicas, e o ecrã de simulação para testar a progressão da história e variáveis.
-    \item \textbf{Camada de Processamento Lógico (Núcleo):} Contém a inteligência do sistema e os motores de transformação. É constituída pelo parser sintático (responsável pela importação e exportação de dados narrativos), pelo validador estático (responsável por auditar e detetar falhas e ciclos lógicos na estrutura), pelo simulador (responsável pelo ciclo de execução da sandbox e controlo de variáveis de estado) e pelo assistente de IA local (responsável pela conversão de texto corrido).
-    \item \textbf{Camada de Dados e Persistência:} Representa o modelo de informação e o armazenamento. Os dados da história (nós, arestas, variáveis e dicionários de localização) são estruturados centralmente numa lista de adjacências e armazenados de forma persistente e segura na própria máquina do utilizador.
+    \item \textbf{Camada de Apresentação (Interface):} Responsável por gerir a interação direta com o utilizador. É constituída por:
+    \begin{itemize}
+        \item \textbf{Canvas de Grafos:} O espaço visual interativo onde o autor cria, manipula e liga os nós narrativos.
+        \item \textbf{Matriz de Tradução:} Uma grelha estruturada que expõe os dicionários de localização e permite a tradução de chaves de texto em tempo real.
+        \item \textbf{Ecrã do Simulador:} A interface interativa de jogo onde o autor testa e experimenta a narrativa sob o ponto de vista do leitor.
+    \end{itemize}
+    \item \textbf{Camada de Processamento Lógico (Núcleo):} Contém a inteligência do sistema e os motores de transformação. É constituída por:
+    \begin{itemize}
+        \item \textbf{Parser Twee 3:} Módulo encarregue de ler ficheiros de texto estruturados em formato Twee 3 e convertê-los no modelo interno da aplicação, bem como exportá-los de volta.
+        \item \textbf{Validador Estático:} Motor que executa travessias de grafo (BFS/DFS) para inspecionar inconsistências estruturais, como ciclos sem saída, nós inacessíveis ou hiperligações quebradas.
+        \item \textbf{Motor de Simulação:} Sandbox responsável por inicializar scripts customizados, interpretar condicionais lógicas e controlar o estado de jogo na simulação.
+    \end{itemize}
+    \item \textbf{Camada de Dados e Persistência:} Representa o modelo de informação e o armazenamento. É constituída por:
+    \begin{itemize}
+        \item \textbf{Lista de Adjacência:} O modelo de dados em memória que representa a topologia do grafo, as saídas (sucessores) e entradas (predecessores) de cada cena.
+        \item \textbf{Dicionários JSON:} A base de dados estruturada que armazena os dicionários de tradução e localização no armazenamento local.
+    \end{itemize}
 \end{enumerate}
 
-O fluxo de funcionamento da aplicação e a relação de comunicação entre estas camadas encontram-se representados no diagrama da Figura~\ref{fig:arquitetura-conceptual}.
+O fluxo de funcionamento da aplicação e a relação de comunicação entre estas camadas encontram-se representados no diagrama detalhado da Figura~\ref{fig:arquitetura-conceptual}.
 
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-    layer/.style={rectangle, draw=black, fill=gray!10, thick, minimum width=10cm, minimum height=1.2cm, align=center},
-    arrow/.style={draw, <->, >=stealth, thick}
+    box/.style={rectangle, draw=black!80, fill=white, thick, rounded corners=3pt, minimum width=3cm, minimum height=1cm, align=center, font=\footnotesize},
+    arrow/.style={draw, ->, >=stealth, thick, black!70}
 ]
-    \node[layer] (ui) at (0,4) {\textbf{Camada de Apresentação (Interface Utilizador)} \\ Canvas de Grafos | Matriz de Localização | Ecrã de Simulação (PlayMode)};
-    \node[layer] (core) at (0,2) {\textbf{Camada de Processamento Lógico (Núcleo)} \\ Parser Twee 3 | Validador Estático (BFS) | Simulador de Estado (Sandbox) | Conversor de IA};
-    \node[layer] (data) at (0,0) {\textbf{Camada de Dados e Persistência} \\ Modelo de Dados (Lista de Adjacência) | Armazenamento Local};
+    % 1. Camada de Apresentação (Interface)
+    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.2, 3.1) rectangle (5.2, 5.0);
+    \node at (0, 4.7) [font=\footnotesize\bfseries\color{black!80}] {Camada de Apresentação (Interface)};
+    \node[box] (canvas) at (-3.4, 3.7) {\textbf{Canvas de Grafos} \\ Edição Visual};
+    \node[box] (matriz) at (0, 3.7) {\textbf{Matriz Tradução} \\ Gestão Localização};
+    \node[box] (sim_screen) at (3.4, 3.7) {\textbf{Ecrã Simulador} \\ Testes PlayMode};
+
+    % 2. Camada de Processamento Lógico (Núcleo)
+    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.2, 0.6) rectangle (5.2, 2.5);
+    \node at (0, 2.2) [font=\footnotesize\bfseries\color{black!80}] {Camada de Processamento Lógico (Núcleo)};
+    \node[box] (parser) at (-3.4, 1.2) {\textbf{Parser Twee 3} \\ Importador / Exportador};
+    \node[box] (validator) at (0, 1.2) {\textbf{Validador Estático} \\ Pesquisas BFS / DFS};
+    \node[box] (engine) at (3.4, 1.2) {\textbf{Motor Simulação} \\ Execução e Sandbox};
+
+    % 3. Camada de Dados e Persistência
+    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.2, -1.9) rectangle (5.2, 0.0);
+    \node at (0, -0.3) [font=\footnotesize\bfseries\color{black!80}] {Camada de Dados e Persistência};
+    \node[box] (adj_list) at (-2.0, -1.3) {\textbf{Lista de Adjacência} \\ Modelo de Dados};
+    \node[box] (loc_db) at (2.0, -1.3) {\textbf{Dicionários JSON} \\ Base de Tradução};
+
+    % Links
+    \draw[arrow, <->] (canvas) -- (parser);
+    \draw[arrow] (canvas) -- (validator);
+    \draw[arrow, <->] (sim_screen) -- (engine);
+    \draw[arrow] (matriz) -- (loc_db);
+    \draw[arrow] (parser) -- (adj_list);
+    \draw[arrow] (adj_list) -- (validator);
+    \draw[arrow] (adj_list) -- (engine);
     
-    \draw[arrow] (ui) -- (core) node[midway, right] {Eventos / Renderizações};
-    \draw[arrow] (core) -- (data) node[midway, right] {Queries / Atualizações};
 \end{tikzpicture}
-\caption{Diagrama conceptual da arquitetura em camadas do Plot in a Pot.}
+\caption{Diagrama de blocos detalhado da arquitetura conceptual e fluxo de dados.}
 \label{fig:arquitetura-conceptual}
 \end{figure}
 
