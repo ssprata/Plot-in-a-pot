@@ -17,6 +17,7 @@ Apesar do sucesso geral da solução, identificaram-se algumas limitações téc
 \begin{enumerate}
     \item \textbf{Análise Sintática baseada em Expressões Regulares:} O motor de análise lógica de macros e variáveis assenta fortemente no uso de expressões regulares (\textit{Regex}). Embora seja rápido, este método apresenta fragilidades na leitura de expressões lógicas com múltiplos níveis de aninhamento de condicionais complexas ou parêntesis em SugarCube.
     \item \textbf{Gestão de Pesos das Arestas:} O modelo atual suporta o conceito de grafos direcionados lógicos, mas ainda não permite a atribuição visual de pesos numéricos diretos nas arestas do grafo de forma a modelar custos ou probabilidades sem recorrer a macros textuais.
+    \item \textbf{Restrição de Destinos Estáticos de Hiperligações:} Ao contrário do Twine tradicional, que suporta o uso de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Seguir em frente|\$caminho]]}), o \gls{piap} não suporta esta funcionalidade. Como o editor precisa de analisar estaticamente o texto para extrair as arestas e renderizar visualmente o grafo no canvas, todos os caminhos e destinos de ligação têm de ser rigidamente declarados (\textit{hardcoded}), representando um compromisso de flexibilidade em prol da clareza visual e da facilidade de auditar o grafo.
 \end{enumerate}
 
 \section{Trabalho Futuro}
