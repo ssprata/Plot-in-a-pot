@@ -104,6 +104,14 @@ O Articy Draft \citep{ArticyDraftReference} é a solução comercial líder da i
 \subsection{Análise Comparativa}
 A fim de estruturar a comparação entre as diferentes abordagens, apresenta-se na Tabela~\ref{tab:comparacao-motores} uma síntese comparativa das três principais ferramentas de ficção interativa baseadas nos critérios extraídos da literatura e da prática de desenvolvimento.
 
+Esta análise comparativa é de extrema relevância para a conceção do \gls{piap}, uma vez que fundamenta diretamente as decisões arquiteturais e os requisitos definidos para o projeto:
+\begin{itemize}
+    \item \textbf{Fusão de Paradigmas (Visual vs. Textual):} Enquanto o Twine se destaca pela interface puramente visual e o Ink pelo controlo fino de estados lógicos complexos, o \gls{piap} visa fundir ambas as forças, proporcionando um editor visual de grafos que não abdica da manipulação robusta de condicionais e variáveis (via macro-linguagem SugarCube).
+    \item \textbf{Adoção do Formato Aberto Twee 3:} A tabela salienta que o formato Twee 3 é uma especificação aberta com mapeamento direto entre passagens e grafos. Isto suporta a decisão de adotar este formato como a base de persistência do \gls{piap}, assegurando interoperabilidade total com o ecossistema Twine e impedindo o bloqueio proprietário (\textit{vendor lock-in}) observado em ferramentas como o ChoiceScript.
+    \item \textbf{Validação Automática e Segurança do Fluxo:} O ChoiceScript é valorizado pelas suas ferramentas robustas de teste automático (\lstinline|randomtest|), uma lacuna crítica do Twine. O \gls{piap} incorpora de raiz este princípio ao disponibilizar o validador estático (BFS) e o Smart Walker no simulador para preencher esta falta, garantindo a correção imediata do fluxo narrativo.
+    \item \textbf{Autonomia e Licenciamento Livre:} A restrição de uso comercial imposta pelo ChoiceScript salienta a importância de desenvolver uma ferramenta que promova a autonomia dos autores, permitindo a exportação de projetos sob licenças livres e sem taxas adicionais.
+\end{itemize}
+
 \begin{table}[htpb]
 \centering
 \caption{Análise comparativa de motores de ficção interativa.}
