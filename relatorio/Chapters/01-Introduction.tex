@@ -28,6 +28,18 @@ Para a concretização do objetivo geral, definiram-se os seguintes objetivos es
     \item \textbf{Simulador Imersivo e Tutorial Jogável:} Implementar um ambiente de simulação em tempo real (\textit{PlayMode}) e um tutorial jogável (\textit{Playable Tutorial}) para validação pedagógica das regras do editor.
 \end{enumerate}
 
+\section{Requisitos Gerais do Sistema}
+\label{sec:requisitos-gerais-sistema}
+Com o intuito de delimitar o âmbito do projeto e as necessidades fundamentais a que o \gls{piap} responde, foram estabelecidos os seguintes requisitos gerais que guiam o comportamento e a utilidade da aplicação:
+\begin{itemize}
+    \item \textbf{Modelador Narrativo Visual:} A aplicação deve disponibilizar uma interface gráfica baseada em grafos que permita modelar e ligar de forma dinâmica as cenas da história.
+    \item \textbf{Motor de Tradução Integrado:} Deve fornecer um sistema para traduzir e localizar textos diretamente na ferramenta de autoria, eliminando a dispersão de ficheiros externos.
+    \item \textbf{Análise e Validação de Consistência:} O sistema deve auditar as ligações criadas para detetar inconsistências como becos sem saída, nós isolados ou ciclos sem saída apropriada.
+    \item \textbf{Compatibilidade com o Ecossistema Twine:} O software deve garantir interoperabilidade bidirecional com o formato padrão Twee 3 (SugarCube), permitindo importar e exportar ficheiros sem perda de metadados.
+    \item \textbf{Simulação em Tempo Real:} Fornecer um modo interativo para jogar, depurar e testar a narrativa diretamente na ferramenta sem necessidade de compilação externa.
+    \item \textbf{Conversão Inteligente de Texto via IA:} O sistema deve permitir que autores escrevam histórias corridas em linguagem natural e convertam esses textos em grafos estruturados no formato Twee automaticamente usando inteligência artificial local.
+\end{itemize}
+
 \section{Métodos e Técnicas Utilizadas}
 O desenvolvimento do projeto apoiou-se em metodologias ágeis com ciclos rápidos de prototipagem e testes de esforço (\textit{stress}) de dados. Ao nível tecnológico e arquitetural, foram utilizadas as seguintes ferramentas e conceitos:
 \begin{itemize}

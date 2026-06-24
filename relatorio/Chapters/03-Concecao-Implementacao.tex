@@ -3,6 +3,30 @@
 
 Este capítulo descreve a arquitetura geral do \textbf{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
 
+\section{Requisitos Funcionais e Não Funcionais}
+\label{sec:requisitos-funcionais-nao-funcionais}
+Para a materialização prática do sistema, os objetivos e requisitos gerais delineados na introdução foram detalhados sob a forma de requisitos técnicos. Estes dividem-se em funcionais (o que o sistema deve executar diretamente) e não funcionais (as restrições técnicas, de qualidade e usabilidade sob as quais o sistema deve operar).
+
+\subsection{Requisitos Funcionais}
+\begin{description}
+    \item[\textbf{RF01 - Criação e Edição de Nós Narrativos (Cenas):}] O utilizador deve poder criar, mover, editar (alterando título e conteúdo de texto) e apagar nós no canvas interativo.
+    \item[\textbf{RF02 - Ligações Direcionadas entre Nós (Escolhas):}] O sistema deve ler ligações inseridas no texto através da sintaxe double-bracket (\lstinline|[[Texto|Destino]]|) e criar arestas direcionadas automaticamente no grafo.
+    \item[\textbf{RF03 - Zonas de Agrupamento Visual:}] O utilizador deve ser capaz de criar áreas retangulares redimensionáveis no canvas (Zonas) para agrupar nós de cena sob um mesmo contexto visual.
+    \item[\textbf{RF04 - Parser e Compatibilidade Twee 3:}] O software deve importar e exportar ficheiros no formato textual normativo \texttt{.twee} síncrona e bidirecionalmente, preservando a sintaxe Twine e convertendo coordenadas.
+    \item[\textbf{RF05 - Matriz de Localização Multi-idioma:}] Disponibilizar uma tabela em formato de grelha (\textit{grid}) que permita traduzir o texto das cenas para diferentes idiomas a partir de chaves dinâmicas, com suporte para exportação e importação em formato CSV.
+    \item[\textbf{RF06 - Auditoria e Validação Estática de Fluxo:}] O sistema deve executar análises estáticas sobre a estrutura do grafo em segundo plano para detetar e alertar sobre nós órfãos (inacessíveis), ligações quebradas (que apontam para nós apagados) ou ciclos infinitos sem condição de saída lógica.
+    \item[\textbf{RF07 - Simulador em Tempo Real (PlayMode):}] O utilizador deve poder testar a história jogando-a numa sandbox isolada dentro da aplicação que interprete as macros lógicas do SugarCube e execute código Javascript e CSS customizado.
+    \item[\textbf{RF08 - Importação Inteligente via Conversor LLM:}] A aplicação deve permitir que o utilizador submeta uma história corrida em linguagem natural e, através de um modelo de linguagem local (Ollama) ou remoto (Gemini), a converta automaticamente em ficheiro no formato Twee 3 para gerar o respetivo grafo.
+\end{description}
+
+\subsection{Requisitos Não Funcionais}
+\begin{description}
+    \item[\textbf{RNF01 - Portabilidade e Execução no Cliente (Browser):}] A plataforma deve ser executável inteiramente no lado do cliente através de um navegador de internet padrão, sem requerer servidores ou infraestruturas complexas.
+    \item[\textbf{RNF02 - Usabilidade e Acessibilidade Visual:}] A interface de grafos deve utilizar a estética neo-brutalista e garantir que a visualização de fluxos (arestas de entrada e saída) seja distinguível sem dependência exclusiva de cor, apoiando utilizadores daltónicos.
+    \item[\textbf{RNF03 - Desempenho e Fluidez:}] O canvas do React Flow e a conversão do parser síncrono devem suportar dezenas de nós em simultâneo com latência de interação e atualização abaixo de 100 milissegundos.
+    \item[\textbf{RNF04 - Privacidade e Soberania de Dados:}] Todos os dados introduzidos, incluindo ficheiros importados, tabelas de tradução e dados submetidos para inteligência artificial no Ollama local, devem permanecer estritamente no armazenamento local do utilizador para garantir segurança absoluta.
+\end{description}
+
 \section{Arquitetura Geral do Sistema}
 O \textbf{Plot in a Pot} foi concebido como uma aplicação web de página única (SPA - \textit{Single Page Application}) desenvolvida em \textbf{React 19} \citep{ReactReference}. A interface utiliza a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference} para o motor gráfico do canvas de grafos, e \textbf{Tailwind CSS 3} \citep{TailwindCSSReference} para a aplicação de uma identidade visual neo-brutalista (caracterizada por sombras sólidas pretas, contornos escuros de espessura elevada e ausência de cantos arredondados).
 

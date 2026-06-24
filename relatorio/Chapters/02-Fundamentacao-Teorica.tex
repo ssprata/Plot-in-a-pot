@@ -165,11 +165,7 @@ Para evitar a necessidade de desenvolver e compilar motores de inferência de ra
     \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por APIs proprietárias na nuvem.
 \end{enumerate}
 
-\subsection{Divisão de Responsabilidades: LLM vs. Arquitetura Lógica}
-Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não possuem fiabilidade suficiente para gerir a coerência estrutural de um grafo de estado de forma autónoma. Os modelos de linguagem tendem a esquecer nós, criar ligações logicamente impossíveis, ignorar restrições de ciclos e perder o mapeamento geral da árvore narrativa. 
+\subsection{Papel do LLM: Conversão e Importação Automática de Histórias}
+Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não possuem fiabilidade suficiente para gerir a coerência estrutural de um grafo de estado de forma autónoma e dinâmica em tempo de execução. Os modelos de linguagem tendem a alucinar, esquecer nós, criar ligações logicamente impossíveis, ignorar restrições de ciclos e perder o mapeamento geral da árvore narrativa quando integrados no fluxo direto de jogo.
 
-Deste modo, o \gls{piap} estabelece uma separação rígida de responsabilidades:
-\begin{itemize}
-    \item \textbf{Lista de Adjacência Bidirecional (Código Proprietário):} Funciona como a autoridade de dados do grafo. Gere as regras lógicas, rastreia a posição ativa do leitor, impede becos sem saída acidentais e reconstrói as ligações do canvas visual.
-    \item \textbf{LLM (Assistente de Conteúdo):} Atua estritamente ao nível do conteúdo do vértice (Cena). O código do software extrai o texto do percurso atual no grafo e envia-o ao modelo acompanhado de uma instrução simplificada: \textit{``Lê o texto anterior. Sugere três opções de ação para a personagem principal fazer a seguir.''}. As escolhas geradas são devolvidas ao software, que se encarrega de criar e registar as respetivas arestas e ligações físicas no grafo.
-\end{itemize}
+Deste modo, no produto final, a função do LLM foi redefinida para atuar exclusivamente como uma ferramenta de conversão estrutural numa fase de pré-processamento. Em vez de ser integrado diretamente na simulação, o modelo é utilizado para ler uma história corrida escrita pelo utilizador em linguagem natural e convertê-la inteiramente para o formato normativo Twee 3 (identificando as passagens/nós, os seus títulos e as arestas de ligação). Uma vez gerada a representação textual Twee, a aplicação importa-a de forma automática para o programa. A partir desse ponto, o motor lógico proprietário e o validador estático (baseados em listas de adjacências) assumem a responsabilidade exclusiva de desenhar o canvas visual e garantir a coerência matemática do grafo de estados.
