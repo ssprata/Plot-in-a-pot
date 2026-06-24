@@ -3,6 +3,34 @@
 
 Este capítulo descreve a arquitetura geral do \textbf{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
 
+\section{Arquitetura Geral do Sistema}
+\label{sec:arquitetura-geral}
+O sistema foi desenhado segundo uma arquitetura modular dividida em três camadas conceptuais independentes de tecnologia. Esta abordagem garante a separação de responsabilidades entre a recolha de comandos, o processamento de dados e a sua persistência, promovendo a manutenibilidade e a evolução isolada de cada módulo:
+\begin{enumerate}
+    \item \textbf{Camada de Apresentação (Interface):} Responsável por gerir a interação direta com o utilizador. Disponibiliza três interfaces fundamentais: o canvas interativo para manipulação visual do grafo, a matriz de localização para tradução de conteúdos por chaves dinâmicas, e o ecrã de simulação para testar a progressão da história e variáveis.
+    \item \textbf{Camada de Processamento Lógico (Núcleo):} Contém a inteligência do sistema e os motores de transformação. É constituída pelo parser sintático (responsável pela importação e exportação de dados narrativos), pelo validador estático (responsável por auditar e detetar falhas e ciclos lógicos na estrutura), pelo simulador (responsável pelo ciclo de execução da sandbox e controlo de variáveis de estado) e pelo assistente de IA local (responsável pela conversão de texto corrido).
+    \item \textbf{Camada de Dados e Persistência:} Representa o modelo de informação e o armazenamento. Os dados da história (nós, arestas, variáveis e dicionários de localização) são estruturados centralmente numa lista de adjacências e armazenados de forma persistente e segura na própria máquina do utilizador.
+\end{enumerate}
+
+O fluxo de funcionamento da aplicação e a relação de comunicação entre estas camadas encontram-se representados no diagrama da Figura~\ref{fig:arquitetura-conceptual}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    layer/.style={rectangle, draw=black, fill=gray!10, thick, minimum width=10cm, minimum height=1.2cm, align=center},
+    arrow/.style={draw, <->, >=stealth, thick}
+]
+    \node[layer] (ui) at (0,4) {\textbf{Camada de Apresentação (Interface Utilizador)} \\ Canvas de Grafos | Matriz de Localização | Ecrã de Simulação (PlayMode)};
+    \node[layer] (core) at (0,2) {\textbf{Camada de Processamento Lógico (Núcleo)} \\ Parser Twee 3 | Validador Estático (BFS) | Simulador de Estado (Sandbox) | Conversor de IA};
+    \node[layer] (data) at (0,0) {\textbf{Camada de Dados e Persistência} \\ Modelo de Dados (Lista de Adjacência) | Armazenamento Local};
+    
+    \draw[arrow] (ui) -- (core) node[midway, right] {Eventos / Renderizações};
+    \draw[arrow] (core) -- (data) node[midway, right] {Queries / Atualizações};
+\end{tikzpicture}
+\caption{Diagrama conceptual da arquitetura em camadas do Plot in a Pot.}
+\label{fig:arquitetura-conceptual}
+\end{figure}
+
 \section{Requisitos Funcionais e Não Funcionais}
 \label{sec:requisitos-funcionais-nao-funcionais}
 Para a materialização prática do sistema, os objetivos e requisitos gerais delineados na introdução foram detalhados sob a forma de requisitos técnicos. Estes dividem-se em funcionais (o que o sistema deve executar diretamente) e não funcionais (as restrições técnicas, de qualidade e usabilidade sob as quais o sistema deve operar).
@@ -27,10 +55,15 @@ Para a materialização prática do sistema, os objetivos e requisitos gerais de
     \item[\textbf{RNF04 - Privacidade e Soberania de Dados:}] Todos os dados introduzidos, incluindo ficheiros importados, tabelas de tradução e dados submetidos para inteligência artificial no Ollama local, devem permanecer estritamente no armazenamento local do utilizador para garantir segurança absoluta.
 \end{description}
 
-\section{Arquitetura Geral do Sistema}
-O \textbf{Plot in a Pot} foi concebido como uma aplicação web de página única (SPA - \textit{Single Page Application}) desenvolvida em \textbf{React 19} \citep{ReactReference}. A interface utiliza a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference} para o motor gráfico do canvas de grafos, e \textbf{Tailwind CSS 3} \citep{TailwindCSSReference} para a aplicação de uma identidade visual neo-brutalista (caracterizada por sombras sólidas pretas, contornos escuros de espessura elevada e ausência de cantos arredondados).
-
-O sistema de internacionalização baseia-se na biblioteca \textbf{i18next}, com uma arquitetura de carregamento estático assíncrono. Os dicionários de tradução residem em ficheiros JSON estáticos na diretoria pública da aplicação (\texttt{locales/pt/translation.json} e \texttt{locales/en/translation.json}), sendo carregados dinamicamente via requisições HTTP em runtime através do módulo \texttt{i18next-http-backend}, o que reduz o tamanho do bundle principal de JavaScript.
+\section{Enquadramento e Implementação Tecnológica}
+\label{sec:enquadramento-tecnologico}
+Para concretizar as especificações da arquitetura conceptual descrita anteriormente, foi selecionada uma pilha tecnológica assente em padrões modernos de desenvolvimento web do lado do cliente:
+\begin{itemize}
+    \item \textbf{Framework Frontend:} A aplicação foi desenvolvida como uma Single Page Application utilizando a biblioteca \textbf{React 19} \citep{ReactReference}, permitindo a criação de componentes reativos e a gestão dinâmica do estado de forma declarativa.
+    \item \textbf{Motor do Canvas de Grafos:} O canvas interativo de nós foi construído recorrendo à biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference}, que fornece as primitivas necessárias para desenhar nós, gerir o arrasto, redimensionamento e zoom, além de suportar a injeção de componentes React customizados nas Zonas e Arestas.
+    \item \textbf{Estilização e Identidade Visual:} A estética neo-brutalista foi implementada de raiz usando \textbf{Tailwind CSS 3} \citep{TailwindCSSReference}, facilitando a definição rápida de contornos espessos, sombras sólidas e regras de alto contraste que constituem o sistema visual e a acessibilidade da aplicação.
+    \item \textbf{Motor de Internacionalização:} A biblioteca \textbf{i18next} foi selecionada para a matriz de localização, carregando dicionários JSON de tradução dinamicamente via requisições HTTP locais no navegador através de \texttt{i18next-http-backend}.
+\end{itemize}
 
 \section{Modelação de Dados: Lista de Adjacência Bidirecional}
 Para representar o fluxo da história no editor, evitou-se o uso de uma Matriz de Adjacência convencional devido ao desperdício de memória ($\mathcal{O}(V^2)$) e à fraca escalabilidade com o crescimento do número de nós. Em vez disso, implementou-se uma \textbf{Lista de Adjacência Bidirecional} com complexidade $\mathcal{O}(V + E)$.
