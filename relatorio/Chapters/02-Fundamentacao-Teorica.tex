@@ -52,7 +52,7 @@ No entanto, em narrativas complexas, a imposição de DAGs é altamente limitado
 
 Por esta razão, o \textbf{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
 
-\section{Estado da Arte}
+\section{Software de Criação de Histórias não Lineares}
 O conceito de ficção interativa refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
 
 Apresenta-se, de seguida, uma análise detalhada das principais referências do mercado académico e profissional.
@@ -64,7 +64,8 @@ Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferrament
     \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
 \end{itemize}
 
-O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da história) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TheToolpickerTeam2026}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
+O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da histó
+ria) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TheToolpickerTeam2026}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
 
 \subsection{Ink (Inkle Studios)}
 O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}).
