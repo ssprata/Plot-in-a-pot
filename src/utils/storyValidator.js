@@ -121,6 +121,7 @@ export function validateStoryFlow(nodes, edges) {
     hasReachableEnd: reachableEndNodes.length > 0,
     reachableEndNodes,
     deadEndNodes,  // FIX #5: nós com edges mas todos os targets inexistentes
+    arrivalHistory,
     error: null,
   };
 }
