@@ -120,6 +120,8 @@
     "importTranslations": "Importar CSV",
     "addKey": "Criar Chave",
     "translationTableTitle": "Base de Chaves",
+    "showSimulationOnValidation": "Ver Simulação ao Validar",
+    "simulationHistoryTitle": "Histórico de Simulação",
     "languagesManagement": "Idiomas Ativos",
     "removeLanguageHint": "Clique para apagar permanentemente esta coluna de idioma",
     "editTitle": "Editar Entrada",
@@ -152,6 +154,7 @@
     "dev": "Dev",
     "adjacencyList": "Lista de Adjacência",
     "devSimulation": "Simulação Dev",
+    "showSimulationOnValidation": "Simulação na Validação",
     "help": {
       "secretNodes": {
         "title": "Nós Secretos",
@@ -188,6 +191,12 @@
         "subtitle": "Testes via consola do browser",
         "text": "Ativa um botão para correr simulações de todos os caminhos possíveis invisivelmente. Os resultados são impressos na consola do navegador (F12).",
         "aria": "Ajuda Simulação Dev"
+      },
+      "showSimulationOnValidation": {
+        "title": "Simulação na Validação",
+        "subtitle": "Visualizar caminhos e variáveis",
+        "text": "Quando ativo, exibe a travessia detalhada de todos os caminhos e variáveis no modal de validação e no painel lateral.",
+        "aria": "Ajuda Simulação na Validação"
       },
       "dangerZone": {
         "title": "Apagar Projeto",
@@ -568,7 +577,25 @@
     "t7Step13Title": "Verificar Ramo Senão (False)",
     "t7Step13Desc": "Desta vez a condição falhou, pelo que a escolha visível deve ser a de ir para o Fim. Clica nela para concluir o jogo.",
     "t7Step14Title": "Concluir Tutorial",
-    "t7Step14Desc": "Excelente! Ambas as condições funcionam perfeitamente no teu código. Clica em 'Terminar Teste' na barra lateral direita para concluir este tutorial avançado."
+    "t7Step14Desc": "Excelente! Ambas as condições funcionam perfeitamente no teu código. Clica em 'Terminar Teste' na barra lateral direita para concluir este tutorial avançado.",
+    "t8Name": "5. Nós de Zona e Imagens de Fundo",
+    "t8Desc": "Aprende a usar Nós de Zona para agrupar cenas e personalizar o fundo do jogo com imagens.",
+    "t8Step1Title": "Conceitos de Nós de Zona",
+    "t8Step1Desc": "Os Nós de Zona ajudam a organizar a tua história visualmente. Arrastar cenas para dentro de uma zona agrupa-as. Seleciona a zona 'Zona Tutorial' para começar.",
+    "t8Step2Title": "Adicionar Fundo à Zona",
+    "t8Step2Desc": "Podes definir imagens de fundo para as zonas. No inspetor, expande 'Imagem de Fundo'. Por favor, tem pelo menos 2 imagens prontas no teu computador, ou copia e cola este URL: https://i.imgur.com/4DqJ06K.jpeg",
+    "t8Step3Title": "Testar Fundo da Zona",
+    "t8Step3Desc": "Vamos testar! Clica no botão verde 'Jogar' no painel à direita. Como o nó 'Start' está dentro da zona, ele herdará automaticamente a imagem de fundo da zona!",
+    "t8Step4Title": "Sair do Modo Jogo",
+    "t8Step4Desc": "Ótimo. Agora clica no botão 'Terminar Teste' na barra lateral direita para regressares ao editor de grafos.",
+    "t8Step5Title": "Selecionar Nó Start",
+    "t8Step5Desc": "Seleciona o nó de escolha normal chamado 'Start' dentro da zona para configurares as suas propriedades individuais.",
+    "t8Step6Title": "Sobrepor Fundo",
+    "t8Step6Desc": "Nós normais também aceitam imagens de fundo. No jogo, a imagem do nó ativo sobrepõe-se à imagem da zona. Cola este URL: https://i.imgur.com/jrB3l5H.jpeg",
+    "t8Step7Title": "Verificar Sobreposição",
+    "t8Step7Desc": "Clica em 'Jogar' novamente. Verás que a imagem de fundo do nó substitui a da zona dinamicamente!",
+    "t8Step8Title": "Fechar e Concluir",
+    "t8Step8Desc": "Perfeito! Clica no botão 'Terminar Teste' na barra lateral direita para concluir este tutorial."
   },
   "validationModal": {
     "statusProblems": "Problemas Detetados",

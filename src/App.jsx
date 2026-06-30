@@ -138,6 +138,7 @@ const buildInitialSettings = () => {
         showSecrets: parsed.showSecrets ?? config.showSecrets,
         showFlowErrors: parsed.showFlowErrors ?? config.showFlowErrors,
         showSimulationLegacy: parsed.showSimulationLegacy ?? config.showSimulationLegacy,
+        showSimulationOnValidation: parsed.showSimulationOnValidation ?? false,
         visualLogicEnabled: parsed.visualLogicEnabled ?? (config.visualLogicEnabled !== false),
         visualBlocksMode: parsed.visualBlocksMode ?? false,
         bgImageBlur: parsed.bgImageBlur ?? 5
@@ -149,6 +150,7 @@ const buildInitialSettings = () => {
     showSecrets: config.showSecrets,
     showFlowErrors: config.showFlowErrors,
     showSimulationLegacy: config.showSimulationLegacy,
+    showSimulationOnValidation: false,
     visualLogicEnabled: config.visualLogicEnabled !== false,
     visualBlocksMode: false,
     bgImageBlur: 5
@@ -1287,6 +1289,8 @@ function App() {
           isOpen={isValidationModalOpen}
           onClose={() => setIsValidationModalOpen(false)}
           result={validationModalResult}
+          showSimulation={settings.showSimulationOnValidation}
+          nodes={nodes}
         />
 
         {isSettingsOpen && (
@@ -1399,6 +1403,9 @@ function App() {
           setTranslations={setTranslations}
           activeStep={activeStep}
           openPlayMode={() => handleOpenPlayMode()}
+          nodes={nodes}
+          settings={settings}
+          toggleSetting={toggleSetting}
         />
 
         <Popout

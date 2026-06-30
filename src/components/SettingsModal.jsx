@@ -230,6 +230,31 @@ export default function SettingsModal({ isOpen, onClose, settings, toggleSetting
               <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showSimulationLegacy ? 'left-6' : 'left-0.5'}`} />
             </button>
           </div>
+
+          {/* Opção: Simulação na Validação */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm uppercase text-gray-900 dark:text-gray-100">{t('settingsModal.showSimulationOnValidation', 'Simulação na Validação')}</span>
+              <button
+                type="button"
+                onClick={() => openHelp(
+                  t('settingsModal.help.showSimulationOnValidation.title', 'Simulação na Validação'),
+                  t('settingsModal.help.showSimulationOnValidation.subtitle', 'Visualizar caminhos e variáveis'),
+                  <p>{t('settingsModal.help.showSimulationOnValidation.text', 'Quando ativo, exibe a travessia detalhada de todos os caminhos e variáveis no modal de validação e no painel lateral.')}</p>
+                )}
+                className={helpButtonClass}
+                aria-label={t('settingsModal.help.showSimulationOnValidation.aria', 'Help Simulation on Validation')}
+              >
+                ?
+              </button>
+            </div>
+            <button
+              onClick={() => toggleSetting('showSimulationOnValidation')}
+              className={`w-12 h-6 border-2 border-gray-900 dark:border-gray-200 transition-colors relative ${settings.showSimulationOnValidation ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${settings.showSimulationOnValidation ? 'left-6' : 'left-0.5'}`} />
+            </button>
+          </div>
         </div>
 
         {/* --- SECÇÃO: TUTORIAL --- */}

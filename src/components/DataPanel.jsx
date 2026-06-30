@@ -9,7 +9,10 @@ export default function DataPanel({
   runSimulationLog, showFlowErrors, showSimulationLegacy, parserWarnings,
   validationResult,
   activeStep, // ADICIONADO
-  openPlayMode
+  openPlayMode,
+  nodes = [],
+  settings = {},
+  toggleSetting = () => {}
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [dragActive, setDragActive] = useState(false);
@@ -74,6 +77,11 @@ export default function DataPanel({
     }
   };
 
+  const getNodeLabel = (nodeId) => {
+    const node = nodes.find(n => n.id === nodeId);
+    return node ? (node.data?.label || nodeId) : nodeId;
+  };
+
   return (
     <div
       ref={sidebarRef}
@@ -118,6 +126,27 @@ export default function DataPanel({
           >
             {t('topBar.play', 'Play')}
           </button>
+
+          {/* SIMULATION ON VALIDATION TOGGLE */}
+          <div className="flex items-center justify-between p-2.5 border-2 border-gray-900 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 rounded-none shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff]">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-[10px] uppercase text-gray-900 dark:text-gray-100">
+                {t('dataPanel.showSimulationOnValidation', 'Ver Simulação ao Validar')}
+              </span>
+            </div>
+            <button
+              onClick={() => toggleSetting('showSimulationOnValidation')}
+              className={`w-10 h-5 border-2 border-gray-900 dark:border-gray-200 transition-colors relative cursor-pointer ${
+                settings.showSimulationOnValidation ? 'bg-green-400 dark:bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 w-3.5 h-3.5 border-2 border-gray-900 dark:border-gray-200 bg-white dark:bg-gray-100 transition-all ${
+                  settings.showSimulationOnValidation ? 'left-5' : 'left-0.5'
+                }`}
+              />
+            </button>
+          </div>
 
           {/* BOTÃO ADICIONADO: Ponto de entrada limpo para a matriz de tradução geral */}
           <button 
@@ -259,6 +288,59 @@ export default function DataPanel({
               <ul className="text-[9px] space-y-4 uppercase font-mono leading-tight">
                 {validationErrors.map((err, i) => <li key={i} className="border-b border-red-800 pb-3 last:border-0"><div className="mb-1 text-sm">{err.sourceLabel} → {err.targetLabel}</div></li>)}
               </ul>
+            </div>
+          )}
+
+          {settings.showSimulationOnValidation && validationResult?.arrivalHistory && (
+            <div className="w-full min-h-0 flex flex-col pt-2">
+              <div className="flex items-center justify-between border-b border-gray-900 dark:border-gray-200 pb-1 mb-2">
+                <h4 className="font-bold text-gray-700 dark:text-gray-300 text-xs uppercase">
+                  {t('dataPanel.simulationHistoryTitle', 'Simulation History')}
+                </h4>
+              </div>
+              <div className="w-full font-mono text-[9px] bg-gray-900 text-green-400 p-3 rounded-none border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] overflow-y-auto max-h-[220px] space-y-3">
+                {(() => {
+                  const elements = [];
+                  validationResult.arrivalHistory.forEach((histories, nodeId) => {
+                    const nodeLabel = getNodeLabel(nodeId);
+                    elements.push(
+                      <div key={nodeId} className="border-b border-gray-800 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0 text-left">
+                        <div className="text-yellow-400 font-bold uppercase text-[9px] mb-1">
+                          Node: {nodeLabel}
+                        </div>
+                        <div className="space-y-1.5 pl-2">
+                          {histories.map((hist, idx) => {
+                            const stateKeys = Object.keys(hist.state || {});
+                            return (
+                              <div key={idx} className="bg-gray-950 p-1.5 border border-gray-800 rounded-sm">
+                                <div className="text-blue-400 font-semibold mb-0.5">
+                                  Route {idx + 1}:
+                                </div>
+                                <div className="text-gray-300 break-all mb-1 leading-normal">
+                                  Path: {hist.path.map(pId => getNodeLabel(pId)).join(' → ')}
+                                </div>
+                                <div className="text-emerald-400 flex flex-wrap gap-x-2 gap-y-0.5 leading-normal">
+                                  <span className="text-gray-500">State:</span>
+                                  {stateKeys.length === 0 ? (
+                                    <span className="italic text-gray-500">[Empty]</span>
+                                  ) : (
+                                    stateKeys.map(k => (
+                                      <span key={k} className="bg-gray-900 px-1 border border-gray-800 rounded">
+                                        {k}: {String(hist.state[k])}
+                                      </span>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                  return elements.length > 0 ? elements : <div className="italic text-gray-500 text-center">No simulation data.</div>;
+                })()}
+              </div>
             </div>
           )}
 

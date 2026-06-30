@@ -120,6 +120,8 @@
     "importTranslations": "Import CSV",
     "addKey": "Add Key",
     "translationTableTitle": "Keys Database",
+    "showSimulationOnValidation": "Show Logic Simulation",
+    "simulationHistoryTitle": "Simulation History",
     "languagesManagement": "Active Locales",
     "removeLanguageHint": "Click to completely delete this locale column",
     "editTitle": "Edit Entry",
@@ -152,6 +154,7 @@
     "dev": "Dev",
     "adjacencyList": "Adjacency List",
     "devSimulation": "Dev Simulation",
+    "showSimulationOnValidation": "Show Logic Simulation",
     "help": {
       "secretNodes": {
         "title": "Secret Nodes",
@@ -188,6 +191,12 @@
         "subtitle": "Browser console testing",
         "text": "Enables a button that runs invisible simulations of all possible paths. Results are printed to the browser console (F12).",
         "aria": "Help Dev Simulation"
+      },
+      "showSimulationOnValidation": {
+        "title": "Logic Simulation",
+        "subtitle": "Traverse paths and variables",
+        "text": "When active, displays a detailed report of all traversed paths and variable states in the validation modal and sidebar.",
+        "aria": "Help Simulation on Validation"
       },
       "dangerZone": {
         "title": "Delete Project",
@@ -568,7 +577,25 @@
     "t7Step13Title": "Verify False Path (Else)",
     "t7Step13Desc": "This time, the conditional check fails and you are presented with 'Ir para o Fim' as the choice. Click it to read the ending.",
     "t7Step14Title": "Complete Tutorial",
-    "t7Step14Desc": "Excellent! Both conditions are evaluated dynamically from your code. Click 'End Test' in the right sidebar to conclude the walkthrough."
+    "t7Step14Desc": "Excellent! Both conditions are evaluated dynamically from your code. Click 'End Test' in the right sidebar to conclude the walkthrough.",
+    "t8Name": "5. Zone Nodes & Background Images",
+    "t8Desc": "Learn how to use Zone Nodes to group scenes and customize your game background with images.",
+    "t8Step1Title": "Zone Nodes Basics",
+    "t8Step1Desc": "Zone Nodes help organize your story visually. Dragging scenes into a zone groups them. Select the 'Zona Tutorial' zone to begin.",
+    "t8Step2Title": "Adding Zone Background",
+    "t8Step2Desc": "You can set background images for zones. In the inspector, expand 'Imagem de Fundo'. Please prepare at least 2 images on your computer, or copy & paste this URL: https://i.imgur.com/4DqJ06K.jpeg",
+    "t8Step3Title": "Verify Zone Background",
+    "t8Step3Desc": "Let's test it! Click the green 'Play' button in the right sidebar. Since the 'Start' node is inside this zone, you'll see it automatically inherits the zone background image!",
+    "t8Step4Title": "Exit Play Mode",
+    "t8Step4Desc": "Excellent. Now click the 'End Test' button in the right sidebar to return to the editor.",
+    "t8Step5Title": "Select Start Node",
+    "t8Step5Desc": "Now select the normal choice node labeled 'Start' inside the zone to configure its individual properties.",
+    "t8Step6Title": "Override Background",
+    "t8Step6Desc": "Normal nodes can also have backgrounds. In play mode, the active scene background overrides the zone background. Paste this URL: https://i.imgur.com/jrB3l5H.jpeg",
+    "t8Step7Title": "Verify Overlap",
+    "t8Step7Desc": "Click 'Play' again. You will see that the new node background overrides the zone background image dynamically!",
+    "t8Step8Title": "Close and Finish",
+    "t8Step8Desc": "Perfect! Click the 'End Test' button in the right sidebar to conclude this walkthrough."
   },
   "validationModal": {
     "statusProblems": "Problems Detected",

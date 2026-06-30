@@ -219,6 +219,29 @@ const tutorialTemplates = {
       languages: ['pt', 'en'],
       keys: {}
     }
+  },
+  t8: {
+    nodes: [
+      {
+        id: 'zone-1',
+        type: 'zone',
+        position: { x: 100, y: 100 },
+        style: { width: 350, height: 260, pointerEvents: 'none' },
+        data: { label: 'Zona Tutorial', nodeType: 'zone', color: '#f59e0b', bgImage: '' }
+      },
+      {
+        id: '1',
+        type: 'choice',
+        position: { x: 180, y: 160 },
+        parentId: 'zone-1',
+        data: { label: 'Start', nodeType: 'choice', content: 'Bem-vindo ao início da história!', choices: [], tags: 'start', bgImage: '' }
+      }
+    ],
+    edges: [],
+    translations: {
+      languages: ['pt', 'en'],
+      keys: {}
+    }
   }
 };
 
@@ -253,6 +276,7 @@ export default function PlaythroughTutorial({
   const [stepCompleted, setStepCompleted] = useState(false);
   const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'advanced'
   const [showCodeWarning, setShowCodeWarning] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(null);
 
   // --- TUTORIAL STEPS DEFINITION ---
 
@@ -771,6 +795,80 @@ export default function PlaythroughTutorial({
         check: null,
         autoAdvance: false
       }
+    ],
+    t8: [
+      {
+        titleKey: 'tutorial.t8Step1Title',
+        descKey: 'tutorial.t8Step1Desc',
+        check: (state) => state.selectedNodeId === 'zone-1',
+        autoAdvance: true,
+        targetNodeId: 'zone-1',
+        highlightNodeId: 'zone-1'
+      },
+      {
+        titleKey: 'tutorial.t8Step2Title',
+        descKey: 'tutorial.t8Step2Desc',
+        check: (state) => !!state.nodes.find(n => n.id === 'zone-1')?.data.bgImage,
+        autoAdvance: true,
+        targetNodeId: 'zone-1',
+        highlightNodeId: 'zone-1',
+        highlightButton: 'editImage'
+      },
+      {
+        titleKey: 'tutorial.t8Step3Title',
+        descKey: 'tutorial.t8Step3Desc',
+        check: (state) => state.isPlayModeOpen === true,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.t8Step4Title',
+        descKey: 'tutorial.t8Step4Desc',
+        check: (state) => state.isPlayModeOpen === false,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'endTest'
+      },
+      {
+        titleKey: 'tutorial.t8Step5Title',
+        descKey: 'tutorial.t8Step5Desc',
+        check: (state) => state.selectedNodeId === '1',
+        autoAdvance: true,
+        targetNodeId: '1',
+        highlightNodeId: '1'
+      },
+      {
+        titleKey: 'tutorial.t8Step6Title',
+        descKey: 'tutorial.t8Step6Desc',
+        check: (state) => !!state.nodes.find(n => n.id === '1')?.data.bgImage,
+        autoAdvance: true,
+        targetNodeId: '1',
+        highlightNodeId: '1',
+        highlightButton: 'editImage'
+      },
+      {
+        titleKey: 'tutorial.t8Step7Title',
+        descKey: 'tutorial.t8Step7Desc',
+        check: (state) => state.isPlayModeOpen === true,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'play'
+      },
+      {
+        titleKey: 'tutorial.t8Step8Title',
+        descKey: 'tutorial.t8Step8Desc',
+        check: (state) => state.isPlayModeOpen === false,
+        autoAdvance: true,
+        allowPlay: true,
+        highlightButton: 'endTest'
+      },
+      {
+        titleKey: 'tutorial.completeTitle',
+        descKey: 'tutorial.completeText',
+        check: null,
+        autoAdvance: false
+      }
     ]
   }), []);
 
@@ -1079,6 +1177,24 @@ export default function PlaythroughTutorial({
                     {t('tutorial.yes', 'Começar')}
                   </button>
                 </div>
+
+                {/* Tutorial 8 */}
+                <div className="border-4 border-gray-900 dark:border-gray-600 p-4 bg-amber-50 dark:bg-gray-800 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-black text-sm uppercase text-gray-900 dark:text-gray-100 mb-2">
+                      {t('tutorial.t8Name')}
+                    </h4>
+                    <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed font-mono">
+                      {t('tutorial.t8Desc')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => startTutorial('t8')}
+                    className="mt-4 w-full py-2 bg-amber-400 hover:bg-amber-500 text-gray-950 font-black text-xs uppercase border-2 border-gray-900 shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
+                  >
+                    {t('tutorial.yes', 'Começar')}
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -1204,7 +1320,18 @@ export default function PlaythroughTutorial({
     if (!currentStep) return null;
 
     return (
-      <div className="fixed bottom-4 left-4 z-[250] w-[380px] bg-white dark:bg-gray-900 border-4 border-gray-900 dark:border-gray-100 p-4 shadow-[6px_6px_0px_#000] dark:shadow-[6px_6px_0px_#fff] font-sans transition-all duration-300">
+      <div 
+        onKeyDown={(e) => {
+          // Stop propagation of copy commands inside the box so ReactFlow doesn't intercept it
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+            e.stopPropagation();
+          }
+        }}
+        onCopy={(e) => {
+          e.stopPropagation();
+        }}
+        className="fixed bottom-4 left-4 z-[250] w-[380px] bg-white dark:bg-gray-900 border-4 border-gray-900 dark:border-gray-100 p-4 shadow-[6px_6px_0px_#000] dark:shadow-[6px_6px_0px_#fff] font-sans transition-all duration-300 select-text"
+      >
         
         {/* Banner/Header */}
         <div className="flex justify-between items-center bg-yellow-400 border-2 border-gray-900 text-gray-900 px-2 py-1 mb-3 text-[10px] font-black uppercase tracking-wider">
@@ -1237,6 +1364,35 @@ export default function PlaythroughTutorial({
             <p className="text-[11px] font-mono text-gray-700 dark:text-gray-300 leading-relaxed">
               {t(currentStep.descKey)}
             </p>
+            {(() => {
+              const descText = t(currentStep.descKey);
+              const imgurMatch = descText.match(/https:\/\/i\.imgur\.com\/[a-zA-Z0-9\.\/_]+/g);
+              if (imgurMatch && imgurMatch.length > 0) {
+                return (
+                  <div className="mt-2.5 flex flex-col gap-1.5 select-none">
+                    {imgurMatch.map((url, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-1 bg-gray-50 dark:bg-gray-800 p-1 border-2 border-gray-900 dark:border-gray-700">
+                        <span className="text-[9px] font-mono text-gray-600 dark:text-gray-400 truncate pl-1 select-text">
+                          {url}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(url);
+                            setCopiedUrl(url);
+                            setTimeout(() => setCopiedUrl(null), 1500);
+                          }}
+                          className="px-2 py-0.5 border border-gray-900 bg-yellow-400 hover:bg-yellow-500 text-gray-950 font-black text-[9px] uppercase cursor-pointer transition-all active:scale-95 whitespace-nowrap"
+                        >
+                          {copiedUrl === url ? 'Copiado!' : 'Copiar'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
 
           {/* Checklist / Requirement */}
