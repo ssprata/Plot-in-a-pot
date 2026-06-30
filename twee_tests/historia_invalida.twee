@@ -1,0 +1,33 @@
+:: StoryTitle
+História Inválida (Teste de Validação)
+
+:: StoryData
+{
+  "ifid": "B4F82260-1419-48CB-B1DC-2C3C56D7324D",
+  "format": "SugarCube",
+  "format-version": "2.36.0",
+  "start": "Inicio",
+  "zoom": 1
+}
+
+:: Inicio {"position":"200,100"}
+Esta é a passagem inicial do teste de validação do Plot in a Pot.
+Aqui podes testar a capacidade do validador estático (BFS) de detetar erros lógicos e de fluxo.
+
+Escolhe uma das opções com erros intencionais:
+* [[Ir para a passagem com link partido|CenaErroLink]]
+* [[Seguir o fluxo normal|CenaNormal]]
+
+:: CenaNormal {"position":"400,200"}
+Esta passagem faz parte do fluxo normal da história.
+* [[Voltar ao Início|Inicio]]
+
+:: CenaErroLink {"position":"200,300"}
+Esta passagem contém um link que aponta para um nó inexistente no grafo.
+* [[Entrar no portal misterioso|CenaInexistente]]
+* [[Voltar ao Início|Inicio]]
+
+:: CenaOrfa {"position":"500,400"}
+Esta é uma passagem órfã (nó isolado/inacessível).
+Não existe nenhum link de outra passagem que aponte para mim.
+* [[Voltar ao Início|Inicio]]

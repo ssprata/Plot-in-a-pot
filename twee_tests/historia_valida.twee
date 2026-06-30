@@ -1,0 +1,47 @@
+:: StoryTitle
+História Válida de Teste
+
+:: StoryData
+{
+  "ifid": "A4F82260-1419-48CB-B1DC-2C3C56D7324C",
+  "format": "SugarCube",
+  "format-version": "2.36.0",
+  "start": "Inicio",
+  "zoom": 1
+}
+
+:: StoryInit
+<<set $chapeu to false>>
+
+:: Inicio {"position":"200,100"}
+Acordas numa floresta misteriosa. O vento sopra suavemente entre as árvores.
+À tua frente, vês dois caminhos.
+* [[Seguir pelo caminho estreito da esquerda|CaminhoEsquerda]]
+* [[Seguir pelo caminho largo da direita|CaminhoDireita]]
+
+:: CaminhoEsquerda {"position":"100,300"}
+O caminho da esquerda leva-te a uma clareira ensolarada. No chão, encontras um chapéu engraçado.
+* [[Pegar no chapéu|PegarChapeu]]
+* [[Voltar para a floresta|Inicio]]
+
+:: PegarChapeu {"position":"100,500"}
+<<set $chapeu to true>>
+Pegas no chapéu e colocas-o na cabeça. Sentes-te mais elegante.
+* [[Voltar ao início|Inicio]]
+
+:: CaminhoDireita {"position":"400,300"}
+O caminho da direita leva-te a uma cabana abandonada. A porta está entreaberta.
+<<if $chapeu is true>>
+  * [[Entrar na cabana e saudar o habitante com o teu chapéu|EntrarCabanaChapeu]]
+<<else>>
+  * [[Entrar na cabana timidamente|EntrarCabanaTimidamente]]
+<</if>>
+* [[Voltar ao início|Inicio]]
+
+:: EntrarCabanaChapeu {"position":"300,500"}
+Entras na cabana. Um velho feiticeiro sorri ao ver o teu chapéu e oferece-te um chá quente. Venceste o desafio!
+* [[Jogar novamente|Inicio]] <<set $chapeu to false>>
+
+:: EntrarCabanaTimidamente {"position":"500,500"}
+Entras na cabana. Está vazia e fria. Sentes que algo falta para seres bem recebido.
+* [[Voltar a procurar lá fora|CaminhoDireita]]
