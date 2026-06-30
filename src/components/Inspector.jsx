@@ -251,7 +251,7 @@ export default function Inspector({
     <div
       ref={sidebarRef}
       style={{ width: `${width}px` }}
-      className={`relative border-r-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 flex flex-col h-full shadow-md shrink-0 ${
+      className={`relative border-r-4 border-gray-900 dark:border-gray-700 bg-stone-100 dark:bg-gray-900 flex flex-col h-full shadow-md shrink-0 ${
         isResizing ? '' : 'transition-[width] duration-150'
       }`}
     >

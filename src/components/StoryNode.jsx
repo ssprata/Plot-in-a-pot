@@ -21,11 +21,11 @@ export default function StoryNode({ data }) {
   const isScript = data.nodeType === 'javascript';
   const isCss = data.nodeType === 'css';
   // Definição de Cores Dinâmicas
-  let borderColor = 'border-gray-800 dark:border-gray-200';
+  let borderColor = 'border-gray-900 dark:border-gray-200';
   let headerBg = '';
 
   if (isSecret) {
-    borderColor = 'border-purple-600 dark:border-purple-400';
+    borderColor = 'border-purple-900 dark:border-purple-400';
     headerBg = data.bgImage
       ? 'bg-purple-900/60 text-purple-100 dark:bg-purple-800/60 dark:text-purple-200'
       : 'bg-purple-900 text-purple-100 dark:bg-purple-800 dark:text-purple-200';
@@ -44,7 +44,7 @@ export default function StoryNode({ data }) {
   }
 
   return (
-    <div className={`relative border-2 ${borderColor} rounded min-w-[180px] shadow-[4px_4px_0px_rgba(0,0,0,0.15)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.15)] overflow-hidden transition-all hover:shadow-[6px_6px_0px_rgba(0,0,0,0.2)] dark:hover:shadow-[6px_6px_0px_rgba(255,255,255,0.2)] ${isSecret ? 'opacity-90' : ''} ${data.highlight ? 'tutorial-node-flash' : ''} ${data.bgImage ? 'bg-white/75 dark:bg-gray-900/75 backdrop-blur-[1px]' : 'bg-white dark:bg-gray-800'}`}>
+    <div className={`relative border-2 ${borderColor} rounded min-w-[180px] shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-hidden transition-all hover:shadow-[6px_6px_0px_#000] dark:hover:shadow-[6px_6px_0px_#fff] ${isSecret ? 'opacity-90' : ''} ${data.highlight ? 'tutorial-node-flash' : ''} ${data.bgImage ? 'bg-white/75 dark:bg-gray-900/75 backdrop-blur-[1px]' : 'bg-white dark:bg-gray-800'}`}>
 
       {/* Blurred background image element */}
       {data.bgImage && (

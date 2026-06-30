@@ -86,7 +86,7 @@ export default function DataPanel({
     <div
       ref={sidebarRef}
       style={{ width: isExpanded ? `${width}px` : '48px' }}
-      className={`relative border-l-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col h-full shadow-md shrink-0 ${
+      className={`relative border-l-4 border-gray-900 dark:border-gray-700 bg-stone-100 dark:bg-gray-900 flex flex-col h-full shadow-md shrink-0 ${
         isResizing ? '' : 'transition-all duration-300 ease-in-out'
       }`}
     >
@@ -267,16 +267,16 @@ export default function DataPanel({
 
           {validationResult && !validationResult.hasReachableEnd && validationResult.unreachableEdges.length === 0 && (
             <div className="p-3 bg-yellow-900 text-yellow-100 rounded-none border-2 border-yellow-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
-              <h4 className="font-bold text-[10px] uppercase mb-1 underline tracking-tighter text-yellow-400">{t('dataPanel.noEndDetected')}</h4>
+              <h4 className="font-bold text-xs uppercase mb-1 underline tracking-tighter text-yellow-400">{t('dataPanel.noEndDetected')}</h4>
             </div>
           )}
 
           {validationResult?.hasReachableEnd && (
             <div className="p-3 bg-green-900 text-green-100 rounded-none border-2 border-green-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff]">
-              <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter text-green-400">
+              <h4 className="font-bold text-xs uppercase mb-2 underline tracking-tighter text-green-400">
                 {t('dataPanel.reachableEnds')} {validationResult.reachableEndNodes.length}
               </h4>
-              <ul className="text-[9px] space-y-2 uppercase font-mono leading-tight">
+              <ul className="text-xs space-y-2 uppercase font-mono leading-tight">
                 {validationResult.reachableEndNodes.map((endNode, i) => <li key={i} className="border-b border-green-800 pb-2 last:border-0"><span className="text-green-400 font-bold mr-2">✓</span><span className="text-white">{endNode.label}</span></li>)}
               </ul>
             </div>
@@ -284,8 +284,8 @@ export default function DataPanel({
 
           {showFlowErrors && validationErrors?.length > 0 && (
             <div className="p-3 bg-red-900 text-red-100 rounded-none border-2 border-red-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
-              <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter">{t('dataPanel.flowErrors')}</h4>
-              <ul className="text-[9px] space-y-4 uppercase font-mono leading-tight">
+              <h4 className="font-bold text-xs uppercase mb-2 underline tracking-tighter">{t('dataPanel.flowErrors')}</h4>
+              <ul className="text-xs space-y-4 uppercase font-mono leading-tight">
                 {validationErrors.map((err, i) => <li key={i} className="border-b border-red-800 pb-3 last:border-0"><div className="mb-1 text-sm">{err.sourceLabel} → {err.targetLabel}</div></li>)}
               </ul>
             </div>

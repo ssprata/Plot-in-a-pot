@@ -1308,7 +1308,7 @@ function App() {
           />
         )}
 
-        <div className="flex-1 flex flex-col border-r-2 border-gray-300 relative z-0">
+        <div className="flex-1 flex flex-col border-r-4 border-gray-900 dark:border-gray-700 relative z-0">
           <TopBar
             addNode={addNode}
             openSettings={() => setIsSettingsOpen(true)}
@@ -1362,7 +1362,7 @@ function App() {
                 nodeBorderRadius={2}
               />
               <Controls className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-hidden [&>button]:dark:bg-gray-800 [&>button]:dark:border-gray-700 [&>button]:dark:fill-gray-200 hover:[&>button]:dark:bg-gray-700 [&>button]:transition-colors" />
-              <Background gap={16} color={isDark ? '#475569' : '#cbd5e1'} />
+              <Background gap={16} color={isDark ? '#475569' : '#94a3b8'} />
             </ReactFlow>
           </div>
         </div>
