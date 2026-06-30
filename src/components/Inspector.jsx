@@ -451,7 +451,7 @@ export default function Inspector({
               {/* PASSAGE TEXT / SOURCE CODE */}
               <div className="mb-4 flex flex-col">
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-black text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <label className="font-black text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {selectedNode.data.nodeType === 'choice' ? t('inspector.narrativeText', 'PASSAGE TEXT').toUpperCase() : t('inspector.sourceCode', 'SOURCE CODE').toUpperCase()}
                   </label>
                   <div className="flex items-center gap-1.5">
@@ -460,7 +460,7 @@ export default function Inspector({
                         type="button"
                         onClick={onOpenVariables ?? handleCreateVariable}
                         disabled={isCreateVarDisabled}
-                        className={`px-2 py-0.5 bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''} ${activeStep?.highlightButton === 'createVar' ? 'tutorial-btn-flash' : ''}`}
+                        className={`px-2 py-0.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''} ${activeStep?.highlightButton === 'createVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.createVariable')}
                       </button>
@@ -469,7 +469,7 @@ export default function Inspector({
                         type="button"
                         onClick={onChangeVariables ?? handleChangeVariable}
                         disabled={isCreateVarDisabled}
-                        className={`px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''} ${activeStep?.highlightButton === 'changeVar' ? 'tutorial-btn-flash' : ''}`}
+                        className={`px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase border border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none ${isCreateVarDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''} ${activeStep?.highlightButton === 'changeVar' ? 'tutorial-btn-flash' : ''}`}
                       >
                         {t('inspector.changeValue')}
                       </button>
@@ -484,7 +484,7 @@ export default function Inspector({
                       <button
                         type="button"
                         onClick={() => setInspectorTab('visual')}
-                        className={`flex-1 py-1 text-[9px] uppercase font-bold border transition-all ${
+                        className={`flex-1 py-1 text-xs uppercase font-bold border transition-all ${
                           inspectorTab === 'visual'
                             ? 'bg-yellow-400 border-gray-900 dark:border-gray-200 text-black shadow-none font-black'
                             : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-900 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -495,7 +495,7 @@ export default function Inspector({
                       <button
                         type="button"
                         onClick={() => setInspectorTab('code')}
-                        className={`flex-1 py-1 text-[9px] uppercase font-bold border transition-all ${
+                        className={`flex-1 py-1 text-xs uppercase font-bold border transition-all ${
                           inspectorTab === 'code'
                             ? 'bg-yellow-400 border-gray-900 dark:border-gray-200 text-black shadow-none font-black'
                             : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-900 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
