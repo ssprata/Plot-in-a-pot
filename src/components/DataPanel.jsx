@@ -298,14 +298,14 @@ export default function DataPanel({
                   {t('dataPanel.simulationHistoryTitle', 'Simulation History')}
                 </h4>
               </div>
-              <div className="w-full font-mono text-[9px] bg-gray-900 text-green-400 p-3 rounded-none border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] overflow-y-auto max-h-[220px] space-y-3">
+              <div className="w-full font-mono text-xs bg-gray-900 text-green-400 p-3 rounded-none border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] overflow-y-auto max-h-[220px] space-y-3">
                 {(() => {
                   const elements = [];
                   validationResult.arrivalHistory.forEach((histories, nodeId) => {
                     const nodeLabel = getNodeLabel(nodeId);
                     elements.push(
                       <div key={nodeId} className="border-b border-gray-800 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0 text-left">
-                        <div className="text-yellow-400 font-bold uppercase text-[9px] mb-1">
+                        <div className="text-yellow-400 font-bold uppercase text-xs mb-1">
                           Node: {nodeLabel}
                         </div>
                         <div className="space-y-1.5 pl-2">
@@ -313,19 +313,19 @@ export default function DataPanel({
                             const stateKeys = Object.keys(hist.state || {});
                             return (
                               <div key={idx} className="bg-gray-950 p-1.5 border border-gray-800 rounded-sm">
-                                <div className="text-blue-400 font-semibold mb-0.5">
+                                <div className="text-blue-400 font-semibold mb-0.5 text-[11px]">
                                   Route {idx + 1}:
                                 </div>
-                                <div className="text-gray-300 break-all mb-1 leading-normal">
+                                <div className="text-gray-300 break-all mb-1 leading-normal text-[11px]">
                                   Path: {hist.path.map(pId => getNodeLabel(pId)).join(' → ')}
                                 </div>
-                                <div className="text-emerald-400 flex flex-wrap gap-x-2 gap-y-0.5 leading-normal">
+                                <div className="text-emerald-400 flex flex-wrap gap-x-2 gap-y-0.5 leading-normal text-[11px]">
                                   <span className="text-gray-500">State:</span>
                                   {stateKeys.length === 0 ? (
                                     <span className="italic text-gray-500">[Empty]</span>
                                   ) : (
                                     stateKeys.map(k => (
-                                      <span key={k} className="bg-gray-900 px-1 border border-gray-800 rounded">
+                                      <span key={k} className="bg-gray-900 px-1 border border-gray-800 rounded text-[10px]">
                                         {k}: {String(hist.state[k])}
                                       </span>
                                     ))
