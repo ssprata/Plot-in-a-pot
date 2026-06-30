@@ -31,28 +31,28 @@ O fluxo de funcionamento da aplicação e a relação de comunicação entre est
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-    box/.style={rectangle, draw=black!80, fill=white, thick, rounded corners=3pt, minimum width=3cm, minimum height=1cm, align=center, font=\footnotesize},
+    box/.style={rectangle, draw=black!80, fill=white, thick, rounded corners=3pt, minimum width=3.2cm, minimum height=1cm, align=center, font=\footnotesize},
     arrow/.style={draw, ->, >=stealth, thick, black!70}
 ]
     % 1. Camada de Apresentação (Interface)
-    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.2, 3.1) rectangle (5.2, 5.0);
-    \node at (0, 4.7) [font=\footnotesize\bfseries\color{black!80}] {Camada de Apresentação (Interface)};
-    \node[box] (canvas) at (-3.4, 3.7) {\textbf{Canvas de Grafos} \\ Edição Visual};
-    \node[box] (matriz) at (0, 3.7) {\textbf{Matriz Tradução} \\ Gestão Localização};
-    \node[box] (sim_screen) at (3.4, 3.7) {\textbf{Ecrã Simulador} \\ Testes PlayMode};
+    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.4, 3.0) rectangle (5.4, 4.8);
+    \node at (0, 4.5) [font=\footnotesize\bfseries\color{black!80}] {Camada de Apresentação (Interface)};
+    \node[box] (canvas) at (-3.6, 3.6) {\textbf{Canvas de Grafos} \\ Edição Visual};
+    \node[box] (matriz) at (0, 3.6) {\textbf{Matriz Tradução} \\ Gestão Localização};
+    \node[box] (sim_screen) at (3.6, 3.6) {\textbf{Ecrã Simulador} \\ Testes PlayMode};
 
     % 2. Camada de Processamento Lógico (Núcleo)
-    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.2, 0.6) rectangle (5.2, 2.5);
-    \node at (0, 2.2) [font=\footnotesize\bfseries\color{black!80}] {Camada de Processamento Lógico (Núcleo)};
-    \node[box] (parser) at (-3.4, 1.2) {\textbf{Parser Twee 3} \\ Importador / Exportador};
-    \node[box] (validator) at (0, 1.2) {\textbf{Validador Estático} \\ Pesquisas BFS / DFS};
-    \node[box] (engine) at (3.4, 1.2) {\textbf{Motor Simulação} \\ Execução e Sandbox};
+    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.4, 0.4) rectangle (5.4, 2.2);
+    \node at (0, 1.9) [font=\footnotesize\bfseries\color{black!80}] {Camada de Processamento Lógico (Núcleo)};
+    \node[box] (parser) at (-3.6, 1.0) {\textbf{Parser Twee 3} \\ Importador / Exportador};
+    \node[box] (validator) at (-1.2, 1.0) {\textbf{Validador Estático} \\ Pesquisas BFS / DFS};
+    \node[box] (engine) at (3.6, 1.0) {\textbf{Motor Simulação} \\ Execução e Sandbox};
 
     % 3. Camada de Dados e Persistência
-    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.2, -1.9) rectangle (5.2, 0.0);
-    \node at (0, -0.3) [font=\footnotesize\bfseries\color{black!80}] {Camada de Dados e Persistência};
-    \node[box] (adj_list) at (-2.0, -1.3) {\textbf{Lista de Adjacência} \\ Modelo de Dados};
-    \node[box] (loc_db) at (2.0, -1.3) {\textbf{Dicionários JSON} \\ Base de Tradução};
+    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.4, -2.2) rectangle (5.4, -0.4);
+    \node at (0, -0.7) [font=\footnotesize\bfseries\color{black!80}] {Camada de Dados e Persistência};
+    \node[box] (adj_list) at (-2.4, -1.6) {\textbf{Lista de Adjacência} \\ Modelo de Dados};
+    \node[box] (loc_db) at (0, -1.6) {\textbf{Dicionários JSON} \\ Base de Tradução};
 
     % Links
     \draw[arrow, <->] (canvas) -- (parser);
@@ -96,10 +96,10 @@ Para a materialização prática do sistema, os objetivos e requisitos gerais de
 \label{sec:enquadramento-tecnologico}
 Para concretizar as especificações da arquitetura conceptual descrita anteriormente, foi selecionada uma pilha tecnológica assente em padrões modernos de desenvolvimento web do lado do cliente:
 \begin{itemize}
-    \item \textbf{Framework Frontend:} A aplicação foi desenvolvida como uma Single Page Application utilizando a biblioteca \textbf{React 19} \citep{ReactReference}, permitindo a criação de componentes reativos e a gestão dinâmica do estado de forma declarativa.
-    \item \textbf{Motor do Canvas de Grafos:} O canvas interativo de nós foi construído recorrendo à biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference}, que fornece as primitivas necessárias para desenhar nós, gerir o arrasto, redimensionamento e zoom, além de suportar a injeção de componentes React customizados nas Zonas e Arestas.
-    \item \textbf{Estilização e Identidade Visual:} A estética neo-brutalista foi implementada de raiz usando \textbf{Tailwind CSS 3} \citep{TailwindCSSReference}, facilitando a definição rápida de contornos espessos, sombras sólidas e regras de alto contraste que constituem o sistema visual e a acessibilidade da aplicação.
-    \item \textbf{Motor de Internacionalização:} A biblioteca \textbf{i18next} foi selecionada para a matriz de localização, carregando dicionários JSON de tradução dinamicamente via requisições HTTP locais no navegador através de \texttt{i18next-http-backend}.
+    \item \textbf{Framework Frontend (React 19):} A aplicação foi desenvolvida como uma Single Page Application utilizando a biblioteca \textbf{React 19} \citep{ReactReference}. A escolha justifica-se pela elevada eficiência do mecanismo de atualização do DOM virtual e pela facilidade na gestão dinâmica de estados complexos (nós, arestas e variáveis). A reatividade nativa do React assegura a propagação imediata de edições textuais e lógicas sem sobrecarregar o processador do cliente.
+    \item \textbf{Motor do Canvas de Grafos (ReactFlow 11):} O canvas interativo foi construído com a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference}. A sua seleção evitou o desenvolvimento de um motor de renderização de grafos a partir do zero, o qual seria complexo e propenso a erros de desempenho. O ReactFlow fornece suporte robusto para interações essenciais (arrastar, redimensionar, fazer zoom) e integra-se nativamente com componentes React customizados, viabilizando o desenho de nós de cena e Zonas personalizadas.
+    \item \textbf{Estilização e Identidade Visual (Tailwind CSS 3):} A estética neo-brutalista foi implementada com \textbf{Tailwind CSS 3} \citep{TailwindCSSReference}. A utilização de classes utilitárias acelerou significativamente a estilização de contornos espessos, sombras sólidas e regras de alto contraste necessárias para a acessibilidade visual da plataforma, garantindo uma folha de estilos limpa e de fácil manutenção sem necessidade de ficheiros CSS ad-hoc.
+    \item \textbf{Motor de Internacionalização (i18next):} A biblioteca \textbf{i18next} foi selecionada para a gestão de matrizes de localização, por constituir o padrão de facto para internacionalização em ecossistemas React. Permite o carregamento assíncrono de chaves JSON de tradução dinamicamente na memória local via requisições HTTP locais no navegador (através de \texttt{i18next-http-backend}), assegurando a separação limpa de idiomas e a segurança dos dados.
 \end{itemize}
 
 \subsection{Justificação das Decisões de Design}
@@ -207,12 +207,11 @@ new RegExp('\\$' + antigo + '\\b', 'g')
 Esta regex varre e atualiza em tempo real todas as referências da variável dentro das macros \texttt{<<set>>}, \texttt{<<if>>} e inserções de texto em todos os nós da aplicação, prevenindo a quebra de referências em projetos grandes.
 
 \subsection{Acessibilidade para Autores com Dificuldades Visuais}
-Tendo em conta que o autor principal da ferramenta, Miguel, apresenta limitações visuais (nomeadamente daltonismo), desenhou-se uma estratégia de representação de fluxo e interface adaptada. A escolha da estética neo-brutalista para a interface fundamenta-se no facto de este estilo, quando implementado com rigor técnico, favorecer a acessibilidade de utilizadores com deficiências visuais \citep{Babich2023, Loranger2022}, através de:
+Tendo em conta que um dos autores da ferramenta, Miguel, apresenta limitações visuais (nomeadamente daltonismo), desenhou-se uma estratégia de representação de fluxo e interface adaptada. A escolha da estética neo-brutalista para a interface fundamenta-se no facto de este estilo, quando implementado com rigor técnico, favorecer a acessibilidade de utilizadores com deficiências visuais \citep{Babich2023, Loranger2022}, através de:
 \begin{itemize}
     \item \textbf{Contraste Elevado e Bordas Espessas:} O neo-brutalismo recorre a contornos pretos e espessos (de 2px ou mais) para delimitar elementos de interface (como botões e caixas de texto) e sombras projetadas sólidas e sem difusão, o que facilita a distinção visual de contêineres e controlos interativos por parte de pessoas com baixa acuidade visual.
     \item \textbf{Tipografia Legível:} Uso de fontes sem serifa com pesos elevados (\textit{bold} e \textit{black}) que evitam o esbatimento visual do texto.
-    \item \textbf{Arestas de Entrada:} Quando um nó é selecionado, as arestas que entram no nó mudam o seu padrão visual para uma linha tracejada de espessura elevada.
-    \item \textbf{Arestas de Saída:} As ligações que saem do nó mantêm-se em traço contínuo com setas direcionais acentuadas a apontar para os destinos, garantindo que o fluxo seja perfeitamente compreendido sem qualquer dependência de cores.
+    \item \textbf{Arestas de Alto Contraste:} As ligações entre nós utilizam cores de alto contraste (pretas no tema claro, brancas no tema escuro) e são sempre sólidas, garantindo excelente visibilidade sobre o fundo do canvas independentemente do tema ativo.
     \item \textbf{Sinalização Semântica Redundante:} Cores de contraste elevado e símbolos iconográficos explícitos acompanham o feedback visual em detrimento de códigos de cores simples (verde/vermelho).
 \end{itemize}
 
@@ -238,6 +237,19 @@ Para testes automatizados de rotas, a inteligência do simulador implementa um a
     \item Permite simular caminhos de equilíbrio (como Cabo de Guerra ou mecânicas de sobrevivência) e identificar becos sem saída de forma automatizada e rápida.
 \end{enumerate}
 
+\subsection{Suporte à Sintaxe SugarCube}
+Como motor de simulação dinâmica e sandbox lógica, a plataforma implementa suporte a um subconjunto de macros e operadores da macro-linguagem SugarCube, permitindo aos autores criar condicionais e alterar estados lógicos da história:
+\begin{itemize}
+    \item \textbf{Ficheiros Especiais de Sistema:} Reconhecem-se os nós padrão \texttt{StoryInit} (onde são declaradas e inicializadas as variáveis lógicas globais), \texttt{StoryData} (para leitura de metadados como o nó inicial) e \texttt{StoryCaption} (cujo texto é renderizado na barra lateral de progresso do jogo).
+    \item \textbf{Modificação de Estado (<<set>>):} Suporta-se a alteração de variáveis através da macro \texttt{<<set \$variavel = valor>>} ou \texttt{<<set \$variavel to valor>>}, convertendo atribuições aritméticas e de texto para lógica JavaScript pura executada em sandbox isolada.
+    \item \textbf{Blocos Condicionais (<<if>>):} Permite ocultar ou expor caminhos lógicos dependendo das variáveis vigentes recorrendo a blocos estruturados de controlo:
+    \[
+    \text{<<if expressão>> ... <<elseif expressão>> ... <<else>> ... <</if>>}
+    \]
+    As escolhas (ligações Twine) envolvidas nestes blocos são filtradas e validadas pela função \texttt{canAccessChoice}.
+    \item \textbf{Mapeamento de Operadores:} Para garantir a correspondência de sintaxe, o motor traduz os operadores textuais do Twine para os seus homólogos de JavaScript: \texttt{is}/\texttt{eq} tornam-se \texttt{===}, \texttt{isnot}/\texttt{neq} tornam-se \texttt{!==}, \texttt{and}/\texttt{or} tornam-se \texttt{\&\&}/\texttt{||}, e \texttt{gt}/\texttt{gte}/\texttt{lt}/\texttt{lte} mapeiam-se para os operadores matemáticos clássicos de comparação.
+\end{itemize}
+
 \section{Integração de Modelos de Linguagem (LLMs)}
 \label{sec:integracao-llms-implementacao}
 Para além do núcleo lógico de grafos e da simulação estática, a plataforma disponibiliza um assistente baseado em Modelos de Linguagem de Grande Escala (LLMs) para facilitar a importação e co-criação de histórias. A conceção e implementação desta funcionalidade assenta nos seguintes aspetos:
@@ -251,7 +263,39 @@ Para evitar a necessidade de desenvolver e compilar motores de inferência de ra
     \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por APIs proprietárias na nuvem.
 \end{enumerate}
 
+A escolha de investir no desenvolvimento de soluções de inferência locais (via Ollama) ao invés de recorrer a APIs de grandes fornecedores na nuvem (como OpenAI ou Anthropic) baseou-se em duas premissas estratégicas essenciais:
+\begin{itemize}
+    \item \textbf{Privacidade e Soberania dos Dados:} Ao executar o modelo localmente no computador do autor, garante-se que toda a propriedade intelectual da história e os textos criados permanecem estritamente confidenciais. Não há partilha de dados com servidores externos de terceiros nem risco de os textos literários serem recolhidos para treino de modelos comerciais.
+    \item \textbf{Custo Financeiro Zero:} APIs na nuvem implicam faturação contínua baseada em consumo de tokens (tanto para entrada como para saída), o que criaria barreiras ao uso regular e exigiria a gestão de chaves de API pagas por parte do utilizador. A inferência local permite a utilização gratuita e ilimitada da funcionalidade de conversão inteligente.
+\end{itemize}
+
 \subsection{Papel do LLM: Conversão e Importação Automática de Histórias}
 Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não possuem fiabilidade suficiente para gerir a coerência estrutural de um grafo de estado de forma autónoma e dinâmica em tempo de execução. Os modelos de linguagem tendem a alucinar, esquecer nós, criar ligações logicamente impossíveis, ignorar restrições de ciclos e perder o mapeamento geral da árvore narrativa quando integrados no fluxo direto de jogo.
 
 Deste modo, no produto final, a função do LLM foi redefinida para atuar exclusivamente como uma ferramenta de conversão estrutural numa fase de pré-processamento. Em vez de ser integrado diretamente na simulação, o modelo é utilizado para ler uma história corrida escrita pelo utilizador em linguagem natural e convertê-la inteiramente para o formato normativo Twee 3 (identificando as passagens/nós, os seus títulos e as arestas de ligação). Uma vez gerada a representação textual Twee, a aplicação importa-a de forma automática para o programa. A partir desse ponto, o motor lógico proprietário e o validador estático (baseados em listas de adjacências) assumem a responsabilidade exclusiva de desenhar o canvas visual e garantir a coerência matemática do grafo de estados.
+
+\section{Estrutura do Código e Detalhes de Implementação}
+\label{sec:estrutura-codigo-implementacao}
+
+Para além da fundamentação teórica e da arquitetura abstrata, detalha-se de seguida a organização prática e física do código implementado na plataforma. O software está estruturado em torno de uma diretoria centralizada com duas pastas nucleares de desenvolvimento:
+
+\begin{itemize}
+    \item \textbf{Componentes de Interface (\texttt{/src/components/}):}
+    \begin{itemize}
+        \item \texttt{App.jsx}: Constitui o ponto central de controlo da aplicação. Gere a inicialização e a persistência do estado global do utilizador (nós, arestas, variáveis e dicionários de tradução), bem como os estados locais (histórico para as funções de desfazer/refazer e controlo dos passos do tutorial interativo).
+        \item \texttt{Inspector.jsx}: Painel lateral reativo que se adapta dinamicamente ao elemento selecionado. Permite a edição do título, conteúdo e etiquetas dos nós, além de fornecer a visualização imediata das conexões de entrada (predecessores) e saída (sucessores).
+        \item \texttt{PlayMode.jsx}: Implementa a sandbox do simulador de jogo. Trata de injetar dinamicamente CSS customizado e de executar scripts JavaScript criados pelo autor através do interpretador isolado de macros.
+        \item \texttt{VariablesModal.jsx} e \texttt{TranslationMatrix.jsx}: Modais interativos dedicados, respetivamente, à gestão centralizada de variáveis globais e à tradução estruturada em grelha com suporte para importação/exportação CSV.
+        \item \texttt{StoryNode.jsx}, \texttt{ZoneNode.jsx} e \texttt{EditableEdge.jsx}: Nós e arestas customizados do React Flow que implementam o desenho neo-brutalista de alto contraste e a acessibilidade visual de fluxos direcionados.
+    \end{itemize}
+    
+    \item \textbf{Módulos de Lógica e Utilitários (\texttt{/src/utils/}):}
+    \begin{itemize}
+        \item \texttt{tweeParser.js}: Biblioteca responsável por efetuar a análise sintática (\textit{parsing}) do formato normativo Twee 3 de forma bidirecional, extraindo o texto estruturado em memória para nós gráficos e vice-versa.
+        \texttt{storyValidator.js}: Módulo encarregue de realizar a travessia BFS sobre o grafo em tempo real, gerando a lista de erros de fluxo (nós órfãos ou ligações quebradas).
+        \item \texttt{sugarcubeLogic.js}: Interpretador e compilador JIT (\textit{Just-In-Time}) básico para a linguagem de macros SugarCube, convertendo atribuições de variáveis e condições lógicas Twine em expressões lógicas compatíveis com a execução do motor.
+        \item \texttt{aiGenerator.js}: Gere a integração com a API REST do servidor local de inferência do Ollama ou modelos na nuvem.
+    \end{itemize}
+\end{itemize}
+
+O fluxo de dados da aplicação funciona de forma reativa: qualquer alteração no texto de um nó de cena é lida em tempo de execução pelos analisadores léxicos, propagando de forma síncrona atualizações às tabelas de dependências lógicas e redesenhando de imediato as arestas no canvas do React Flow.

@@ -3,6 +3,15 @@
 
 Neste capítulo são expostos os fundamentos teóricos relativos à modelação matemática de fluxos narrativos interativos, bem como a análise do estado da arte sobre as ferramentas de autoria existentes, destacando os seus pontos fortes e limitações.
 
+\section{Contexto Teórico}
+\label{sec:contexto-teorico}
+
+A criação de narrativas não lineares enfrenta frequentemente a ``Explosão de Complexidade'', na qual os modelos tradicionais baseados em sequências ou cadeias falham em produzir narrativas logicamente consistentes, resultando muitas vezes em conteúdo repetitivo ou contradições causais \citep{Chen2021GraphPlan}. A poluição visual nas ferramentas tradicionais surge porque fluxogramas simples ou cadeias de eventos não conseguem capturar de forma eficaz as ligações densas e multidimensionais entre batidas narrativas, conduzindo a problemas de ``alucinação'' em sistemas automatizados, nos quais os eventos previstos carecem de precisão ou de completude \citep{Li2018NEEG}. Sem uma estrutura formal, os designers enfrentam dificuldades significativas na gestão de percursos ramificados, o que pode conduzir a evoluções narrativas incoerentes que são cognitivamente exigentes de depurar ou verificar manualmente \citep{Mormoris2024Comparing}.
+
+Para ultrapassar estas limitações estruturais, \textit{frameworks} recentes recorrem a \textit{Narrative Event Evolutionary Graphs} (NEEG) e a \textit{Event-centric Temporal Knowledge Graphs}, de forma a fornecer uma representação estruturada da evolução dos eventos \citep{Li2018NEEG, YanTang2023Narrative}. Ao tratar as histórias como grafos direcionados com relações temporais e causais explícitas, estes sistemas conseguem garantir um fluxo lógico e prevenir as inconsistências encontradas em designs manuais tipo ``esparguete'' \citep{Chen2021GraphPlan, Li2018NEEG, Tang2022NGEP}. A implementação de uma \textit{framework} deste tipo permite a utilização de conjuntos de exclusão mútua e métricas de coerência para assegurar que os eventos simultâneos são lógicos e que cada batida narrativa permanece alcançável dentro da hierarquia pretendida \citep{Chen2021GraphPlan}. Esta mudança para uma organização baseada em grafos transforma as ferramentas narrativas de meras aplicações de desenho em validadores lógicos ativos, garantindo consistência global através das propriedades matemáticas formalizadas da interação entre eventos \citep{Chen2021GraphPlan, Tang2022NGEP}.
+
+Tendo em conta o facto de ainda não existirem normas estabelecidas, ao formalizar uma narrativa como um Conjunto Parcialmente Ordenado (Poset)\footnote{As propriedades de reticulado são fundamentais para garantir a integridade lógica da narrativa.}, este projeto pode ir além da simples visualização para criar um Validador Lógico que assegura a integridade estrutural ao nível de arquitetura.
+
 \section{Teoria de Grafos na Narrativa Interativa}
 A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$ \citep{BondyMurty2008}, onde:
 \begin{itemize}
@@ -42,7 +51,7 @@ Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Ac�
 \[
 \mathcal{O}(V + E)
 \]
-A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vértices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
+A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vertices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
 
 No entanto, em narrativas complexas, a imposição de DAGs é altamente limitadora. A impossibilidade de introduzir ciclos impede a criação de:
 \begin{itemize}
@@ -51,15 +60,6 @@ No entanto, em narrativas complexas, a imposição de DAGs é altamente limitado
 \end{itemize}
 
 Por esta razão, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
-
-\section{Modelos de Grafos de Eventos e Validação Lógica}
-\label{sec:modelos-grafos-eventos}
-
-A criação de narrativas não lineares enfrenta frequentemente a ``Explosão de Complexidade'', na qual os modelos tradicionais baseados em sequências ou cadeias falham em produzir narrativas logicamente consistentes, resultando muitas vezes em conteúdo repetitivo ou contradições causais \citep{Chen2021GraphPlan}. A poluição visual nas ferramentas tradicionais surge porque fluxogramas simples ou cadeias de eventos não conseguem capturar de forma eficaz as ligações densas e multidimensionais entre batidas narrativas, conduzindo a problemas de ``alucinação'' em sistemas automatizados, nos quais os eventos previstos carecem de precisão ou de completude \citep{Li2018NEEG}. Sem uma estrutura formal, os designers enfrentam dificuldades significativas na gestão de percursos ramificados, o que pode conduzir a evoluções narrativas incoerentes que são cognitivamente exigentes de depurar ou verificar manualmente \citep{Mormoris2024Comparing}.
-
-Para ultrapassar estas limitações estruturais, \textit{frameworks} recentes recorrem a \textit{Narrative Event Evolutionary Graphs} (NEEG) e a \textit{Event-centric Temporal Knowledge Graphs}, de forma a fornecer uma representação estruturada da evolução dos eventos \citep{Li2018NEEG, YanTang2023Narrative}. Ao tratar as histórias como grafos direcionados com relações temporais e causais explícitas, estes sistemas conseguem garantir um fluxo lógico e prevenir as inconsistências encontradas em designs manuais tipo ``esparguete'' \citep{Chen2021GraphPlan, Li2018NEEG, Tang2022NGEP}. A implementação de uma \textit{framework} deste tipo permite a utilização de conjuntos de exclusão mútua e métricas de coerência para assegurar que os eventos simultâneos são lógicos e que cada batida narrativa permanece alcançável dentro da hierarquia pretendida \citep{Chen2021GraphPlan}. Esta mudança para uma organização baseada em grafos transforma as ferramentas narrativas de meras aplicações de desenho em validadores lógicos ativos, garantindo consistência global através das propriedades matemáticas formalizadas da interação entre eventos \citep{Chen2021GraphPlan, Tang2022NGEP}.
-
-Tendo em conta o facto de ainda não existirem normas estabelecidas, ao formalizar uma narrativa como um Conjunto Parcialmente Ordenado (Poset)\footnote{As propriedades de reticulado são fundamentais para garantir a integridade lógica da narrativa.}, este projeto pode ir além da simples visualização para criar um Validador Lógico que assegura a integridade estrutural ao nível de arquitetura.
 
 \section{Software de Criação de Histórias não Lineares}
 O conceito de ficção interativa refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
@@ -137,11 +137,12 @@ Mapeamento para Grafo & Direto (passagem = nó, link = aresta) & Indireto (estru
 
 A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:comparacao-motores} justifica-se pela necessidade de analisar de que forma as soluções existentes respondem aos desafios práticos da autoria e produção de ficção interativa:
 \begin{itemize}
-    \item \textbf{Licenciamento e Padrões Abertos (Licença, Formato Aberto):} Determinam a sustentabilidade a longo prazo das obras criadas, a liberdade comercial dos autores e a capacidade de extensão das ferramentas sem dependências de termos de serviço restritivos.
-    \item \textbf{Interface de Edição e Mapeamento para Grafo:} Avaliam a carga cognitiva imposta ao autor. Ferramentas visuais reduzem a barreira de entrada para escritores não-programadores, enquanto abordagens puramente textuais exigem mapeamento mental complexo de caminhos ramificados.
-    \item \textbf{Flexibilidade de Distribuição (Exportação Standalone, Integração com Motores):} Definem a flexibilidade de distribuição. Projetos que necessitam de interagir com motores AAA (como Unity/Unreal) requerem forte suporte de integração, au passo que protótipos rápidos beneficiam de formatos web autónomos (HTML).
-    \item \textbf{Garantia de Qualidade (Ferramentas de Teste):} Em narrativas com centenas de caminhos, a verificação manual torna-se impraticável, fazendo com que a existência de testes automáticos (e.g., simulação de escolhas aleatórias ou validação estática) seja crucial para garantir a integridade estrutural e lógica da história.
-    \item \textbf{Curva de Aprendizagem e Adoção:} Refletem a acessibilidade da ferramenta e o suporte comunitário disponível, aspetos vitais para a produtividade de equipas independentes ou autores individuais.
+    \item \textbf{Licenciamento (Licença):} Define a liberdade comercial e legal do autor. Licenças livres como a GPL v3 (Twine) ou MIT (Ink) promovem a autonomia e a publicação sem restrições, ao passo que licenças proprietárias como a CSL (ChoiceScript) impõem limites à distribuição comercial e exigências de royalties.
+    \item \textbf{Interface de Edição e Mapeamento para Grafo:} Avaliam a carga cognitiva imposta ao autor durante a escrita. Um mapeamento direto em canvas visual (Twine) facilita o desenho de percursos geográficos, enquanto interfaces textuais (Ink e ChoiceScript) exigem que o escritor mantenha mentalmente o fluxo de caminhos ramificados.
+    \item \textbf{Exportação Standalone (Distribuição) e Integração com Motores:} Definem a flexibilidade técnica da obra final. A exportação para HTML autónomo (Twine) facilita a partilha web imediata, enquanto a integração nativa com motores de jogo como Unity e Unreal (Ink) é indispensável para produções comerciais de grande escala.
+    \item \textbf{Curva de Aprendizagem e Adoção Académica/Indie:} Refletem a acessibilidade para autores não-técnicos. Ferramentas sem código (Twine) apresentam baixa barreira de entrada e elevada popularidade na comunidade independente, enquanto linguagens de scripting avançadas (Ink) exigem conhecimentos de lógica de programação.
+    \item \textbf{Ferramentas de Teste e Garantia de Qualidade:} Em narrativas complexas com centenas de caminhos, a validação manual é inviável. A existência de testes automáticos baseados em aleatoriedade (como o \lstinline|randomtest| do ChoiceScript) é crucial para detetar incoerências lógicas e becos sem saída.
+    \item \textbf{Formato Aberto:} Determina se o código e a estrutura do projeto pertencem a um padrão livre documentado (como o Twee 3 no Twine) que evite a dependência de plataformas proprietárias e garanta a perenidade do trabalho.
 \end{itemize}
 
 \section{Integração de Modelos de Linguagem de Grande Escala (LLMs) Locais}
