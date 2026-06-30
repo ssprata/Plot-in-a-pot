@@ -31,6 +31,85 @@ Fase 5 & Testes com utilizadores, correção de erros e refinamento final. & 11/
     \item[Fase 5 -- Validação Prática:] Realização de testes estruturados com utilizadores finais para identificar bloqueios cognitivos na interface e falhas de usabilidade.
 \end{description}
 
+\section{Estrutura do Código e Detalhes de Implementação}
+\label{sec:estrutura-codigo-implementacao}
+
+Para além da fundamentação teórica e da arquitetura abstrata do sistema, o processo de desenvolvimento envolveu a estruturação de uma base de código modular e reativa baseada em padrões modernos do ecossistema React~19. O software está organizado física e logicamente em torno de uma diretoria centralizada (\texttt{/src/}), estruturada de acordo com o seguinte esquema de diretórios:
+
+\begin{verbatim}
+src/
++- components/
+|  +- AiImportModal.jsx        # Importação de histórias com IA
+|  +- ConnectionModal.jsx      # Ligação ao Ollama local
+|  +- DataPanel.jsx            # Painel lateral de dados brutos
+|  +- DeleteConfirmModal.jsx   # Confirmação de remoção de nós
+|  +- EditTranslationModal.jsx # Edição rápida de traduções
+|  +- EditableEdge.jsx         # Arestas com splines e waypoints
+|  +- ExportModal.jsx          # Exportação de ficheiros
+|  +- Inspector.jsx            # Painel lateral de edição de nós
+|  +- Minimap.jsx              # Navegação rápida pelo canvas
+|  +- PlayMode.jsx             # Sandbox do simulador de jogo
+|  +- PlaythroughTutorial.jsx  # Tutorial interativo sequencial
+|  +- Popout.jsx               # Janela flutuante de visualização
+|  +- SettingsModal.jsx        # Configurações globais do editor
+|  +- StoryNode.jsx            # Componente visual do nó de cena
+|  +- TranslationMatrix.jsx    # Grelha de tradução multi-idioma
+|  +- ValidationModal.jsx      # Diálogo de erros lógicos (BFS)
+|  +- VariablesModal.jsx       # Gestão de variáveis (estilo Figma)
+|  +- VisualBlocksEditor.jsx   # Programação visual por blocos
+|  \- ZoneNode.jsx             # Retângulo de agrupamento visual
++- contexts/                    # Contextos de estado global React
++- utils/
+|  +- aiGenerator.js           # API REST para Ollama/Gemini
+|  +- graphMath.js             # Controlo geométrico e Splines
+|  +- logicParser.js           # Parser AST de macros SugarCube
+|  +- storySimulator.js        # Máquina de estados da história
+|  +- storyTraversal.js        # Exploração heurística (Smart Walker)
+|  +- storyValidator.js        # Validação estática com BFS
+|  +- sugarcubeLogic.js        # Compilador JIT de macros Twine
+|  \- tweeParser.js            # Parser bidirecional Twee 3
++- App.jsx                      # Controlador de estado global
+\- index.js                     # Entrada da aplicação
+\end{verbatim}
+
+\subsection{Componentes de Interface (src/components/)}
+
+Os componentes de interface gerem a interação direta do utilizador, a renderização gráfica no React Flow e o controlo reativo de diálogos modais:
+
+\begin{itemize}
+    \item \textbf{App.jsx (Controlador Central):} Funciona como o orquestrador principal da aplicação. Inicializa e mantém o estado global da narrativa (vetor de nós, arestas, variáveis globais e de tradução). Para além de implementar as rotinas de ligação com o React Flow (\lstinline|onNodesChange|, \lstinline|onEdgesChange|, \lstinline|onConnect|), gere a pilha de histórico (\lstinline|undoStack| e \lstinline|redoStack|) para permitir o retrocesso ou avanço atómico de edições na interface gráfica. Coordena ainda o progresso do tutorial interativo e sincroniza os modais de variáveis e tradução.
+    \item \textbf{Inspector.jsx (Painel de Propriedades):} Painel lateral que escuta a seleção ativa de nós no canvas do React Flow. Caso seja selecionado um nó narrativo (\lstinline|StoryNode|), renderiza controlos para edição do título, conteúdo textual das cenas e etiquetas/tags. Executa mapeamento reverso dinâmico no modelo de dados para expor as tabelas ``Vens de...'' (nós que apontam para o nó atual) e ``Vais para...'' (nós destinos das hiperligações presentes no texto), permitindo a navegação rápida.
+    \item \textbf{PlayMode.jsx (Sandbox de Simulação):} Cria um ambiente de teste isolado que mimetiza o comportamento do jogador. Ao arrancar, compila o CSS e JavaScript dos nós especiais, injetando-os dinamicamente no DOM. Permite aos autores testar a lógica do SugarCube de forma visual e acionar o \textit{Smart Walker} para percorrer caminhos baseados em novidade.
+    \item \textbf{VariablesModal.jsx (Gestão de Variáveis):} Centraliza a definição de variáveis globais (\lstinline|$variavel|) num formato inspirado nos painéis de design tokens do Figma. Para evitar a inconsistência de dados comuns em ficheiros extensos, o componente implementa um mecanismo de renomeação assistida por expressão regular (\lstinline|new RegExp('\\$' + antigo + '\\b', 'g')|) que substitui automaticamente todas as ocorrências antigas da variável nos blocos de código e textos de todas as cenas da aplicação.
+    \item \textbf{TranslationMatrix.jsx (Matriz de Localização):} Apresenta uma grelha em formato tabular onde cada linha representa uma cena (ou chave de tradução) e cada coluna representa um idioma registado no sistema. A alteração de qualquer célula atualiza a instância global da biblioteca \texttt{i18next} na memória local. O componente suporta exportação e importação bidirecional de ficheiros CSV, tratando a formatação conforme as regras de escape da RFC 4180.
+    \item \textbf{PlaythroughTutorial.jsx (Tutorial Interativo):} Uma experiência de integração (\textit{onboarding}) sequencial integrada no editor. Controla os eventos do rato e teclado, bloqueando ações na interface gráfica que estejam fora do escopo da etapa de aprendizagem atual, de forma a instruir o utilizador pedagogicamente.
+    \item \textbf{VisualBlocksEditor.jsx (Editor de Blocos Lógicos):} Fornece um editor visual alternativo (estilo Scratch/Blockly) para programar as macros lógicas no conteúdo dos nós. Permite que autores sem conhecimentos de programação arrastem blocos de ``Se'', ``Atribuir'' e operadores aritméticos, traduzindo-os automaticamente em sintaxe SugarCube (\lstinline|<<if>>|, \lstinline|<<set>>|).
+    \item \textbf{StoryNode.jsx, ZoneNode.jsx e EditableEdge.jsx (Nós e Arestas Customizados):} Estendem as classes base do React Flow. O \lstinline|ZoneNode| gere a agregação espacial de nós filhos e o cálculo de colisões para ajustar o redimensionamento dinâmico. O \lstinline|EditableEdge| implementa splines baseadas em interpolação Catmull-Rom com pontos geométricos de arrasto (\textit{waypoints}) controlados por estado.
+\end{itemize}
+
+\subsection{Módulos de Lógica e Utilitários (src/utils/)}
+
+Os utilitários contêm os algoritmos semânticos, os parsers e a inteligência estrutural da plataforma, operando fora do ciclo direto de renderização do DOM:
+
+\begin{itemize}
+    \item \textbf{tweeParser.js (Parser Twee 3):} Biblioteca nuclear encarregue da importação e exportação de ficheiros de texto plano no formato Twee 3. O parser analisa os cabeçalhos de passagens (\lstinline|:: Titulo [tags] {metadados}|) e mapeia as coordenadas espaciais das zonas e dos nós. Ao detetar que um nó pertence a um \lstinline|ZoneNode| (grupo), converte as suas coordenadas de absoluta para relativa no momento de leitura, e efetua a operação inversa na escrita para preservar a compatibilidade de layouts noutros compiladores.
+    \item \textbf{storyValidator.js (Validador BFS):} Executa varrimentos de grafo baseados no algoritmo Breadth-First Search (BFS) com complexidade $\mathcal{O}(V + E)$. O validador começa no nó rotulado como inicial (lido de \lstinline|StoryData|) e marca todas as cenas alcançáveis, ignorando caminhos alternativos identificados pela etiqueta especial \lstinline|secreto|. Deteta de forma imediata nós inacessíveis (órfãos), becos sem saída ou ligações partidas (direcionadas a IDs já eliminados).
+    \item \textbf{sugarcubeLogic.js e logicParser.js (Interpretador de Macros):} Compilam a macro-linguagem SugarCube em código executável nativo. O \lstinline|sugarcubeLogic.js| substitui os operadores textuais do Twine (como \lstinline|eq| e \lstinline|and|) para JavaScript puro (\lstinline|===| e \lstinline|&&|). O \lstinline|logicParser.js| constrói a árvore de sintaxe abstrata (AST) básica de condicionais aninhadas, avaliando a visibilidade de arestas em tempo de execução na função \lstinline|canAccessChoice(state)|.
+    \item \textbf{storyTraversal.js e storySimulator.js (Motores de Simulação):} Mantêm a máquina de estados reativa da simulação ativa. Registam as escolhas feitas, o histórico de nós visitados e o valor corrente das variáveis lógicas. O \lstinline|storyTraversal.js| aloja o algoritmo do \textit{Smart Walker}, calculando a novidade de cada nó vizinho (\textit{Novelty Search}) para podar caminhos e simular a exploração automatizada de rotas.
+    \item \textbf{aiGenerator.js (Assistente Ollama):} Comunica através de pedidos HTTP do tipo REST com o servidor local de inferência do Ollama (porta \lstinline|11434|) ou a API remota do Gemini. Trata de enviar os templates de prompts de sistema com instruções de formatação rígidas e processa as respostas textuais em formato JSON estruturado em Twee 3.
+\end{itemize}
+
+\subsection{Fluxo de Dados e Reatividade}
+
+O fluxo de dados da aplicação funciona de forma estritamente reativa e unidirecional para garantir a estabilidade do sistema e a sincronização instantânea de todos os painéis, conforme ilustrado no diagrama da Figura~\ref{fig:arquitetura-conceptual}. 
+
+Quando o autor edita o texto de uma passagem no \lstinline|Inspector.jsx|, um evento de alteração é propagado para o estado central em \texttt{App.jsx}. Este estado é atualizado, forçando a reavaliação de dois subsistemas independentes em segundo plano:
+\begin{enumerate}
+    \item O analisador sintático extrai instantaneamente as novas arestas baseadas em ligações double-bracket e reconstrói a Lista de Adjacência Bidirecional em memória.
+    \item O validador estático (\texttt{storyValidator.js}) executa de imediato a travessia BFS sobre a nova lista de adjacência, atualizando o mapa de erros lógicos.
+\end{enumerate}
+Qualquer erro detetado é propagado para o canvas do React Flow, que desenha alertas visuais de aviso nas bordas dos nós afetados. Se o utilizador abrir o PlayMode, o simulador acede à lista de adjacências atualizada e ao interpretador de SugarCube para processar as macros lógicas em tempo de execução sem requerer qualquer compilação ou carregamento manual.
+
 \section{Metodologia dos Testes de Utilizador}
 Para validar a flexibilidade e usabilidade do \textit{Plot in a Pot}, foi planeada e executada uma bateria de testes qualitativos e quantitativos com um grupo diversificado de participantes.
 

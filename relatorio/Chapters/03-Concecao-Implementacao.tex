@@ -272,28 +272,4 @@ Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não
 
 Deste modo, no produto final, a função do LLM foi redefinida para atuar exclusivamente como uma ferramenta de conversão estrutural numa fase de pré-processamento. Em vez de ser integrado diretamente na simulação, o modelo é utilizado para ler uma história corrida escrita pelo utilizador em linguagem natural e convertê-la inteiramente para o formato normativo Twee 3 (identificando as passagens/nós, os seus títulos e as arestas de ligação). Uma vez gerada a representação textual Twee, a aplicação importa-a de forma automática para o programa. A partir desse ponto, o motor lógico proprietário e o validador estático (baseados em listas de adjacências) assumem a responsabilidade exclusiva de desenhar o canvas visual e garantir a coerência matemática do grafo de estados.
 
-\section{Estrutura do Código e Detalhes de Implementação}
-\label{sec:estrutura-codigo-implementacao}
 
-Para além da fundamentação teórica e da arquitetura abstrata, detalha-se de seguida a organização prática e física do código implementado na plataforma. O software está estruturado em torno de uma diretoria centralizada com duas pastas nucleares de desenvolvimento:
-
-\begin{itemize}
-    \item \textbf{Componentes de Interface (\texttt{/src/components/}):}
-    \begin{itemize}
-        \item \texttt{App.jsx}: Constitui o ponto central de controlo da aplicação. Gere a inicialização e a persistência do estado global do utilizador (nós, arestas, variáveis e dicionários de tradução), bem como os estados locais (histórico para as funções de desfazer/refazer e controlo dos passos do tutorial interativo).
-        \item \texttt{Inspector.jsx}: Painel lateral reativo que se adapta dinamicamente ao elemento selecionado. Permite a edição do título, conteúdo e etiquetas dos nós, além de fornecer a visualização imediata das conexões de entrada (predecessores) e saída (sucessores).
-        \item \texttt{PlayMode.jsx}: Implementa a sandbox do simulador de jogo. Trata de injetar dinamicamente CSS customizado e de executar scripts JavaScript criados pelo autor através do interpretador isolado de macros.
-        \item \texttt{VariablesModal.jsx} e \texttt{TranslationMatrix.jsx}: Modais interativos dedicados, respetivamente, à gestão centralizada de variáveis globais e à tradução estruturada em grelha com suporte para importação/exportação CSV.
-        \item \texttt{StoryNode.jsx}, \texttt{ZoneNode.jsx} e \texttt{EditableEdge.jsx}: Nós e arestas customizados do React Flow que implementam o desenho neo-brutalista de alto contraste e a acessibilidade visual de fluxos direcionados.
-    \end{itemize}
-    
-    \item \textbf{Módulos de Lógica e Utilitários (\texttt{/src/utils/}):}
-    \begin{itemize}
-        \item \texttt{tweeParser.js}: Biblioteca responsável por efetuar a análise sintática (\textit{parsing}) do formato normativo Twee 3 de forma bidirecional, extraindo o texto estruturado em memória para nós gráficos e vice-versa.
-        \texttt{storyValidator.js}: Módulo encarregue de realizar a travessia BFS sobre o grafo em tempo real, gerando a lista de erros de fluxo (nós órfãos ou ligações quebradas).
-        \item \texttt{sugarcubeLogic.js}: Interpretador e compilador JIT (\textit{Just-In-Time}) básico para a linguagem de macros SugarCube, convertendo atribuições de variáveis e condições lógicas Twine em expressões lógicas compatíveis com a execução do motor.
-        \item \texttt{aiGenerator.js}: Gere a integração com a API REST do servidor local de inferência do Ollama ou modelos na nuvem.
-    \end{itemize}
-\end{itemize}
-
-O fluxo de dados da aplicação funciona de forma reativa: qualquer alteração no texto de um nó de cena é lida em tempo de execução pelos analisadores léxicos, propagando de forma síncrona atualizações às tabelas de dependências lógicas e redesenhando de imediato as arestas no canvas do React Flow.
