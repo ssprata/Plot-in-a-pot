@@ -3,7 +3,7 @@
 
 O desenvolvimento de jogos e narrativas interativas tem vindo a ganhar uma importância crescente no panorama do entretenimento e da educação. Diferente do cinema ou da literatura tradicional, a Ficção Interativa (FI) coloca o utilizador no centro da tomada de decisões, permitindo-lhe moldar o rumo dos acontecimentos através das suas escolhas. Esta não-linearidade narrativa, no entanto, introduz uma complexidade acrescida na escrita e no planeamento das histórias, exigindo ferramentas capazes de gerir fluxos de informação complexos e lógica de estados dinâmicos.
 
-Neste contexto surge o \textbf{Plot in a Pot}, um editor visual e simulador de narrativas interativas. O projeto foi concebido para resolver os principais desafios enfrentados pelos autores de histórias não-lineares, combinando uma interface visual de alto desempenho baseada em grafos direcionados com um motor de simulação que suporta a execução de código e lógica em tempo real.
+Neste contexto surge o \textit{Plot in a Pot}, um editor visual e simulador de narrativas interativas. O projeto foi concebido para resolver os principais desafios enfrentados pelos autores de histórias não-lineares, combinando uma interface visual de alto desempenho baseada em grafos direcionados com um motor de simulação que suporta a execução de código e lógica em tempo real.
 
 \section{Objeto do Trabalho}
 O objeto deste projeto consiste no desenvolvimento do \gls{piap}, uma aplicação e ambiente de desenvolvimento concebido para a criação, estruturação, simulação e tradução de narrativas interativas e não-lineares. O sistema foca-se na integração e suporte nativo ao ecossistema do motor Twine, operando especificamente com o formato de ficheiros Twee (versão 3) e com a macro-linguagem SugarCube. Através de uma interface gráfica baseada em grafos, a ferramenta permite a autores e \textit{game designers} gerir ramificações complexas e bases de dados de localização de uma forma unificada.
@@ -11,7 +11,7 @@ O objeto deste projeto consiste no desenvolvimento do \gls{piap}, uma aplicaçã
 \section{Justificação e Pertinência do Tema}
 O \textit{design} de narrativas para jogos não-lineares enfrenta frequentemente problemas severos de escala, onde árvores de diálogo e escolhas crescem exponencialmente, tornando-se difíceis de rastrear e propensas a erros lógicos. Embora o Twine seja uma das ferramentas de referência da comunidade independente e académica \citep{IFTFGDC2026} para a prototipagem rápida de ficção interativa, o desenvolvimento de projetos profissionais de grande escala é severamente limitado pela falta de ferramentas nativas para a gestão multi-idioma (localização) e pela ausência de validadores estáticos de fluxo que previnam caminhos mortos antes da compilação.
 
-O \gls{piap} justifica-se ao resolver esta lacuna, introduzindo uma estética neo-brutalista de alto contraste que otimiza o espaço de trabalho, permitindo isolar cadeias de texto rígidas (\textit{hardcoded}) através de um sistema abstrato de chaves de tradução dinâmicas e oferecendo segurança matemática no mapeamento de rotas narrativas.
+O \gls{piap} justifica-se ao resolver esta lacuna, introduzindo uma estética neo-brutalista de alto contraste que otimiza o espaço de trabalho e melhora a acessibilidade de autores com limitações de visão \citep{Babich2023, Loranger2022}, permitindo isolar cadeias de texto rígidas (\textit{hardcoded}) através de um sistema abstrato de chaves de tradução dinâmicas e oferecendo segurança matemática no mapeamento de rotas narrativas.
 
 \section{Objetivos do Trabalho}
 \subsection{Objetivo Geral}
@@ -49,9 +49,10 @@ O desenvolvimento do projeto apoiou-se em metodologias ágeis com ciclos rápido
 \end{itemize}
 
 \section{Estrutura do Documento}
-Este relatório está estruturado em quatro capítulos principais. Além desta introdução, o documento apresenta:
+Este relatório está estruturado em cinco capítulos principais. Além desta introdução, o documento apresenta:
 \begin{itemize}
     \item \textbf{Capítulo~\ref{cp:fundamentacao-teorica}: Fundamentação Teórica e Estado da Arte}, onde se efetua uma análise comparativa das ferramentas existentes no mercado e se descrevem os conceitos matemáticos de teoria de grafos aplicados à narrativa.
-    \item \textbf{Capítulo~\ref{cp:concecao-implementacao}: Conceção e Implementação do Plot in a Pot}, detalhando a arquitetura do software, a especificação Twee3, o modelo de lista de adjacências bidirecional, os modos de visualização e acessibilidade, e a simulação lógica.
+    \item \textbf{Capítulo~\ref{cp:concecao-implementacao}: Conceção e Implementação}, detalhando a arquitetura do software, a especificação Twee3, o modelo de lista de adjacências bidirecional, os modos de visualização e acessibilidade, e a simulação lógica.
+    \item \textbf{Capítulo~\ref{cp:desenvolvimento}: Desenvolvimento e Avaliação}, que apresenta o cronograma de desenvolvimento da aplicação, as suas fases de conceção prática, e os resultados quantitativos e qualitativos obtidos nos testes com utilizadores.
     \item \textbf{Capítulo~\ref{cp:conclusao}: Conclusão e Trabalho Futuro}, onde são sumariados os resultados alcançados, as limitações da implementação e as propostas para futuros desenvolvimentos.
 \end{itemize}

@@ -1,7 +1,7 @@
 \chapter{Conceção e Implementação}
 \label{cp:concecao-implementacao}
 
-Este capítulo descreve a arquitetura geral do \textbf{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
+Este capítulo descreve a arquitetura geral do \textit{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
 
 \section{Arquitetura Geral do Sistema}
 \label{sec:arquitetura-geral}
@@ -102,6 +102,16 @@ Para concretizar as especificações da arquitetura conceptual descrita anterior
     \item \textbf{Motor de Internacionalização:} A biblioteca \textbf{i18next} foi selecionada para a matriz de localização, carregando dicionários JSON de tradução dinamicamente via requisições HTTP locais no navegador através de \texttt{i18next-http-backend}.
 \end{itemize}
 
+\subsection{Justificação das Decisões de Design}
+\label{subsec:justificacao-decisoes-design}
+Com base na análise comparativa das ferramentas existentes (ver Secção~\ref{sec:analise-comparativa}), as escolhas de design e de tecnologia para o \gls{piap} foram fundamentadas nos seguintes pontos:
+\begin{itemize}
+    \item \textbf{Fusão de Paradigmas (Visual vs. Textual):} Enquanto o Twine se destaca pela interface puramente visual e o Ink pelo controlo fino de estados lógicos complexos, o \gls{piap} visa fundir ambas as forças, proporcionando um editor visual de grafos que não abdica da manipulação robusta de condicionais e variáveis (via macro-linguagem SugarCube).
+    \item \textbf{Adoção do Formato Aberto Twee 3 e Limitação de Grafos:} A especificação aberta Twee 3 possui um mapeamento direto entre passagens e grafos, o que suporta a decisão de adotá-lo como base de persistência do \gls{piap}. Contudo, para permitir que o sistema leia as saídas e as renderize visualmente como arestas de forma fiável, o projeto introduz um compromisso de design (\textit{trade-off}) em relação ao Twine tradicional: não é suportada a utilização de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Texto|\$destino]]}), exigindo que todos os destinos do grafo sejam estáticos.
+    \item \textbf{Validação Automática e Segurança do Fluxo:} O ChoiceScript é valorizado pelas suas ferramentas robustas de teste automático (\lstinline|randomtest|), uma lacuna crítica do Twine. O \gls{piap} incorpora de raiz este princípio ao disponibilizar o validador estático (BFS) e o Smart Walker no simulador para preencher esta falta, garantindo a correção imediata do fluxo narrativo.
+    \item \textbf{Autonomia e Licenciamento Livre:} A restrição de uso comercial imposta pelo ChoiceScript salienta a importância de desenvolver uma ferramenta que promova a autonomia dos autores, permitindo a exportação de projetos sob licenças livres e sem taxas adicionais.
+\end{itemize}
+
 \section{Modelação de Dados: Lista de Adjacência Bidirecional}
 Para representar o fluxo da história no editor, evitou-se o uso de uma Matriz de Adjacência convencional devido ao desperdício de memória ($\mathcal{O}(V^2)$) e à fraca escalabilidade com o crescimento do número de nós. Em vez disso, implementou-se uma \textbf{Lista de Adjacência Bidirecional} com complexidade $\mathcal{O}(V + E)$.
 
@@ -196,12 +206,14 @@ new RegExp('\\$' + antigo + '\\b', 'g')
 \end{code}
 Esta regex varre e atualiza em tempo real todas as referências da variável dentro das macros \texttt{<<set>>}, \texttt{<<if>>} e inserções de texto em todos os nós da aplicação, prevenindo a quebra de referências em projetos grandes.
 
-\subsection{Acessibilidade para Autores Daltónicos}
-Tendo em conta que o autor principal da ferramenta, Miguel, apresenta daltonismo, desenhou-se uma estratégia de representação de fluxo que não depende da cor:
+\subsection{Acessibilidade para Autores com Dificuldades Visuais}
+Tendo em conta que o autor principal da ferramenta, Miguel, apresenta limitações visuais (nomeadamente daltonismo), desenhou-se uma estratégia de representação de fluxo e interface adaptada. A escolha da estética neo-brutalista para a interface fundamenta-se no facto de este estilo, quando implementado com rigor técnico, favorecer a acessibilidade de utilizadores com deficiências visuais \citep{Babich2023, Loranger2022}, através de:
 \begin{itemize}
+    \item \textbf{Contraste Elevado e Bordas Espessas:} O neo-brutalismo recorre a contornos pretos e espessos (de 2px ou mais) para delimitar elementos de interface (como botões e caixas de texto) e sombras projetadas sólidas e sem difusão, o que facilita a distinção visual de contêineres e controlos interativos por parte de pessoas com baixa acuidade visual.
+    \item \textbf{Tipografia Legível:} Uso de fontes sem serifa com pesos elevados (\textit{bold} e \textit{black}) que evitam o esbatimento visual do texto.
     \item \textbf{Arestas de Entrada:} Quando um nó é selecionado, as arestas que entram no nó mudam o seu padrão visual para uma linha tracejada de espessura elevada.
-    \item \textbf{Arestas de Saída:} As ligações que saem do nó mantêm-se em traço contínuo com setas direcionais acentuadas a apontar para os destinos.
-    \item \textbf{Alto Contraste:} Cores de contraste elevado e símbolos iconográficos acompanham o feedback visual em detrimento de códigos de cores simples (verde/vermelho).
+    \item \textbf{Arestas de Saída:} As ligações que saem do nó mantêm-se em traço contínuo com setas direcionais acentuadas a apontar para os destinos, garantindo que o fluxo seja perfeitamente compreendido sem qualquer dependência de cores.
+    \item \textbf{Sinalização Semântica Redundante:} Cores de contraste elevado e símbolos iconográficos explícitos acompanham o feedback visual em detrimento de códigos de cores simples (verde/vermelho).
 \end{itemize}
 
 \section{Validação Estática e Simulação}
@@ -225,3 +237,21 @@ Para testes automatizados de rotas, a inteligência do simulador implementa um a
     \item Perante um nó com múltiplas escolhas, efetua-se uma poda da árvore de decisão (\textit{Pruning}), dando prioridade absoluta às opções que conduzem a nós com menor taxa de visita histórica.
     \item Permite simular caminhos de equilíbrio (como Cabo de Guerra ou mecânicas de sobrevivência) e identificar becos sem saída de forma automatizada e rápida.
 \end{enumerate}
+
+\section{Integração de Modelos de Linguagem (LLMs)}
+\label{sec:integracao-llms-implementacao}
+Para além do núcleo lógico de grafos e da simulação estática, a plataforma disponibiliza um assistente baseado em Modelos de Linguagem de Grande Escala (LLMs) para facilitar a importação e co-criação de histórias. A conceção e implementação desta funcionalidade assenta nos seguintes aspetos:
+
+\subsection{Modelo de Integração Local sem Custos}
+Para evitar a necessidade de desenvolver e compilar motores de inferência de raiz, o \gls{piap} adota uma arquitetura baseada em servidores de inferência locais prontos a usar, nomeadamente o \textit{Ollama} ou o \textit{LM Studio}. O fluxo de comunicação processa-se conforme descrito de seguida:
+\begin{enumerate}
+    \item \textbf{Instalação Local:} O autor/utilizador instala o servidor \textit{Ollama} na sua máquina local.
+    \item \textbf{Execução em Segundo Plano:} O \textit{Ollama} descarrega o modelo pretendido (ex: \lstinline|llama3.1:8b|) e executa a inferência local em segundo plano.
+    \item \textbf{Simulação de API:} O servidor expõe uma API REST local na porta padrão (tipicamente \lstinline|http://localhost:11434|), que simula a interface padrão de chat da OpenAI.
+    \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por APIs proprietárias na nuvem.
+\end{enumerate}
+
+\subsection{Papel do LLM: Conversão e Importação Automática de Histórias}
+Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não possuem fiabilidade suficiente para gerir a coerência estrutural de um grafo de estado de forma autónoma e dinâmica em tempo de execução. Os modelos de linguagem tendem a alucinar, esquecer nós, criar ligações logicamente impossíveis, ignorar restrições de ciclos e perder o mapeamento geral da árvore narrativa quando integrados no fluxo direto de jogo.
+
+Deste modo, no produto final, a função do LLM foi redefinida para atuar exclusivamente como uma ferramenta de conversão estrutural numa fase de pré-processamento. Em vez de ser integrado diretamente na simulação, o modelo é utilizado para ler uma história corrida escrita pelo utilizador em linguagem natural e convertê-la inteiramente para o formato normativo Twee 3 (identificando as passagens/nós, os seus títulos e as arestas de ligação). Uma vez gerada a representação textual Twee, a aplicação importa-a de forma automática para o programa. A partir desse ponto, o motor lógico proprietário e o validador estático (baseados em listas de adjacências) assumem a responsabilidade exclusiva de desenhar o canvas visual e garantir a coerência matemática do grafo de estados.

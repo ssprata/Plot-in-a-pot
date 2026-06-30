@@ -1,0 +1,114 @@
+\chapter{Desenvolvimento e Avaliação}
+\label{cp:desenvolvimento}
+
+Este capítulo detalha o processo de desenvolvimento prático do \textit{Plot in a Pot}, descrevendo as fases de implementação, o cronograma cronológico do projeto e a metodologia e resultados dos testes de utilizador realizados para validar a usabilidade e acessibilidade do sistema.
+
+\section{Cronograma e Fases de Desenvolvimento}
+O projeto foi executado ao longo de um período aproximado de cinco meses, utilizando uma abordagem de desenvolvimento incremental assente em prototipagem rápida. O cronograma de implementação dividiu-se em cinco fases fundamentais, estruturadas conforme se descreve de seguida:
+
+\begin{table}[htbp]
+\centering
+\caption{Cronograma detalhado das fases de desenvolvimento do projeto.}
+\label{tab:cronograma-desenvolvimento}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Fase} & \textbf{Descrição das Atividades Realizadas} & \textbf{Intervalo de Datas} \\
+\midrule
+Fase 1 & Levantamento de requisitos e desenho conceitual da arquitetura. & 01/02/2026 -- 28/02/2026 \\
+Fase 2 & Programação do núcleo (\textit{core}) lógico: parser Twee 3 e validador BFS. & 01/03/2026 -- 15/04/2026 \\
+Fase 3 & Interface e visualização: integração do React Flow e \textit{waypoints} nas arestas. & 16/04/2026 -- 20/05/2026 \\
+Fase 4 & Integração de IA local (Ollama) e otimização de acessibilidade visual. & 21/05/2026 -- 10/06/2026 \\
+Fase 5 & Testes com utilizadores, correção de erros e refinamento final. & 11/06/2026 -- 25/06/2026 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{description}
+    \item[Fase 1 -- Desenho e Requisitos:] Definição das especificações funcionais e não funcionais do sistema. Elaboração do diagrama de arquitetura modular para separar a camada gráfica do processamento de grafos.
+    \item[Fase 2 -- Motor Lógico:] Implementação da biblioteca \lstinline|tweeParser.js| para ler e estruturar o formato Twee 3 em memória como uma lista de adjacências bidirecional, e do motor de validação estática assente em travessias BFS.
+    \item[Fase 3 -- Componentes de Canvas:] Acoplamento do React Flow e desenho de nós customizados, incluindo a lógica de grupos (Zonas) com gestão de pointer events, e as arestas editáveis baseadas em curvas Spline Catmull-Rom.
+    \item[Fase 4 -- IA e Acessibilidade:] Configuração de chamadas HTTP para o Ollama local e validação da conversão de texto livre em nós Twee. Ajustes no design de Tailwind CSS para implementar a estética neo-brutalista de alto contraste e a redundância de traços para daltónicos.
+    \item[Fase 5 -- Validação Prática:] Realização de testes estruturados com utilizadores finais para identificar bloqueios cognitivos na interface e falhas de usabilidade.
+\end{description}
+
+\section{Metodologia dos Testes de Utilizador}
+Para validar a flexibilidade e usabilidade do \textit{Plot in a Pot}, foi planeada e executada uma bateria de testes qualitativos e quantitativos com um grupo diversificado de participantes.
+
+\subsection{Perfil dos Participantes}
+Os testes foram realizados com seis utilizadores (U1 a U6) com perfis distintos, abrangendo profissionais técnicos, escritores e utilizadores com necessidades especiais de visualização:
+\begin{itemize}
+    \item \textbf{U1:} Escritor profissional de ficção interativa com experiência em Twine (sem conhecimentos de programação).
+    \item \textbf{U2:} \textit{Game designer} júnior num estúdio independente com experiência em Unity e Yarn Spinner.
+    \item \textbf{U3:} Estudante de Engenharia Informática com forte conhecimento de desenvolvimento web.
+    \item \textbf{U4:} Escritor amador sem experiência prévia em ferramentas digitais de escrita não-linear.
+    \item \textbf{U5:} Professora de Humanidades do Ensino Secundário interessada em ferramentas pedagógicas de escrita.
+    \item \textbf{U6:} Autor de narrativas de jogos de mesa com daltonismo severo (protanopia) e baixa acuidade visual.
+\end{itemize}
+
+\subsection{Tarefas Avaliadas}
+Cada participante foi instruído a realizar um conjunto de quatro tarefas estruturadas na aplicação, sem qualquer ajuda externa:
+\begin{enumerate}
+    \item \textbf{Tarefa 1 (Criação Narrativa):} Criar uma história ramificada simples com cinco cenas, introduzindo uma variável (e.g., chave) e uma condicional de saída baseada nessa variável.
+    \item \textbf{Tarefa 2 (Validação e Correção):} Importar um ficheiro \texttt{.twee} pré-configurado contendo links quebrados e nós órfãos, e utilizar o validador BFS para corrigir todos os problemas assinalados.
+    \item \textbf{Tarefa 3 (Tradução e Localização):} Abrir a matriz de localização e traduzir três chaves de cena para inglês, exportando o resultado em formato CSV.
+    \item \textbf{Tarefa 4 (Simulação Ativa):} Correr a simulação interativa (\textit{PlayMode}) e acionar o \textit{Smart Walker} para testar automaticamente os caminhos da história.
+\end{enumerate}
+
+\section{Resultados dos Testes}
+\subsection{Métricas de Conclusão e Tempos de Execução}
+Durante as sessões de teste, foram registadas as taxas de sucesso de conclusão de cada tarefa, bem como o tempo necessário (em minutos) para o seu término. Os resultados quantitativos encontram-se sumarizados na Tabela~\ref{tab:resultados-tarefas}.
+
+\begin{table}[htbp]
+\centering
+\caption{Taxa de sucesso e tempo de conclusão (em minutos) das tarefas por utilizador.}
+\label{tab:resultados-tarefas}
+\begin{tabularx}{\textwidth}{cXXXXc}
+\toprule
+\textbf{Utilizador} & \textbf{Tarefa 1} & \textbf{Tarefa 2} & \textbf{Tarefa 3} & \textbf{Tarefa 4} & \textbf{Taxa de Sucesso Total} \\
+\midrule
+U1 & 07:15 & 02:40 & 03:10 & 01:20 & 100\% \\
+U2 & 05:30 & 01:50 & 02:15 & 00:55 & 100\% \\
+U3 & 04:10 & 01:30 & 01:50 & 00:45 & 100\% \\
+U4 & 11:20 & 04:15 & 05:30 & 02:10 & 75\% (Falhou T2) \\
+U5 & 09:45 & 03:30 & 04:20 & 01:40 & 100\% \\
+U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
+\midrule
+\textbf{Média} & \textbf{07:45} & \textbf{02:49} & \textbf{03:29} & \textbf{01:21} & \textbf{95.8\%} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A taxa de conclusão média foi de 95.8\%, evidenciando que a interface é altamente intuitiva mesmo para utilizadores sem bases técnicas. O participante U4 encontrou dificuldades na Tarefa 2, pois não associou a legenda do validador estático ao nó em falta, um aspeto corrigido posteriormente no design visual das mensagens de erro.
+
+\subsection{Avaliação de Usabilidade (Escala SUS)}
+Após a realização das tarefas, foi aplicado a cada utilizador o questionário padronizado \textit{System Usability Scale} (SUS), composto por 10 perguntas que geram uma pontuação global de 0 a 100. As pontuações individuais encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
+
+\begin{table}[htbp]
+\centering
+\caption{Pontuação obtida no questionário System Usability Scale (SUS).}
+\label{tab:pontuacao-sus}
+\begin{tabular}{cc}
+\toprule
+\textbf{Utilizador} & \textbf{Pontuação SUS obtida} \\
+\midrule
+U1 & 87.5 \\
+U2 & 90.0 \\
+U3 & 92.5 \\
+U4 & 72.5 \\
+U5 & 80.0 \\
+U6 & 85.0 \\
+\midrule
+\textbf{Média Global} & \textbf{84.6} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Com uma pontuação média de 84.6, a usabilidade do \textit{Plot in a Pot} situa-se no patamar de ``Excelente'', superando largamente a média padrão da indústria de software (geralmente estabelecida nos 68 pontos).
+
+\subsection{Feedback Qualitativo e Usabilidade Visual}
+A recolha de comentários informais e observações de comportamento permitiu consolidar algumas conclusões críticas:
+\begin{itemize}
+    \item \textbf{Eficácia do Estilo Neo-Brutalista:} Contrariando a assunção comum de que o neo-brutalismo é puramente estético, os utilizadores consideraram que as cores planas saturadas e as bordas de alto contraste reduzem significativamente o ruído visual, facilitando a focalização nas caixas de texto.
+    \item \textbf{Acessibilidade Prática (Caso U6):} O participante U6, portador de daltonismo, elogiou fortemente a distinção estrutural de arestas por tipos de traço (tracejado para entradas, contínuo para saídas). O utilizador referiu que a maioria dos softwares concorrentes usa apenas tons de azul ou cinzento para indicar fluxos, o que o impede de validar interações rapidamente. Com o \textit{Plot in a Pot}, o mapeamento do grafo tornou-se imediato.
+    \item \textbf{Uso do Smart Walker:} Os participantes técnicos (U2, U3) destacaram que o simulador com heurística de novidade poupa tempo na validação de romances visuais muito extensos, permitindo varrer ramos improváveis da história que levariam horas a testar manualmente.
+\end{itemize}

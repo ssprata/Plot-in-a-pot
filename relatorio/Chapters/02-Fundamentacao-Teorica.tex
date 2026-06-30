@@ -50,7 +50,7 @@ No entanto, em narrativas complexas, a imposição de DAGs é altamente limitado
     \item \textbf{Mecânicas de Simulação e Tempo:} Eventos baseados em estados lógicos recorrentes, como ``aguardar um turno'' no mesmo local para fazer avançar variáveis temporais.
 \end{itemize}
 
-Por esta razão, o \textbf{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
+Por esta razão, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
 
 \section{Software de Criação de Histórias não Lineares}
 O conceito de ficção interativa refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
@@ -64,8 +64,7 @@ Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferrament
     \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
 \end{itemize}
 
-O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da histó
-ria) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TheToolpickerTeam2026}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
+O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da história) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TheToolpickerTeam2026}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
 
 \subsection{Ink (Inkle Studios)}
 O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}).
@@ -103,6 +102,7 @@ O Articy Draft \citep{ArticyDraftReference} é a solução comercial líder da i
 \end{itemize}
 
 \subsection{Análise Comparativa}
+\label{sec:analise-comparativa}
 A fim de estruturar a comparação entre as diferentes abordagens, apresenta-se na Tabela~\ref{tab:comparacao-motores} uma síntese comparativa das três principais ferramentas de ficção interativa baseadas nos critérios extraídos da literatura e da prática de desenvolvimento.
 
 \begin{table}[!htbp]
@@ -126,12 +126,13 @@ Mapeamento para Grafo & Direto (passagem = nó, link = aresta) & Indireto (estru
 \end{tabularx}
 \end{table}
 
-Esta análise comparativa é de extrema relevância para a conceção do \gls{piap}, uma vez que fundamenta diretamente as decisões arquiteturais e os requisitos definidos para o projeto:
+A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:comparacao-motores} justifica-se pela necessidade de analisar de que forma as soluções existentes respondem aos desafios práticos da autoria e produção de ficção interativa:
 \begin{itemize}
-    \item \textbf{Fusão de Paradigmas (Visual vs. Textual):} Enquanto o Twine se destaca pela interface puramente visual e o Ink pelo controlo fino de estados lógicos complexos, o \gls{piap} visa fundir ambas as forças, proporcionando um editor visual de grafos que não abdica da manipulação robusta de condicionais e variáveis (via macro-linguagem SugarCube).
-    \item \textbf{Adoção do Formato Aberto Twee 3 e Limitação de Grafos:} A tabela salienta que o formato Twee 3 é uma especificação aberta com mapeamento direto entre passagens e grafos, o que suporta a decisão de adotá-lo como base de persistência do \gls{piap}. Contudo, para permitir que o sistema leia as saídas e as renderize visualmente como arestas de forma fiável, o projeto introduz um compromisso de design (\textit{trade-off}) em relação ao Twine tradicional: não é suportada a utilização de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Texto|\$destino]]}), exigindo que todos os destinos do grafo sejam estáticos.
-    \item \textbf{Validação Automática e Segurança do Fluxo:} O ChoiceScript é valorizado pelas suas ferramentas robustas de teste automático (\lstinline|randomtest|), uma lacuna crítica do Twine. O \gls{piap} incorpora de raiz este princípio ao disponibilizar o validador estático (BFS) e o Smart Walker no simulador para preencher esta falta, garantindo a correção imediata do fluxo narrativo.
-    \item \textbf{Autonomia e Licenciamento Livre:} A restrição de uso comercial imposta pelo ChoiceScript salienta a importância de desenvolver uma ferramenta que promova a autonomia dos autores, permitindo a exportação de projetos sob licenças livres e sem taxas adicionais.
+    \item \textbf{Licenciamento e Padrões Abertos (Licença, Formato Aberto):} Determinam a sustentabilidade a longo prazo das obras criadas, a liberdade comercial dos autores e a capacidade de extensão das ferramentas sem dependências de termos de serviço restritivos.
+    \item \textbf{Interface de Edição e Mapeamento para Grafo:} Avaliam a carga cognitiva imposta ao autor. Ferramentas visuais reduzem a barreira de entrada para escritores não-programadores, enquanto abordagens puramente textuais exigem mapeamento mental complexo de caminhos ramificados.
+    \item \textbf{Flexibilidade de Distribuição (Exportação Standalone, Integração com Motores):} Definem a flexibilidade de distribuição. Projetos que necessitam de interagir com motores AAA (como Unity/Unreal) requerem forte suporte de integração, au passo que protótipos rápidos beneficiam de formatos web autónomos (HTML).
+    \item \textbf{Garantia de Qualidade (Ferramentas de Teste):} Em narrativas com centenas de caminhos, a verificação manual torna-se impraticável, fazendo com que a existência de testes automáticos (e.g., simulação de escolhas aleatórias ou validação estática) seja crucial para garantir a integridade estrutural e lógica da história.
+    \item \textbf{Curva de Aprendizagem e Adoção:} Refletem a acessibilidade da ferramenta e o suporte comunitário disponível, aspetos vitais para a produtividade de equipas independentes ou autores individuais.
 \end{itemize}
 
 \section{Integração de Modelos de Linguagem de Grande Escala (LLMs) Locais}
@@ -163,18 +164,3 @@ Foram analisadas três das principais famílias de modelos em open-weight ajusta
         \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (ex: ``descreve os principais acontecimentos deste arco narrativo'').
     \end{itemize}
 \end{enumerate}
-
-\subsection{Modelo de Integração Local sem Custos}
-Para evitar a necessidade de desenvolver e compilar motores de inferência de raiz, o \gls{piap} adota uma arquitetura baseada em servidores de inferência locais prontos a usar, nomeadamente o \textit{Ollama} ou o \textit{LM Studio}. O fluxo de comunicação processa-se conforme descrito de seguida:
-
-\begin{enumerate}
-    \item \textbf{Instalação Local:} O autor/utilizador instala o servidor \textit{Ollama} na sua máquina local.
-    \item \textbf{Execução em Segundo Plano:} O \textit{Ollama} descarrega o modelo pretendido (ex: \lstinline|llama3.1:8b|) e executa a inferência local em segundo plano.
-    \item \textbf{Simulação de API:} O servidor expõe uma API REST local na porta padrão (tipicamente \lstinline|http://localhost:11434|), que simula a interface padrão de chat da OpenAI.
-    \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por APIs proprietárias na nuvem.
-\end{enumerate}
-
-\subsection{Papel do LLM: Conversão e Importação Automática de Histórias}
-Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não possuem fiabilidade suficiente para gerir a coerência estrutural de um grafo de estado de forma autónoma e dinâmica em tempo de execução. Os modelos de linguagem tendem a alucinar, esquecer nós, criar ligações logicamente impossíveis, ignorar restrições de ciclos e perder o mapeamento geral da árvore narrativa quando integrados no fluxo direto de jogo.
-
-Deste modo, no produto final, a função do LLM foi redefinida para atuar exclusivamente como uma ferramenta de conversão estrutural numa fase de pré-processamento. Em vez de ser integrado diretamente na simulação, o modelo é utilizado para ler uma história corrida escrita pelo utilizador em linguagem natural e convertê-la inteiramente para o formato normativo Twee 3 (identificando as passagens/nós, os seus títulos e as arestas de ligação). Uma vez gerada a representação textual Twee, a aplicação importa-a de forma automática para o programa. A partir desse ponto, o motor lógico proprietário e o validador estático (baseados em listas de adjacências) assumem a responsabilidade exclusiva de desenhar o canvas visual e garantir a coerência matemática do grafo de estados.
