@@ -31,37 +31,35 @@ O fluxo de funcionamento da aplicação e a relação de comunicação entre est
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-    box/.style={rectangle, draw=black!80, fill=white, thick, rounded corners=3pt, minimum width=3.2cm, minimum height=1cm, align=center, font=\footnotesize},
-    arrow/.style={draw, ->, >=stealth, thick, black!70}
+    box/.style={rectangle, draw=black!90, fill=white, thick, rounded corners=8pt, minimum width=3.3cm, minimum height=1.1cm, align=center, font=\footnotesize},
+    arrow/.style={draw, <->, >=stealth, thick, black!80}
 ]
     % 1. Camada de Apresentação (Interface)
-    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.4, 3.0) rectangle (5.4, 4.8);
-    \node at (0, 4.5) [font=\footnotesize\bfseries\color{black!80}] {Camada de Apresentação (Interface)};
-    \node[box] (canvas) at (-3.6, 3.6) {\textbf{Canvas de Grafos} \\ Edição Visual};
-    \node[box] (matriz) at (0, 3.6) {\textbf{Matriz Tradução} \\ Gestão Localização};
-    \node[box] (sim_screen) at (3.6, 3.6) {\textbf{Ecrã Simulador} \\ Testes PlayMode};
+    \draw[draw=black!80, dashed, rounded corners=10pt, thick] (-5.4, 2.0) rectangle (5.4, 4.4);
+    \node[anchor=west, font=\footnotesize\sffamily\bfseries] at (-5.0, 4.1) {Camada de apresentação (interface)};
+    \node[box] (canvas) at (-3.4, 2.9) {Canvas de grafos \\ \scriptsize Edição visual};
+    \node[box] (matriz) at (0, 2.9) {Matriz tradução \\ \scriptsize Gestão localização};
+    \node[box] (sim_screen) at (3.4, 2.9) {Ecrã simulador \\ \scriptsize Testes playmode};
 
     % 2. Camada de Processamento Lógico (Núcleo)
-    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.4, 0.4) rectangle (5.4, 2.2);
-    \node at (0, 1.9) [font=\footnotesize\bfseries\color{black!80}] {Camada de Processamento Lógico (Núcleo)};
-    \node[box] (parser) at (-3.6, 1.0) {\textbf{Parser Twee 3} \\ Importador / Exportador};
-    \node[box] (validator) at (-1.2, 1.0) {\textbf{Validador Estático} \\ Pesquisas BFS / DFS};
-    \node[box] (engine) at (3.6, 1.0) {\textbf{Motor Simulação} \\ Execução e Sandbox};
+    \draw[draw=black!80, dashed, rounded corners=10pt, thick] (-5.4, -0.6) rectangle (5.4, 1.8);
+    \node[anchor=west, font=\footnotesize\sffamily\bfseries] at (-5.0, 1.5) {Camada de processamento lógico (núcleo)};
+    \node[box] (parser) at (-3.4, 0.5) {Parser twee 3 \\ \scriptsize Importador / exportador};
+    \node[box] (validator) at (0, 0.5) {Validador estático \\ \scriptsize Pesquisas BFS / DFS};
+    \node[box] (engine) at (3.4, 0.5) {Motor simulação \\ \scriptsize Execução e sandbox};
 
     % 3. Camada de Dados e Persistência
-    \draw[draw=black!30, dashed, fill=gray!3, rounded corners=5pt] (-5.4, -2.2) rectangle (5.4, -0.4);
-    \node at (0, -0.7) [font=\footnotesize\bfseries\color{black!80}] {Camada de Dados e Persistência};
-    \node[box] (adj_list) at (-2.4, -1.6) {\textbf{Lista de Adjacência} \\ Modelo de Dados};
-    \node[box] (loc_db) at (0, -1.6) {\textbf{Dicionários JSON} \\ Base de Tradução};
+    \draw[draw=black!80, dashed, rounded corners=10pt, thick] (-5.4, -3.2) rectangle (5.4, -0.8);
+    \node[anchor=west, font=\footnotesize\sffamily\bfseries] at (-5.0, -1.1) {Camada de dados e persistência};
+    \node[box, minimum width=4.2cm] (adj_list) at (-2.4, -2.1) {Lista de adjacência \\ \scriptsize Modelo de dados};
+    \node[box, minimum width=4.2cm] (loc_db) at (2.4, -2.1) {Dicionários JSON \\ \scriptsize Base de tradução};
 
     % Links
-    \draw[arrow, <->] (canvas) -- (parser);
-    \draw[arrow] (canvas) -- (validator);
-    \draw[arrow, <->] (sim_screen) -- (engine);
-    \draw[arrow] (matriz) -- (loc_db);
-    \draw[arrow] (parser) -- (adj_list);
-    \draw[arrow] (adj_list) -- (validator);
-    \draw[arrow] (adj_list) -- (engine);
+    \draw[arrow] (canvas) -- (parser);
+    \draw[arrow] (matriz) -- (validator);
+    \draw[arrow] (sim_screen) -- (engine);
+    \draw[arrow, ->] (parser.south) -- (parser.south |- adj_list.north);
+    \draw[arrow, ->] (engine.south) -- ++(0,-0.4) -| (loc_db.north);
     
 \end{tikzpicture}
 \caption{Diagrama de blocos detalhado da arquitetura conceptual e fluxo de dados.}
