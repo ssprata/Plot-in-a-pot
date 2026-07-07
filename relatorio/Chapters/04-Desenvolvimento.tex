@@ -110,6 +110,31 @@ Quando o autor edita o texto de uma passagem no \lstinline|Inspector.jsx|, um ev
 \end{enumerate}
 Qualquer erro detetado é propagado para o canvas do React Flow, que desenha alertas visuais de aviso nas bordas dos nós afetados. Se o utilizador abrir o PlayMode, o simulador acede à lista de adjacências atualizada e ao interpretador de SugarCube para processar as macros lógicas em tempo de execução sem requerer qualquer compilação ou carregamento manual.
 
+\section{Testes de Conversão e Comparação de Modelos de Linguagem (IA Local)}
+\label{sec:testes-conversao-ia}
+
+Para ver como o assistente de importação de texto livre se comportava, fizemos testes com diferentes modelos de inteligência artificial (LLMs) a correr localmente através do Ollama.
+
+A primeira série de testes foi feita a \textbf{9 de maio} no computador do programador, que tem uma gráfica Nvidia RTX 3050 (Laptop) com apenas 4\,GB de VRAM. O objetivo era correr localmente modelos populares com grande volume e verificar a sua viabilidade, sendo selecionados os seguintes modelos da biblioteca Ollama:
+\begin{itemize}
+    \item \textbf{Gemma 2B:} ID \texttt{8ccf136fdd52}
+    \item \textbf{Mistral 7B:} ID \texttt{6577803aa9a0}
+    \item \textbf{Qwen 3.5 9B:} ID \texttt{6488c96fa5fa}
+    \item \textbf{DeepSeek Coder 6.7B:} ID \texttt{ce298d984115}
+\end{itemize}
+Além destes, também foi testado o modelo \textit{Claude} (acessível via API externa). No entanto, devido à falta de poder de processamento da gráfica local, \textbf{nenhum dos modelos locais funcionou}, deixando o computador muito lento e dando erros de falta de memória (\textit{out of memory}).
+
+Para conseguir testar estes modelos, a \textbf{19 de maio}, o orientador do projeto fez os mesmos testes no seu computador pessoal, que tem melhores capacidades para correr IA. Analisámos os ficheiros de resultados e explicamos a seguir o que falhou em cada modelo para que não pudessem ser usados diretamente na nossa aplicação:
+
+\begin{itemize}
+    \item \textbf{Mistral 7B (\texttt{mistral\_7b}):} O resultado foi \textbf{inútil} para a aplicação. O modelo separou quase todas as frases do texto em passagens independentes (por exemplo, criando passagens separadas para ``Inside'' ou ``To the left''). No nosso editor, isto cria dezenas de pequenos nós para uma única cena, tornando o grafo ilegível e quebrando o fluxo da história. Além disso, acrescentou barras invertidas (\lstinline|\|) no fim de cada linha e deixou caracteres estranhos vindos do terminal (como \lstinline|[3D [K|).
+    \item \textbf{Gemma 4B / 2B (\texttt{gemma4\_e4b}):} O modelo tentou criar as passagens, mas \textbf{escreveu os cabeçalhos das novas passagens (os \lstinline|::|)} dentro do texto de outras passagens. Como o formato Twee 3 não suporta passagens aninhadas, o nosso parser lê isso como texto simples e não cria os nós no ecrã. Também deixou lixo do terminal (códigos ANSI).
+    \item \textbf{Qwen 3 8B (\texttt{qwen3\_8b}):} O resultado ficou \textbf{inutilizável devido a erros de formatação}. O modelo incluiu o seu raciocínio interno (\textit{``Thinking...''}) mesmo ao início da resposta, o que faz com que o nosso importador falhe imediatamente ao tentar ler o ficheiro. Além disso, deixou um bloco JSON incompleto na posição das passagens (escreveu apenas \lstinline|{"| sem fechar), o que faz o parser de JSON falhar, e manteve alguns códigos ANSI.
+    \item \textbf{Qwen 3.5 9B (\texttt{qwen3.5\_9b}):} Foi o modelo que estruturou melhor a história, mas \textbf{ainda não é totalmente funcional}. Tal como o Qwen 3, escreveu o texto de pensamento (\textit{``Thinking...''}) no início, bloqueando a importação direta. Criou também nós órfãos (como \lstinline|TakeLantern| e \lstinline|DropLantern|) que estão descritos no ficheiro mas não têm nenhuma ligação (seta) a apontar para eles a partir das outras cenas, deixando partes do jogo inacessíveis.
+\end{itemize}
+
+Com base nestes testes, chegámos à conclusão de que o uso de APIs externas (como a do Gemini ou do Claude) será sempre superior e mais fiável do que correr modelos locais, a não ser que o utilizador tenha uma máquina com pelo menos 8\,GB de VRAM dedicados para IA. De momento, esta funcionalidade de importação por IA local ainda precisa de melhorias no futuro para ser totalmente utilizável, uma vez que ainda não encontrámos o prompt ideal ou a solução perfeita para garantir que os modelos locais sigam as regras de formatação sem falhas.
+
 \section{Metodologia dos Testes de Utilizador}
 Para validar a flexibilidade e usabilidade do \textit{Plot in a Pot}, foi planeada e executada uma bateria de testes qualitativos e quantitativos com um grupo diversificado de participantes.
 
