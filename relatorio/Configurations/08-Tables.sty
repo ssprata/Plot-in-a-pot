@@ -1,11 +1,12 @@
 %%% Tables %%%
 \RequirePackage{float} % Support strict placement [H] for tables and figures
-\newcommand{\customtableformatting}{\renewcommand{\arraystretch}{1.1}\small}
+\newcommand{\customtableformatting}{\renewcommand{\arraystretch}{1.1}}
 \AtBeginEnvironment{tabular}{\customtableformatting} % Apply to tabular.
 \AtBeginEnvironment{tabularx}{\customtableformatting} % Apply to tabularx.
-\preto\longtable{\customtableformatting} % Apply to longtable.
+\preto\longtable{\customtableformatting\small}
+\AtBeginEnvironment{table}{\small}
 
-\renewcommand\tabularxcolumn[1]{m{#1}}
+\renewcommand\tabularxcolumn[1]{p{#1}}
 \newcolumntype{C}{>{\centering\arraybackslash}X} % Center the 'X' command in tabularx.
 \newcolumntype{L}{>{\raggedright\arraybackslash}X} % Left the 'X' command in tabularx.
 \newcolumntype{R}{>{\raggedleft\arraybackslash}X} % Right the 'X' command in tabularx.

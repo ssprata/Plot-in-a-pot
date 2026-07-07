@@ -35,7 +35,12 @@
 % \color{white}
 
 \begin{document}
+\makeatletter
+\let\@textbottom\relax
+\let\@texttop\relax
+\makeatother
 \raggedbottom
+
 
 %%% Front Matter %%%
 \include{Matter/00-Cover}
@@ -68,6 +73,7 @@
 
 %%% Arabic Numeration %%%
 \pagenumbering{arabic}
+\raggedbottom
 
 %%% Chapters (**Insert Yours Here**) %%%
 \include{Chapters/01-Introduction}

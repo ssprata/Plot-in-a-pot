@@ -171,7 +171,7 @@ Os módulos de cálculo do \textit{Plot in a Pot} operam de forma síncrona no l
 \centering
 \caption{Complexidade algorítmica teórica dos subsistemas nucleares.}
 \label{tab:complexidade-teorica}
-\begin{tabular}{lcc}
+\begin{tabularx}{\textwidth}{LCC}
 \toprule
 \textbf{Subsistema / Algoritmo} & \textbf{Complexidade Temporal} & \textbf{Complexidade Espacial} \\
 \midrule
@@ -179,7 +179,7 @@ Parser Bidirecional Twee 3 & $\mathcal{O}(L)$ & $\mathcal{O}(V + E)$ \\
 Validador de Espaço de Estados (BFS) & $\mathcal{O}(V + E \cdot K)$ & $\mathcal{O}(V \cdot K + E)$ \\
 Interpolação de Arestas (Catmull-Rom) & $\mathcal{O}(W)$ & $\mathcal{O}(W)$ \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 
 \smallskip
 \begin{minipage}{\linewidth}
@@ -197,7 +197,7 @@ Para medir a velocidade real de execução das rotinas da aplicação, montou-se
 \centering
 \caption{Resultados empíricos de benchmarks de desempenho (em milissegundos).}
 \label{tab:benchmarks-desempenho}
-\begin{tabular}{lccc}
+\begin{tabularx}{\textwidth}{LRRR}
 \toprule
 \textbf{Escala do Projeto} & \textbf{Parsing Twee 3} & \textbf{Validação Lógica (BFS)} & \textbf{Sincronização Canvas (React Flow)} \\
 \midrule
@@ -205,7 +205,7 @@ Pequeno (10 nós / 15 arestas) & 2.1\,ms & 4.3\,ms & 12.5\,ms \\
 Médio (50 nós / 80 arestas) & 8.4\,ms & 12.8\,ms & 28.1\,ms \\
 Grande (150 nós / 240 arestas) & 21.6\,ms & 34.2\,ms & 62.4\,ms \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 
 \smallskip
 \begin{minipage}{\linewidth}
@@ -272,7 +272,7 @@ Durante a sessão final de testes, foram registados os tempos de conclusão (em 
 \centering
 \caption{Taxa de sucesso e tempo de conclusão (em minutos) das tarefas por utilizador (Leva Final).}
 \label{tab:resultados-tarefas}
-\begin{tabular}{cccccc}
+\begin{tabularx}{\textwidth}{cCCCCL}
 \toprule
 \textbf{Utilizador} & \textbf{Tarefa 1} & \textbf{Tarefa 2} & \textbf{Tarefa 3} & \textbf{Tarefa 4} & \textbf{Taxa de Sucesso Total} \\
 \midrule
@@ -285,7 +285,7 @@ U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
 \midrule
 \textbf{Média} & \textbf{07:45} & \textbf{02:49} & \textbf{03:29} & \textbf{01:21} & \textbf{95.8\%} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 
 \smallskip
 \begin{minipage}{\linewidth}

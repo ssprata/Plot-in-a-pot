@@ -84,11 +84,19 @@
     \ifdefined\GetSecondAuthor
         \vspace{8pt}
         {\noindent\bfseries\fontsize{14}{19}\selectfont\GetSecondAuthor}
+        
+        \ifdefined\GetSecondAuthorNumber
+            {\noindent\itshape\fontsize{10}{10}\selectfont Student No. \GetSecondAuthorNumber}
+        \fi
 	\fi
 
     \ifdefined\GetThirdAuthor
         \vspace{8pt}
         {\noindent\bfseries\fontsize{14}{19}\selectfont\GetThirdAuthor}
+        
+        \ifdefined\GetThirdAuthorNumber
+            {\noindent\itshape\fontsize{10}{10}\selectfont Student No. \GetThirdAuthorNumber}
+        \fi
 	\fi
 
     \vfill    
