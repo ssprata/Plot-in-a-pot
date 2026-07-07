@@ -95,6 +95,8 @@ export default function EditableEdge({
         window.addEventListener('mouseup', handleMouseUp);
     };
 
+    const isUnreachable = data?.isUnreachable;
+
     return (
         <>
             {/* Linha invisível mais larga para capturar cliques e interações com maior facilidade */}
@@ -111,8 +113,9 @@ export default function EditableEdge({
                 id={id}
                 d={edgePath}
                 fill="none"
-                stroke={selected ? '#eab308' : '#64748b'} // Amarelo se selecionada, cinza se padrão
-                strokeWidth={selected ? 4 : 3}
+                stroke={isUnreachable ? '#dc2626' : (selected ? '#eab308' : '#64748b')} // Vermelho se inacessível, amarelo se selecionada, cinza se padrão
+                strokeWidth={isUnreachable ? 4 : (selected ? 4 : 3)}
+                strokeDasharray={isUnreachable ? '5,5' : undefined}
                 className="react-flow__edge-path transition-colors"
             />
 

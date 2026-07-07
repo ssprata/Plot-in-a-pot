@@ -20,11 +20,20 @@ export default function StoryNode({ data }) {
   const isSecret = tags.includes('secreto');
   const isScript = data.nodeType === 'javascript';
   const isCss = data.nodeType === 'css';
+  const isUnreachable = data.isUnreachable;
+
   // Definição de Cores Dinâmicas
   let borderColor = 'border-gray-900 dark:border-gray-200';
   let headerBg = '';
+  let shadowClass = 'shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] hover:shadow-[6px_6px_0px_#000] dark:hover:shadow-[6px_6px_0px_#fff]';
 
-  if (isSecret) {
+  if (isUnreachable) {
+    borderColor = 'border-red-600 dark:border-red-500';
+    headerBg = data.bgImage
+      ? 'bg-red-600/75 text-white dark:bg-red-800/75 dark:text-red-100'
+      : 'bg-red-600 text-white dark:bg-red-800 dark:text-red-100';
+    shadowClass = 'shadow-[4px_4px_0px_#dc2626] dark:shadow-[4px_4px_0px_#ef4444] hover:shadow-[6px_6px_0px_#dc2626] dark:hover:shadow-[6px_6px_0px_#ef4444]';
+  } else if (isSecret) {
     borderColor = 'border-purple-900 dark:border-purple-400';
     headerBg = data.bgImage
       ? 'bg-purple-900/60 text-purple-100 dark:bg-purple-800/60 dark:text-purple-200'
@@ -44,7 +53,7 @@ export default function StoryNode({ data }) {
   }
 
   return (
-    <div className={`relative border-2 ${borderColor} rounded min-w-[180px] shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-hidden transition-all hover:shadow-[6px_6px_0px_#000] dark:hover:shadow-[6px_6px_0px_#fff] ${isSecret ? 'opacity-90' : ''} ${data.highlight ? 'tutorial-node-flash' : ''} ${data.bgImage ? 'bg-white/75 dark:bg-gray-900/75 backdrop-blur-[1px]' : 'bg-white dark:bg-gray-800'}`}>
+    <div className={`relative border-2 ${borderColor} rounded min-w-[180px] ${shadowClass} overflow-hidden transition-all ${isSecret ? 'opacity-90' : ''} ${data.highlight ? 'tutorial-node-flash' : ''} ${data.bgImage ? 'bg-white/75 dark:bg-gray-900/75 backdrop-blur-[1px]' : 'bg-white dark:bg-gray-800'}`}>
 
       {/* Blurred background image element */}
       {data.bgImage && (
@@ -69,7 +78,7 @@ export default function StoryNode({ data }) {
       <Handle
         type="target"
         position={Position.Top}
-        className={`!w-3 !h-3 border-2 border-white ${isSecret ? '!bg-purple-600' : '!bg-gray-800'} ${
+        className={`!w-3 !h-3 border-2 border-white ${isUnreachable ? '!bg-red-600' : (isSecret ? '!bg-purple-600' : '!bg-gray-800')} ${
           data.highlight && data.highlightHandle === 'top' ? 'tutorial-handle-flash' : ''
         }`}
         style={{ zIndex: 30 }}

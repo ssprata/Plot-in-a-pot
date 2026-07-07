@@ -16,7 +16,7 @@ export function validateStoryFlow(nodes, edges) {
   const { reachableNodes, reachableEdges, arrivalHistory, error } = traverseGraph(nodes, edges);
 
   if (error) {
-    return { unreachableEdges: [], orphanNodes: [], hasReachableEnd: false, reachableEndNodes: [], error };
+    return { unreachableEdges: [], orphanNodes: [], hasReachableEnd: false, reachableEndNodes: [], reachableNodes: new Set(), reachableEdges: new Set(), error };
   }
 
   // FIX #1: Pré-computar nodeMap uma vez — lookups O(1) em vez de nodes.find() O(N) por edge
@@ -122,6 +122,8 @@ export function validateStoryFlow(nodes, edges) {
     reachableEndNodes,
     deadEndNodes,  // FIX #5: nós com edges mas todos os targets inexistentes
     arrivalHistory,
+    reachableNodes,
+    reachableEdges,
     error: null,
   };
 }

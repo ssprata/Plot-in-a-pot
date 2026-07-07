@@ -110,7 +110,8 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  editable: EditableEdge
+  editable: EditableEdge,
+  default: EditableEdge
 };
 
 // Conjuntos estáticos reutilizados
@@ -278,6 +279,16 @@ function App() {
     setIsVarModalOpen(true);
   }, [selectedNodeId]);
 
+  const unreachableNodeIds = useMemo(() => {
+    if (!validationResult || !validationResult.orphanNodes) return new Set();
+    return new Set(validationResult.orphanNodes.map(n => n.id));
+  }, [validationResult]);
+
+  const reachableNodeIds = useMemo(() => {
+    if (!validationResult || !validationResult.reachableNodes) return new Set();
+    return validationResult.reachableNodes;
+  }, [validationResult]);
+
   // Filtragem visual para ocultar nós marcados com a tag "secreto"
   const visibleNodes = useMemo(() => {
     let filtered = nodes;
@@ -288,18 +299,38 @@ function App() {
       });
     }
     return filtered.map(n => {
+      const isUnreachable = unreachableNodeIds.has(n.id);
+      let updatedNode = {
+        ...n,
+        data: {
+          ...n.data,
+          isUnreachable
+        }
+      };
       if (n.type === 'zone' || n.data?.nodeType === 'zone') {
-        return { ...n, style: { ...n.style, pointerEvents: 'none' } };
+        updatedNode.style = { ...updatedNode.style, pointerEvents: 'none' };
       }
-      return n;
+      return updatedNode;
     });
-  }, [nodes, settings.showSecrets]);
+  }, [nodes, settings.showSecrets, unreachableNodeIds]);
 
   const visibleEdges = useMemo(() => {
-    if (settings.showSecrets) return edges;
-    const ids = new Set(visibleNodes.map(n => n.id));
-    return edges.filter(e => ids.has(e.source) && ids.has(e.target));
-  }, [edges, visibleNodes, settings.showSecrets]);
+    let filteredEdges = edges;
+    if (!settings.showSecrets) {
+      const ids = new Set(visibleNodes.map(n => n.id));
+      filteredEdges = edges.filter(e => ids.has(e.source) && ids.has(e.target));
+    }
+    return filteredEdges.map(e => {
+      const isUnreachable = unreachableNodeIds.has(e.target) && reachableNodeIds.has(e.source);
+      return {
+        ...e,
+        data: {
+          ...e.data,
+          isUnreachable
+        }
+      };
+    });
+  }, [edges, visibleNodes, settings.showSecrets, unreachableNodeIds, reachableNodeIds]);
 
   // --- Auto-Save Atómico ---
   useEffect(() => {
