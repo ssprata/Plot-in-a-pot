@@ -61,6 +61,27 @@ No entanto, em narrativas complexas, a imposição de DAGs é altamente limitado
 
 Por esta razão, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
 
+\subsection{Análise Matemática da Explosão de Complexidade Lógica}
+\label{subsec:analise-matematica-complexidade}
+
+A modelação matemática de narrativas interativas permite compreender a necessidade de validadores automatizados ao expor o problema clássico da explosão de estados. Seja $G = (V, E)$ o grafo que modela a história. Se assumirmos uma estrutura de ramificação pura sem ciclos (um grafo em árvore direcionado), com um fator médio de ramificação $b$ (número médio de escolhas por nó) e uma profundidade média da narrativa $d$ (número de passagens percorridas do início ao fim), o número total de caminhos narrativos únicos e independentes $P$ cresce de forma exponencial:
+\[
+P = \mathcal{O}(b^d)
+\]
+Este crescimento exponencial (também conhecido por explosão combinatória ou combinatória de escolhas) torna impossível a um autor auditar manualmente todas as combinações de escolhas possíveis à medida que a história se expande.
+
+O problema agrava-se substancialmente com a introdução de ciclos (onde $G$ deixa de ser acíclico, permitindo que $V_i \to \dots \to V_i$), uma vez que o número de caminhos matematicamente possíveis passa a ser infinito:
+\[
+P = \infty
+\]
+Neste cenário, a coerência da simulação passa a depender inteiramente da valoração do vetor de variáveis de estado $\sigma$. Definimos o espaço de estados global $\mathcal{S}$ da narrativa como o produto cartesiano entre o conjunto de nós de escrita $\mathcal{N}$ e o conjunto de valorações possíveis das variáveis globais da história. Se considerarmos um conjunto de $|\mathcal{V}|$ variáveis de estado do tipo booleanas (por exemplo, registos de inventário como \lstinline|$tem_chave| ou escolhas morais binárias), o tamanho máximo do espaço de estados explorável $\mathcal{S}$ é dado por:
+\[
+|\mathcal{S}| = |\mathcal{N}| \times 2^{|\mathcal{V}|}
+\]
+Caso as variáveis tomem valores em domínios numéricos maiores (e.g. inteiros para pontos de vida ou reputação), o espaço cresce de forma ainda mais severa. A introdução de loops infinitos que incrementam repetidamente uma variável sem uma condição de paragem adequada fará com que o espaço de estados se torne teoricamente infinito, o que levaria a que uma travessia cega de pesquisa de caminhos nunca terminasse. 
+
+Esta propriedade matemática demonstra que a validação estrutural simples de grafos geométricos (baseada puramente na conectividade de vértices) é insuficiente em ficção interativa com lógica condicional. Justifica-se assim o desenvolvimento de um motor de validação estática capaz de explorar o espaço de estados reais $\langle v, \sigma \rangle$ e implementar podas algorítmicas rigorosas para garantir a paragem do algoritmo de verificação.
+
 \section{Software de Criação de Histórias não Lineares}
 O conceito de ficção interativa refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
 

@@ -164,7 +164,32 @@ A implementação de Zonas como nós customizados de grupo (\textit{ZoneNode}) e
 A solução consistiu em definir a propriedade CSS \texttt{pointer-events: none} dinamicamente na configuração global do React Flow para o contentor da Zona em \texttt{App.jsx} (encontrado em \texttt{/src/App.jsx}). Em paralelo, no componente \texttt{ZoneNode.jsx} (encontrado em \texttt{/src/components/ZoneNode.jsx}), forçou-se \texttt{pointer-events: auto} exclusivamente nas pegas de redimensionamento (\textit{NodeResizer}) e na barra de cabeçalho da zona (utilizada para arrastar a zona em bloco com todos os seus filhos).
 
 \subsection{Arestas Curvadas com Waypoints}
-Para evitar a sobreposição caótica de ligações em grafos com elevado volume de cruzamentos, implementaram-se arestas customizadas baseadas em \textbf{Splines Catmull-Rom} \citep{CatmullRom1974} em \texttt{EditableEdge.jsx} (encontrado em \texttt{/src/components/EditableEdge.jsx}). As arestas disponibilizam marcadores circulares (\textit{waypoints}) interativos que o autor pode arrastar para curvar a linha no ecrã. A geometria da aresta é recalculada em tempo de execução gerando curvas Bézier cúbicas que contornam os nós do grafo.
+\label{subsec:arestas-curvadas-waypoints}
+
+Para evitar a sobreposição caótica de ligações direcionadas e o cruzamento cego sobre os nós de cena (que cria um efeito visual denso e desorganizado), a plataforma implementa arestas customizadas que utilizam a interpolação por Splines Cúbicas de Catmull-Rom \citep{CatmullRom1974} em \texttt{EditableEdge.jsx} (encontrado em \texttt{/src/components/EditableEdge.jsx}). 
+
+O autor pode introduzir e arrastar marcadores circulares (\textit{waypoints}) interativos ao longo da linha no canvas do React Flow. A curva é calculada em tempo de execução interpolando sequencialmente estes waypoints de modo a gerar uma trajetória suave e contínua. 
+
+Formalmente, dada uma sequência de pontos de controlo tridimensionais ou bidimensionais no plano do canvas $\mathbf{P}_0, \mathbf{P}_1, \dots, \mathbf{P}_n$, a spline cúbica de Catmull-Rom para um segmento específico $i$ que conecta os pontos $\mathbf{P}_i$ e $\mathbf{P}_{i+1}$ (utilizando $\mathbf{P}_{i-1}$ e $\mathbf{P}_{i+2}$ como os pontos de controlo auxiliares para definir as tangentes nos extremos) é parametrizada por uma variável $t \in [0, 1]$. O vetor de posição da curva $\mathbf{C}(t)$ é dado por:
+\[
+\mathbf{C}(t) = \frac{1}{2} \begin{bmatrix} 1 & t & t^2 & t^3 \end{bmatrix} \mathbf{M}_{CR} \begin{bmatrix} \mathbf{P}_{i-1} \\ \mathbf{P}_i \\ \mathbf{P}_{i+1} \\ \mathbf{P}_{i+2} \end{bmatrix}
+\]
+onde $\mathbf{M}_{CR}$ representa a matriz de coeficientes característica da Spline de Catmull-Rom centripeta padrão (com $\alpha = 0.5$ para obter curvas sem auto-intersecções ou loops):
+\[
+\mathbf{M}_{CR} = \begin{bmatrix} 0 & 2 & 0 & 0 \\ -1 & 0 & 1 & 0 \\ 2 & -5 & 4 & -1 \\ -1 & 3 & -3 & 1 \end{bmatrix}
+\]
+Desta forma, expandindo a multiplicação matricial, cada coordenada $(x, y)$ da spline é calculada de forma explícita através de equações polinomiais cúbicas em $t$:
+\[
+\mathbf{C}(t) = \frac{1}{2} \left[ 2\mathbf{P}_i + (-\mathbf{P}_{i-1} + \mathbf{P}_{i+1})t + (2\mathbf{P}_{i-1} - 5\mathbf{P}_i + 4\mathbf{P}_{i+1} - \mathbf{P}_{i+2})t^2 + (-\mathbf{P}_{i-1} + 3\mathbf{P}_i - 3\mathbf{P}_{i+1} + \mathbf{P}_{i+2})t^3 \right]
+\]
+Este cálculo polinomial é executado em JavaScript na biblioteca gráfica \texttt{graphMath.js} para interpolar os waypoints introduzidos pelo utilizador. Visto que os navegadores web não conseguem renderizar splines de Catmull-Rom de forma nativa na especificação SVG, o módulo de visualização converte os segmentos de reta calculados em comandos de curvas Bézier cúbicas padrão (sintaxe do caminho SVG com as flags \lstinline|C| e \lstinline|S|). A conversão é feita calculando analiticamente os pontos de controlo Bézier correspondentes com base nas tangentes geradas pela formulação de Catmull-Rom em cada nó:
+\[
+\mathbf{B}_{control1} = \mathbf{P}_i + \frac{\mathbf{P}_{i+1} - \mathbf{P}_{i-1}}{6}
+\]
+\[
+\mathbf{B}_{control2} = \mathbf{P}_{i+1} - \frac{\mathbf{P}_{i+2} - \mathbf{P}_i}{6}
+\]
+Isto garante a renderização direta no navegador web por aceleração de hardware (GPU), mantendo a fluidez de arrasto e a complexidade temporal linear $\mathcal{O}(W)$ (onde $W$ é o número de waypoints da aresta).
 
 \subsection{Gestão de Variáveis Estilo Figma}
 O componente \texttt{VariablesModal.jsx} (encontrado em \texttt{/src/components/VariablesModal.jsx}) centraliza a gestão de variáveis globais e locais da história através de uma interface inspirada na ferramenta Figma. Quando uma variável é renomeada no painel global (ex: de \texttt{\$ouro} para \texttt{\$moedas}), um mecanismo automático executa uma expressão regular compilada:
