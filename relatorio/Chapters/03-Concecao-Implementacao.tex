@@ -30,38 +30,7 @@ O fluxo de funcionamento da aplicação e a relação de comunicação entre est
 
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[
-    box/.style={rectangle, draw=black!90, fill=white, thick, rounded corners=8pt, minimum width=3.3cm, minimum height=1.1cm, align=center, font=\footnotesize},
-    arrow/.style={draw, <->, >=stealth, thick, black!80}
-]
-    % 1. Camada de Apresentação (Interface)
-    \draw[draw=black!80, dashed, rounded corners=10pt, thick] (-5.4, 2.0) rectangle (5.4, 4.4);
-    \node[anchor=west, font=\footnotesize\sffamily\bfseries] at (-5.0, 4.1) {Camada de apresentação (interface)};
-    \node[box] (canvas) at (-3.4, 2.9) {Canvas de grafos \\ \scriptsize Edição visual};
-    \node[box] (matriz) at (0, 2.9) {Matriz tradução \\ \scriptsize Gestão localização};
-    \node[box] (sim_screen) at (3.4, 2.9) {Ecrã simulador \\ \scriptsize Testes playmode};
-
-    % 2. Camada de Processamento Lógico (Núcleo)
-    \draw[draw=black!80, dashed, rounded corners=10pt, thick] (-5.4, -0.6) rectangle (5.4, 1.8);
-    \node[anchor=west, font=\footnotesize\sffamily\bfseries] at (-5.0, 1.5) {Camada de processamento lógico (núcleo)};
-    \node[box] (parser) at (-3.4, 0.5) {Parser twee 3 \\ \scriptsize Importador / exportador};
-    \node[box] (validator) at (0, 0.5) {Validador estático \\ \scriptsize Pesquisas BFS / DFS};
-    \node[box] (engine) at (3.4, 0.5) {Motor simulação \\ \scriptsize Execução e sandbox};
-
-    % 3. Camada de Dados e Persistência
-    \draw[draw=black!80, dashed, rounded corners=10pt, thick] (-5.4, -3.2) rectangle (5.4, -0.8);
-    \node[anchor=west, font=\footnotesize\sffamily\bfseries] at (-5.0, -1.1) {Camada de dados e persistência};
-    \node[box, minimum width=4.2cm] (adj_list) at (-2.4, -2.1) {Lista de adjacência \\ \scriptsize Modelo de dados};
-    \node[box, minimum width=4.2cm] (loc_db) at (2.4, -2.1) {Dicionários JSON \\ \scriptsize Base de tradução};
-
-    % Links
-    \draw[arrow] (canvas) -- (parser);
-    \draw[arrow] (matriz) -- (validator);
-    \draw[arrow] (sim_screen) -- (engine);
-    \draw[arrow, ->] (parser.south) -- (parser.south |- adj_list.north);
-    \draw[arrow, ->] (engine.south) -- ++(0,-0.4) -| (loc_db.north);
-    
-\end{tikzpicture}
+\includegraphics[width=0.9\linewidth]{Figures/arquitetura.png}
 \caption{Diagrama de blocos detalhado da arquitetura conceptual e fluxo de dados.}
 \label{fig:arquitetura-conceptual}
 \end{figure}
@@ -214,38 +183,92 @@ Tendo em conta que um dos autores da ferramenta, Miguel, apresenta limitações 
 \end{itemize}
 
 \section{Validação Estática e Simulação}
+\label{sec:validacao-estatica-simulacao}
 
-\subsection{Validador Estático de Lógica (BFS)}
-O ficheiro \texttt{storyValidator.js} (encontrado em \texttt{/src/utils/storyValidator.js}) executa testes estáticos sobre a estrutura do grafo através de uma travessia BFS \citep{CLRS2009}. A verificação analisa:
+O motor de autoria do \textit{Plot in a Pot} integra ferramentas robustas de validação e execução reativa. Para além de permitir a escrita de histórias, a plataforma disponibiliza um sistema de verificação lógica que audita a estrutura narrativa de forma estática e uma sandbox de simulação dinâmica dotada de agentes de navegação autónoma.
+
+\subsection{Algoritmo de Validação Estática e Exploração do Espaço de Estados (BFS)}
+\label{subsec:algoritmo-bfs-validacao}
+
+O validador estático, implementado em \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, uma travessia clássica de Pesquisa em Largura (BFS) seria suficiente para auditar o grafo. Contudo, em Ficção Interativa, as arestas (hiperligações) dependem frequentemente de expressões lógicas e variáveis de estado (macros \texttt{<<if>>} e \texttt{<<set>>} do SugarCube). A acessibilidade de um nó $v$ não depende apenas do caminho geométrico, mas também da valoração atual das variáveis de estado (memória).
+
+Assim, a validação lógica é modelada como um problema de \textit{Exploração do Espaço de Estados} (\textit{State Space Exploration}), onde o grafo de transições real é constituído por pares $\langle v, \sigma \rangle$, nos quais $v \in \mathcal{N}$ representa o nó do editor e $\sigma: \mathcal{V} \rightarrow \mathcal{D}$ representa um mapeamento de variáveis lógicas globais para os seus respetivos domínios de valores.
+
+O algoritmo executa a travessia de acordo com os seguintes passos estruturados:
+
+\begin{enumerate}
+    \item \textbf{Inicialização e Pré-computação:}
+    Para garantir a eficiência temporal ($\mathcal{O}(1)$ em lookups), o algoritmo pré-computa em memória:
+    \begin{itemize}
+        \item Um mapa de nós $NodeMap: \text{ID} \rightarrow Node$, indexando todos os vértices da narrativa.
+        \item Um mapa de adjacências de arestas $EdgesBySource: \text{ID} \rightarrow List\langle Edge \rangle$.
+    \end{itemize}
+    O ponto de entrada $v_0$ é resolvido por $findStartNode(NodeMap)$, e o estado inicial $\sigma_0$ é lido a partir das declarações de variáveis do nó de sistema $StoryInit$.
+    
+    \item \textbf{Estrutura de Dados e Fila:}
+    Uma fila síncrona $\mathcal{Q}$ é instanciada e inicializada com o tuplo de arranque:
+    \[
+    \mathcal{Q} \leftarrow \text{enqueue}\left(\mathcal{Q}, \langle v_0, \sigma_0, \text{path} = [v_0.\text{label}] \rangle\right)
+    \]
+    São criados conjuntos vazios para registar nós alcançáveis ($\mathcal{N}_{reach}$), arestas alcançáveis ($\mathcal{E}_{reach}$), e tabelas hash de estados visitados por nó ($VisitedStates: \text{ID} \rightarrow Set\langle String \rangle$) para evitar caminhos redundantes e ciclos infinitos.
+    
+    \item \textbf{Ciclo de Processamento Principal:}
+    Enquanto $\mathcal{Q}$ não estiver vazia, remove-se o primeiro elemento:
+    \[
+    \langle u, \sigma, \text{path} \rangle \leftarrow \text{dequeue}(\mathcal{Q})
+    \]
+    Para o nó corrente $u$, efetua-se o seguinte processamento:
+    \begin{enumerate}
+        \item Adiciona-se o identificador de $u$ a $\mathcal{N}_{reach}$.
+        \item Executam-se as instruções de modificação de estado contidas no texto do nó (por exemplo, macros de atribuição \lstinline|<<set>>|), produzindo um novo estado de memória $\sigma' \leftarrow applyModifiers(u.\text{content}, \sigma)$.
+        \item Verifica-se se o estado $\sigma'$ já foi visitado no nó $u$. Para tal, converte-se $\sigma'$ numa representação string serializada $S_{\sigma'}$ e verifica-se se $S_{\sigma'} \in VisitedStates[u]$. Em caso afirmativo, o ramo é podado (\textit{pruning}) para evitar ciclos redundantes no grafo.
+        \item Para evitar a explosão do espaço de estados em loops que incrementam variáveis infinitamente, impõe-se um limite de segurança de $K = 10$ estados únicos por nó. Se $|VisitedStates[u]| \ge K$, o algoritmo emite um aviso de ciclo infinito no terminal e poda o caminho.
+        \item Caso contrário, insere-se $S_{\sigma'}$ em $VisitedStates[u]$ e regista-se a rota percorrida e o estado final na tabela de histórico de chegada $ArrivalHistory[u]$.
+    \end{enumerate}
+    
+    \item \textbf{Avaliação de Transições e Condicionais:}
+    Para cada aresta de saída $e \in EdgesBySource[u]$ que conecta o nó $u$ ao nó de destino $w$:
+    \begin{enumerate}
+        \item O validador extrai a hiperligação textual associada à aresta $e$ do conteúdo de $u$.
+        \item Avalia-se a condição de acessibilidade associada a essa escolha através da função $canAccessChoice(u.\text{content}, \text{link}, \sigma')$. Esta função analisa se o link está envolto por alguma macro condicional \lstinline|<<if>>| e avalia a sua expressão lógica contra a memória $\sigma'$.
+        \item Se a condição for satisfeita ($true$), adiciona-se o ID da aresta $e$ a $\mathcal{E}_{reach}$ e enfileira-se o próximo estado:
+        \[
+        \mathcal{Q} \leftarrow \text{enqueue}\left(\mathcal{Q}, \langle w, \sigma', \text{path} \cup [w.\text{label}] \rangle\right)
+        \]
+    \end{enumerate}
+\end{enumerate}
+
+Após o término da travessia (quando a fila $\mathcal{Q}$ fica vazia), o módulo de auditoria em \texttt{storyValidator.js} pós-processa os resultados recolhidos para isolar as falhas estruturais, categorizando-as em:
 \begin{itemize}
-    \item \textbf{Nós Órfãos:} Nós inacessíveis a partir da cena de início da história (ignora nós rotulados com a etiqueta especial \texttt{secreto}).
-    \item \textbf{Becos sem Saída (Dead Ends):} Distingue nós terminais legítimos (onde a história conclui propositadamente) de nós que contêm ligações que apontam para IDs de nós apagados ou inexistentes no grafo.
-    \item \textbf{Traces de Arestas Bloqueadas:} Valida se existem condições lógicas impossíveis de satisfazer em determinados ramos.
+    \item \textbf{Nós Órfãos ($V_{orphan}$):} Nós $v \in \mathcal{N}$ que não pertencem a $\mathcal{N}_{reach}$ e cujas etiquetas não incluem a tag \texttt{''secreto''}.
+    \item \textbf{Becos sem Saída ($V_{dead\_end}$):} Nós $v \in \mathcal{N}_{reach}$ que contêm hiperligações cujo destino aponta para um ID de nó inexistente no grafo ($w \notin \mathcal{N}$).
+    \item \textbf{Arestas Inacessíveis ($E_{unreachable}$):} Arestas $e \in \mathcal{E}$ que não pertencem a $\mathcal{E}_{reach}$. Estas representam caminhos cujas condicionais lógicas nunca são satisfeitas sob nenhuma das valorações de variáveis exploradas.
 \end{itemize}
 
 \subsection{Simulador em Tempo Real (PlayMode) e Smart Walker}
-O simulador interativo (\texttt{PlayMode.jsx} encontrado em \texttt{/src/components/PlayMode.jsx}) recria a experiência de jogo do leitor.
+\label{subsec:simulador-playmode-walker}
 
-Durante a inicialização da simulação, os nós classificados como \texttt{css} têm o seu conteúdo concatenado e injetado na diretoria principal da página como um elemento de estilo \texttt{<style id="playmode-stylesheet">}, sendo removido ao encerrar a simulação. Os nós classificados como \texttt{javascript} são executados através de uma função isolada com a assinatura \texttt{new Function('state', 'State', 'setup', código)}, permitindo que scripts criados pelo autor manipulem diretamente a fita de dados da simulação.
-
-Para testes automatizados de rotas, a inteligência do simulador implementa um algoritmo de \textbf{Exploração de Novidade (Smart Walker)} que substitui a seleção aleatória de escolhas por uma abordagem heurística:
-\begin{enumerate}
-    \item O simulador mantém um conjunto de caminhos já visitados em memória (\textit{Global Memory Set}).
-    \item Perante um nó com múltiplas escolhas, efetua-se uma poda da árvore de decisão (\textit{Pruning}), dando prioridade absoluta às opções que conduzem a nós com menor taxa de visita histórica.
-    \item Permite simular caminhos de equilíbrio (como Cabo de Guerra ou mecânicas de sobrevivência) e identificar becos sem saída de forma automatizada e rápida.
-\end{enumerate}
-
-\subsection{Suporte à Sintaxe SugarCube}
-Como motor de simulação dinâmica e sandbox lógica, a plataforma implementa suporte a um subconjunto de macros e operadores da macro-linguagem SugarCube, permitindo aos autores criar condicionais e alterar estados lógicos da história:
+O simulador de jogo (\texttt{PlayMode.jsx}) mimetiza o comportamento do interpretador SugarCube num ambiente controlado pelo navegador do autor. Para permitir a depuração em tempo real sem afetar os dados de edição, o motor executa sob um isolamento de contextos:
 \begin{itemize}
-    \item \textbf{Ficheiros Especiais de Sistema:} Reconhecem-se os nós padrão \texttt{StoryInit} (onde são declaradas e inicializadas as variáveis lógicas globais), \texttt{StoryData} (para leitura de metadados como o nó inicial) e \texttt{StoryCaption} (cujo texto é renderizado na barra lateral de progresso do jogo).
-    \item \textbf{Modificação de Estado (<<set>>):} Suporta-se a alteração de variáveis através da macro \texttt{<<set \$variavel = valor>>} ou \texttt{<<set \$variavel to valor>>}, convertendo atribuições aritméticas e de texto para lógica JavaScript pura executada em sandbox isolada.
-    \item \textbf{Blocos Condicionais (<<if>>):} Permite ocultar ou expor caminhos lógicos dependendo das variáveis vigentes recorrendo a blocos estruturados de controlo:
-    \[
-    \text{<<if expressão>> ... <<elseif expressão>> ... <<else>> ... <</if>>}
-    \]
-    As escolhas (ligações Twine) envolvidas nestes blocos são filtradas e validadas pela função \texttt{canAccessChoice}.
-    \item \textbf{Mapeamento de Operadores:} Para garantir a correspondência de sintaxe, o motor traduz os operadores textuais do Twine para os seus homólogos de JavaScript: \texttt{is}/\texttt{eq} tornam-se \texttt{===}, \texttt{isnot}/\texttt{neq} tornam-se \texttt{!==}, \texttt{and}/\texttt{or} tornam-se \texttt{\&\&}/\texttt{||}, e \texttt{gt}/\texttt{gte}/\texttt{lt}/\texttt{lte} mapeiam-se para os operadores matemáticos clássicos de comparação.
+    \item \textbf{Separação de Estilos:} Os nós categorizados com a tag \texttt{css} têm o seu conteúdo concatenado em tempo de execução e injetado sob a forma de uma tag \texttt{<style id=''playmode-styles''>} na raiz do cabeçalho da página, sendo totalmente limpos ao sair da simulação.
+    \item \textbf{Isolamento de Scripts:} Os nós lógicos contendo JavaScript são processados como funções anónimas com escopo isolado através do construtor \lstinline|new Function('state', 'State', 'setup', script_content)|, impedindo que variáveis globais escritas pelo utilizador interfiram com os estados internos do React ou do canvas do React Flow.
+\end{itemize}
+
+Para testes automáticos de caminhos narrativos, a plataforma disponibiliza o agente autónomo \textbf{Smart Walker} (implementado em \texttt{storyTraversal.js}). Em vez de selecionar opções de forma puramente pseudo-aleatória (o que levaria a uma baixa cobertura de caminhos e retenção em ciclos curtos), o agente utiliza uma heurística baseada em \textit{Procura por Novidade} (\textit{Novelty Search}).
+
+Dada a vizinhança do nó atual $v$, correspondente ao conjunto de nós adjacentes alcançáveis $N(v)$, o agente consulta o histórico de visitas acumuladas do simulador. Para cada opção de transição que leva ao nó vizinho $w \in N(v)$, o Smart Walker obtém o número acumulado de visitas históricas $H(w)$ registado na memória global do simulador. O Walker seleciona a transição para o nó vizinho $w_{next}$ que minimiza a frequência de visitas:
+\[
+w_{next} = \arg\min_{w \in N(v)} H(w)
+\]
+Este comportamento força o simulador a procurar caminhos narrativos raros e ramos profundos da história de forma automatizada, conseguindo mapear e encontrar becos sem saída ou ciclos lógicos fechados numa fração de segundo sem intervenção manual do autor.
+
+\subsection{Motor de Compilação JIT de Macros SugarCube}
+\label{subsec:compilador-jit-macros}
+
+Para suportar as avaliações e atribuições de variáveis de estado descritas, a aplicação possui um compilador \textit{Just-In-Time} (JIT) simplificado estruturado em \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}:
+\begin{itemize}
+    \item \textbf{Análise Léxica e Mapeamento:} O interpretador analisa o conteúdo textual dos nós através de varrimentos que procuram padrões de macros \lstinline|<<set>>| e \lstinline|<<if>>|. Traduz os operadores clássicos da linguagem SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube} (apresentada no capítulo de desenvolvimento).
+    \item \textbf{Árvore de Sintaxe Abstrata (AST):} O interpretador de condicionais analisa blocos lógicos aninhados construindo uma AST simples que reflete a precedência de cláusulas. Esta estrutura é então avaliada em tempo de execução para calcular o valor de verdade das expressões.
 \end{itemize}
 
 \section{Integração de Modelos de Linguagem (LLMs)}

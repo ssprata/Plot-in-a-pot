@@ -114,9 +114,9 @@
 }
 
 % Wrapping bot glossary and acronyms commands.
-\newcommand{\printnormalglossary}{\printglossary}
-\newcommand{\printacronymglossary}{\printglossary[type=\acronymtype]}
-\newcommand{\printsymbolglossary}{\printglossary[type=symbols]}
+\newcommand{\printnormalglossary}{\printnoidxglossary[sort=word]}
+\newcommand{\printacronymglossary}{\printnoidxglossary[type=\acronymtype, sort=word]}
+\newcommand{\printsymbolglossary}{\printnoidxglossary[type=symbols, sort=word]}
 
 % Logic to add or omit a blank page depending on the '\MediaOption' value.
 \newcommand{\MediaOptionLogic}{%

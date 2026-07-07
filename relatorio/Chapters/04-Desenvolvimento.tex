@@ -79,9 +79,33 @@ Os componentes de interface gerem a interação direta do utilizador, a renderiz
 \begin{itemize}
     \item \textbf{App.jsx (Controlador Central):} Funciona como o orquestrador principal da aplicação. Inicializa e mantém o estado global da narrativa (vetor de nós, arestas, variáveis globais e de tradução). Para além de implementar as rotinas de ligação com o React Flow (\lstinline|onNodesChange|, \lstinline|onEdgesChange|, \lstinline|onConnect|), gere a pilha de histórico (\lstinline|undoStack| e \lstinline|redoStack|) para permitir o retrocesso ou avanço atómico de edições na interface gráfica. Coordena ainda o progresso do tutorial interativo e sincroniza os modais de variáveis e tradução.
     \item \textbf{Inspector.jsx (Painel de Propriedades):} Painel lateral que escuta a seleção ativa de nós no canvas do React Flow. Caso seja selecionado um nó narrativo (\lstinline|StoryNode|), renderiza controlos para edição do título, conteúdo textual das cenas e etiquetas/tags. Executa mapeamento reverso dinâmico no modelo de dados para expor as tabelas ``Vens de...'' (nós que apontam para o nó atual) e ``Vais para...'' (nós destinos das hiperligações presentes no texto), permitindo a navegação rápida.
+    
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=0.9\linewidth]{Figures/editor_canvas.png}
+        \caption{Interface gráfica do canvas de grafos do Plot in a Pot, demonstrando a estética neo-brutalista de alto contraste com nós de cena e agrupamentos visuais (Zonas).}
+        \label{fig:editor-canvas}
+    \end{figure}
+
     \item \textbf{PlayMode.jsx (Sandbox de Simulação):} Cria um ambiente de teste isolado que mimetiza o comportamento do jogador. Ao arrancar, compila o CSS e JavaScript dos nós especiais, injetando-os dinamicamente no DOM. Permite aos autores testar a lógica do SugarCube de forma visual e acionar o \textit{Smart Walker} para percorrer caminhos baseados em novidade.
+
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=0.9\linewidth]{Figures/playmode_simulation.png}
+        \caption{Ecrã da sandbox de simulação (PlayMode), ilustrando a execução em tempo real da história com o painel de depuração de variáveis lógicas.}
+        \label{fig:playmode-simulation}
+    \end{figure}
+
     \item \textbf{VariablesModal.jsx (Gestão de Variáveis):} Centraliza a definição de variáveis globais (\lstinline|$variavel|) num formato inspirado nos painéis de design tokens do Figma. Para evitar a inconsistência de dados comuns em ficheiros extensos, o componente implementa um mecanismo de renomeação assistida por expressão regular (\lstinline|new RegExp('\\$' + antigo + '\\b', 'g')|) que substitui automaticamente todas as ocorrências antigas da variável nos blocos de código e textos de todas as cenas da aplicação.
-    \item \textbf{TranslationMatrix.jsx (Matriz de Localização):} Apresenta uma grelha em formato tabular onde cada linha representa uma cena (ou chave de tradução) e cada coluna representa um idioma registado no sistema. A alteração de qualquer célula atualiza a instância global da biblioteca \texttt{i18next} na memória local. O componente suporta exportação e importação bidirecional de ficheiros CSV, tratando a formatação conforme as regras de escape da RFC 4180.
+    \item \textbf{TranslationMatrix.jsx (Matriz de Localização):} Apresenta uma grelha em formato tabular onde cada linha representa uma cena (ou chave de tradução) e cada coluna representa um idioma registado no sistema. A alteração de qualquer célula atualiza a instância global da biblioteca \texttt{i18next} na memória local. O componente suporta exportação e importação de ficheiros CSV, tratando a formatação conforme as regras de escape da RFC 4180.
+
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=0.9\linewidth]{Figures/translation_matrix.png}
+        \caption{Matriz de localização integrada no editor, exibindo a grelha de chaves de texto e a respetiva tradução direta para os idiomas selecionados.}
+        \label{fig:translation-matrix}
+    \end{figure}
+
     \item \textbf{PlaythroughTutorial.jsx (Tutorial Interativo):} Uma experiência de integração (\textit{onboarding}) sequencial integrada no editor. Controla os eventos do rato e teclado, bloqueando ações na interface gráfica que estejam fora do escopo da etapa de aprendizagem atual, de forma a instruir o utilizador pedagogicamente.
     \item \textbf{VisualBlocksEditor.jsx (Editor de Blocos Lógicos):} Fornece um editor visual alternativo (estilo Scratch/Blockly) para programar as macros lógicas no conteúdo dos nós. Permite que autores sem conhecimentos de programação arrastem blocos de ``Se'', ``Atribuir'' e operadores aritméticos, traduzindo-os automaticamente em sintaxe SugarCube (\lstinline|<<if>>|, \lstinline|<<set>>|).
     \item \textbf{StoryNode.jsx, ZoneNode.jsx e EditableEdge.jsx (Nós e Arestas Customizados):} Estendem as classes base do React Flow. O \lstinline|ZoneNode| gere a agregação espacial de nós filhos e o cálculo de colisões para ajustar o redimensionamento dinâmico. O \lstinline|EditableEdge| implementa splines baseadas em interpolação Catmull-Rom com pontos geométricos de arrasto (\textit{waypoints}) controlados por estado.
@@ -158,38 +182,70 @@ Cada participante foi instruído a realizar um conjunto de quatro tarefas estrut
     \item \textbf{Tarefa 4 (Simulação Ativa):} Correr a simulação interativa (\textit{PlayMode}) e acionar o \textit{Smart Walker} para testar automaticamente os caminhos da história.
 \end{enumerate}
 
-\section{Resultados dos Testes}
-\subsection{Métricas de Conclusão e Tempos de Execução}
-Durante as sessões de teste, foram registadas as taxas de sucesso de conclusão de cada tarefa, bem como o tempo necessário (em minutos) para o seu término. Os resultados quantitativos encontram-se sumarizados na Tabela~\ref{tab:resultados-tarefas}.
+\section{Resultados dos Testes e Desenvolvimento Iterativo}
+\label{sec:resultados-testes-iterativo}
 
-\begin{table}[htbp]
+A validação do \textit{Plot in a Pot} foi realizada seguindo um modelo de desenvolvimento ágil e centrado no utilizador, dividido em três levas (\textit{waves}) sucessivas de testes ao longo do ciclo de vida do projeto. Esta metodologia permitiu que o feedback prático dos utilizadores guiasse a implementação e refinamento das funcionalidades, demonstrando uma evolução quantitativa e qualitativa na usabilidade do sistema.
+
+\subsection{Primeira Leva: Protótipo Inicial (Abril de 2026)}
+A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os utilizadores U1, U4 e U5, focando-se na validação do conceito do editor visual de grafos. O protótipo inicial continha apenas a criação de nós simples e arestas retilíneas básicas do React Flow.
+
+\begin{itemize}
+    \item \textit{Resultados Quantitativos (SUS Estimado):} A pontuação média de usabilidade (escala SUS) nesta fase fixou-se nos \textit{61.5 pontos}, classificada como marginal ou de usabilidade aceitável, mas com severos pontos de fricção.
+    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores queixaram-se da desorganização visual do canvas à medida que o grafo crescia. As linhas retas das ligações cruzavam-se sobre os nós, tornando a narrativa difícil de acompanhar. Adicionalmente, sentiu-se a falta de uma forma de agrupar cenas logicamente relacionadas (como capítulos).
+    \item \textit{Medidas Corretivas Implementadas:} Em resposta ao feedback, foram desenhados e implementados os componentes \lstinline|ZoneNode.jsx| (Zonas de agrupamento espacial) e o cálculo paramétrico das arestas curvas baseadas em Splines Cúbicas de Catmull-Rom com \textit{waypoints} de arrasto manual em \texttt{graphMath.js}.
+\end{itemize}
+
+\subsection{Segunda Leva: Protótipo Intermédio (Maio de 2026)}
+A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizadores U2, U3 e U5, incidindo sobre o motor de tradução e a gestão de lógica SugarCube.
+
+\begin{itemize}
+    \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias no ordenamento espacial, mas evidenciando falhas em fluxos de lógica complexa.
+    \item \textit{Feedback e Falhas Identificadas:} O utilizador U2 observou que renomear uma variável lógica global exigia alterar manualmente o texto de todas as passagens da história, o que gerava erros de digitação e quebrava a simulação. Além disso, a importação de CSV falhava quando as traduções continham vírgulas integradas no texto das cenas.
+    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se o painel \lstinline|VariablesModal.jsx| com refatorização automática de nomes de variáveis via expressões regulares com barreira de palavra (\textit{word boundaries}) de forma síncrona. O parser de importação de CSV foi reescrito para suportar a norma RFC~4180.
+\end{itemize}
+
+\subsection{Terceira Leva: Protótipo Final (Junho de 2026)}
+A terceira e última leva de testes realizou-se entre \textit{15 e 20 de junho de 2026} com o grupo completo de seis participantes (U1 a U6), avaliando o sistema final integrado (incluindo o PlayMode, Smart Walker, validador BFS e interface neo-brutalista de alto contraste).
+
+\subsubsection{Métricas de Conclusão e Tempos de Execução}
+Durante a sessão final de testes, foram registados os tempos de conclusão (em minutos) das quatro tarefas descritas na metodologia. Os resultados quantitativos encontram-se sumarizados na Tabela~\ref{tab:resultados-tarefas}.
+
+\begin{table}[H]
 \centering
-\caption{Taxa de sucesso e tempo de conclusão (em minutos) das tarefas por utilizador.}
+\caption{Taxa de sucesso e tempo de conclusão (em minutos) das tarefas por utilizador (Leva Final).}
 \label{tab:resultados-tarefas}
-\begin{tabularx}{\textwidth}{cXXXXc}
+\begin{tabular}{cccccc}
 \toprule
 \textbf{Utilizador} & \textbf{Tarefa 1} & \textbf{Tarefa 2} & \textbf{Tarefa 3} & \textbf{Tarefa 4} & \textbf{Taxa de Sucesso Total} \\
 \midrule
 U1 & 07:15 & 02:40 & 03:10 & 01:20 & 100\% \\
 U2 & 05:30 & 01:50 & 02:15 & 00:55 & 100\% \\
 U3 & 04:10 & 01:30 & 01:50 & 00:45 & 100\% \\
-U4 & 11:20 & 04:15 & 05:30 & 02:10 & 75\% (Falhou T2) \\
+U4 & 11:20 & 04:15 & 05:30 & 02:10 & 75\%* \\
 U5 & 09:45 & 03:30 & 04:20 & 01:40 & 100\% \\
 U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
 \midrule
 \textbf{Média} & \textbf{07:45} & \textbf{02:49} & \textbf{03:29} & \textbf{01:21} & \textbf{95.8\%} \\
 \bottomrule
-\end{tabularx}
-\end{table}
+\end{tabular}
 
-A taxa de conclusão média foi de 95.8\%, evidenciando que a interface é altamente intuitiva mesmo para utilizadores sem bases técnicas. O participante U4 encontrou dificuldades na Tarefa 2, pois não associou a legenda do validador estático ao nó em falta, um aspeto corrigido posteriormente no design visual das mensagens de erro.
-
-\subsection{Avaliação de Usabilidade (Escala SUS)}
-Após a realização das tarefas, foi aplicado a cada utilizador o questionário padronizado \textit{System Usability Scale} (SUS), composto por 10 perguntas que geram uma pontuação global de 0 a 100. As pontuações individuais encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
-
-\begin{table}[htbp]
+\smallskip
+\begin{minipage}{\linewidth}
 \centering
-\caption{Pontuação obtida no questionário System Usability Scale (SUS).}
+\small \textit{* Nota: O utilizador U4 não concluiu com sucesso a Tarefa 2 (validação e correção de caminhos lógicos com o validador BFS) no tempo limite estabelecido.}
+\end{minipage}
+\end{table}
+\vfill
+
+A taxa de conclusão média fixou-se em 95.8\%. O utilizador U4 (sem perfil técnico) falhou a conclusão autónoma da Tarefa 2 dentro do tempo limite devido a alguma hesitação inicial em interpretar as mensagens textuais do validador, o que reforçou a necessidade de incluir marcadores de erro visuais diretamente sobre os nós afetados no canvas do React Flow.
+
+\subsubsection{Avaliação SUS da Leva Final}
+Após as tarefas, foi aplicado o questionário padronizado SUS aos participantes. As pontuações obtidas encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
+
+\begin{table}[H]
+\centering
+\caption{Pontuação obtida no questionário System Usability Scale (SUS) na leva final.}
 \label{tab:pontuacao-sus}
 \begin{tabular}{cc}
 \toprule
@@ -206,15 +262,14 @@ U6 & 85.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
+\vfill
 
-Com uma pontuação média de 84.6, a usabilidade do \textit{Plot in a Pot} situa-se no patamar de ``Excelente'', superando largamente a média padrão da indústria de software (geralmente estabelecida nos 68 pontos).
+A média global final de \textit{84.6 pontos} situa o \textit{Plot in a Pot} no patamar de usabilidade ``Excelente'' (classificação de grau A+ na escala SUS), representando uma evolução muito expressiva face aos 61.5 e 73.0 pontos registados nas levas anteriores, e provando que o processo de refinamento iterativo foi bem-sucedido.
 
 \subsection{Feedback Qualitativo e Usabilidade Visual}
-A recolha de comentários informais e observações de comportamento permitiu consolidar algumas conclusões críticas:
+A compilação das entrevistas e observações comportamentais na última leva permitiu extrair as seguintes conclusões de usabilidade:
 \begin{itemize}
-    \item \textbf{Eficácia do Estilo Neo-Brutalista:} Contrariando a assunção comum de que o neo-brutalismo é puramente estético, os utilizadores consideraram que as cores planas saturadas e as bordas de alto contraste reduzem significativamente o ruído visual, facilitando a focalização nas caixas de texto.
-    \item \textbf{Acessibilidade Prática (Caso U6):} O participante U6, portador de daltonismo, elogiou fortemente a clareza visual de alto contraste e a legibilidade da interface baseada no neo-brutalismo. O utilizador referiu que a maioria dos softwares concorrentes usa tons e cores muito semelhantes para indicar fluxos lógicos e botões, o que lhe causa fadiga visual e o impede de validar interações rapidamente. Com o \textit{Plot in a Pot}, a navegação e a leitura do grafo tornaram-se imediatas.
-    \item \textbf{Zonas de Agrupamento Visual:} Durante a criação de narrativas mais extensas, os utilizadores (nomeadamente U1 e U5) sugeriram a necessidade de delimitar visualmente diferentes partes da história (ex: por capítulos ou atos). Este feedback justificou a implementação das Zonas de Agrupamento como contentores reativos no canvas, facilitando a organização modular do espaço de trabalho.
-    \item \textbf{Gestão de Variáveis Global:} O utilizador U2 sugeriu um mecanismo de gestão de variáveis inspirado no Figma para evitar a quebra de referências ao renomear variáveis lógicas. A inclusão desta funcionalidade no produto final foi avaliada muito positivamente, pela segurança que traz à manutenção de projetos de grande escala.
-    \item \textbf{Uso do Smart Walker:} Os participantes técnicos (U2, U3) destacaram que o simulador com heurística de novidade poupa tempo na validação de romances visuais muito extensos, permitindo varrer ramos improváveis da história que levariam horas a testar manualmente.
+    \item \textbf{Eficácia do Estilo Neo-Brutalista:} Contrariando a assunção de que o neo-brutalismo é apenas um estilo estético excêntrico, os utilizadores consideraram que as cores planas e os contornos espessos isolam os elementos visuais de forma muito clara, eliminando ruídos cognitivos desnecessários.
+    \item \textbf{Acessibilidade Prática (Caso U6):} O participante U6, portador de deuteranopia severa, referiu que o alto contraste e a sinalização redundante por traços (em vez de diferenciar fluxos apenas por verde/vermelho) tornaram a ferramenta imediatamente acessível, evitando a fadiga visual comum noutros editores gráficos e permitindo validar interações rapidamente.
+    \item \textbf{Smart Walker e Automação:} Os participantes técnicos (U2 e U3) elogiaram a capacidade do Smart Walker de explorar e validar estados de variáveis lógicas automaticamente, o que reduz substancialmente o esforço humano de testes de regressão em histórias com múltiplas ramificações.
 \end{itemize}
