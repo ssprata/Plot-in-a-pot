@@ -1,9 +1,19 @@
 // src/utils/storyValidator.js
 import { traverseGraph } from './storyTraversal';
 
-// FIX #4: Constante partilhada para a tag de nós secretos — fácil de alterar num único sítio
+// Valida a estrutura do fluxo de história.
+// Usa o percurso do grafo para determinar alcance, depois classifica nós/arestas como:
+// - inacessíveis
+// - órfãos
+// - terminais alcançáveis
+// - dead ends com saídas inválidas
+// Nós secretos são excluídos de alguns relatórios porque podem ser intencionais.
+
+// Tag usada para identificar nós que são secretos e devem ser ignorados na validação normal
 const SECRET_TAG = 'secreto';
 
+// Função auxiliar para detectar se um nó deve ser tratado como secreto.
+// Aceita tanto a flag explícita node.data.secret como a presença da tag secreta.
 function isSecretNode(node) {
   if (node.data?.secret === true) return true;
   const tags = node.data?.tags;
@@ -12,39 +22,44 @@ function isSecretNode(node) {
 }
 
 export function validateStoryFlow(nodes, edges) {
-  // FIX #3: Desestruturar reachableNodes diretamente em vez de derivar de arrivalHistory
+  // Executa o percurso do grafo para descobrir quais nós e arestas podem ser alcançados
+  // a partir do nó inicial, além de armazenar o histórico de chegadas a cada nó.
   const { reachableNodes, reachableEdges, arrivalHistory, error } = traverseGraph(nodes, edges);
 
   if (error) {
+    // Se o percurso falhar, retorna um objecto de erro vazio que pode ser usado pelo caller.
     return { unreachableEdges: [], orphanNodes: [], hasReachableEnd: false, reachableEndNodes: [], reachableNodes: new Set(), reachableEdges: new Set(), error };
   }
 
-  // FIX #1: Pré-computar nodeMap uma vez — lookups O(1) em vez de nodes.find() O(N) por edge
+  // Mapa de nós por id para consultas rápidas em O(1).
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
 
+  // Agrupa as arestas por nó de origem para facilitar a análise de nós com saídas e nós órfãos.
   const outgoingEdgesByNode = edges.reduce((map, edge) => {
     if (!map.has(edge.source)) map.set(edge.source, []);
     map.get(edge.source).push(edge);
     return map;
   }, new Map());
 
-  // FIX #5: Pré-computar edges com targets válidos por nó, para detetar becos sem saída reais
+  // Filtra apenas arestas cujo target existe. Isto ajuda a diferenciar nós verdadeiramente terminais
+  // de nós que têm saídas inválidas para destinos inexistentes.
   const validOutgoingByNode = new Map();
   edges.forEach(edge => {
-    if (!nodeMap.has(edge.target)) return; // edge para target inexistente — não conta
+    if (!nodeMap.has(edge.target)) return; // aresta para target inexistente: não conta como saída válida
     if (!validOutgoingByNode.has(edge.source)) validOutgoingByNode.set(edge.source, []);
     validOutgoingByNode.get(edge.source).push(edge);
   });
 
   // --- Arestas inacessíveis ---
+  // Lista arestas que não foram marcadas como alcançáveis pelo percurso do grafo.
   const unreachableEdges = edges
     .filter(edge => !reachableEdges.has(edge.id))
     .map(edge => {
-      // FIX #1: Lookup O(1) via nodeMap
       const sourceNode = nodeMap.get(edge.source);
       const targetNode = nodeMap.get(edge.target);
 
-      // FIX #3: Usar reachableNodes diretamente
+      // Determina se o nó de origem chegou a ser alcançado.
+      // Se não, a aresta é inacessível porque o nó de origem é inatingível.
       const sourceReached = sourceNode && reachableNodes.has(sourceNode.id);
 
       let lastKnownPath = [];
@@ -52,7 +67,7 @@ export function validateStoryFlow(nodes, edges) {
       if (sourceReached) {
         const history = arrivalHistory.get(sourceNode.id);
         if (history?.length > 0) {
-          // FIX #2: Usar o último histórico (mais estados aplicados) em vez do primeiro
+          // Usa o último histórico conhecido nesse nó para anotação de diagnóstico.
           const last = history[history.length - 1];
           lastKnownPath = last.path;
           lastKnownState = last.state;
@@ -69,12 +84,13 @@ export function validateStoryFlow(nodes, edges) {
       };
     });
 
-  // --- Nós órfãos (existem mas nunca são alcançados) ---
+
+  // --- Nós órfãos ---
+  // Nós que existem no grafo mas não são alcançados a partir do início.
+  // Nós secretos são excluídos desta lista porque podem ser intencionalmente inacessíveis.
   const orphanNodes = nodes
     .filter(node => {
-      // FIX #4: Usar função isSecretNode robusta com suporte a Array de tags
       const isSecret   = isSecretNode(node);
-      // FIX #3: Usar reachableNodes diretamente
       const isReachable = reachableNodes.has(node.id);
       return !isReachable && !isSecret;
     })
@@ -83,23 +99,24 @@ export function validateStoryFlow(nodes, edges) {
       label: node.data?.label ?? 'Desconhecido',
     }));
 
+
   // --- Nós terminais alcançáveis ---
+  // Nós alcançáveis que não têm saídas válidas para targets existentes.
   const reachableEndNodes = nodes
     .filter(node => {
-      const isReachable = reachableNodes.has(node.id);  // FIX #3
-      const isSecret    = isSecretNode(node);            // FIX #4
-      // FIX #5: Só é terminal se não tiver edges para targets que realmente existem
+      const isReachable = reachableNodes.has(node.id);
+      const isSecret    = isSecretNode(node);
       const hasNoValidOutputs = !validOutgoingByNode.has(node.id);
       return isReachable && !isSecret && hasNoValidOutputs;
     })
     .map(node => ({
       id: node.id,
       label: node.data?.label ?? 'Desconhecido',
-      // FIX #2: Usar o último histórico para o pathTrace também
       pathTrace: arrivalHistory.get(node.id)?.at(-1)?.path ?? [],
     }));
 
-  // FIX #5: Reportar nós com edges mas todos os targets inexistentes (becos sem saída ocultos)
+  // --- Nós com arestas válidas mas sem targets existentes ---
+  // Esses nós podem parecer ter saídas, mas todas as arestas apontam para destinos inválidos.
   const deadEndNodes = nodes
     .filter(node => {
       const isReachable    = reachableNodes.has(node.id);
@@ -114,13 +131,12 @@ export function validateStoryFlow(nodes, edges) {
       pathTrace: arrivalHistory.get(node.id)?.at(-1)?.path ?? [],
     }));
 
-  // FIX #6: Incluir error: null explicitamente no retorno de sucesso
   return {
     unreachableEdges,
     orphanNodes,
     hasReachableEnd: reachableEndNodes.length > 0,
     reachableEndNodes,
-    deadEndNodes,  // FIX #5: nós com edges mas todos os targets inexistentes
+    deadEndNodes,  // Nós com arestas mas todos os destinos são inválidos.
     arrivalHistory,
     reachableNodes,
     reachableEdges,

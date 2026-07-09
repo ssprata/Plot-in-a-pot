@@ -1,5 +1,6 @@
 // src/utils/graphMath.js
 
+// Funções utilitárias para manipulação de grafos representados como nós e arestas.
 export function buildAdjacencyList(nodes, edges) {
   const map = {};
 
@@ -26,8 +27,6 @@ export function buildAdjacencyList(nodes, edges) {
   return map;
 }
 
-// FIX #4: Construir também o mapa inverso (predecessores) para algoritmos
-// que precisem de saber quem aponta para um nó (ex: deteção de nós órfãos).
 export function buildAdjacencyListWithInverse(nodes, edges) {
   const forward = {};
   const inverse = {};
@@ -60,7 +59,6 @@ export function buildAdjacencyListWithInverse(nodes, edges) {
 export function buildAdjacencyMatrix(nodes, edges) {
   const ids = nodes.map((n) => n.id);
 
-  // FIX #2: Map de id → índice construído uma vez — O(N) em vez de O(E×N)
   const indexMap = new Map(ids.map((id, i) => [id, i]));
 
   const n = ids.length;
@@ -70,7 +68,6 @@ export function buildAdjacencyMatrix(nodes, edges) {
     const i = indexMap.get(e.source);
     const j = indexMap.get(e.target);
 
-    // FIX #3: Avisar sobre edges com source/target fora dos nós conhecidos
     if (i === undefined || j === undefined) {
       console.warn(`graphMath: edge "${e.source}" → "${e.target}" ignorada — um dos nós não existe.`);
       return;

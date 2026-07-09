@@ -1,5 +1,9 @@
 import { layoutNodesAndEdges } from '../dagreLayout';
 
+// Parser e exportador Twee3.
+// Contém utilitários para escapar/desescapar texto, importar um ficheiro Twee3 em nós/arestas
+// e exportar o grafo de volta para o formato Twee3.
+
 // --- FUNÇÕES DE SEGURANÇA (Baseadas no Parser Oficial) ---
 
 export function escapeForTweeHeader(value) {
@@ -7,8 +11,8 @@ export function escapeForTweeHeader(value) {
 }
 
 export function escapeForTweeText(value) {
-  // FIX #8: Primeiro protege os escapes manuais já existentes (\::),
-  // depois escapa os :: literais que ainda não estão escapados.
+  // Protege primeiro escapes manuais já existentes (\::) e depois escapa
+  // ocorrências literais de :: que não estão escapadas.
   // eslint-disable-next-line no-control-regex
   return value.replace(/^\\::/gm, '\x00ESCAPED_COLONS\x00').replace(/^::/gm, '\\::').replace(/^\x00ESCAPED_COLONS\x00/gm, '\\::');
 }
@@ -18,7 +22,7 @@ export function unescapeForTweeHeader(value) {
 }
 
 export function unescapeForTweeText(value) {
-  // FIX #1: O padrão estava errado — deve reverter \:: para ::, não \: para :
+  // Reverte escapes de texto de Twee para o conteúdo original.
   return value.replace(/^\\::/gm, '::');
 }
 
@@ -28,11 +32,12 @@ export function parseTwee3(source) {
   // Array dedicado para guardar os avisos detetados durante a leitura
   const warnings = [];
 
-  // 1. Separação segura por nós, garantindo que o :: está no início da linha
+  // 1. Separação segura por nós, garantindo que a delimitação de passagem ::
+  // está no início da linha.
   const passageBlocks = source
     .split(/^::/m)
     .filter(s => s.trim() !== '')
-    .map(s => '::' + s); // FIX #2: sem espaço extra para não prefixar o nome com ' '
+    .map(s => '::' + s);
 
   const passages = [];
   const idMap = {};
@@ -43,9 +48,8 @@ export function parseTwee3(source) {
     const lines = block.split(/\r?\n/);
     const headerLine = lines[0];
 
-    // FIX #5: Em vez de regex não-greedy para o JSON (que falha com objetos aninhados),
-    // encontramos o índice do primeiro '{' e extraímos o resto manualmente.
-    // A regex continua a ser usada para Nome e Tags, mas o JSON é extraído à parte.
+    // Separa o cabeçalho do JSON para que possamos interpretar metadados
+    // sem ficar presos em regex não-greedy com objetos aninhados.
     const headerWithoutJson = headerLine.replace(/\{[\s\S]*$/, '').trimEnd();
     const headerBits = /^::\s*(.*?(?:\\\s)?)\s*(\[.*?\])?\s*$/.exec(headerWithoutJson);
 
@@ -64,7 +68,7 @@ export function parseTwee3(source) {
     const title = unescapeForTweeHeader(rawName.trim());
     const content = lines.slice(1).join('\n').replace(/^\\::/gm, '::').trim();
 
-    // FIX #7: Detetar nomes duplicados e emitir aviso
+    // Detecta nomes de passagem duplicados e emite um aviso, evitando que a segunda ocorrência seja usada.
     if (idMap[title] !== undefined) {
       warnings.push(`Aviso: Passagem com o nome duplicado "${title}" encontrada — a segunda ocorrência foi ignorada.`);
       return;
@@ -72,7 +76,7 @@ export function parseTwee3(source) {
 
     let tags = [];
     if (rawTags) {
-      // FIX #6: Usar /\s+/ em vez de /\s/ para tratar múltiplos espaços e tabs
+      // Divide as tags em espaços e tabs, tratando múltiplos separadores.
       tags = rawTags.replace(/^\[(.*)\]$/g, '$1').split(/\s+/).filter(t => t.trim() !== '').map(unescapeForTweeHeader);
     }
 
@@ -184,7 +188,7 @@ export function parseTwee3(source) {
         targetTitle = rawContent.trim();
       }
 
-      // BARREIRA ANTI-VARIÁVEIS
+      // Ignora links que usam variáveis ou expressões em vez de títulos de passagem estáticos.
       if (targetTitle.startsWith('$') || targetTitle.startsWith('_') || targetTitle.match(/[()+\-*/=]/)) {
         warnings.push(`Em [${p.data.label}], o link para "${targetTitle}" foi ignorado por conter variáveis ou matemática.`);
         continue;
@@ -219,7 +223,7 @@ export function parseTwee3(source) {
       if (targetTitleRaw) targetTitleRaw = targetTitleRaw.trim();
 
       if (targetTitleRaw) {
-        // BARREIRA ANTI-VARIÁVEIS EM MACROS
+        // Ignora destinos dinâmicos em macros <<goto>> que apontam para variáveis.
         if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
            warnings.push(`Em [${p.data.label}], o macro <<goto>> para "${targetTitleRaw}" foi ignorado por apontar para uma variável.`);
            continue; 
@@ -236,8 +240,8 @@ export function parseTwee3(source) {
     }
   });
 
-  // 4. FIX #3: Auto-layout — nós filhos têm posição relativa 0,0 por design,
-  // por isso só contam os nós raiz (sem parentName) para decidir se é preciso layout.
+  // 4. Auto-layout: apenas nós raiz (sem parentName) são usados para decidir
+  // se o layout automático é necessário, porque nós filhos já têm posição relativa.
   const rootPassages = passages.filter(p => !p.data.parentName);
   const needsLayout = rootPassages.length > 0 && rootPassages.every(p => p.position.x === 0 && p.position.y === 0);
   let nodes = passages;
@@ -285,7 +289,7 @@ export function exportToTwee3(nodes, edges) {
 
     const tags = tagsArray.length > 0 ? ` [${tagsArray.map(escapeForTweeHeader).join(' ')}]` : '';
 
-    // FIX #4: Calcular parentNode uma única vez e reutilizar nas duas operações seguintes
+    // Calcula o nó pai uma única vez para reutilizar durante a exportação.
     const parentNode = n.parentId ? nodes.find(p => p.id === n.parentId) : null;
 
     // Se o nó tiver um pai, a sua posição guardada no estado é relativa.

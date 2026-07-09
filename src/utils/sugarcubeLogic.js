@@ -1,15 +1,14 @@
 // src/utils/sugarcubeLogic.js
 /* eslint-disable no-new-func */
 
-// FIX #5: Constante partilhada para a tag de nós secretos/sistema
-// (deve ser a mesma usada no storyValidator.js)
+// Tag partilhada para identificar nós secretos ou de sistema.
+// Deve ser consistente com o storyValidator.js.
 export const SECRET_TAG = 'secreto';
 
 // --- TRADUTOR SUGARCUBE -> JAVASCRIPT ---
-// Converte os operadores textuais do Twine para operadores lógicos puros
+// Converte operadores textuais do Twine/SugarCube para expressões JavaScript.
 function sanitizeSugarCubeExpression(expr) {
     return expr
-        // FIX #1: "isnot" ANTES de "is" — caso contrário "isnot" torna-se "===not"
         .replace(/\bisnot\b/g, '!==')
         .replace(/\bneq\b/g,   '!==')
         .replace(/\bis\b/g,    '===')
@@ -20,14 +19,11 @@ function sanitizeSugarCubeExpression(expr) {
         .replace(/\bgt\b/g,    '>')
         .replace(/\blte\b/g,   '<=')
         .replace(/\blt\b/g,    '<')
-        // FIX #2: "to" só é substituído quando precedido de $variável e seguido de valor,
-        // para não corromper strings que contenham a palavra "to" (ex: "to the castle")
         .replace(/(\$[\w]+)\s+\bto\b\s+/g, '$1 = ')
         .replace(/\$([a-zA-Z0-9_]+)/g, 'state.$1'); // Transforma $ouro em state.ouro
 }
 
-// FIX #4: Lista de propriedades proibidas para proteger o objeto de estado
-// contra expressões maliciosas ou mal formatadas
+// Propriedades proibidas no estado para evitar mutações perigosas.
 const FORBIDDEN_STATE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 function safeguardState(state) {
@@ -69,7 +65,6 @@ export function findStartNode(nodes) {
 
     // 4º Tentativa (Fallback de Segurança): O primeiro nó que NÃO seja de sistema
     if (!startNode) {
-        // FIX #6: Aviso explícito quando o fallback é usado — a travessia pode começar num nó errado
         const fallback = nodes.find(n => !isSystemNode(n)) || nodes[0];
         if (fallback) {
             console.warn(
@@ -95,7 +90,6 @@ export function applyModifiers(content, currentState) {
         const jsExpression = sanitizeSugarCubeExpression(expression);
 
         try {
-            // FIX #4: Sandbox com proteção contra mutação de propriedades perigosas
             const evaluator = new Function('state', `${jsExpression};`);
             evaluator(newState);
             safeguardState(newState);
@@ -116,8 +110,8 @@ export function getInitialState(nodes) {
 export function canAccessChoice(content, choiceText, currentState) {
     if (!content) return true;
 
-    // FIX #7: Rastrear explicitamente se a escolha foi encontrada em algum bloco
-    // Em vez de depender do valor acidental de isAccessible no final
+    // Rastreia se a escolha existe dentro de um bloco condicional.
+    // Isso distingue escolhas livres de escolhas dependentes de condições.
     let choiceFoundInAnyBlock = false;
     let isAccessible = true;
 
@@ -129,9 +123,8 @@ export function canAccessChoice(content, choiceText, currentState) {
         const initialExpression = ifMatch[1];
         const innerContent = ifMatch[2];
 
-        // FIX #3: Filtragem mais robusta — verificar se a escolha está no bloco
-        // usando o formato exato de link em vez de substring livre
-        // (reduz falsos positivos com textos de escolha genéricos)
+        // Verifica se o texto da escolha aparece dentro do bloco condicional
+        // no formato exato de link Twine.
         const choicePattern = new RegExp(
             '\\[\\[' + choiceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[|\\]\\->]'
         );
@@ -173,8 +166,7 @@ export function canAccessChoice(content, choiceText, currentState) {
             }
         }
 
-        // FIX #7: Resultado explícito — a escolha só é acessível se estiver
-        // no ramo vencedor do bloco onde foi encontrada
+        // A escolha é acessível apenas se estiver no ramo verdadeiro selecionado.
         if (activeBranchIndex !== -1 && branches[activeBranchIndex].text.includes(choiceText)) {
             isAccessible = true;
         } else {
@@ -182,8 +174,7 @@ export function canAccessChoice(content, choiceText, currentState) {
         }
     }
 
-    // FIX #7: Se a escolha não foi encontrada em nenhum bloco condicional,
-    // está livre (fora de qualquer <<if>>) — acessível por defeito
+    // Se a escolha não estiver dentro de qualquer bloco condicional, está livre.
     if (!choiceFoundInAnyBlock) return true;
 
     return isAccessible;
@@ -193,7 +184,6 @@ export function canAccessChoice(content, choiceText, currentState) {
 export function isSystemNode(node) {
     const systemNodes = ['storyinit', 'storytitle', 'storydata', 'storycaption'];
     const labelLower = node.data.label.toLowerCase();
-    // FIX #5: Usar SECRET_TAG exportada em vez de string hardcoded duplicada
     const tags = Array.isArray(node.data.tags)
         ? node.data.tags.join(' ').toLowerCase()
         : String(node.data.tags || '').toLowerCase();

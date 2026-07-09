@@ -1,16 +1,11 @@
 // src/utils/aiGenerator.js
 
-// FIX #5: Gerar um IFID válido (UUID v4 em maiúsculas) para injetar no prompt dinamicamente,
-// em vez de usar o placeholder fixo "12345".
+// Gera um UUID unico
 function generateIfid() {
   return crypto.randomUUID().toUpperCase();
 }
 
-// 1. O PROMPT DO SISTEMA (A "Ditadura" de Formatação)
-// Este texto é injetado antes da história do utilizador.
-// Serve para forçar a IA a cuspir APENAS código Twee, sem introduções simpáticas.
-// FIX #4: Tag do StoryData corrigida — removido [secreto] (placeholder de desenvolvimento).
-// O IFID é gerado dinamicamente por generateIfid() antes de cada chamada.
+//gera um prompt para o modelo de IA, com instruções detalhadas sobre como formatar a saída em Twee 3 (SugarCube)
 function buildSystemPrompt(ifid) {
   return `És um conversor estrito de texto para código Twee 3 (SugarCube). A tua única função é devolver código. Não podes falar, não podes explicar, e não podes usar blocos de código markdown (como \`\`\`twee).
 
@@ -50,9 +45,8 @@ AGORA CONVERTE ESTA HISTÓRIA EXATAMENTE COM O MESMO PADRÃO:
 `;
 }
 
-// FIX #7: Limpeza de markdown mais robusta.
-// Remove blocos de código com qualquer capitalização e corta tudo o que
-// apareça antes do primeiro "::" (texto introdutório da IA).
+
+// Limpa o texto gerado pelo modelo de IA, removendo blocos de código e espaços em excesso
 function cleanGeneratedText(text) {
   let cleaned = text
     .replace(/```twee\n?/gi, '')
@@ -67,8 +61,8 @@ function cleanGeneratedText(text) {
   return cleaned.trim();
 }
 
-// 2. FUNÇÃO DE CHAMADA AO GEMINI
-// Algoritmo que constrói o pedido REST para a API oficial da Google.
+
+// função para chamar o gemini (verificado a dia 9 de julho)
 export async function generateFromGemini(storyText, apiKey) {
   if (!apiKey) throw new Error("API Key do Gemini em falta.");
 
@@ -83,14 +77,12 @@ export async function generateFromGemini(storyText, apiKey) {
         contents: [{
           parts: [{ text: fullPrompt }]
         }],
-        // Forçamos o modelo a ter uma temperatura baixa (0.2) para ser menos criativo e mais matemático/lógico na formatação.
         generationConfig: {
           temperature: 0.2,
         }
       })
     });
 
-    // FIX #1: Ler o corpo do erro da API para uma mensagem útil ao utilizador.
     if (!response.ok) {
       let errorDetail = `HTTP ${response.status}`;
       try {
@@ -102,8 +94,6 @@ export async function generateFromGemini(storyText, apiKey) {
 
     const data = await response.json();
 
-    // FIX #2: Verificar se candidates existe e não está vazio antes de aceder.
-    // A API pode devolver candidates vazio por filtros de segurança ou quota excedida.
     if (!data.candidates || data.candidates.length === 0) {
       const reason = data.promptFeedback?.blockReason || 'resposta vazia ou bloqueada pelos filtros de segurança';
       throw new Error(`O Gemini não devolveu conteúdo: ${reason}`);
@@ -123,8 +113,7 @@ export async function generateFromGemini(storyText, apiKey) {
   }
 }
 
-// 3. FUNÇÃO DE CHAMADA AO OLLAMA (Local)
-// Algoritmo que comunica com o servidor Ollama a correr na máquina do próprio utilizador.
+// chamada para o Ollama
 export async function generateFromOllama(storyText, modelName = 'llama3') {
   // O endpoint padrão onde o Ollama escuta pedidos locais
   const endpoint = 'http://localhost:11434/api/generate';
@@ -137,7 +126,7 @@ export async function generateFromOllama(storyText, modelName = 'llama3') {
       body: JSON.stringify({
         model: modelName,
         prompt: fullPrompt,
-        stream: false, // Pedimos a resposta toda de uma vez em vez de aos bochechos
+        stream: false,
         options: {
           temperature: 0.2
         }
@@ -145,7 +134,6 @@ export async function generateFromOllama(storyText, modelName = 'llama3') {
     });
 
     if (!response.ok) {
-      // FIX #1 (Ollama): Tentar extrair mensagem de erro do corpo da resposta.
       let errorDetail = `HTTP ${response.status}`;
       try {
         const errData = await response.json();
@@ -156,11 +144,9 @@ export async function generateFromOllama(storyText, modelName = 'llama3') {
 
     const data = await response.json();
 
-    // O Ollama devolve a string completa na propriedade 'response'
     return cleanGeneratedText(data.response);
 
   } catch (error) {
-    // FIX #3: Distinguir erro de rede (Ollama não está a correr) de erro do servidor.
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new Error("Não foi possível ligar ao Ollama. Verifica se o servidor está a correr em localhost:11434.");
     }

@@ -1,4 +1,7 @@
 // src/App.jsx
+// Aplicação principal do editor de histórias visuais.
+// Reúne o grafo de nós e arestas, o editor ReactFlow, validação, importação/exportação
+// e todos os modais de UI.
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, {
   MiniMap,
@@ -64,7 +67,8 @@ const parseVariablesFromText = (text = '') => {
   return vars;
 };
 
-// Função utilitária pura — não usa estado, não precisa de estar dentro do componente
+// Dispara o download de um ficheiro de texto no browser.
+// Usado para exportar a história em formato Twee3.
 const triggerFileDownload = (content, filename) => {
   const blob = new Blob([content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
@@ -76,7 +80,8 @@ const triggerFileDownload = (content, filename) => {
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
 };
 
-// Leitura do localStorage fora do componente: executada apenas uma vez no módulo
+// Lê o projeto salvo do LocalStorage na carga inicial do módulo.
+// Isso evita carregar várias vezes os dados durante a montagem do componente.
 const getSavedData = () => {
   const saved = localStorage.getItem('plot-in-a-pot-project');
   if (saved && saved !== 'undefined') {
@@ -91,7 +96,7 @@ const getSavedData = () => {
 
 const SAVED_DATA = getSavedData();
 
-// Nó de inicialização padrão caso o armazenamento local esteja vazio
+// Nó inicial padrão usado quando não existe projeto salvo no LocalStorage.
 const initialNodes = [
   {
     id: '1',
@@ -101,7 +106,8 @@ const initialNodes = [
   }
 ];
 
-// Mapeamento de tipos de nós customizados — objeto estável fora do componente
+// Mapeamento de tipos de nós customizados para o ReactFlow.
+// Declare fora do componente para manter as referências estáveis.
 const nodeTypes = {
   choice: StoryNode,
   javascript: StoryNode,
@@ -109,15 +115,17 @@ const nodeTypes = {
   zone: ZoneNode
 };
 
+// Tipos de aresta personalizados
 const edgeTypes = {
   editable: EditableEdge,
   default: EditableEdge
 };
 
-// Conjuntos estáticos reutilizados
+// Conjuntos estáticos reutilizados para detectar nós de sistema.
 const SYSTEM_NODE_NAMES = new Set(['storyinit', 'storytitle', 'storydata', 'storycaption']);
 
-// Aplica a tag "secreto" a nós de sistema — função pura partilhada por import e AI import
+// Marca automaticamente nós de sistema com a tag 'secreto', para que possam ser
+// tratados de forma diferente na interface e na validação.
 const formatSystemNodes = (nodes) =>
   nodes.map(n => {
     let tags = Array.isArray(n.data.tags) ? n.data.tags.join(', ') : String(n.data.tags || '');
@@ -127,7 +135,8 @@ const formatSystemNodes = (nodes) =>
     return { ...n, data: { ...n.data, tags } };
   });
 
-// Configuração inicial de settings — extraída para evitar recalcular em cada mount
+// Constrói as definições iniciais do editor a partir da configuração e do LocalStorage.
+// Isso permite persistir opções do utilizador entre sessões.
 const buildInitialSettings = () => {
   const config = loadConfig();
   const saved = localStorage.getItem('plot-in-a-pot-settings');
@@ -163,12 +172,15 @@ function App() {
   const { t, i18n } = useTranslation();
 
   // --- Estados Principais ---
+  // Estado principal do grafo: nós e arestas.
   const [nodes, setNodes, onNodesChange] = useNodesState(
     Array.isArray(SAVED_DATA?.nodes) ? SAVED_DATA.nodes : initialNodes
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState(SAVED_DATA?.edges || []);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState(null);
+
+  // Estados de modais e modos de visualização.
   const [isPlayModeOpen, setIsPlayModeOpen] = useState(false);
   const [playModeCurrentNodeId, setPlayModeCurrentNodeId] = useState(null);
   const [playModeLanguage, setPlayModeLanguage] = useState('pt');
@@ -176,6 +188,7 @@ function App() {
   const [importText, setImportText] = useState('');
 
   // --- Estado dos Modais ---
+  // Estado de visibilidade dos diferentes modais.
   const [isMatrixOpen, setIsMatrixOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVarModalOpen, setIsVarModalOpen] = useState(false);
@@ -188,6 +201,7 @@ function App() {
   const [activeTutorial, setActiveTutorial] = useState(null);
   const [activeStep, setActiveStep] = useState(null);
 
+  // Verifica se o prompt de template já foi mostrado e abre-o na primeira carga.
   useEffect(() => {
     const getCookie = (name) => {
       const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -199,6 +213,7 @@ function App() {
     }
   }, []);
 
+  // Verifica se o prompt do tutorial já foi mostrado e exibe-o quando necessário.
   useEffect(() => {
     const getCookie = (name) => {
       const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -218,13 +233,13 @@ function App() {
   const [past, setPast] = useState([]);
   const [future, setFuture] = useState([]);
 
-  // Base de dados de localização persistida no LocalStorage
+  // Traduções do projeto, persistidas no LocalStorage.
   const [translations, setTranslations] = useState({
     languages: SAVED_DATA?.translations?.languages || ['pt', 'en'],
     keys: SAVED_DATA?.translations?.keys || {}
   });
 
-  // Refs para acesso estável ao estado atual sem causar dependências em callbacks
+  // Refs para acesso estável ao estado atual sem causar dependências em callbacks.
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
@@ -267,12 +282,14 @@ function App() {
 
   const [varModalMode, setVarModalMode] = useState('create');
 
+  // Abre o editor de variáveis em modo de criação.
   const openVariablesEditor = useCallback(() => {
     if (!selectedNodeId) return;
     setVarModalMode('create');
     setIsVarModalOpen(true);
   }, [selectedNodeId]);
 
+  // Abre o editor de variáveis em modo de alteração.
   const openChangeVariablesEditor = useCallback(() => {
     if (!selectedNodeId) return;
     setVarModalMode('change');
@@ -314,6 +331,7 @@ function App() {
     });
   }, [nodes, settings.showSecrets, unreachableNodeIds]);
 
+  // Calcula as arestas visíveis e marca as não alcançáveis para renderização.
   const visibleEdges = useMemo(() => {
     let filteredEdges = edges;
     if (!settings.showSecrets) {
@@ -333,6 +351,8 @@ function App() {
   }, [edges, visibleNodes, settings.showSecrets, unreachableNodeIds, reachableNodeIds]);
 
   // --- Auto-Save Atómico ---
+  // Guarda automaticamente o estado do projeto no LocalStorage sempre que
+  // nós, arestas ou traduções mudam.
   useEffect(() => {
     localStorage.setItem('plot-in-a-pot-project', JSON.stringify({
       nodes,
@@ -342,7 +362,8 @@ function App() {
     }));
   }, [nodes, edges, translations]);
 
-  // Sincroniza chaves de tradução no motor global do i18next
+  // Sincroniza chaves de tradução no motor global do i18next.
+  // Isso garante que as traduções do projeto estejam disponíveis em tempo real.
   useEffect(() => {
     const syncStoryTranslations = () => {
       translations.languages.forEach(lang => {
@@ -375,7 +396,8 @@ function App() {
     };
   }, [translations, i18n]);
 
-  // Propaga realces do tutorial ativo para as propriedades dos nós
+  // Atualiza os realces dos nós conforme o tutorial avança.
+  // Desativa realces quando não há passo ativo.
   useEffect(() => {
     if (!activeTutorial || !activeStep) {
       setNodes(nds => nds.map(n => {
@@ -415,7 +437,8 @@ function App() {
     }));
   }, [activeTutorial, activeStep, setNodes]);
 
-  // Sincroniza a propriedade bgImageBlur dos nós sempre que o setting mudar
+  // Sincroniza a propriedade bgImageBlur dos nós sempre que o setting mudar.
+  // Isto mantém a aparência consistente em todo o grafo.
   useEffect(() => {
     setNodes(nds => nds.map(n => {
       if (n.data.bgImageBlur !== settings.bgImageBlur) {
@@ -432,6 +455,7 @@ function App() {
   }, [settings.bgImageBlur, setNodes]);
 
   // --- Funções do Histórico ---
+  // Guarda instantâneos do estado atual para fornecer Undo/Redo.
   const takeSnapshot = useCallback(() => {
     setPast(prev => [...prev.slice(-50), {
       nodes: JSON.parse(JSON.stringify(nodesRef.current)),
@@ -440,6 +464,7 @@ function App() {
     setFuture([]);
   }, []);
 
+  // Restaura o último estado gravado no histórico.
   const undo = useCallback(() => {
     if (past.length === 0) return;
     const previous = past[past.length - 1];
@@ -451,6 +476,7 @@ function App() {
     setSelectedEdgeId(null);
   }, [past, setNodes, setEdges]);
 
+  // Reaplica um estado que foi desfeito.
   const redo = useCallback(() => {
     if (future.length === 0) return;
     const next = future[0];
@@ -575,6 +601,8 @@ function App() {
   }, [setNodes, setEdges]); // `nodes` removido das dependências — leitura via nodesRef
 
   // --- Handlers do Grafo (ReactFlow) ---
+  // Handler chamado quando o utilizador inicia uma nova ligação.
+  // Durante o tutorial, valida se a ligação é permitida.
   const onConnect = useCallback((params) => {
     if (activeTutorial) {
       if (!activeStep?.allowConnect) {
@@ -592,6 +620,7 @@ function App() {
     setPendingConnection(params);
   }, [takeSnapshot, activeTutorial, activeStep, t]);
 
+  // Handler quando uma aresta existente é editada (target alterado).
   const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
     if (activeTutorial) return;
     takeSnapshot();
@@ -631,6 +660,7 @@ function App() {
       });
     };
 
+    // Se a aresta estiver vinculada a uma escolha textual, atualiza o conteúdo do nó de origem.
     if (sourceNode && oldEdge.sourceHandle) {
       const choiceIndex = (sourceNode.data.choices || []).findIndex(c => c.id === oldEdge.sourceHandle);
       if (choiceIndex !== -1) {
@@ -643,7 +673,7 @@ function App() {
       }
     }
 
-    // Fallback: standard update
+    // Fallback: atualiza apenas a aresta se não puder reescrever o conteúdo do nó.
     setEdges(els => updateEdge(oldEdge, newConnection, els));
   }, [setEdges, syncChoicesFromText, takeSnapshot]);
 
@@ -1037,6 +1067,7 @@ function App() {
     setNodes(nds => nds.map(n => n.id === selectedNodeId ? { ...n, data: { ...n.data, ...patch } } : n));
   }, [selectedNodeId, setNodes]);
 
+  // Executa a validação do fluxo de história e abre o modal de resultados.
   const runValidation = useCallback(() => {
     const result = validateStoryFlow(nodesRef.current, edgesRef.current);
     setValidationErrors(result.unreachableEdges);
@@ -1045,11 +1076,13 @@ function App() {
     setIsValidationModalOpen(true);
   }, []);
 
+  // Executa a simulação de desenvolvimento para inspecionar o fluxo da história.
   const runSimulationLog = useCallback(() => {
     runDevSimulationLog(nodesRef.current, edgesRef.current);
   }, []);
 
   // --- Importação e Exportação de Ficheiros do Projeto ---
+  // Importa texto Twee3 e converte em nós/arestas para o editor.
   const handleImport = useCallback(() => {
     try {
       const { nodes: newNodes, edges: newEdges, warnings } = parseTwee3(importText);
@@ -1063,6 +1096,7 @@ function App() {
     }
   }, [importText, setNodes, setEdges]);
 
+  // Trata a importação de história gerada pela AI.
   const handleAiImportSuccess = useCallback((tweeText) => {
     try {
       takeSnapshot();
@@ -1076,6 +1110,7 @@ function App() {
     }
   }, [setNodes, setEdges, t, takeSnapshot]);
 
+  // Carrega o template base e as traduções iniciais do servidor.
   const handleLoadBaseTemplate = useCallback(async () => {
     try {
       const [tweeResponse, csvResponse] = await Promise.all([
