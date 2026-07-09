@@ -59,6 +59,14 @@ src/
 |  +- VisualBlocksEditor.jsx   # Programação visual por blocos
 |  \- ZoneNode.jsx             # Retângulo de agrupamento visual
 +- contexts/                    # Contextos de estado global React
++- hooks/                       # Custom hooks para modularização
+|  +- useChoiceSync.js         # Lógica de sincronização de escolhas
+|  +- useGraphHandlers.js      # Tratamento de eventos do React Flow
+|  +- useKeyboardShortcuts.js  # Atalhos globais de teclado
+|  +- useNodeOperations.js     # Operações CRUD em nós
+|  +- useProjectPersistence.js # Auto-save e importação/exportação
+|  +- useSettings.js           # Estado de definições persistidas
+|  \- useUndoRedo.js           # Pilhas de Undo/Redo atómicas
 +- utils/
 |  +- aiGenerator.js           # API REST para Ollama/Gemini
 |  +- graphMath.js             # Controlo geométrico e Splines
@@ -67,8 +75,9 @@ src/
 |  +- storyTraversal.js        # Exploração heurística (Smart Walker)
 |  +- storyValidator.js        # Validação estática com BFS
 |  +- sugarcubeLogic.js        # Compilador JIT de macros Twine
-|  \- tweeParser.js            # Parser bidirecional Twee 3
-+- App.jsx                      # Controlador de estado global
+|  +- tweeParser.js            # Parser bidirecional Twee 3
+|  \- textParsing.js           # Funções utilitárias de parsing de texto
++- App.jsx                      # Orquestrador reativo principal
 \- index.js                     # Entrada da aplicação
 \end{verbatim}
 
@@ -77,7 +86,7 @@ src/
 Nesta secção, detalham-se os aspetos de desenvolvimento e engenharia aplicados à implementação dos principais componentes visuais da aplicação.
 
 \subsubsection{App.jsx: O Controlador Reativo Central e Sincronização de Estado}
-O ficheiro \texttt{App.jsx} atua como o orquestrador principal da aplicação. Ele gerencia o estado global da narrativa (vetores de nós e arestas do React Flow), as variáveis de estado definidas pelo utilizador e a sincronização com os diferentes modais. Para além de implementar as rotinas de ligação com o React Flow (\texttt{onNodesChange}, \texttt{onEdgesChange}, \texttt{onConnect}), gere a pilha de histórico (\texttt{undoStack} e \texttt{redoStack}) para permitir o retrocesso ou avanço atómico de edições na interface gráfica. Dado que o React Flow atualiza objetos de nós e arestas por referência, a criação de instantâneos (\textit{snapshots}) do estado requer uma clonagem profunda (\textit{deep clone}) para evitar que estados futuros partilhem a mesma referência de memória com o histórico, como demonstrado na Listagem~\ref{lst:app-undo-redo}.
+O ficheiro \texttt{App.jsx} atua como o orquestrador principal da aplicação. Inicialmente concebido como um controlador centralizado contendo toda a lógica de estado, foi refatorado para uma arquitetura modular composta por ganchos customizados (\textit{custom hooks}) e funções utilitárias puras. Sob esta nova estrutura, o \texttt{App.jsx} coordena a montagem do grafo delegando as responsabilidades específicas de gestão de definições (\texttt{useSettings}), controlo de histórico (\texttt{useUndoRedo}), sincronização de escolhas (\texttt{useChoiceSync}), operações CRUD de nós (\texttt{useNodeOperations}), persistência do projeto (\texttt{useProjectPersistence}) e atalhos de teclado (\texttt{useKeyboardShortcuts}). Para além de implementar as rotinas de ligação com o React Flow, a gestão da pilha de histórico (\texttt{undoStack} e \texttt{redoStack}) foi isolada em \texttt{useUndoRedo.js} para permitir o retrocesso ou avanço atómico de edições na interface gráfica. Dado que o React Flow atualiza objetos de nós e arestas por referência, a criação de instantâneos (\textit{snapshots}) do estado requer uma clonagem profunda (\textit{deep clone}) para evitar que estados futuros partilhem a mesma referência de memória com o histórico, como demonstrado na Listagem~\ref{lst:app-undo-redo}.
 
 \begin{figure}[htbp]
     \centering
@@ -88,7 +97,7 @@ O ficheiro \texttt{App.jsx} atua como o orquestrador principal da aplicação. E
 
 \begin{listing}[!htpb]
 \begin{lstlisting}
-// Registo de snapshots e funções de controlo em App.jsx
+// Registo de snapshots e funcoes de controlo em useUndoRedo.js
 const takeSnapshot = useCallback(() => {
   setPast(prev => [
     ...prev.slice(-50),
@@ -115,9 +124,20 @@ const undo = useCallback(() => {
   setEdges(previous.edges);
 }, [past]);
 \end{lstlisting}
-\caption{Mecanismo de clonagem profunda e gestão da pilha de histórico em App.jsx.}
+\caption{Mecanismo de clonagem profunda e gestão da pilha de histórico encapsulado em useUndoRedo.js.}
 \label{lst:app-undo-redo}
 \end{listing}
+
+Esta modularização dividiu as responsabilidades do controlador em ganchos específicos, promovendo a separação de conceitos (\textit{Separation of Concerns}) e facilitando a manutenção futura da base de código:
+\begin{itemize}
+    \item \textbf{\texttt{useSettings}:} Centraliza o estado e a persistência em \textit{LocalStorage} das opções de visualização (ex: exibição de erros, nós secretos, e grau de desfocagem da imagem de fundo).
+    \item \textbf{\texttt{useUndoRedo}:} Controla as pilhas de estados anteriores (\texttt{past}) e futuros (\texttt{future}) para as operações atómicas de desfazer e refazer no grafo.
+    \item \textbf{\texttt{useChoiceSync}:} Implementa a análise sintática de expressões regulares sobre as passagens de texto (Twine e SugarCube) para detetar e sincronizar as arestas correspondentes a escolhas.
+    \item \textbf{\texttt{useNodeOperations}:} Encapsula a criação, remoção, duplicação e atualização de propriedades semânticas e posicionais de nós e zonas no editor.
+    \item \textbf{\texttt{useGraphHandlers}:} Gere as interações gráficas ligadas ao canvas (ligar nós, atualizar arestas, gerir arrasto e inserção em zonas de agrupamento).
+    \item \textbf{\texttt{useKeyboardShortcuts}:} Escuta eventos globais do teclado para acionar atalhos de produtividade (ex: abrir simulação, validar fluxo, criar novos nós).
+    \item \textbf{\texttt{useProjectPersistence}:} Controla a gravação automática periódica, tradução em tempo real integrando o \textit{i18next}, importação bidirecional de ficheiros Twee 3 e carregamento de modelos base.
+\end{itemize}
 
 \subsubsection{StoryNode.jsx e ZoneNode.jsx: Nós Customizados no React Flow}
 Os nós gráficos que habitam o canvas estendem os componentes base do React Flow. O \texttt{StoryNode.jsx} é encarregue de renderizar o título da passagem, o extrato de texto da história e as portas de ligação (\textit{handles}) de entrada e saída. O \texttt{ZoneNode.jsx} implementa o agrupamento visual de capítulos. Do ponto de vista de desenvolvimento CSS, a implementação das Zonas colocou um desafio técnico complexo: quando nós de cena são arrastados para dentro do retângulo da Zona, o \texttt{ZoneNode} não deve intercetar eventos do rato que pertencem ao canvas de fundo ou aos nós filhos. Para resolver este conflito de sobreposição espacial, aplicou-se a propriedade \texttt{pointer-events: none} ao contêiner da Zona e ativou-se \texttt{pointer-events: all} exclusivamente para as bordas de redimensionamento e barra de título, conforme ilustrado na Listagem~\ref{lst:zone-pointer-events}.

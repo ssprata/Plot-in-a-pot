@@ -213,7 +213,7 @@ Tendo em conta que um dos autores da ferramenta, Miguel, apresenta limitações 
 \label{subsec:modelacao-dados-reactflow}
 Para além da representação puramente abstrata da arquitetura modular, a implementação prática exige uma sincronização bidirecional em tempo real entre a interface gráfica gerida pela biblioteca \textit{React Flow} e a estrutura de dados semântica interna da história.
 
-No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicação (\texttt{App.jsx}) recorrendo a três vetores de dados estruturados em memória local:
+No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicação (\texttt{App.jsx}) e modularizado através de ganchos customizados (\textit{custom hooks}), recorrendo a três vetores de dados estruturados em memória local:
 \begin{enumerate}
     \item \textbf{Vetor de Nós do React Flow (\texttt{nodes}):} Contém a representação posicional e de renderização de cada elemento no canvas. Cada objeto de nó segue a especificação rígida da biblioteca:
     \begin{code}
@@ -250,7 +250,7 @@ No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicaç
     \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação executar travessias e lookups rápidos de transição com complexidade constante $\mathcal{O}(1)$.
 \end{enumerate}
 
-Esta tripla modelagem é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no inspetor, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a reatualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
+Esta tripla modelagem é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no inspetor, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada e encaminhada pelos hooks customizados em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a reatualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
 
 \section{Validação Estática e Simulação}
 \label{sec:validacao-estatica-simulacao}
