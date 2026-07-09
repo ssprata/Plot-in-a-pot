@@ -56,3 +56,5 @@ A especificação Twee 3 define que as arestas do grafo são declaradas de forma
 \end{enumerate}
 
 O analisador léxico \texttt{tweeParser.js} do \gls{piap} implementa expressões regulares robustas para extrair estes três formatos, garantindo compatibilidade bidirecional absoluta com a norma da \gls{iftf}.
+
+Cabe salientar que, embora a norma da \gls{iftf} permita tecnicamente a utilização de variáveis lógicas como destinos dinâmicos de hiperligações (ex: \texttt{[[Ir para o local|\$local]]}), o parser do \gls{piap} restringe esta prática, exigindo que todos os destinos do grafo de história sejam identificadores estáticos de passagens. Esta restrição é uma decisão de engenharia essencial para assegurar que a lista de adjacências permaneça estática e determinista, viabilizando a validação em tempo real e a simulação lógica do espaço de estados sem falhas estruturais.

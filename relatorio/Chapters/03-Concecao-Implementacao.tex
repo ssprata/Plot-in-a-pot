@@ -74,7 +74,7 @@ Para concretizar as especificações da arquitetura conceptual descrita anterior
 Com base na análise comparativa das ferramentas existentes (ver Secção~\ref{sec:analise-comparativa}), as escolhas de design e de tecnologia para o \gls{piap} foram fundamentadas nos seguintes pontos:
 \begin{itemize}
     \item \textbf{Fusão de Paradigmas (Visual vs. Textual):} Enquanto o Twine se destaca pela interface puramente visual e o Ink pelo controlo fino de estados lógicos complexos, o \gls{piap} visa fundir ambas as forças, proporcionando um editor visual de grafos que não abdica da manipulação robusta de condicionais e variáveis (via macro-linguagem SugarCube).
-    \item \textbf{Adoção do Formato Aberto Twee 3 e Limitação de Grafos:} A especificação aberta Twee 3 possui um mapeamento direto entre passagens e grafos, o que suporta a decisão de adotá-lo como base de persistência do \gls{piap}. Contudo, para permitir que o sistema leia as saídas e as renderize visualmente como arestas de forma fiável, o projeto introduz um compromisso de design (\textit{trade-off}) em relação ao Twine tradicional: não é suportada a utilização de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Texto|\$destino]]}), exigindo que todos os destinos do grafo sejam estáticos.
+    \item \textbf{Adoção do Formato Aberto Twee 3 e Limitação de Grafos:} A especificação aberta Twee 3 possui um mapeamento direto entre passagens e grafos, o que suporta a decisão de adotá-lo como base de persistência do \gls{piap}. Contudo, para permitir que o sistema leia as saídas e as renderize visualmente como arestas de forma fiável, o projeto introduz um compromisso de design (\textit{trade-off}) em relação ao Twine tradicional: não é suportada a utilização de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Ir para o local|\$local]]}), exigindo que todos os destinos do grafo sejam estáticos.
     \item \textbf{Validação Automática e Segurança do Fluxo:} O ChoiceScript é valorizado pelas suas ferramentas robustas de teste automático (\texttt{randomtest}), uma lacuna crítica do Twine. O \gls{piap} incorpora de raiz este princípio ao disponibilizar o validador estático (\gls{bfs}) e o Smart Walker no simulador para preencher esta falta, garantindo a correção imediata do fluxo narrativo.
     \item \textbf{Autonomia e Licenciamento Livre:} A restrição de uso comercial imposta pelo ChoiceScript salienta a importância de desenvolver uma ferramenta que promova a autonomia dos autores, permitindo a exportação de projetos sob licenças livres e sem taxas adicionais.
 \end{itemize}
@@ -337,9 +337,27 @@ Este comportamento força o simulador a procurar caminhos narrativos raros e ram
 
 Para suportar as avaliações e atribuições de variáveis de estado descritas, a aplicação possui um compilador \textit{Just-In-Time} (JIT) simplificado estruturado em \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}:
 \begin{itemize}
-    \item \textbf{Análise Léxica e Mapeamento:} O interpretador analisa o conteúdo textual dos nós através de varrimentos que procuram padrões de macros \texttt{<<set>>} e \texttt{<<if>>}. Traduz os operadores clássicos da linguagem SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube} (apresentada no capítulo de desenvolvimento).
+    \item \textbf{Análise Léxica e Mapeamento:} O interpretador analisa o conteúdo textual dos nós através de varrimentos que procuram padrões de macros \texttt{<<set>>} e \texttt{<<if>>}. Traduz os operadores clássicos da linguagem SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube}.
     \item \textbf{Árvore de Sintaxe Abstrata (\gls{ast}):} O interpretador de condicionais analisa blocos lógicos aninhados construindo uma \gls{ast} simples que reflete a precedência de cláusulas. Esta estrutura é então avaliada em tempo de execução para calcular o valor de verdade das expressões.
 \end{itemize}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Mapeamento de operadores lógicos SugarCube para JavaScript.}
+    \label{tab:operadores-sugarcube}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Operador SugarCube} & \textbf{Operador JavaScript} & \textbf{Significado} \\
+        \midrule
+        \texttt{is} / \texttt{eq} & \texttt{===} & Igualdade estrita \\
+        \texttt{neq} & \texttt{!==} & Diferença estrita \\
+        \texttt{and} & \texttt{\&\&} & E lógico \\
+        \texttt{or} & \texttt{||} & OU lógico \\
+        \texttt{to} & \texttt{=} & Atribuição de valor \\
+        \texttt{\$variavel} & \texttt{state.variavel} & Acesso ao estado reativo \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \section{Integração de Modelos de Linguagem (LLMs)}
 \label{sec:integracao-llms-implementacao}
