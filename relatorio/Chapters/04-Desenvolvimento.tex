@@ -494,25 +494,40 @@ Qualquer erro detetado é propagado para o canvas do React Flow, que desenha ale
 
 Para ver como o assistente de importação de texto livre se comportava, fizemos testes com diferentes modelos de inteligência artificial (LLMs) a correr localmente através do Ollama.
 
-A primeira série de testes foi feita a \textbf{9 de maio} no computador do programador, que tem uma gráfica Nvidia RTX 3050 (Laptop) com apenas 4\,GB de VRAM. O objetivo era correr localmente modelos populares com grande volume e verificar a sua viabilidade, sendo selecionados os seguintes modelos da biblioteca Ollama:
+\subsection{Primeira Fase: Testes em Máquina Local (RTX 3050)}
+A primeira série de testes foi feita a \textbf{9 de maio} no computador do programador, que tem uma gráfica Nvidia RTX 3050 (Laptop) com apenas 4\,GB de VRAM. O objetivo era correr localmente modelos populares e verificar a sua viabilidade, sendo selecionados os seguintes modelos da biblioteca Ollama:
 \begin{itemize}
     \item \textbf{Gemma 2B:} ID \texttt{8ccf136fdd52}
     \item \textbf{Mistral 7B:} ID \texttt{6577803aa9a0}
     \item \textbf{Qwen 3.5 9B:} ID \texttt{6488c96fa5fa}
     \item \textbf{DeepSeek Coder 6.7B:} ID \texttt{ce298d984115}
 \end{itemize}
-Além destes, também foi testado o modelo \textit{Claude} (acessível via \gls{api} externa). No entanto, devido à falta de poder de processamento da gráfica local, \textbf{nenhum dos modelos locais funcionou}, deixando o computador muito lento e dando erros de falta de memória (\textit{out of memory}).
+Além destes, também foi testado o modelo \textit{Claude} (acessível via \gls{api} externa). No entanto, devido à falta de memória da gráfica local, \textbf{nenhum dos modelos locais funcionou}, deixando o computador muito lento e dando erros de falta de memória (\textit{out of memory}).
 
+\subsection{Segunda Fase: Testes com Maior Capacidade de Processamento}
 Para conseguir testar estes modelos, a \textbf{19 de maio}, o orientador do projeto fez os mesmos testes no seu computador pessoal, que tem melhores capacidades para correr IA. Analisámos os ficheiros de resultados e explicamos a seguir o que falhou em cada modelo para que não pudessem ser usados diretamente na nossa aplicação:
 
 \begin{itemize}
-    \item \textbf{Mistral 7B (\texttt{mistral\_7b}):} O resultado foi \textbf{inútil} para a aplicação. O modelo separou quase todas as frases do texto em passagens independentes (por exemplo, criando passagens separadas para ``Inside'' ou ``To the left''). No nosso editor, isto cria dezenas de pequenos nós para uma única cena, tornando o grafo ilegível e quebrando o fluxo da história. Além disso, acrescentou barras invertidas (\texttt{\textbackslash }) no fim de cada linha e deixou caracteres estranhos vindos do terminal (como \texttt{[3D [K}).
-    \item \textbf{Gemma 4B / 2B (\texttt{gemma4\_e4b}):} O modelo tentou criar as passagens, mas \textbf{escreveu os cabeçalhos das novas passagens (os \texttt{::})} dentro do texto de outras passagens. Como o formato Twee 3 não suporta passagens aninhadas, o nosso parser lê isso como texto simples e não cria os nós no ecrã. Também deixou lixo do terminal (códigos ANSI).
-    \item \textbf{Qwen 3 8B (\texttt{qwen3\_8b}):} O resultado ficou \textbf{inutilizável devido a erros de formatação}. O modelo incluiu o seu raciocínio interno (\textit{``Thinking...''}) mesmo ao início da resposta, o que faz com que o nosso importador falhe imediatamente ao tentar ler o ficheiro. Além disso, deixou um bloco \gls{json} incompleto na posição das passagens (escreveu apenas \texttt{\{"} sem fechar), o que faz o parser de \gls{json} falhar, e manteve alguns códigos ANSI.
-    \item \textbf{Qwen 3.5 9B (\texttt{qwen3.5\_9b}):} Foi o modelo que estruturou melhor a história, mas \textbf{ainda não é totalmente funcional}. Tal como o Qwen 3, escreveu o texto de pensamento (\textit{``Thinking...''}) no início, bloqueando a importação direta. Criou também nós órfãos (como \texttt{TakeLantern} e \texttt{DropLantern}) que estão descritos no ficheiro mas não têm nenhuma ligação (seta) a apontar para eles a partir das outras cenas, deixando partes do jogo inacessíveis.
+    \item \textbf{Mistral 7B (\texttt{mistral\_7b}):} O resultado foi \textbf{inútil} para a aplicação. O modelo separou quase todas as frases do texto em passagens independentes. No nosso editor, isto cria dezenas de pequenos nós para uma única cena, tornando o grafo ilegível. Além disso, acrescentou barras invertidas (\texttt{\textbackslash }) no fim de cada linha e deixou caracteres estranhos vindos do terminal (como \texttt{[3D [K}).
+    \item \textbf{Gemma 4B / 2B (\texttt{gemma4\_e4b}):} O modelo tentou criar as passagens, mas \textbf{escreveu os cabeçalhos das novas passagens (os \texttt{::})} dentro do texto de outras passagens. Como o formato Twee 3 não suporta isto, o nosso parser lê como texto simples. Também deixou lixo do terminal (códigos ANSI).
+    \item \textbf{Qwen 3 8B (\texttt{qwen3\_8b}):} O resultado ficou \textbf{inutilizável}. O modelo incluiu o seu raciocínio interno (\textit{``Thinking...''}) mesmo ao início da resposta, o que bloqueia o nosso importador. Além disso, deixou um bloco \gls{json} incompleto (escreveu apenas \texttt{\{"} sem fechar), falhando a leitura, e manteve códigos ANSI.
+    \item \textbf{Qwen 3.5 9B (\texttt{qwen3.5\_9b}):} Foi o modelo que estruturou melhor a história, mas \textbf{ainda não é totalmente funcional}. Tal como o Qwen 3, escreveu o texto de pensamento (\textit{``Thinking...''}) no início. Criou também nós órfãos que não têm ligação, deixando partes do jogo inacessíveis.
 \end{itemize}
 
-Com base nestes testes, chegámos à conclusão de que o uso de APIs externas (como a do Gemini ou do Claude) será sempre superior e mais fiável do que correr modelos locais, a não ser que o utilizador tenha uma máquina com pelo menos 8\,GB de VRAM dedicados para IA. De momento, esta funcionalidade de importação por IA local ainda precisa de melhorias no futuro para ser totalmente utilizável, uma vez que ainda não encontrámos o prompt ideal ou a solução perfeita para garantir que os modelos locais sigam as regras de formatação sem falhas.
+\subsection{Identificação do Bug Técnico no Ollama}
+Mais tarde, descobrimos que a presença de lixo do terminal (códigos ANSI, sequências \texttt{[3D [K}, etc.) se deve a um bug documentado na versão oficial do CLI do Ollama (Issue \#14571 no GitHub: \textit{``No way to stop control characters output from 'ollama run'''}). Quando corremos o comando \texttt{ollama run} em processos automáticos, o utilitário não deteta que não tem um terminal interativo e emite caracteres de controlo (usados para mostrar barras de progresso) misturados no texto.
+
+Para resolver este problema e podermos usar modelos locais no \gls{piap}, identificámos três soluções:
+\begin{enumerate}
+    \item \textbf{Limpeza com Expressões Regulares:} Filtrar o texto de saída na aplicação usando uma expressão regular para remover as sequências ANSI.
+    \item \textbf{Descartar a Saída de Erros:} Ignorar ou redirecionar o fluxo de erros (\texttt{stderr}) do Ollama para o nulo.
+    \item \textbf{Uso da API REST do Ollama (Recomendada):} Em vez de chamar o programa pela consola, ligar diretamente à API HTTP REST local do Ollama (na porta \texttt{11434}). A API REST devolve apenas o texto puro sem qualquer lixo de terminal.
+\end{enumerate}
+
+\subsection{Estado Atual da Funcionalidade (Beta) e Trabalho Futuro}
+À data corrente, se resolvermos estes problemas e tivermos um computador com memória suficiente (mínimo de 8\,GB de VRAM dedicada), concluímos que o modelo \textbf{Qwen 3.5 9B} seria o candidato local mais viável para converter as histórias para o nosso parser. Seria a melhor escolha se o prompt do sistema for desenhado para desativar o raciocínio intermediário ou se o nosso parser filtrar e descartar o texto entre as tags \texttt{<think>...</think>}.
+
+No estado atual, esta funcionalidade de importação por IA local é \textit{beta}. Mesmo sabendo como resolver os problemas, a importação local ainda não funciona perfeitamente. Precisamos de fazer mais testes para encontrar a prompt ideal para que a resposta venha com a precisão necessária. Esta funcionalidade é uma linha de trabalho que continuará a ser melhorada no futuro.
 
 \section{Análise de Desempenho e Complexidade Algorítmica}
 \label{sec:analise-desempenho-complexidade}
