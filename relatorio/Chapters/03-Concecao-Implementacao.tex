@@ -16,13 +16,13 @@ O sistema foi desenhado segundo uma arquitetura modular dividida em três camada
     \item \textbf{Camada de Processamento Lógico (Núcleo):} Contém a inteligência do sistema e os motores de transformação. É constituída por:
     \begin{itemize}
         \item \textbf{Parser Twee 3:} Módulo encarregue de ler ficheiros de texto estruturados em formato Twee 3 e convertê-los no modelo interno da aplicação, bem como exportá-los de volta.
-        \item \textbf{Validador Estático:} Motor que executa travessias de grafo (BFS/DFS) para inspecionar inconsistências estruturais, como ciclos sem saída, nós inacessíveis ou hiperligações quebradas.
+        \item \textbf{Validador Estático:} Motor que executa travessias de grafo (\gls{bfs}/\gls{dfs}) para inspecionar inconsistências estruturais, como ciclos sem saída, nós inacessíveis ou hiperligações quebradas.
         \item \textbf{Motor de Simulação:} Sandbox responsável por inicializar scripts customizados, interpretar condicionais lógicas e controlar o estado de jogo na simulação.
     \end{itemize}
     \item \textbf{Camada de Dados e Persistência:} Representa o modelo de informação e o armazenamento. É constituída por:
     \begin{itemize}
         \item \textbf{Lista de Adjacência:} O modelo de dados em memória que representa a topologia do grafo, as saídas (sucessores) e entradas (predecessores) de cada cena.
-        \item \textbf{Dicionários JSON:} A base de dados estruturada que armazena os dicionários de tradução e localização no armazenamento local.
+        \item \textbf{Dicionários \gls{json}:} A base de dados estruturada que armazena os dicionários de tradução e localização no armazenamento local.
     \end{itemize}
 \end{enumerate}
 
@@ -42,12 +42,12 @@ Para a materialização prática do sistema, os objetivos e requisitos gerais de
 \subsection{Requisitos Funcionais}
 \begin{description}
     \item[\textbf{RF01 - Criação e Edição de Nós Narrativos (Cenas):}] O utilizador deve poder criar, mover, editar (alterando título e conteúdo de texto) e apagar nós no canvas interativo.
-    \item[\textbf{RF02 - Ligações Direcionadas entre Nós (Escolhas):}] O sistema deve ler ligações inseridas no texto através da sintaxe double-bracket (\lstinline|[[Texto|Destino]]|) e criar arestas direcionadas automaticamente no grafo.
-    \item[\textbf{RF03 - Zonas de Agrupamento Visual:}] O utilizador deve ser capaz de criar áreas retangulares redimensionáveis no canvas (Zonas) para agrupar nós de cena sob um mesmo contexto visual.
-    \item[\textbf{RF04 - Parser e Compatibilidade Twee 3:}] O software deve importar e exportar ficheiros no formato textual normativo \texttt{.twee} síncrona e bidirecionalmente, preservando a sintaxe Twine e convertendo coordenadas.
+    \item[\textbf{RF02 - Ligações Direcionadas entre Nós (Escolhas):}] O sistema deve ler ligações inseridas no texto através da sintaxe double-bracket (\texttt{[[Texto}Destino]]|) e criar arestas direcionadas automaticamente no grafo.
+    \item[\textbf{RF03 - Parser e Compatibilidade Twee 3:}] O software deve importar e exportar ficheiros no formato textual normativo \texttt{.twee} síncrona e bidirecionalmente, preservando a sintaxe Twine e convertendo coordenadas.
+    \item[\textbf{RF04 - Auditoria e Validação Estática de Fluxo:}] O sistema deve executar análises estáticas sobre a estrutura do grafo em segundo plano para detetar e alertar sobre nós órfãos (inacessíveis), ligações quebradas (que apontam para nós apagados) ou ciclos infinitos sem condição de saída lógica.
     \item[\textbf{RF05 - Matriz de Localização Multi-idioma:}] Disponibilizar uma tabela em formato de grelha (\textit{grid}) que permita traduzir o texto das cenas para diferentes idiomas a partir de chaves dinâmicas, com suporte para exportação e importação em formato CSV.
-    \item[\textbf{RF06 - Auditoria e Validação Estática de Fluxo:}] O sistema deve executar análises estáticas sobre a estrutura do grafo em segundo plano para detetar e alertar sobre nós órfãos (inacessíveis), ligações quebradas (que apontam para nós apagados) ou ciclos infinitos sem condição de saída lógica.
-    \item[\textbf{RF07 - Simulador em Tempo Real (PlayMode):}] O utilizador deve poder testar a história jogando-a numa sandbox isolada dentro da aplicação que interprete as macros lógicas do SugarCube e execute código Javascript e CSS customizado.
+    \item[\textbf{RF06 - Simulador em Tempo Real (PlayMode):}] O utilizador deve poder testar a história jogando-a numa sandbox isolada dentro da aplicação que interprete as macros lógicas do SugarCube e execute código Javascript e CSS customizado.
+    \item[\textbf{RF07 - Zonas de Agrupamento Visual:}] O utilizador deve ser capaz de criar áreas retangulares redimensionáveis no canvas (Zonas) para agrupar nós de cena sob um mesmo contexto visual.
     \item[\textbf{RF08 - Importação Inteligente via Conversor LLM:}] A aplicação deve permitir que o utilizador submeta uma história corrida em linguagem natural e, através de um modelo de linguagem local (Ollama) ou remoto (Gemini), a converta automaticamente em ficheiro no formato Twee 3 para gerar o respetivo grafo.
 \end{description}
 
@@ -63,10 +63,10 @@ Para a materialização prática do sistema, os objetivos e requisitos gerais de
 \label{sec:enquadramento-tecnologico}
 Para concretizar as especificações da arquitetura conceptual descrita anteriormente, foi selecionada uma pilha tecnológica assente em padrões modernos de desenvolvimento web do lado do cliente:
 \begin{itemize}
-    \item \textbf{Framework Frontend (React 19):} A aplicação foi desenvolvida como uma Single Page Application utilizando a biblioteca \textbf{React 19} \citep{ReactReference}. A escolha justifica-se pela elevada eficiência do mecanismo de atualização do DOM virtual e pela facilidade na gestão dinâmica de estados complexos (nós, arestas e variáveis). A reatividade nativa do React assegura a propagação imediata de edições textuais e lógicas sem sobrecarregar o processador do cliente.
+    \item \textbf{Framework Frontend (React 19):} A aplicação foi desenvolvida como uma Single Page Application (\gls{spa}) utilizando a biblioteca \textbf{React 19} \citep{ReactReference}. A escolha justifica-se pela elevada eficiência do mecanismo de atualização do DOM virtual e pela facilidade na gestão dinâmica de estados complexos (nós, arestas e variáveis). A reatividade nativa do React assegura a propagação imediata de edições textuais e lógicas sem sobrecarregar o processador do cliente.
     \item \textbf{Motor do Canvas de Grafos (ReactFlow 11):} O canvas interativo foi construído com a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference}. A sua seleção evitou o desenvolvimento de um motor de renderização de grafos a partir do zero, o qual seria complexo e propenso a erros de desempenho. O ReactFlow fornece suporte robusto para interações essenciais (arrastar, redimensionar, fazer zoom) e integra-se nativamente com componentes React customizados, viabilizando o desenho de nós de cena e Zonas personalizadas.
     \item \textbf{Estilização e Identidade Visual (Tailwind CSS 3):} A estética neo-brutalista foi implementada com \textbf{Tailwind CSS 3} \citep{TailwindCSSReference}. A utilização de classes utilitárias acelerou significativamente a estilização de contornos espessos, sombras sólidas e regras de alto contraste necessárias para a acessibilidade visual da plataforma, garantindo uma folha de estilos limpa e de fácil manutenção sem necessidade de ficheiros CSS ad-hoc.
-    \item \textbf{Motor de Internacionalização (i18next):} A biblioteca \textbf{i18next} foi selecionada para a gestão de matrizes de localização, por constituir o padrão de facto para internacionalização em ecossistemas React. Permite o carregamento assíncrono de chaves JSON de tradução dinamicamente na memória local via requisições HTTP locais no navegador (através de \texttt{i18next-http-backend}), assegurando a separação limpa de idiomas e a segurança dos dados.
+    \item \textbf{Motor de Internacionalização (i18next):} A biblioteca \textbf{i18next} foi selecionada para a gestão de matrizes de localização, por constituir o padrão de facto para internacionalização em ecossistemas React. Permite o carregamento assíncrono de chaves \gls{json} de tradução dinamicamente na memória local via requisições HTTP locais no navegador (através de \texttt{i18next-http-backend}), assegurando a separação limpa de idiomas e a segurança dos dados.
 \end{itemize}
 
 \subsection{Justificação das Decisões de Design}
@@ -75,7 +75,7 @@ Com base na análise comparativa das ferramentas existentes (ver Secção~\ref{s
 \begin{itemize}
     \item \textbf{Fusão de Paradigmas (Visual vs. Textual):} Enquanto o Twine se destaca pela interface puramente visual e o Ink pelo controlo fino de estados lógicos complexos, o \gls{piap} visa fundir ambas as forças, proporcionando um editor visual de grafos que não abdica da manipulação robusta de condicionais e variáveis (via macro-linguagem SugarCube).
     \item \textbf{Adoção do Formato Aberto Twee 3 e Limitação de Grafos:} A especificação aberta Twee 3 possui um mapeamento direto entre passagens e grafos, o que suporta a decisão de adotá-lo como base de persistência do \gls{piap}. Contudo, para permitir que o sistema leia as saídas e as renderize visualmente como arestas de forma fiável, o projeto introduz um compromisso de design (\textit{trade-off}) em relação ao Twine tradicional: não é suportada a utilização de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Texto|\$destino]]}), exigindo que todos os destinos do grafo sejam estáticos.
-    \item \textbf{Validação Automática e Segurança do Fluxo:} O ChoiceScript é valorizado pelas suas ferramentas robustas de teste automático (\lstinline|randomtest|), uma lacuna crítica do Twine. O \gls{piap} incorpora de raiz este princípio ao disponibilizar o validador estático (BFS) e o Smart Walker no simulador para preencher esta falta, garantindo a correção imediata do fluxo narrativo.
+    \item \textbf{Validação Automática e Segurança do Fluxo:} O ChoiceScript é valorizado pelas suas ferramentas robustas de teste automático (\texttt{randomtest}), uma lacuna crítica do Twine. O \gls{piap} incorpora de raiz este princípio ao disponibilizar o validador estático (\gls{bfs}) e o Smart Walker no simulador para preencher esta falta, garantindo a correção imediata do fluxo narrativo.
     \item \textbf{Autonomia e Licenciamento Livre:} A restrição de uso comercial imposta pelo ChoiceScript salienta a importância de desenvolver uma ferramenta que promova a autonomia dos autores, permitindo a exportação de projetos sob licenças livres e sem taxas adicionais.
 \end{itemize}
 
@@ -90,7 +90,7 @@ Cada cena no modelo de dados armazena de forma independente dois conjuntos de ca
 
 Esta representação bidirecional permite à aplicação realizar mapeamento reverso instantâneo (\textit{backward mapping}), fornecendo na barra lateral de propriedades os painéis ``Vens de...'' e ``Vais para...'', facilitando ao autor a navegação e a validação rápida de interconexões sem ter de vasculhar visualmente o canvas.
 
-A estrutura de dados JSON representativa de um nó e das suas ligações apresenta o seguinte formato:
+A estrutura de dados \gls{json} representativa de um nó e das suas ligações apresenta o seguinte formato:
 \begin{code}
 {
   "cenas": [
@@ -121,7 +121,7 @@ A estrutura de dados JSON representativa de um nó e das suas ligações apresen
 O analisador desenvolvido em \texttt{tweeParser.js} (encontrado em \texttt{/src/utils/tweeParser.js}) realiza o mapeamento síncrono em tempo real entre a interface gráfica do React Flow e a representação textual no formato Twee 3 \citep{Twee3Reference}.
 
 \subsection{Importação e Conversão de Coordenadas em Zonas}
-No formato Twee 3 \citep{Twee3Reference}, as coordenadas de posição guardadas nos metadados JSON das passagens são sempre absolutas no espaço do ecrã:
+No formato Twee 3 \citep{Twee3Reference}, as coordenadas de posição guardadas nos metadados \gls{json} das passagens são sempre absolutas no espaço do ecrã:
 \[
 (X_{\text{absoluto}}, Y_{\text{absoluto}})
 \]
@@ -144,7 +144,7 @@ Y_{\text{absoluto}} = Y_{\text{zona}} + Y_{\text{relativo}}
 O parser reconhece passagens reservadas de metadados da especificação Twee 3:
 \begin{itemize}
     \item \texttt{:: StoryTitle}: Define o título do projeto.
-    \item \texttt{:: StoryData}: Contém as configurações globais em formato JSON, incluindo o identificador único da história (\texttt{ifid}), o formato de compilação (\texttt{SugarCube}), o nó de arranque (\texttt{start}) e o nível de zoom.
+    \item \texttt{:: StoryData}: Contém as configurações globais em formato \gls{json}, incluindo o identificador único da história (\texttt{ifid}), o formato de compilação (\texttt{SugarCube}), o nó de arranque (\texttt{start}) e o nível de zoom.
     \item \texttt{:: StoryInit}: Nó especial não-narrativo onde são declaradas e inicializadas as variáveis de controlo de estado da simulação.
 \end{itemize}
 
@@ -162,6 +162,8 @@ As alterações de estado são definidas em macros como \texttt{<<set \$moedas +
 A implementação de Zonas como nós customizados de grupo (\textit{ZoneNode}) exigiu uma resolução específica para um problema clássico de captura de cliques no React Flow. Como o contentor nativo das Zonas cobre uma área retangular considerável sobrepondo-se aos nós de cena interiores, os pointer events capturavam os cliques na tela, impedindo o arrasto ou seleção dos nós filhos.
 
 A solução consistiu em definir a propriedade CSS \texttt{pointer-events: none} dinamicamente na configuração global do React Flow para o contentor da Zona em \texttt{App.jsx} (encontrado em \texttt{/src/App.jsx}). Em paralelo, no componente \texttt{ZoneNode.jsx} (encontrado em \texttt{/src/components/ZoneNode.jsx}), forçou-se \texttt{pointer-events: auto} exclusivamente nas pegas de redimensionamento (\textit{NodeResizer}) e na barra de cabeçalho da zona (utilizada para arrastar a zona em bloco com todos os seus filhos).
+
+Para além do agrupamento espacial, as Zonas e os nós customizados suportam a injeção de imagens de fundo personalizadas (\textit{backgrounds}). Esta funcionalidade é gerida reativamente através de uma propriedade \texttt{bgImage} armazenada nos metadados de estado de cada nó. O renderizador do React Flow descodifica este campo em tempo de execução e aplica a imagem como máscara de fundo utilizando estilos embutidos do CSS, permitindo categorizar regiões do canvas visualmente.
 
 \subsection{Arestas Curvadas com Waypoints}
 \label{subsec:arestas-curvadas-waypoints}
@@ -182,7 +184,7 @@ Desta forma, expandindo a multiplicação matricial, cada coordenada $(x, y)$ da
 \[
 \mathbf{C}(t) = \frac{1}{2} \left[ 2\mathbf{P}_i + (-\mathbf{P}_{i-1} + \mathbf{P}_{i+1})t + (2\mathbf{P}_{i-1} - 5\mathbf{P}_i + 4\mathbf{P}_{i+1} - \mathbf{P}_{i+2})t^2 + (-\mathbf{P}_{i-1} + 3\mathbf{P}_i - 3\mathbf{P}_{i+1} + \mathbf{P}_{i+2})t^3 \right]
 \]
-Este cálculo polinomial é executado em JavaScript na biblioteca gráfica \texttt{graphMath.js} para interpolar os waypoints introduzidos pelo utilizador. Visto que os navegadores web não conseguem renderizar splines de Catmull-Rom de forma nativa na especificação SVG, o módulo de visualização converte os segmentos de reta calculados em comandos de curvas Bézier cúbicas padrão (sintaxe do caminho SVG com as flags \lstinline|C| e \lstinline|S|). A conversão é feita calculando analiticamente os pontos de controlo Bézier correspondentes com base nas tangentes geradas pela formulação de Catmull-Rom em cada nó:
+Este cálculo polinomial é executado em JavaScript na biblioteca gráfica \texttt{graphMath.js} para interpolar os waypoints introduzidos pelo utilizador. Visto que os navegadores web não conseguem renderizar splines de Catmull-Rom de forma nativa na especificação SVG, o módulo de visualização converte os segmentos de reta calculados em comandos de curvas Bézier cúbicas padrão (sintaxe do caminho SVG com as flags \texttt{C} e \texttt{S}). A conversão é feita calculando analiticamente os pontos de controlo Bézier correspondentes com base nas tangentes geradas pela formulação de Catmull-Rom em cada nó:
 \[
 \mathbf{B}_{control1} = \mathbf{P}_i + \frac{\mathbf{P}_{i+1} - \mathbf{P}_{i-1}}{6}
 \]
@@ -207,15 +209,58 @@ Tendo em conta que um dos autores da ferramenta, Miguel, apresenta limitações 
     \item \textbf{Sinalização Semântica Redundante:} Cores de contraste elevado e símbolos iconográficos explícitos acompanham o feedback visual em detrimento de códigos de cores simples (verde/vermelho).
 \end{itemize}
 
+\subsection{Modelação de Dados e Sincronização com o React Flow}
+\label{subsec:modelacao-dados-reactflow}
+Para além da representação puramente abstrata da arquitetura modular, a implementação prática exige uma sincronização bidirecional em tempo real entre a interface gráfica gerida pela biblioteca \textit{React Flow} e a estrutura de dados semântica interna da história.
+
+No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicação (\texttt{App.jsx}) recorrendo a três vetores de dados estruturados em memória local:
+\begin{enumerate}
+    \item \textbf{Vetor de Nós do React Flow (\texttt{nodes}):} Contém a representação posicional e de renderização de cada elemento no canvas. Cada objeto de nó segue a especificação rígida da biblioteca:
+    \begin{code}
+    {
+      id: "cena_taberna",
+      type: "storyNode",
+      position: { x: 250, y: 180 },
+      data: {
+        title: "Interior da Taberna",
+        content: "O cheiro a hidromel preenche a sala...",
+        tags: ["secreto"],
+        bgImage: ""
+      },
+      width: 280,
+      height: 150
+    }
+    \end{code}
+    Se o nó representar uma Zona de Agrupamento (\texttt{ZoneNode}), o tipo é alterado para \texttt{''zoneNode''} e o objeto passa a incluir propriedades de agrupamento como \texttt{parentId} nos nós filhos e dimensões explícitas de largura e altura controladas pelo utilizador.
+    
+    \item \textbf{Vetor de Arestas do React Flow (\texttt{edges}):} Modela a conectividade geométrica das escolhas narrativas. Cada aresta é configurada como um componente customizado (\texttt{EditableEdge}) e armazena os pontos geométricos intermédios (\textit{waypoints}) inseridos pelo autor para suavizar as curvas:
+    \begin{code}
+    {
+      id: "edge-cena_praca-cena_taberna",
+      source: "cena_praca",
+      target: "cena_taberna",
+      type: "editableEdge",
+      data: {
+        choiceText: "Entrar na taberna",
+        waypoints: [{ x: 120, y: 150 }, { x: 180, y: 160 }]
+      }
+    }
+    \end{code}
+    
+    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação executar travessias e lookups rápidos de transição com complexidade constante $\mathcal{O}(1)$.
+\end{enumerate}
+
+Esta tripla modelagem é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no inspetor, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a reatualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
+
 \section{Validação Estática e Simulação}
 \label{sec:validacao-estatica-simulacao}
 
 O motor de autoria do \textit{Plot in a Pot} integra ferramentas robustas de validação e execução reativa. Para além de permitir a escrita de histórias, a plataforma disponibiliza um sistema de verificação lógica que audita a estrutura narrativa de forma estática e uma sandbox de simulação dinâmica dotada de agentes de navegação autónoma.
 
-\subsection{Algoritmo de Validação Estática e Exploração do Espaço de Estados (BFS)}
+\subsection{Algoritmo de Validação Estática e Exploração do Espaço de Estados (\gls{bfs})}
 \label{subsec:algoritmo-bfs-validacao}
 
-O validador estático, implementado em \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, uma travessia clássica de Pesquisa em Largura (BFS) seria suficiente para auditar o grafo. Contudo, em Ficção Interativa, as arestas (hiperligações) dependem frequentemente de expressões lógicas e variáveis de estado (macros \texttt{<<if>>} e \texttt{<<set>>} do SugarCube). A acessibilidade de um nó $v$ não depende apenas do caminho geométrico, mas também da valoração atual das variáveis de estado (memória).
+O validador estático, implementado em \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, uma travessia clássica de Pesquisa em Largura (\gls{bfs}) seria suficiente para auditar o grafo. Contudo, em \gls{fi}, as arestas (hiperligações) dependem frequentemente de expressões lógicas e variáveis de estado (macros \texttt{<<if>>} e \texttt{<<set>>} do SugarCube). A acessibilidade de um nó $v$ não depende apenas do caminho geométrico, mas também da valoração atual das variáveis de estado (memória).
 
 Assim, a validação lógica é modelada como um problema de \textit{Exploração do Espaço de Estados} (\textit{State Space Exploration}), onde o grafo de transições real é constituído por pares $\langle v, \sigma \rangle$, nos quais $v \in \mathcal{N}$ representa o nó do editor e $\sigma: \mathcal{V} \rightarrow \mathcal{D}$ representa um mapeamento de variáveis lógicas globais para os seus respetivos domínios de valores.
 
@@ -245,7 +290,7 @@ O algoritmo executa a travessia de acordo com os seguintes passos estruturados:
     Para o nó corrente $u$, efetua-se o seguinte processamento:
     \begin{enumerate}
         \item Adiciona-se o identificador de $u$ a $\mathcal{N}_{reach}$.
-        \item Executam-se as instruções de modificação de estado contidas no texto do nó (por exemplo, macros de atribuição \lstinline|<<set>>|), produzindo um novo estado de memória $\sigma' \leftarrow applyModifiers(u.\text{content}, \sigma)$.
+        \item Executam-se as instruções de modificação de estado contidas no texto do nó (por exemplo, macros de atribuição \texttt{<<set>>}), produzindo um novo estado de memória $\sigma' \leftarrow applyModifiers(u.\text{content}, \sigma)$.
         \item Verifica-se se o estado $\sigma'$ já foi visitado no nó $u$. Para tal, converte-se $\sigma'$ numa representação string serializada $S_{\sigma'}$ e verifica-se se $S_{\sigma'} \in VisitedStates[u]$. Em caso afirmativo, o ramo é podado (\textit{pruning}) para evitar ciclos redundantes no grafo.
         \item Para evitar a explosão do espaço de estados em loops que incrementam variáveis infinitamente, impõe-se um limite de segurança de $K = 10$ estados únicos por nó. Se $|VisitedStates[u]| \ge K$, o algoritmo emite um aviso de ciclo infinito no terminal e poda o caminho.
         \item Caso contrário, insere-se $S_{\sigma'}$ em $VisitedStates[u]$ e regista-se a rota percorrida e o estado final na tabela de histórico de chegada $ArrivalHistory[u]$.
@@ -255,7 +300,7 @@ O algoritmo executa a travessia de acordo com os seguintes passos estruturados:
     Para cada aresta de saída $e \in EdgesBySource[u]$ que conecta o nó $u$ ao nó de destino $w$:
     \begin{enumerate}
         \item O validador extrai a hiperligação textual associada à aresta $e$ do conteúdo de $u$.
-        \item Avalia-se a condição de acessibilidade associada a essa escolha através da função $canAccessChoice(u.\text{content}, \text{link}, \sigma')$. Esta função analisa se o link está envolto por alguma macro condicional \lstinline|<<if>>| e avalia a sua expressão lógica contra a memória $\sigma'$.
+        \item Avalia-se a condição de acessibilidade associada a essa escolha através da função $canAccessChoice(u.\text{content}, \text{link}, \sigma')$. Esta função analisa se o link está envolto por alguma macro condicional \texttt{<<if>>} e avalia a sua expressão lógica contra a memória $\sigma'$.
         \item Se a condição for satisfeita ($true$), adiciona-se o ID da aresta $e$ a $\mathcal{E}_{reach}$ e enfileira-se o próximo estado:
         \[
         \mathcal{Q} \leftarrow \text{enqueue}\left(\mathcal{Q}, \langle w, \sigma', \text{path} \cup [w.\text{label}] \rangle\right)
@@ -276,7 +321,7 @@ Após o término da travessia (quando a fila $\mathcal{Q}$ fica vazia), o módul
 O simulador de jogo (\texttt{PlayMode.jsx}) mimetiza o comportamento do interpretador SugarCube num ambiente controlado pelo navegador do autor. Para permitir a depuração em tempo real sem afetar os dados de edição, o motor executa sob um isolamento de contextos:
 \begin{itemize}
     \item \textbf{Separação de Estilos:} Os nós categorizados com a tag \texttt{css} têm o seu conteúdo concatenado em tempo de execução e injetado sob a forma de uma tag \texttt{<style id=''playmode-styles''>} na raiz do cabeçalho da página, sendo totalmente limpos ao sair da simulação.
-    \item \textbf{Isolamento de Scripts:} Os nós lógicos contendo JavaScript são processados como funções anónimas com escopo isolado através do construtor \lstinline|new Function('state', 'State', 'setup', script_content)|, impedindo que variáveis globais escritas pelo utilizador interfiram com os estados internos do React ou do canvas do React Flow.
+    \item \textbf{Isolamento de Scripts:} Os nós lógicos contendo JavaScript são processados como funções anónimas com escopo isolado através do construtor \texttt{new Function('state', 'State', 'setup', script\_content)}, impedindo que variáveis globais escritas pelo utilizador interfiram com os estados internos do React ou do canvas do React Flow.
 \end{itemize}
 
 Para testes automáticos de caminhos narrativos, a plataforma disponibiliza o agente autónomo \textbf{Smart Walker} (implementado em \texttt{storyTraversal.js}). Em vez de selecionar opções de forma puramente pseudo-aleatória (o que levaria a uma baixa cobertura de caminhos e retenção em ciclos curtos), o agente utiliza uma heurística baseada em \textit{Procura por Novidade} (\textit{Novelty Search}).
@@ -292,8 +337,8 @@ Este comportamento força o simulador a procurar caminhos narrativos raros e ram
 
 Para suportar as avaliações e atribuições de variáveis de estado descritas, a aplicação possui um compilador \textit{Just-In-Time} (JIT) simplificado estruturado em \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}:
 \begin{itemize}
-    \item \textbf{Análise Léxica e Mapeamento:} O interpretador analisa o conteúdo textual dos nós através de varrimentos que procuram padrões de macros \lstinline|<<set>>| e \lstinline|<<if>>|. Traduz os operadores clássicos da linguagem SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube} (apresentada no capítulo de desenvolvimento).
-    \item \textbf{Árvore de Sintaxe Abstrata (AST):} O interpretador de condicionais analisa blocos lógicos aninhados construindo uma AST simples que reflete a precedência de cláusulas. Esta estrutura é então avaliada em tempo de execução para calcular o valor de verdade das expressões.
+    \item \textbf{Análise Léxica e Mapeamento:} O interpretador analisa o conteúdo textual dos nós através de varrimentos que procuram padrões de macros \texttt{<<set>>} e \texttt{<<if>>}. Traduz os operadores clássicos da linguagem SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube} (apresentada no capítulo de desenvolvimento).
+    \item \textbf{Árvore de Sintaxe Abstrata (\gls{ast}):} O interpretador de condicionais analisa blocos lógicos aninhados construindo uma AST simples que reflete a precedência de cláusulas. Esta estrutura é então avaliada em tempo de execução para calcular o valor de verdade das expressões.
 \end{itemize}
 
 \section{Integração de Modelos de Linguagem (LLMs)}
@@ -304,15 +349,15 @@ Para além do núcleo lógico de grafos e da simulação estática, a plataforma
 Para evitar a necessidade de desenvolver e compilar motores de inferência de raiz, o \gls{piap} adota uma arquitetura baseada em servidores de inferência locais prontos a usar, nomeadamente o \textit{Ollama} ou o \textit{LM Studio}. O fluxo de comunicação processa-se conforme descrito de seguida:
 \begin{enumerate}
     \item \textbf{Instalação Local:} O autor/utilizador instala o servidor \textit{Ollama} na sua máquina local.
-    \item \textbf{Execução em Segundo Plano:} O \textit{Ollama} descarrega o modelo pretendido (ex: \lstinline|llama3.1:8b|) e executa a inferência local em segundo plano.
-    \item \textbf{Simulação de API:} O servidor expõe uma API REST local na porta padrão (tipicamente \lstinline|http://localhost:11434|), que simula a interface padrão de chat da OpenAI.
-    \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por APIs proprietárias na nuvem.
+    \item \textbf{Execução em Segundo Plano:} O \textit{Ollama} descarrega o modelo pretendido (ex: \texttt{llama3.1:8b}) e executa a inferência local em segundo plano.
+    \item \textbf{Simulação de API:} O servidor expõe uma \gls{api} REST local na porta padrão (tipicamente \texttt{http://localhost:11434}), que simula a interface padrão de chat da OpenAI.
+    \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por \glspl{api} proprietárias na nuvem.
 \end{enumerate}
 
-A escolha de investir no desenvolvimento de soluções de inferência locais (via Ollama) ao invés de recorrer a APIs de grandes fornecedores na nuvem (como OpenAI ou Anthropic) baseou-se em duas premissas estratégicas essenciais:
+A escolha de investir no desenvolvimento de soluções de inferência locais (via Ollama) ao invés de recorrer a \glspl{api} de grandes fornecedores na nuvem (como OpenAI ou Anthropic) baseou-se em duas premissas estratégicas essenciais:
 \begin{itemize}
     \item \textbf{Privacidade e Soberania dos Dados:} Ao executar o modelo localmente no computador do autor, garante-se que toda a propriedade intelectual da história e os textos criados permanecem estritamente confidenciais. Não há partilha de dados com servidores externos de terceiros nem risco de os textos literários serem recolhidos para treino de modelos comerciais.
-    \item \textbf{Custo Financeiro Zero:} APIs na nuvem implicam faturação contínua baseada em consumo de tokens (tanto para entrada como para saída), o que criaria barreiras ao uso regular e exigiria a gestão de chaves de API pagas por parte do utilizador. A inferência local permite a utilização gratuita e ilimitada da funcionalidade de conversão inteligente.
+    \item \textbf{Custo Financeiro Zero:} \glspl{api} na nuvem implicam faturação contínua baseada em consumo de tokens (tanto para entrada como para saída), o que criaria barreiras ao uso regular e exigiria a gestão de chaves de \gls{api} pagas por parte do utilizador. A inferência local permite a utilização gratuita e ilimitada da funcionalidade de conversão inteligente.
 \end{itemize}
 
 \subsection{Papel do LLM: Conversão e Importação Automática de Histórias}

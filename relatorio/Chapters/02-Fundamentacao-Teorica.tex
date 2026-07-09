@@ -46,20 +46,20 @@ Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de 
     Estes pesos podem representar custos de recursos (tempo, pontos de vida), custos emocionais do personagem, ou a probabilidade de uma escolha ter sucesso.
 \end{enumerate}
 
-\subsection{Grafos Direcionados Acíclicos (DAGs) vs. Grafos com Ciclos}
-Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Acíclicos (\textit{Directed Acyclic Graphs} - DAGs). A propriedade acíclica garante que é impossível iniciar num vértice $V_i$ e, através de arestas direcionadas, regressar a $V_i$. Isto garante um fluxo estritamente unidirecional e progressivo de causa e efeito, facilitando a aplicação de algoritmos como a Ordenação Topológica (\textit{Topological Sorting}) com complexidade linear:
+\subsection{Grafos Direcionados Acíclicos (\glspl{dag}) vs. Grafos com Ciclos}
+Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Acíclicos (\textit{Directed Acyclic Graphs} - \glspl{dag}). A propriedade acíclica garante que é impossível iniciar num vértice $V_i$ e, através de arestas direcionadas, regressar a $V_i$. Isto garante um fluxo estritamente unidirecional e progressivo de causa e efeito, facilitando a aplicação de algoritmos como a Ordenação Topológica (\textit{Topological Sorting}) com complexidade linear:
 \[
 \mathcal{O}(V + E)
 \]
 A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vertices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
 
-No entanto, em narrativas complexas, a imposição de DAGs é altamente limitadora. A impossibilidade de introduzir ciclos impede a criação de:
+No entanto, em narrativas complexas, a imposição de \glspl{dag} é altamente limitadora. A impossibilidade de introduzir ciclos impede a criação de:
 \begin{itemize}
     \item \textbf{Estruturas de Cubo (Hubs):} Onde o jogador explora vários caminhos secundários a partir de uma praça ou menu central e regressa recorrentemente ao mesmo ponto.
     \item \textbf{Mecânicas de Simulação e Tempo:} Eventos baseados em estados lógicos recorrentes, como ``aguardar um turno'' no mesmo local para fazer avançar variáveis temporais.
 \end{itemize}
 
-Por esta razão, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas BFS e DFS \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
+Por esta razão, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas \gls{bfs} e \gls{dfs} \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
 
 \subsection{Análise Matemática da Explosão de Complexidade Lógica}
 \label{subsec:analise-matematica-complexidade}
@@ -74,27 +74,27 @@ O problema agrava-se substancialmente com a introdução de ciclos (onde $G$ dei
 \[
 P = \infty
 \]
-Neste cenário, a coerência da simulação passa a depender inteiramente da valoração do vetor de variáveis de estado $\sigma$. Definimos o espaço de estados global $\mathcal{S}$ da narrativa como o produto cartesiano entre o conjunto de nós de escrita $\mathcal{N}$ e o conjunto de valorações possíveis das variáveis globais da história. Se considerarmos um conjunto de $|\mathcal{V}|$ variáveis de estado do tipo booleanas (por exemplo, registos de inventário como \lstinline|$tem_chave| ou escolhas morais binárias), o tamanho máximo do espaço de estados explorável $\mathcal{S}$ é dado por:
+Neste cenário, a coerência da simulação passa a depender inteiramente da valoração do vetor de variáveis de estado $\sigma$. Definimos o espaço de estados global $\mathcal{S}$ da narrativa como o produto cartesiano entre o conjunto de nós de escrita $\mathcal{N}$ e o conjunto de valorações possíveis das variáveis globais da história. Se considerarmos um conjunto de $|\mathcal{V}|$ variáveis de estado do tipo booleanas (por exemplo, registos de inventário como \texttt{\$tem\_chave} ou escolhas morais binárias), o tamanho máximo do espaço de estados explorável $\mathcal{S}$ é dado por:
 \[
 |\mathcal{S}| = |\mathcal{N}| \times 2^{|\mathcal{V}|}
 \]
 Caso as variáveis tomem valores em domínios numéricos maiores (e.g. inteiros para pontos de vida ou reputação), o espaço cresce de forma ainda mais severa. A introdução de loops infinitos que incrementam repetidamente uma variável sem uma condição de paragem adequada fará com que o espaço de estados se torne teoricamente infinito, o que levaria a que uma travessia cega de pesquisa de caminhos nunca terminasse. 
 
-Esta propriedade matemática demonstra que a validação estrutural simples de grafos geométricos (baseada puramente na conectividade de vértices) é insuficiente em ficção interativa com lógica condicional. Justifica-se assim o desenvolvimento de um motor de validação estática capaz de explorar o espaço de estados reais $\langle v, \sigma \rangle$ e implementar podas algorítmicas rigorosas para garantir a paragem do algoritmo de verificação.
+Esta propriedade matemática demonstra que a validação estrutural simples de grafos geométricos (baseada puramente na conectividade de vértices) é insuficiente em \gls{fi} com lógica condicional. Justifica-se assim o desenvolvimento de um motor de validação estática capaz de explorar o espaço de estados reais $\langle v, \sigma \rangle$ e implementar podas algorítmicas rigorosas para garantir a paragem do algoritmo de verificação.
 
 \section{Software de Criação de Histórias não Lineares}
-O conceito de ficção interativa refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
+O conceito de \gls{fi} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
 
 Apresenta-se, de seguida, uma análise detalhada das principais referências do mercado académico e profissional.
 
 \subsection{Twine}
-Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferramenta mais popular na comunidade de ficção interativa baseada em texto.
+Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferramenta mais popular na comunidade de \gls{fi} baseada em texto.
 \begin{itemize}
     \item \textbf{Vantagens:} Extremamente acessível (sem barreira de programação para escrita básica); visualização clara baseada em nós gráficos no canvas; open-source e gratuito (distribuído sob a licença GPL v3, permitindo qualquer utilização, incluindo comercial, sem restrições); rápido para prototipagem rápida.
     \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
 \end{itemize}
 
-O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da história) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TheToolpickerTeam2026}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
+O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da história) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TwineReference}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
 
 \subsection{Ink (Inkle Studios)}
 O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}).
@@ -106,7 +106,7 @@ O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Ink
 \subsection{ChoiceScript}
 Desenvolvido pela Choice of Games, o ChoiceScript é uma linguagem de programação simples e baseada em texto para a escrita de romances interativos baseados em escolhas.
 \begin{itemize}
-    \item \textbf{Vantagens:} Sintaxe simples e linear de fácil compreensão para escritores; possui excelentes ferramentas de teste automático (como \lstinline|quicktest| e \lstinline|randomtest|) que facilitam a validação de caminhos e a robustez lógica de romances longos.
+    \item \textbf{Vantagens:} Sintaxe simples e linear de fácil compreensão para escritores; possui excelentes ferramentas de teste automático (como \texttt{quicktest} e \texttt{randomtest}) que facilitam a validação de caminhos e a robustez lógica de romances longos.
     \item \textbf{Limitações:} Não é uma ferramenta visual; o formato de ficheiro é proprietário; a sua licença (CSL) proíbe explicitamente a utilização comercial sem autorização prévia e acordo de distribuição comercial com a Choice of Games \citep{ChoiceOfGamesLicensing}, limitando a autonomia de autores independentes.
 \end{itemize}
 
@@ -149,20 +149,20 @@ Exportação Standalone & HTML autónomo (sem engine) & Requer engine externa (U
 Adoção Académica/Indie & Muito elevada & Média (foco profissional) & Média (foco romances interativos) \\
 Integração com Motores & Limitada (plugins de terceiros) & Nativa (Unity, Unreal — oficial) & Nenhuma \\
 Ferramentas de Teste & Limitadas & Básicas & Avançadas (quicktest, randomtest) \\
-Formato Aberto & Sim (Twee3 — spec pública) & Sim (JSON compilado) & Não (proprietário CoG) \\
+Formato Aberto & Sim (Twee3 — spec pública) & Sim (\gls{json} compilado) & Não (proprietário CoG) \\
 Curva de Aprendizagem & Baixa (visual, sem código) & Alta (linguagem scripting) & Média (sintaxe simples) \\
 Mapeamento para Grafo & Direto (passagem = nó, link = aresta) & Indireto (estrutura textual) & Indireto (estrutura textual) \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:comparacao-motores} justifica-se pela necessidade de analisar de que forma as soluções existentes respondem aos desafios práticos da autoria e produção de ficção interativa:
+A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:comparacao-motores} justifica-se pela necessidade de analisar de que forma as soluções existentes respondem aos desafios práticos da autoria e produção de \gls{fi}:
 \begin{itemize}
     \item \textbf{Licenciamento (Licença):} Define a liberdade comercial e legal do autor. Licenças livres como a GPL v3 (Twine) ou MIT (Ink) promovem a autonomia e a publicação sem restrições, ao passo que licenças proprietárias como a CSL (ChoiceScript) impõem limites à distribuição comercial e exigências de royalties.
     \item \textbf{Interface de Edição e Mapeamento para Grafo:} Avaliam a carga cognitiva imposta ao autor durante a escrita. Um mapeamento direto em canvas visual (Twine) facilita o desenho de percursos geográficos, enquanto interfaces textuais (Ink e ChoiceScript) exigem que o escritor mantenha mentalmente o fluxo de caminhos ramificados.
     \item \textbf{Exportação Standalone (Distribuição) e Integração com Motores:} Definem a flexibilidade técnica da obra final. A exportação para HTML autónomo (Twine) facilita a partilha web imediata, enquanto a integração nativa com motores de jogo como Unity e Unreal (Ink) é indispensável para produções comerciais de grande escala.
     \item \textbf{Curva de Aprendizagem e Adoção Académica/Indie:} Refletem a acessibilidade para autores não-técnicos. Ferramentas sem código (Twine) apresentam baixa barreira de entrada e elevada popularidade na comunidade independente, enquanto linguagens de scripting avançadas (Ink) exigem conhecimentos de lógica de programação.
-    \item \textbf{Ferramentas de Teste e Garantia de Qualidade:} Em narrativas complexas com centenas de caminhos, a validação manual é inviável. A existência de testes automáticos baseados em aleatoriedade (como o \lstinline|randomtest| do ChoiceScript) é crucial para detetar incoerências lógicas e becos sem saída.
+    \item \textbf{Ferramentas de Teste e Garantia de Qualidade:} Em narrativas complexas com centenas de caminhos, a validação manual é inviável. A existência de testes automáticos baseados em aleatoriedade (como o \texttt{randomtest} do ChoiceScript) é crucial para detetar incoerências lógicas e becos sem saída.
     \item \textbf{Formato Aberto:} Determina se o código e a estrutura do projeto pertencem a um padrão livre documentado (como o Twee 3 no Twine) que evite a dependência de plataformas proprietárias e garanta a perenidade do trabalho.
 \end{itemize}
 
@@ -171,7 +171,7 @@ A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:compar
 Com o avanço recente no campo da Inteligência Artificial Generativa, a integração de Modelos de Linguagem de Grande Escala (\textit{Large Language Models} - LLMs) tornou-se um recurso valioso para auxiliar autores na expansão automática e co-criação de narrativas interativas. No entanto, para garantir a viabilidade prática do projeto \gls{piap} sem dependências financeiras ou de conectividade externa, focou-se a pesquisa em modelos de execução local e gratuita.
 
 \subsection{Análise de Famílias de Modelos e Recomendações}
-Foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de ficção interativa:
+Foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de \gls{fi}:
 
 \begin{enumerate}
     \item \textbf{Família Llama 3 e 3.1 (Meta AI):}

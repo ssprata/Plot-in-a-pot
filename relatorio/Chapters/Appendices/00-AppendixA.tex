@@ -1,2 +1,182 @@
-\chapter{Showcasing the First Appendix}
-\guideinfo{Appendices contain supplementary material \textbf{created by the author} that enhances the reader’s understanding of the dissertation while not being essential for following the primary narrative. These sections often include detailed tables, figures, complex calculations, or materials like survey questions and interview transcripts produced in the course of the research. The appendices allow readers to explore the research in greater detail, offering a deeper insight into methods and findings without interrupting the main body of work.}
+\chapter{Manual de Utilização e Instalação}
+\label{ap:manual-utilizador}
+
+Este apêndice constitui o Manual de Utilização e Instalação oficial do \textit{Plot in a Pot} (\gls{piap}). Destina-se a autores de ficção interativa, designers de jogos e programadores que pretendam instalar, configurar e explorar todas as capacidades lógicas, visuais e de tradução da plataforma.
+
+\section{Requisitos do Sistema e Instalação Local}
+O \gls{piap} é executado inteiramente do lado do cliente no navegador web (\textit{Single Page Application}), mas requer uma pilha local mínima para desenvolvimento e para a execução do assistente de inteligência artificial local.
+
+\subsection{Instalação do Editor Web}
+Para executar o editor localmente, certifique-se de que tem o ambiente de execução Node.js instalado (versão 18 ou superior). Siga os seguintes passos de instalação:
+\begin{enumerate}
+    \item Descomprima os ficheiros do projeto numa diretoria de trabalho.
+    \item Abra um terminal de comandos (cmd ou PowerShell no Windows, bash no macOS/Linux) na diretoria raiz do projeto.
+    \item Execute o comando de instalação de dependências:
+    \begin{verbatim}
+    npm install
+    \end{verbatim}
+    Este comando irá descarregar e configurar todas as bibliotecas necessárias, incluindo o React 19, React Flow 11 e Tailwind CSS 3.
+    \item Após a conclusão bem-sucedida da instalação, inicie o servidor de desenvolvimento local através do comando:
+    \begin{verbatim}
+    npm start
+    \end{verbatim}
+    A aplicação será inicializada e ficará disponível no seu navegador padrão no endereço \texttt{http://localhost:3000}.
+\end{enumerate}
+
+\subsection{Configuração do Servidor de IA Local (Ollama)}
+A funcionalidade de conversão e importação automática de histórias escritas em linguagem natural depende de um servidor local de inferência de Modelos de Linguagem de Grande Escala (LLMs). O \gls{piap} suporta nativamente o \textit{Ollama}. Para o configurar:
+\begin{enumerate}
+    \item Descarregue e instale a versão oficial do Ollama a partir de \texttt{https://ollama.com/}.
+    \item Abra o terminal de comandos e execute o descarregamento do modelo recomendado para processamento de texto:
+    \begin{verbatim}
+    ollama pull llama3:8b
+    \end{verbatim}
+    Pode também optar por modelos mais leves, como o \texttt{qwen2.5:7b} ou \texttt{gemma2:2b}, dependendo da memória de vídeo (VRAM) disponível no seu computador.
+    \item Por padrão, o Ollama executa um servidor em segundo plano que escuta na porta local \texttt{http://localhost:11434}.
+    \item No editor do \gls{piap}, clique no botão de configurações (ícone de engrenagem) na barra superior, aceda ao painel de ligação da IA e ative a ligação local ao Ollama, especificando o modelo que descarregou.
+\end{enumerate}
+
+\section{Manual de Utilização do Editor Gráfico}
+A interface gráfica de grafos do \gls{piap} segue uma estética neo-brutalista de alto contraste que facilita a distinção dos componentes visuais da narrativa.
+
+\subsection{O Canvas Interativo}
+O espaço central do editor representa a estrutura geral da história sob a forma de um grafo. Pode navegar no canvas utilizando as seguintes interações:
+\begin{itemize}
+    \item \textbf{Deslocação (Pan):} Clique e arraste com o botão esquerdo do rato num espaço vazio do canvas.
+    \item \textbf{Zoom:} Utilize a roda do rato para aproximar ou afastar a visualização. Pode também usar o painel do minimapa no canto inferior esquerdo para se situar no grafo.
+    \item \textbf{Seleção de Elementos:} Clique com o botão esquerdo sobre qualquer nó de cena ou aresta para abrir as suas propriedades no painel lateral de inspeção.
+\end{itemize}
+
+\subsection{Criação e Edição de Nós Narrativos (Cenas)}
+Para adicionar uma nova cena à história:
+\begin{enumerate}
+    \item Clique com o botão direito do rato num espaço livre do canvas e selecione ``Adicionar Nó Narrativo'', ou clique no botão correspondente na barra superior de ferramentas.
+    \item Um novo nó azul com contorno espesso aparecerá no canvas. Clique duas vezes no nó ou selecione-o para abrir o \textbf{Inspetor Lateral}.
+    \item No Inspetor, pode editar:
+    \begin{itemize}
+        \item \textbf{ID da Cena:} Um identificador único em formato alfanumérico (ex: \texttt{cena\_taberna}).
+        \item \textbf{Título da Cena:} O nome de identificação visual exibido na barra do nó no canvas (ex: \texttt{Interior da Taberna}).
+        \item \textbf{Conteúdo da Cena:} O texto literário que será lido pelo jogador.
+        \item \textbf{Etiquetas (Tags):} Palavras-chave separadas por vírgula que modificam o comportamento do nó (ex: \texttt{css} para estilos, \texttt{secreto} para ocultar da exportação).
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Criação de Ligações e Arestas de Escolha}
+As arestas direcionadas do grafo representam as decisões disponíveis para o jogador no final de cada cena narrativa. Para criar uma ligação:
+\begin{enumerate}
+    \item Posicione o ponteiro do rato sobre o ponto de saída circular (\textit{handle} direito) do nó de origem.
+    \item Clique e arraste o cabo de ligação até ao ponto de entrada (\textit{handle} esquerdo) do nó de destino.
+    \item Uma aresta curva suave será desenhada entre as cenas.
+    \item O texto da escolha que o jogador irá visualizar é automaticamente derivado das ligações escritas em formato double-bracket no conteúdo do nó de origem (ex: \texttt{[[Entrar na taberna|cena\_taberna]]}).
+    \item \textbf{Waypoints Interativos:} Se pretender contornar outros nós, clique duas vezes sobre a aresta criada. Um pequeno ponto de controlo amarelo aparecerá. Arraste-o para deformar a curva de forma flexível. Pode adicionar múltiplos waypoints na mesma aresta.
+\end{enumerate}
+
+\subsection{Agrupamento em Zonas (Capítulos)}
+Para organizar visualmente projetos de escrita literária de grande envergadura:
+\begin{enumerate}
+    \item Clique no botão ``Criar Zona'' na barra superior. Um retângulo cinzento com contorno pontilhado aparecerá no ecrã.
+    \item Atribua um nome à Zona no seu cabeçalho (ex: \texttt{Capítulo 1}).
+    \item Arraste nós narrativos existentes para dentro do retângulo da Zona. Estes passarão a ser filhos geométricos da zona.
+    \item Ao mover ou arrastar a Zona, todos os nós contidos nela deslocar-se-ão de forma solidária.
+    \item Pode redimensionar a Zona arrastando o indicador de escala no seu canto inferior direito.
+\end{enumerate}
+
+\section{Programação de Lógica Narrativa e Variáveis}
+O \gls{piap} suporta a declaração de variáveis globais e condicionais lógicas nativas da macro-linguagem SugarCube.
+
+\subsection{Criação de Variáveis (Figma-Style Tokens)}
+Aceda ao menu ``Variáveis'' na barra superior de ferramentas:
+\begin{enumerate}
+    \item Clique em ``Criar Variável'' e atribua um nome precedido do símbolo \texttt{\$} (ex: \texttt{\$tem\_chave}).
+    \item Escolha o tipo de dados (Booleano, Numérico ou String) e defina o valor inicial por defeito.
+    \item A inicialização correta destas variáveis é escrita de forma automática no nó de metadados especial da história (\texttt{StoryInit}) em segundo plano.
+    \item \textbf{Renomeação Segura (Refatorização):} Se renomear uma variável existente no painel, o editor varre sintonizadamente todo o texto e blocos lógicos do projeto e substitui as referências antigas, garantindo que não ocorrem falhas de simulação.
+\end{enumerate}
+
+\subsection{Edição de Lógica condicional por Código}
+No conteúdo de qualquer nó de cena, pode inserir macros SugarCube utilizando a sintaxe de parênteses angulares duplos:
+\begin{itemize}
+    \item \textbf{Modificação de Estado:} Para alterar o valor de uma variável quando o jogador visita o nó, utilize a macro \texttt{<<set>>}:
+    \begin{verbatim}
+    <<set $tem_chave = true>>
+    \end{verbatim}
+    \item \textbf{Condições de Escolhas:} Para exibir ou ocultar uma escolha com base no estado das variáveis lógicas, envolva a ligação na macro condicional \texttt{<<if>>}:
+    \begin{verbatim}
+    <<if $tem_chave>>
+    [[Abrir a porta trancada|cena_tesouro]]
+    <<else>>
+    A porta está trancada.
+    <<endif>>
+    \end{verbatim}
+\end{itemize}
+
+\subsection{Editor de Lógica Estruturada}
+Caso não esteja familiarizado com regras de programação textual, selecione um nó e clique no botão ``Editor de Lógica'' no Inspetor:
+\begin{enumerate}
+    \item Um painel interativo de formulários estruturados será exibido, dividindo a cena em três secções lógicas: narrativa, modificadores de variáveis (\textit{setters}) e escolhas/caminhos condicionais.
+    \item Utilize os menus de seleção (dropdowns) para definir quais as variáveis que mudam de valor ao entrar na cena ou quais os requisitos lógicos (ex: se tem a chave) necessários para libertar uma escolha narrativa.
+    \item Ao salvar ou alterar os campos, o sistema gera de forma transparente as macros SugarCube correspondentes no texto da cena ativa, sem risco de erros de digitação.
+\end{enumerate}
+
+\section{Tradução e Localização Multi-idioma}
+A gestão de traduções no \gls{piap} baseia-se numa Matriz de Tradução única que centraliza os textos dos nós.
+
+\subsection{Configurar Idiomas}
+Aceda ao menu ``Matriz de Tradução'':
+\begin{enumerate}
+    \item O idioma nativo padrão é exibido como a primeira coluna.
+    \item Clique em ``Adicionar Idioma'' e digite o código ISO de duas letras do novo idioma (ex: \texttt{en} para inglês, \texttt{es} para espanhol).
+    \item Uma nova coluna aparecerá na tabela.
+\end{enumerate}
+
+\subsection{Editar Textos na Matriz}
+A grelha apresenta todas as cenas narrativas nas linhas e os idiomas nas colunas:
+\begin{enumerate}
+    \item Clique duas vezes em qualquer célula correspondente ao idioma secundário.
+    \item Digite o texto traduzido da cena e clique fora para guardar.
+    \item Quando a história for executada num idioma secundário, o motor lerá de forma reativa a string traduzida a partir desta matriz.
+\end{enumerate}
+
+\subsection{Importação e Exportação de Ficheiros CSV}
+Para enviar os ficheiros a um tradutor externo profissional:
+\begin{enumerate}
+    \item Clique no botão ``Exportar CSV'' na Matriz de Tradução. Um ficheiro estruturado em formato tabular será descarregado.
+    \item O tradutor pode abrir o ficheiro no Microsoft Excel, Google Sheets ou qualquer editor de texto e preencher as colunas dos idiomas secundários.
+    \item Após a tradução, clique em ``Importar CSV'' e selecione o ficheiro atualizado. O editor atualizará automaticamente todas as células e strings na memória.
+\end{enumerate}
+
+\section{Validação Lógica e Simulação de Jogo}
+Antes de disponibilizar o jogo ao público, utilize os motores integrados de auditoria.
+
+\subsection{O Painel de Erros de Validação Estática}
+O validador estático analisa de forma contínua a correção topológica do grafo. Se existirem falhas lógicas:
+\begin{itemize}
+    \item Os nós com erros serão destacados no canvas com uma borda pontilhada a vermelho e um sinal de alerta.
+    \item Clique no botão ``Erros de Validação'' na barra superior para ver a lista estruturada de avisos:
+    \begin{itemize}
+        \item \textbf{Nós Inacessíveis:} Cenas que nunca podem ser acedidas a partir do nó inicial sob nenhum caminho explorável.
+        \item \textbf{Ligações Partidas (Dead Ends):} Escolhas cujo ID de destino aponta para uma cena inexistente.
+        \item \textbf{Escolhas Bloqueadas:} Hiperligações condicionais cujas expressões lógicas nunca são satisfeitas.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Simulação Ativa (PlayMode) e Testes com o Smart Walker}
+Clique em ``Testar Jogo'' para abrir a sandbox de simulação:
+\begin{enumerate}
+    \item Jogue a história clicando nas escolhas disponíveis no ecrã de simulação.
+    \item Utilize o painel de variáveis lateral para ver, em tempo real, as alterações de valores e depurar as macros lógicas.
+    \item \textbf{Smart Walker:} Ative o Smart Walker clicando em ``Autoplay''. O simulador iniciará uma exploração automática da história. O Walker utiliza um algoritmo de procura por novidade que prioriza ramos menos visitados. Pode ver o agente a mudar de cenas e a alterar variáveis a alta velocidade no ecrã. Caso o Walker encontre um beco sem saída ou erro lógico, a simulação pausa e destaca o nó problemático.
+\end{enumerate}
+
+\section{Operações de Ficheiros e Publicação do Projeto}
+O editor suporta leitura e gravação no formato padrão da indústria.
+
+\subsection{Importar Ficheiros Twee 3}
+Clique em ``Importar ficheiro .twee'' na barra de menus e selecione um ficheiro de texto plano em formato Twee 3. O editor processará o cabeçalho e construirá automaticamente o canvas gráfico de nós e arestas correspondente.
+
+\subsection{Exportar e Compilar a História}
+Para guardar o seu trabalho de autoria ou disponibilizar o jogo final para os utilizadores:
+\begin{itemize}
+    \item \textbf{Exportar Twee 3:} Clique em ``Exportar .twee'' para descarregar o ficheiro de texto estruturado. Este ficheiro preserva todos os dados posicionais das caixas e Zonas em metadados JSON compatíveis com outros compiladores de Twine.
+    \item \textbf{Compilar para HTML:} Clique em ``Compilar HTML Jogável''. O motor lógico do \gls{piap} empaqueta a história, os dicionários de traduções e a biblioteca do jogador num único ficheiro \texttt{.html}. Este ficheiro pode ser publicado em plataformas de jogos independentes (como o \texttt{itch.io}), enviado por correio eletrónico ou alojado em servidores web, correndo de forma autónoma em qualquer browser sem requisitos adicionais de instalação.
+\end{itemize}

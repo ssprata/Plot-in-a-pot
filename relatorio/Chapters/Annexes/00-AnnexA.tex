@@ -1,2 +1,58 @@
-\chapter{Showcasing the First Annex}
-\guideinfo{Annexes are supplementary sections in a dissertation that provide additional information or external documents not essential to the main arguments but that support or complement the research. Unlike appendices, \textbf{annexes generally contain material that was not developed by the author}, such as reports, legal documents, or published datasets from external sources. This information is placed separately to keep the main content concise, allowing readers access to relevant external references without disrupting the dissertation's flow.}
+\chapter{Especificação Técnica Normativa do Formato Twee 3}
+\label{an:especificacao-twee3}
+
+Este anexo apresenta um extrato normativo e resumo técnico da especificação aberta do formato **Twee 3**, publicada e mantida pela \textit{Interactive Fiction Technology Foundation} (\gls{iftf}). A adoção deste formato como base de persistência do \gls{piap} assegura a interoperabilidade com compiladores padrão do ecossistema Twine (como o \textit{Tweego}).
+
+\section{Sintaxe Geral e Passagens}
+Um ficheiro Twee 3 é codificado em formato de texto plano UTF-8. A unidade estrutural básica é a \textbf{passagem}. Cada passagem inicia-se com um cabeçalho obrigatório, seguido de metadados opcionais, tags e, nas linhas seguintes, o corpo de texto da passagem.
+
+\subsection{Sintaxe do Cabeçalho da Passagem}
+O cabeçalho de uma passagem deve ser escrito numa única linha, obedecendo à seguinte gramática formal:
+\begin{verbatim}
+:: NomeDaPassagem [tags] {metadados}
+\end{verbatim}
+\begin{itemize}
+    \item \texttt{::} -- Delimitador inicial obrigatório. Deve ser posicionado no início de uma linha sem espaços precedentes.
+    \item \texttt{NomeDaPassagem} -- O título identificador único da passagem. Não pode conter os caracteres \texttt{[} ou \texttt{\char`173} e é sensível a maiúsculas/minúsculas (\textit{case-sensitive}).
+    \item \texttt{[tags]} -- Lista opcional de palavras-chave separadas por espaço, delimitada por parênteses retos.
+    \item \texttt{\char`173metadados\char`175} -- Objeto opcional em formato JSON delimitado por chavetas, contendo propriedades de layout ou de sistema.
+\end{itemize}
+
+\section{Especificação de Metadados de Posicionamento}
+A especificação Twee 3 padroniza as coordenadas espaciais das passagens para permitir que editores gráficos visualizem o grafo de forma coerente.
+
+\subsection{Campos de Geometria JSON}
+Os seguintes campos são reservados dentro do objeto de metadados JSON do cabeçalho:
+\begin{itemize}
+    \item \texttt{"position"} -- Um objeto contendo as propriedades numéricas de posição absoluta no ecrã:
+    \begin{itemize}
+        \item \texttt{"x"} -- Coordenada horizontal em píxeis.
+        \item \texttt{"y"} -- Coordenada vertical em píxeis.
+    \end{itemize}
+    \item \texttt{"size"} -- Um objeto opcional definindo as dimensões físicas da caixa no canvas:
+    \begin{itemize}
+        \item \texttt{"width"} -- Largura da caixa em píxeis.
+        \item \texttt{"height"} -- Altura da caixa em píxeis.
+    \end{itemize}
+\end{itemize}
+
+No \gls{piap}, para permitir o agrupamento em Zonas, estendeu-se esta especificação adicionando a propriedade \texttt{"parentId"} que armazena a string do ID da Zona mãe à qual o nó pertence geometricamente.
+
+\section{Especificação de Hiperligações e Transições}
+A especificação Twee 3 define que as arestas do grafo são declaradas de forma textual no corpo das passagens. O parser deve identificar hiperligações expressas em parênteses retos duplos (\texttt{[[...]]}). As formas válidas de declaração são:
+\begin{enumerate}
+    \item \textbf{Ligação Direta:} Onde o texto exibido coincide com o ID do nó de destino:
+    \begin{verbatim}
+    [[CenaDestino]]
+    \end{verbatim}
+    \item \textbf{Ligação com Alias (Sintaxe Clássica):} Onde se separa o texto visível do destino lógico por uma barra vertical:
+    \begin{verbatim}
+    [[Texto da Escolha|CenaDestino]]
+    \end{verbatim}
+    \item \textbf{Ligação com Seta Direcionada:} Permite desenhar setas explícitas de navegação lógica:
+    \begin{verbatim}
+    [[Texto da Escolha->CenaDestino]]
+    \end{verbatim}
+\end{enumerate}
+
+O analisador léxico \texttt{tweeParser.js} do \gls{piap} implementa expressões regulares robustas para extrair estes três formatos, garantindo compatibilidade bidirecional absoluta com a norma da \gls{iftf}.
