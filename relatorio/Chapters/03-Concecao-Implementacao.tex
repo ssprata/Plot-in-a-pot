@@ -45,7 +45,7 @@ Para a materialização prática do sistema, os objetivos e requisitos gerais de
     \item[\textbf{RF02 - Ligações Direcionadas entre Nós (Escolhas):}] O sistema deve ler ligações inseridas no texto através da sintaxe double-bracket (\texttt{[[Texto}Destino]]|) e criar arestas direcionadas automaticamente no grafo.
     \item[\textbf{RF03 - Parser e Compatibilidade Twee 3:}] O software deve importar e exportar ficheiros no formato textual normativo \texttt{.twee} síncrona e bidirecionalmente, preservando a sintaxe Twine e convertendo coordenadas.
     \item[\textbf{RF04 - Auditoria e Validação Estática de Fluxo:}] O sistema deve executar análises estáticas sobre a estrutura do grafo em segundo plano para detetar e alertar sobre nós órfãos (inacessíveis), ligações quebradas (que apontam para nós apagados) ou ciclos infinitos sem condição de saída lógica.
-    \item[\textbf{RF05 - Matriz de Localização Multi-idioma:}] Disponibilizar uma tabela em formato de grelha (\textit{grid}) que permita traduzir o texto das cenas para diferentes idiomas a partir de chaves dinâmicas, com suporte para exportação e importação em formato CSV.
+    \item[\textbf{RF05 - Matriz de Localização Multi-idioma:}] Disponibilizar uma tabela em formato de grelha (\textit{grid}) que permita traduzir o texto das cenas para diferentes idiomas a partir de chaves dinâmicas, com suporte para exportação e importação em formato \gls{csv}.
     \item[\textbf{RF06 - Simulador em Tempo Real (PlayMode):}] O utilizador deve poder testar a história jogando-a numa sandbox isolada dentro da aplicação que interprete as macros lógicas do SugarCube e execute código Javascript e CSS customizado.
     \item[\textbf{RF07 - Zonas de Agrupamento Visual:}] O utilizador deve ser capaz de criar áreas retangulares redimensionáveis no canvas (Zonas) para agrupar nós de cena sob um mesmo contexto visual.
     \item[\textbf{RF08 - Importação Inteligente via Conversor LLM:}] A aplicação deve permitir que o utilizador submeta uma história corrida em linguagem natural e, através de um modelo de linguagem local (Ollama) ou remoto (Gemini), a converta automaticamente em ficheiro no formato Twee 3 para gerar o respetivo grafo.
@@ -338,7 +338,7 @@ Este comportamento força o simulador a procurar caminhos narrativos raros e ram
 Para suportar as avaliações e atribuições de variáveis de estado descritas, a aplicação possui um compilador \textit{Just-In-Time} (JIT) simplificado estruturado em \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}:
 \begin{itemize}
     \item \textbf{Análise Léxica e Mapeamento:} O interpretador analisa o conteúdo textual dos nós através de varrimentos que procuram padrões de macros \texttt{<<set>>} e \texttt{<<if>>}. Traduz os operadores clássicos da linguagem SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube} (apresentada no capítulo de desenvolvimento).
-    \item \textbf{Árvore de Sintaxe Abstrata (\gls{ast}):} O interpretador de condicionais analisa blocos lógicos aninhados construindo uma AST simples que reflete a precedência de cláusulas. Esta estrutura é então avaliada em tempo de execução para calcular o valor de verdade das expressões.
+    \item \textbf{Árvore de Sintaxe Abstrata (\gls{ast}):} O interpretador de condicionais analisa blocos lógicos aninhados construindo uma \gls{ast} simples que reflete a precedência de cláusulas. Esta estrutura é então avaliada em tempo de execução para calcular o valor de verdade das expressões.
 \end{itemize}
 
 \section{Integração de Modelos de Linguagem (LLMs)}
@@ -350,7 +350,7 @@ Para evitar a necessidade de desenvolver e compilar motores de inferência de ra
 \begin{enumerate}
     \item \textbf{Instalação Local:} O autor/utilizador instala o servidor \textit{Ollama} na sua máquina local.
     \item \textbf{Execução em Segundo Plano:} O \textit{Ollama} descarrega o modelo pretendido (ex: \texttt{llama3.1:8b}) e executa a inferência local em segundo plano.
-    \item \textbf{Simulação de API:} O servidor expõe uma \gls{api} REST local na porta padrão (tipicamente \texttt{http://localhost:11434}), que simula a interface padrão de chat da OpenAI.
+    \item \textbf{Simulação de \gls{api}:} O servidor expõe uma \gls{api} REST local na porta padrão (tipicamente \texttt{http://localhost:11434}), que simula a interface padrão de chat da OpenAI.
     \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por \glspl{api} proprietárias na nuvem.
 \end{enumerate}
 

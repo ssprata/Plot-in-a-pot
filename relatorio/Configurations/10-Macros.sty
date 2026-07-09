@@ -115,7 +115,24 @@
 
 % Wrapping bot glossary and acronyms commands.
 \newcommand{\printnormalglossary}{\printnoidxglossary[sort=word]}
-\newcommand{\printacronymglossary}{\printnoidxglossary[type=\acronymtype, sort=word]}
+\newcommand{\printacronymglossary}{%
+    \chapter*{\acronymname}%
+    \begin{longtable}{@{}p{0.15\textwidth} p{0.85\textwidth}@{}}
+        \hypertarget{glo:api}{}\hypertarget{acr:api}{}\hypertarget{api}{\textbf{API}} & Application Programming Interface \\
+        \hypertarget{glo:ast}{}\hypertarget{acr:ast}{}\hypertarget{ast}{\textbf{AST}} & Árvore de Sintaxe Abstrata (\textit{Abstract Syntax Tree}) \\
+        \hypertarget{glo:bfs}{}\hypertarget{acr:bfs}{}\hypertarget{bfs}{\textbf{BFS}} & Pesquisa em Largura (\textit{Breadth-First Search}) \\
+        \hypertarget{glo:csv}{}\hypertarget{acr:csv}{}\hypertarget{csv}{\textbf{CSV}} & Comma-Separated Values \\
+        \hypertarget{glo:dag}{}\hypertarget{acr:dag}{}\hypertarget{dag}{\textbf{DAG}} & Grafo Direcionado Acíclico (\textit{Directed Acyclic Graph}) \\
+        \hypertarget{glo:dfs}{}\hypertarget{acr:dfs}{}\hypertarget{dfs}{\textbf{DFS}} & Pesquisa em Profundidade (\textit{Depth-First Search}) \\
+        \hypertarget{glo:estg}{}\hypertarget{acr:estg}{}\hypertarget{estg}{\textbf{ESTG}} & Escola Superior de Tecnologia e Gestão \\
+        \hypertarget{glo:fi}{}\hypertarget{acr:fi}{}\hypertarget{fi}{\textbf{FI}} & Ficção Interativa \\
+        \hypertarget{glo:iftf}{}\hypertarget{acr:iftf}{}\hypertarget{iftf}{\textbf{IFTF}} & Interactive Fiction Technology Foundation \\
+        \hypertarget{glo:json}{}\hypertarget{acr:json}{}\hypertarget{json}{\textbf{JSON}} & JavaScript Object Notation \\
+        \hypertarget{glo:piap}{}\hypertarget{acr:piap}{}\hypertarget{piap}{\textbf{PiaP}} & Plot in a Pot \\
+        \hypertarget{glo:regex}{}\hypertarget{acr:regex}{}\hypertarget{regex}{\textbf{Regex}} & Expressões Regulares \\
+        \hypertarget{glo:spa}{}\hypertarget{acr:spa}{}\hypertarget{spa}{\textbf{SPA}} & Single Page Application \\
+    \end{longtable}%
+}
 \newcommand{\printsymbolglossary}{\printnoidxglossary[type=symbols, sort=word]}
 
 % Logic to add or omit a blank page depending on the '\MediaOption' value.

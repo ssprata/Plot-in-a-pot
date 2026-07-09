@@ -15,7 +15,7 @@ O projeto foi executado ao longo de um período aproximado de três meses, utili
 \textbf{Fase} & \textbf{Descrição das Atividades Realizadas} & \textbf{Intervalo de Datas} \\
 \midrule
 Fase 1 & Levantamento de requisitos e desenho conceitual da arquitetura. & 17/03/2026 -- 31/03/2026 \\
-Fase 2 & Programação do núcleo (\textit{core}) lógico: parser Twee 3 e validador BFS. & 01/04/2026 -- 25/04/2026 \\
+Fase 2 & Programação do núcleo (\textit{core}) lógico: parser Twee 3 e validador \gls{bfs}. & 01/04/2026 -- 25/04/2026 \\
 Fase 3 & Interface e visualização: integração do React Flow e \textit{waypoints} nas arestas. & 26/04/2026 -- 20/05/2026 \\
 Fase 4 & Integração de IA local (Ollama) e otimização de acessibilidade visual. & 21/05/2026 -- 10/06/2026 \\
 Fase 5 & Testes com utilizadores, correção de erros e refinamento final. & 11/06/2026 -- 25/06/2026 \\
@@ -25,7 +25,7 @@ Fase 5 & Testes com utilizadores, correção de erros e refinamento final. & 11/
 
 \begin{description}
     \item[Fase 1 -- Desenho e Requisitos:] Definição das especificações funcionais e não funcionais do sistema. Elaboração do diagrama de arquitetura modular para separar a camada gráfica do processamento de grafos.
-    \item[Fase 2 -- Motor Lógico:] Implementação da biblioteca \texttt{tweeParser.js} para ler e estruturar o formato Twee 3 em memória como uma lista de adjacências bidirecional, e do motor de validação estática assente em travessias BFS.
+    \item[Fase 2 -- Motor Lógico:] Implementação da biblioteca \texttt{tweeParser.js} para ler e estruturar o formato Twee 3 em memória como uma lista de adjacências bidirecional, e do motor de validação estática assente em travessias \gls{bfs}.
     \item[Fase 3 -- Componentes de Canvas:] Acoplamento do React Flow e desenho de nós customizados, incluindo a lógica de grupos (Zonas) com gestão de pointer events, e as arestas editáveis baseadas em curvas Spline Catmull-Rom.
     \item[Fase 4 -- IA e Acessibilidade:] Configuração de chamadas HTTP para o Ollama local e validação da conversão de texto livre em nós Twee. Ajustes no design de Tailwind CSS para implementar a estética neo-brutalista de alto contraste e a redundância de traços para daltónicos.
     \item[Fase 5 -- Validação Prática:] Realização de testes estruturados com utilizadores finais para identificar bloqueios cognitivos na interface e falhas de usabilidade.
@@ -262,19 +262,19 @@ const refactorVariableInNodes = (oldName, newName, currentNodes) => {
   });
 };
 \end{lstlisting}
-\caption{Refatorização automática de variáveis lógicas baseada em Regex no VariablesModal.jsx.}
+\caption{Refatorização automática de variáveis lógicas baseada em \gls{regex} no VariablesModal.jsx.}
 \label{lst:variables-regex}
 \end{listing}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\linewidth]{Figures/variables_modal.png}
-    \caption{Diálogo de gestão de variáveis globais (VariablesModal), apresentando os tokens de dados e a renomeação segura baseada em Regex.}
+    \caption{Diálogo de gestão de variáveis globais (VariablesModal), apresentando os tokens de dados e a renomeação segura baseada em \gls{regex}.}
     \label{fig:variables-modal}
 \end{figure}
 
-\subsubsection{TranslationMatrix.jsx: Tradução Tabular e Importação/Exportação CSV}
-A tabela de localização \texttt{TranslationMatrix.jsx} expõe a grelha de tradução de strings da história. Cada linha representa uma chave (o ID de uma cena narrativa) e cada coluna representa um idioma (ex: \texttt{pt}, \texttt{en}, \texttt{es}). A alteração de uma célula propaga-se dinamicamente para o dicionário do i18next na memória local. O componente disponibiliza suporte a exportação e importação de ficheiros de localização em formato CSV em conformidade com as regras de escape de aspas da norma RFC 4180 (Listagem~\ref{lst:translation-csv}).
+\subsubsection{TranslationMatrix.jsx: Tradução Tabular e Importação/Exportação \gls{csv}}
+A tabela de localização \texttt{TranslationMatrix.jsx} expõe a grelha de tradução de strings da história. Cada linha representa uma chave (o ID de uma cena narrativa) e cada coluna representa um idioma (ex: \texttt{pt}, \texttt{en}, \texttt{es}). A alteração de uma célula propaga-se dinamicamente para o dicionário do i18next na memória local. O componente disponibiliza suporte a exportação e importação de ficheiros de localização em formato \gls{csv} em conformidade com as regras de escape de aspas da norma RFC 4180 (Listagem~\ref{lst:translation-csv}).
 
 \begin{listing}[!htpb]
 \begin{lstlisting}
@@ -312,7 +312,7 @@ const parseCSVToTranslations = (csvText) => {
   return rows;
 };
 \end{lstlisting}
-\caption{Parser de importação de ficheiros CSV com suporte à norma RFC 4180 em TranslationMatrix.jsx.}
+\caption{Parser de importação de ficheiros \gls{csv} com suporte à norma RFC 4180 em TranslationMatrix.jsx.}
 \label{lst:translation-csv}
 \end{listing}
 
@@ -369,7 +369,7 @@ export function serializeLogicToText(logic) {
 Os utilitários contêm os algoritmos semânticos, os parsers e a inteligência estrutural da plataforma, operando fora do ciclo direto de renderização do DOM:
 
 \subsubsection{tweeParser.js: Parser Bidirecional Twee 3}
-O ficheiro \texttt{tweeParser.js} é responsável por converter o layout visual do React Flow numa representação textual estável em formato Twee 3 e vice-versa. Durante a leitura, o parser interpreta os metadados JSON associados a cada passagem (que incluem a posição absoluta no ecrã e as tags) e processa as Zonas. Caso um nó seja filho de uma Zona de Agrupamento, a sua coordenada é traduzida de absoluta no ecrã para relativa ao canto superior esquerdo da zona mãe (Listagem~\ref{lst:parser-coordinate-conversion}).
+O ficheiro \texttt{tweeParser.js} é responsável por converter o layout visual do React Flow numa representação textual estável em formato Twee 3 e vice-versa. Durante a leitura, o parser interpreta os metadados \gls{json} associados a cada passagem (que incluem a posição absoluta no ecrã e as tags) e processa as Zonas. Caso um nó seja filho de uma Zona de Agrupamento, a sua coordenada é traduzida de absoluta no ecrã para relativa ao canto superior esquerdo da zona mãe (Listagem~\ref{lst:parser-coordinate-conversion}).
 
 \begin{listing}[!htpb]
 \begin{lstlisting}
@@ -397,8 +397,8 @@ export function parsePassageMetadata(metaString, zoneMap) {
 \label{lst:parser-coordinate-conversion}
 \end{listing}
 
-\subsubsection{storyValidator.js e storyTraversal.js: Travessia BFS e Exploração de Estados}
-A verificação estática do grafo de estados utiliza travessias BFS especiais em \texttt{storyTraversal.js}. Para evitar a explosão de estados e ciclos infinitos causados por incrementos repetitivos de variáveis lógicas, o ciclo principal do algoritmo limita as visitas redundantes ao mesmo nó de cena a um máximo de $K = 10$ estados lógicos distintos. Se este limiar for atingido, o ramo é podado e emite-se um alerta estrutural (Listagem~\ref{lst:traversal-loop}).
+\subsubsection{storyValidator.js e storyTraversal.js: Travessia \gls{bfs} e Exploração de Estados}
+A verificação estática do grafo de estados utiliza travessias \gls{bfs} especiais em \texttt{storyTraversal.js}. Para evitar a explosão de estados e ciclos infinitos causados por incrementos repetitivos de variáveis lógicas, o ciclo principal do algoritmo limita as visitas redundantes ao mesmo nó de cena a um máximo de $K = 10$ estados lógicos distintos. Se este limiar for atingido, o ramo é podado e emite-se um alerta estrutural (Listagem~\ref{lst:traversal-loop}).
 
 \begin{listing}[!htpb]
 \begin{lstlisting}
@@ -465,7 +465,7 @@ O fluxo de dados da aplicação funciona de forma estritamente reativa e unidire
 Quando o autor edita o texto de uma passagem no \texttt{Inspector.jsx}, um evento de alteração é propagado para o estado central em \texttt{App.jsx}. Este estado é atualizado, forçando a reavaliação de dois subsistemas independentes em segundo plano:
 \begin{enumerate}
     \item O analisador sintático extrai instantaneamente as novas arestas baseadas em ligações double-bracket e reconstrói a Lista de Adjacência Bidirecional em memória.
-    \item O validador estático (\texttt{storyValidator.js}) executa de imediato a travessia BFS sobre a nova lista de adjacência, atualizando o mapa de erros lógicos.
+    \item O validador estático (\texttt{storyValidator.js}) executa de imediato a travessia \gls{bfs} sobre a nova lista de adjacência, atualizando o mapa de erros lógicos.
 \end{enumerate}
 Qualquer erro detetado é propagado para o canvas do React Flow, que desenha alertas visuais de aviso nas bordas dos nós afetados. Se o utilizador abrir o PlayMode, o simulador acede à lista de adjacências atualizada e ao interpretador de SugarCube para processar as macros lógicas em tempo de execução sem requerer qualquer compilação ou carregamento manual.
 
@@ -481,14 +481,14 @@ A primeira série de testes foi feita a \textbf{9 de maio} no computador do prog
     \item \textbf{Qwen 3.5 9B:} ID \texttt{6488c96fa5fa}
     \item \textbf{DeepSeek Coder 6.7B:} ID \texttt{ce298d984115}
 \end{itemize}
-Além destes, também foi testado o modelo \textit{Claude} (acessível via API externa). No entanto, devido à falta de poder de processamento da gráfica local, \textbf{nenhum dos modelos locais funcionou}, deixando o computador muito lento e dando erros de falta de memória (\textit{out of memory}).
+Além destes, também foi testado o modelo \textit{Claude} (acessível via \gls{api} externa). No entanto, devido à falta de poder de processamento da gráfica local, \textbf{nenhum dos modelos locais funcionou}, deixando o computador muito lento e dando erros de falta de memória (\textit{out of memory}).
 
 Para conseguir testar estes modelos, a \textbf{19 de maio}, o orientador do projeto fez os mesmos testes no seu computador pessoal, que tem melhores capacidades para correr IA. Analisámos os ficheiros de resultados e explicamos a seguir o que falhou em cada modelo para que não pudessem ser usados diretamente na nossa aplicação:
 
 \begin{itemize}
     \item \textbf{Mistral 7B (\texttt{mistral\_7b}):} O resultado foi \textbf{inútil} para a aplicação. O modelo separou quase todas as frases do texto em passagens independentes (por exemplo, criando passagens separadas para ``Inside'' ou ``To the left''). No nosso editor, isto cria dezenas de pequenos nós para uma única cena, tornando o grafo ilegível e quebrando o fluxo da história. Além disso, acrescentou barras invertidas (\texttt{\textbackslash }) no fim de cada linha e deixou caracteres estranhos vindos do terminal (como \texttt{[3D [K}).
     \item \textbf{Gemma 4B / 2B (\texttt{gemma4\_e4b}):} O modelo tentou criar as passagens, mas \textbf{escreveu os cabeçalhos das novas passagens (os \texttt{::})} dentro do texto de outras passagens. Como o formato Twee 3 não suporta passagens aninhadas, o nosso parser lê isso como texto simples e não cria os nós no ecrã. Também deixou lixo do terminal (códigos ANSI).
-    \item \textbf{Qwen 3 8B (\texttt{qwen3\_8b}):} O resultado ficou \textbf{inutilizável devido a erros de formatação}. O modelo incluiu o seu raciocínio interno (\textit{``Thinking...''}) mesmo ao início da resposta, o que faz com que o nosso importador falhe imediatamente ao tentar ler o ficheiro. Além disso, deixou um bloco JSON incompleto na posição das passagens (escreveu apenas \texttt{\char`173"} sem fechar), o que faz o parser de JSON falhar, e manteve alguns códigos ANSI.
+    \item \textbf{Qwen 3 8B (\texttt{qwen3\_8b}):} O resultado ficou \textbf{inutilizável devido a erros de formatação}. O modelo incluiu o seu raciocínio interno (\textit{``Thinking...''}) mesmo ao início da resposta, o que faz com que o nosso importador falhe imediatamente ao tentar ler o ficheiro. Além disso, deixou um bloco \gls{json} incompleto na posição das passagens (escreveu apenas \texttt{\{"} sem fechar), o que faz o parser de \gls{json} falhar, e manteve alguns códigos ANSI.
     \item \textbf{Qwen 3.5 9B (\texttt{qwen3.5\_9b}):} Foi o modelo que estruturou melhor a história, mas \textbf{ainda não é totalmente funcional}. Tal como o Qwen 3, escreveu o texto de pensamento (\textit{``Thinking...''}) no início, bloqueando a importação direta. Criou também nós órfãos (como \texttt{TakeLantern} e \texttt{DropLantern}) que estão descritos no ficheiro mas não têm nenhuma ligação (seta) a apontar para eles a partir das outras cenas, deixando partes do jogo inacessíveis.
 \end{itemize}
 
@@ -511,7 +511,7 @@ Os módulos de cálculo do \textit{Plot in a Pot} operam de forma síncrona no l
 \textbf{Subsistema / Algoritmo} & \textbf{Complexidade Temporal} & \textbf{Complexidade Espacial} \\
 \midrule
 Parser Bidirecional Twee 3 & $\mathcal{O}(L)$ & $\mathcal{O}(V + E)$ \\
-Validador de Espaço de Estados (BFS) & $\mathcal{O}(V + E \cdot K)$ & $\mathcal{O}(V \cdot K + E)$ \\
+Validador de Espaço de Estados (\gls{bfs}) & $\mathcal{O}(V + E \cdot K)$ & $\mathcal{O}(V \cdot K + E)$ \\
 Interpolação de Arestas (Catmull-Rom) & $\mathcal{O}(W)$ & $\mathcal{O}(W)$ \\
 \bottomrule
 \end{tabularx}
@@ -523,7 +523,7 @@ Interpolação de Arestas (Catmull-Rom) & $\mathcal{O}(W)$ & $\mathcal{O}(W)$ \\
 \end{minipage}
 \end{table}
 
-O parser opera com complexidade temporal linear $\mathcal{O}(L)$ na leitura do texto completo. O validador BFS especial explora o espaço de estados com limite regulador $K$, garantindo complexidade controlada mesmo em grafos com ciclos infinitos, uma vez que a paragem é forçada no pior cenário após $K$ visitas redundantes ao mesmo vértice. O motor de splines Catmull-Rom opera de forma linear com base no número de waypoints da aresta ($W$), processando apenas as curvas ativas visíveis no ecrã.
+O parser opera com complexidade temporal linear $\mathcal{O}(L)$ na leitura do texto completo. O validador \gls{bfs} especial explora o espaço de estados com limite regulador $K$, garantindo complexidade controlada mesmo em grafos com ciclos infinitos, uma vez que a paragem é forçada no pior cenário após $K$ visitas redundantes ao mesmo vértice. O motor de splines Catmull-Rom opera de forma linear com base no número de waypoints da aresta ($W$), processando apenas as curvas ativas visíveis no ecrã.
 
 \subsection{Benchmarks de Desempenho Empíricos}
 Para medir a velocidade real de execução das rotinas da aplicação, montou-se um ambiente de testes sintéticos simulando três escalas crescentes de projetos de autoria. Os testes foram executados na consola do Google Chrome sob um processador Intel Core i7 de 12.ª geração com 16\,GB de RAM. Os tempos médios obtidos após 50 execuções sucessivas encontram-se sumarizados na Tabela~\ref{tab:benchmarks-desempenho}.
@@ -534,7 +534,7 @@ Para medir a velocidade real de execução das rotinas da aplicação, montou-se
 \label{tab:benchmarks-desempenho}
 \begin{tabularx}{\textwidth}{LRRR}
 \toprule
-\textbf{Escala do Projeto} & \textbf{Parsing Twee 3} & \textbf{Validação Lógica (BFS)} & \textbf{Sincronização Canvas (React Flow)} \\
+\textbf{Escala do Projeto} & \textbf{Parsing Twee 3} & \textbf{Validação Lógica (\gls{bfs})} & \textbf{Sincronização Canvas (React Flow)} \\
 \midrule
 Pequeno (10 nós / 15 arestas) & 2.1\,ms & 4.3\,ms & 12.5\,ms \\
 Médio (50 nós / 80 arestas) & 8.4\,ms & 12.8\,ms & 28.1\,ms \\
@@ -549,7 +549,7 @@ Grande (150 nós / 240 arestas) & 21.6\,ms & 34.2\,ms & 62.4\,ms \\
 \end{minipage}
 \end{table}
 
-Os resultados práticos demonstram que mesmo para narrativas de grande envergadura (150 nós de cena interconectados com 240 escolhas lógicas e condicionais), o tempo total de processamento interno síncrono (parsing e validação BFS) totaliza 55.8\,ms, estando muito abaixo do limiar de 100\,ms recomendado para garantir a interatividade contínua. A latência extra introduzida pela renderização do React Flow (62.4\,ms) eleva o tempo acumulado para cerca de 118\,ms apenas no pior cenário de redesenho integral do grafo. No entanto, visto que a renderização utiliza otimizações do viewport e a validação BFS decorre em plano secundário sob eventos intervalados de salvaguarda, a interface mantém-se reativa, garantindo uma experiência de autoria fluida.
+Os resultados práticos demonstram que mesmo para narrativas de grande envergadura (150 nós de cena interconectados com 240 escolhas lógicas e condicionais), o tempo total de processamento interno síncrono (parsing e validação \gls{bfs}) totaliza 55.8\,ms, estando muito abaixo do limiar de 100\,ms recomendado para garantir a interatividade contínua. A latência extra introduzida pela renderização do React Flow (62.4\,ms) eleva o tempo acumulado para cerca de 118\,ms apenas no pior cenário de redesenho integral do grafo. No entanto, visto que a renderização utiliza otimizações do viewport e a validação \gls{bfs} decorre em plano secundário sob eventos intervalados de salvaguarda, a interface mantém-se reativa, garantindo uma experiência de autoria fluida.
 
 \section{Metodologia dos Testes de Utilizador}
 Para validar a flexibilidade e usabilidade do \textit{Plot in a Pot}, foi planeada e executada uma bateria de testes qualitativos e quantitativos com um grupo diversificado de participantes.
@@ -569,8 +569,8 @@ Os testes foram realizados com seis utilizadores (U1 a U6) com perfis distintos,
 Cada participante foi instruído a realizar um conjunto de quatro tarefas estruturadas na aplicação, sem qualquer ajuda externa:
 \begin{enumerate}
     \item \textbf{Tarefa 1 (Criação Narrativa):} Criar uma história ramificada simples com cinco cenas, introduzindo uma variável (e.g., chave) e uma condicional de saída baseada nessa variável.
-    \item \textbf{Tarefa 2 (Validação e Correção):} Importar um ficheiro \texttt{.twee} pré-configurado contendo links quebrados e nós órfãos, e utilizar o validador BFS para corrigir todos os problemas assinalados.
-    \item \textbf{Tarefa 3 (Tradução e Localização):} Abrir a matriz de localização e traduzir três chaves de cena para inglês, exportando o resultado em formato CSV.
+    \item \textbf{Tarefa 2 (Validação e Correção):} Importar um ficheiro \texttt{.twee} pré-configurado contendo links quebrados e nós órfãos, e utilizar o validador \gls{bfs} para corrigir todos os problemas assinalados.
+    \item \textbf{Tarefa 3 (Tradução e Localização):} Abrir a matriz de localização e traduzir três chaves de cena para inglês, exportando o resultado em formato \gls{csv}.
     \item \textbf{Tarefa 4 (Simulação Ativa):} Correr a simulação interativa (\textit{PlayMode}) e acionar o \textit{Smart Walker} para testar automaticamente os caminhos da história.
 \end{enumerate}
 
@@ -593,12 +593,12 @@ A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizador
 
 \begin{itemize}
     \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias no ordenamento espacial, mas evidenciando falhas em fluxos de lógica complexa.
-    \item \textit{Feedback e Falhas Identificadas:} O utilizador U2 observou que renomear uma variável lógica global exigia alterar manualmente o texto de todas as passagens da história, o que gerava erros de digitação e quebrava a simulação. Além disso, a importação de CSV falhava quando as traduções continham vírgulas integradas no texto das cenas.
-    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se o painel \texttt{VariablesModal.jsx} com refatorização automática de nomes de variáveis via expressões regulares com barreira de palavra (\textit{word boundaries}) de forma síncrona. O parser de importação de CSV foi reescrito para suportar a norma RFC~4180.
+    \item \textit{Feedback e Falhas Identificadas:} O utilizador U2 observou que renomear uma variável lógica global exigia alterar manualmente o texto de todas as passagens da história, o que gerava erros de digitação e quebrava a simulação. Além disso, a importação de \gls{csv} falhava quando as traduções continham vírgulas integradas no texto das cenas.
+    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se o painel \texttt{VariablesModal.jsx} com refatorização automática de nomes de variáveis via expressões regulares com barreira de palavra (\textit{word boundaries}) de forma síncrona. O parser de importação de \gls{csv} foi reescrito para suportar a norma RFC~4180.
 \end{itemize}
 
 \subsection{Terceira Leva: Protótipo Final (Junho de 2026)}
-A terceira e última leva de testes realizou-se entre \textit{15 e 20 de junho de 2026} com o grupo completo de seis participantes (U1 a U6), avaliando o sistema final integrado (incluindo o PlayMode, Smart Walker, validador BFS e interface neo-brutalista de alto contraste).
+A terceira e última leva de testes realizou-se entre \textit{15 e 20 de junho de 2026} com o grupo completo de seis participantes (U1 a U6), avaliando o sistema final integrado (incluindo o PlayMode, Smart Walker, validador \gls{bfs} e interface neo-brutalista de alto contraste).
 
 \subsubsection{Métricas de Conclusão e Tempos de Execução}
 Durante a sessão final de testes, foram registados os tempos de conclusão (em minutos) das quatro tarefas descritas na metodologia. Os resultados quantitativos encontram-se sumarizados na Tabela~\ref{tab:resultados-tarefas}.
@@ -625,7 +625,7 @@ U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
 \smallskip
 \begin{minipage}{\linewidth}
 \centering
-\small \textit{* Nota: O utilizador U4 não concluiu com sucesso a Tarefa 2 (validação e correção de caminhos lógicos com o validador BFS) no tempo limite estabelecido.}
+\small \textit{* Nota: O utilizador U4 não concluiu com sucesso a Tarefa 2 (validação e correção de caminhos lógicos com o validador \gls{bfs}) no tempo limite estabelecido.}
 \end{minipage}
 \end{table}
 \vfill

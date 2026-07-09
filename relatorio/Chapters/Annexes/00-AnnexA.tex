@@ -13,16 +13,16 @@ O cabeçalho de uma passagem deve ser escrito numa única linha, obedecendo à s
 \end{verbatim}
 \begin{itemize}
     \item \texttt{::} -- Delimitador inicial obrigatório. Deve ser posicionado no início de uma linha sem espaços precedentes.
-    \item \texttt{NomeDaPassagem} -- O título identificador único da passagem. Não pode conter os caracteres \texttt{[} ou \texttt{\char`173} e é sensível a maiúsculas/minúsculas (\textit{case-sensitive}).
+    \item \texttt{NomeDaPassagem} -- O título identificador único da passagem. Não pode conter os caracteres \texttt{[} ou \texttt{\{} e é sensível a maiúsculas/minúsculas (\textit{case-sensitive}).
     \item \texttt{[tags]} -- Lista opcional de palavras-chave separadas por espaço, delimitada por parênteses retos.
-    \item \texttt{\char`173metadados\char`175} -- Objeto opcional em formato JSON delimitado por chavetas, contendo propriedades de layout ou de sistema.
+    \item \texttt{\{metadados\}} -- Objeto opcional em formato \gls{json} delimitado por chavetas, contendo propriedades de layout ou de sistema.
 \end{itemize}
 
 \section{Especificação de Metadados de Posicionamento}
 A especificação Twee 3 padroniza as coordenadas espaciais das passagens para permitir que editores gráficos visualizem o grafo de forma coerente.
 
-\subsection{Campos de Geometria JSON}
-Os seguintes campos são reservados dentro do objeto de metadados JSON do cabeçalho:
+\subsection{Campos de Geometria \gls{json}}
+Os seguintes campos são reservados dentro do objeto de metadados \gls{json} do cabeçalho:
 \begin{itemize}
     \item \texttt{"position"} -- Um objeto contendo as propriedades numéricas de posição absoluta no ecrã:
     \begin{itemize}
