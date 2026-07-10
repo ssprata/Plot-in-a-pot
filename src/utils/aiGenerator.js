@@ -7,19 +7,12 @@ function generateIfid() {
 
 //gera um prompt para o modelo de IA, com instruções detalhadas sobre como formatar a saída em Twee 3 (SugarCube)
 function buildSystemPrompt(ifid) {
-  return `És um conversor estrito de texto para código Twee 3 (SugarCube). A tua única função é devolver código. Não podes falar, não podes explicar, e não podes usar blocos de código markdown (como \`\`\`twee).
+  return `[ATENÇÃO: Se fores um modelo de raciocínio (CoT/thinking), limita o teu raciocínio ao mínimo absoluto. Vai direto ao ponto.]
+Converte a história fornecida em código fonte no formato Twee 3 com macros SugarCube.
 
-REGRAS OBRIGATÓRIAS:
-1. O ficheiro arranca obrigatoriamente com os nós :: StoryTitle e :: StoryData.
-2. O cabeçalho de CADA nova cena tem de começar com ":: " seguido do nome. Nunca uses parênteses retos para cabeçalhos.
-3. Para criar opções no final das cenas, usa estritamente o formato [[Texto|Nome da Cena]].
-
-EXEMPLO DE ENTRADA DE TEXTO:
-Acordas num quarto. Podes explorar a sala ou voltar a dormir. Se explorares a sala, encontras uma espada. Se dormires, o jogo acaba.
-
-EXEMPLO DA SAÍDA ESPERADA:
+Estrutura obrigatória do ficheiro:
 :: StoryTitle
-História Gerada
+Fuga da Prisao
 
 :: StoryData
 {
@@ -30,18 +23,19 @@ História Gerada
   "zoom": 1
 }
 
+:: StoryInit
+<<set $moedas to 0>>
+
 :: Inicio
-Acordas num quarto.
-[[Explorar a sala|Sala]]
-[[Voltar a dormir|Fim]]
+[Texto da cena inicial com links no formato [[Texto|Identificador]]]
 
-:: Sala
-Encontras uma espada.
+Regras de Formatação:
+- Inicializa as variáveis na secção ":: StoryInit" usando a macro <<set $variavel to valor>>.
+- Cada nó começa com "::" seguido de um identificador alfanumérico simples sem espaços ou acentos (ex: :: CenaCorredor).
+- Usa o formato de links nativos: [[Texto de Exibição|Identificador]].
+- Não incluas blocos de código Markdown (sem aspas triplas \`\`\`), notas introdutórias ou conversação. Devolve apenas o código Twee 3 bruto.
 
-:: Fim
-O jogo acaba.
-
-AGORA CONVERTE ESTA HISTÓRIA EXATAMENTE COM O MESMO PADRÃO:
+História para converter:
 `;
 }
 
@@ -78,7 +72,9 @@ export async function generateFromGemini(storyText, apiKey) {
           parts: [{ text: fullPrompt }]
         }],
         generationConfig: {
-          temperature: 0.2,
+          "temperature": 0.2,
+          "num_predict": -1,
+          "num_ctx": 8192
         }
       })
     });
@@ -117,7 +113,7 @@ export async function generateFromGemini(storyText, apiKey) {
 export async function generateFromOllama(storyText, modelName = 'llama3') {
   // O endpoint padrão onde o Ollama escuta pedidos locais
   const endpoint = 'http://localhost:11434/api/generate';
-  const fullPrompt = buildSystemPrompt(generateIfid()) + storyText;
+  const systemPrompt = buildSystemPrompt(generateIfid());
 
   try {
     const response = await fetch(endpoint, {
@@ -125,10 +121,14 @@ export async function generateFromOllama(storyText, modelName = 'llama3') {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: modelName,
-        prompt: fullPrompt,
+        system: systemPrompt,
+        prompt: storyText,
         stream: false,
         options: {
-          temperature: 0.2
+          temperature: 0.7,
+          repeat_penalty: 1.2,
+          num_predict: 8192,
+          num_ctx: 16384
         }
       })
     });
