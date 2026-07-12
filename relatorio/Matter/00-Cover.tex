@@ -4,7 +4,7 @@
     \parbox[b][\paperheight]{\paperwidth}{%
     \vfill
     \centering
-    \includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{Figures/Theme/Front-Page-BG.pdf}%
+    \includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{Figures/Theme/Cover-BG.pdf}%
     \vfill
     }}}
 }{
@@ -18,10 +18,9 @@
     }}}
 }
 
-\AddToShipoutPictureBG*{\BackgroundPicCover}
-
-\newgeometry{margin=1.98cm, top=2.15cm, bottom=1.47cm}
 \begin{titlepage}
+    \AddToShipoutPictureBG*{\BackgroundPicCover}
+    \newgeometry{margin=1.98cm, top=2.15cm, bottom=1.47cm}
     \latofont
     \ifthenelse{\equal{\CoverOption}{classic}}{\color{white}}{\color{frontpagedark}}
     \vspace*{\baselineskip}
