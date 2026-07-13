@@ -126,7 +126,7 @@ Apresenta-se, de seguida, uma análise detalhada das principais referências do 
 \subsection{Twine}
 Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferramenta mais popular na comunidade de \gls{ni} baseada em texto.
 \begin{itemize}
-    \item \textbf{Vantagens:} Extremamente acessível (sem barreira de programação para escrita básica); visualização clara baseada em nós gráficos no canvas; open-source e gratuito (distribuído sob a licença GPL v3, permitindo qualquer utilização, incluindo comercial, sem restrições); rápido para prototipagem rápida.
+    \item \textbf{Vantagens:} Extremamente acessível (sem barreira de programação para escrita básica); visualização clara baseada em nós gráficos no canvas; open-source e gratuito (distribuído sob a licença GPL v3, permitindo qualquer utilização, incluindo comercial, sem restrições); rápido para prototipagem.
     \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
 \end{itemize}
 
@@ -142,8 +142,8 @@ O fluxo de trabalho central do Twine assenta na criação de passagens (segmento
 \subsection{Ink (Inkle Studios)}
 O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}). A sua escrita é efetuada no editor Inky (apresentado na Figura~\ref{fig:screenshot-ink}), que oferece pré-visualização em tempo real da narrativa criada.
 \begin{itemize}
-    \item \textbf{Vantagens:} Altamente poderosa para controlo fino de estados narrativos, condicionais complexas e ramificações complexas; excelente integração técnica com motores de jogo; licenciada sob a licença MIT (totalmente livre); escala muito bem para projetos de grande envergadura.
-    \item \textbf{Limitações:} Não é uma ferramenta visual (opera de forma textual como scripting acoplado a motores de jogo), o que dificulta o planeamento geográfico e a deteção de redundâncias de caminhos por autores não-técnicos; exige conhecimentos de lógica de programação.
+    \item \textbf{Vantagens:} Altamente poderosa para o controlo de estados narrativos através de variáveis locais e globais, condicionais que ativam escolhas dinamicamente e gestão de ramificações complexas assente em sub-nós lógicos (\textit{stitches} e \textit{gathers}); excelente integração técnica com motores de jogo (tais como Unity e Unreal Engine, que contam com suporte oficial da editora); licenciada sob a licença MIT (totalmente livre); escala muito bem para projetos de grande envergadura.
+    \item \textbf{Limitações:} Não é uma ferramenta visual, operando estritamente através de ficheiros de texto estruturados. A ausência de um canvas ou representação espacial de grafos de nós dificulta o planeamento geográfico da narrativa, tornando impossível visualizar de forma imediata o fluxo geral ou detetar de forma intuitiva incoerências, ciclos infinitos e becos sem saída sem uma análise exaustiva e manual de milhares de linhas de código por parte de autores não-técnicos; exige fortes conhecimentos de lógica de programação.
 \end{itemize}
 
 \begin{figure}[htbp]
