@@ -1,53 +1,33 @@
 \chapter{Introdução}
 \label{cp:introduction}
 
-O desenvolvimento de jogos e narrativas interativas tem vindo a ganhar uma importância crescente no panorama do entretenimento e da educação. Diferente do cinema ou da literatura tradicional, a \gls{fi} coloca o utilizador no centro da tomada de decisões, permitindo-lhe moldar o rumo dos acontecimentos através das suas escolhas. Esta não-linearidade narrativa, no entanto, introduz uma complexidade acrescida na escrita e no planeamento das histórias, exigindo ferramentas capazes de gerir fluxos de informação complexos e lógica de estados dinâmicos.
+O desenvolvimento de jogos e narrativas interativas tem vindo a ganhar uma importância crescente no panorama do entretenimento e da educação. Diferente do cinema ou da literatura tradicional, uma \gls{ni} coloca o utilizador no centro da tomada de decisões, permitindo-lhe moldar o rumo dos acontecimentos através das suas escolhas. Esta não-linearidade narrativa, no entanto, introduz uma complexidade acrescida na escrita e no planeamento das histórias, exigindo ferramentas capazes de gerir fluxos de informação complexos e lógica de estados dinâmicos.
 
 Neste contexto surge o \textit{Plot in a Pot}, um editor visual e simulador de narrativas interativas. O projeto foi concebido para resolver os principais desafios enfrentados pelos autores de histórias não-lineares, combinando uma interface visual de alto desempenho baseada em grafos direcionados com um motor de simulação que suporta a execução de código e lógica em tempo real.
 
 \section{Objeto do Trabalho}
-O objeto deste projeto consiste no desenvolvimento do \gls{piap}, uma aplicação e ambiente de desenvolvimento concebido para a criação, estruturação, simulação e tradução de narrativas interativas e não-lineares. O sistema foca-se na integração e suporte nativo ao ecossistema do motor Twine, operando especificamente com o formato de ficheiros Twee (versão 3) e com a macro-linguagem SugarCube. Através de uma interface gráfica baseada em grafos, a ferramenta permite a autores e \textit{game designers} gerir ramificações complexas e bases de dados de localização de uma forma unificada.
+O objeto deste projeto consiste no desenvolvimento do \gls{piap}, uma aplicação e ambiente de desenvolvimento concebido para a criação, estruturação, simulação e tradução de narrativas interativas e não-lineares. O sistema foca-se na integração e suporte nativo ao ecossistema do motor Twine, operando especificamente com o formato de ficheiros Twee (versão 3) e com a macro-linguagem SugarCube. Através de uma interface gráfica baseada em grafos, a ferramenta permite a autores e \textit{narrative designers} gerir ramificações complexas e bases de dados de localização de uma forma unificada.
 
 \section{Justificação e Pertinência do Tema}
-O \textit{design} de narrativas para jogos não-lineares enfrenta frequentemente problemas severos de escala, onde árvores de diálogo e escolhas crescem exponencialmente, tornando-se difíceis de rastrear e propensas a erros lógicos. Embora o Twine seja uma das ferramentas de referência da comunidade independente e académica \citep{IFTFGDC2026} para a prototipagem rápida de \gls{fi}, o desenvolvimento de projetos profissionais de grande escala é severamente limitado pela falta de ferramentas nativas para a gestão multi-idioma (localização) e pela ausência de validadores estáticos de fluxo que previnam caminhos mortos antes da compilação.
+O \textit{design} de narrativas para jogos não-lineares enfrenta frequentemente problemas severos de escala, onde árvores de diálogo e escolhas crescem exponencialmente, tornando-se difíceis de procurar e propensas a erros lógicos. Embora o Twine seja uma das ferramentas de referência da comunidade independente e académica \citep{IFTFGDC2026} para a prototipagem rápida de \gls{fi}, o desenvolvimento de projetos profissionais de grande escala é severamente limitado pela falta de ferramentas nativas para a gestão multi-idioma (localização) e pela ausência de validadores estáticos de fluxo que previnam caminhos mortos antes da compilação.
 
 O \gls{piap} justifica-se ao resolver esta lacuna, introduzindo uma estética neo-brutalista de alto contraste que otimiza o espaço de trabalho e melhora a acessibilidade de autores com limitações de visão \citep{Babich2023, Loranger2022}, permitindo isolar cadeias de texto rígidas (\textit{hardcoded}) através de um sistema abstrato de chaves de tradução dinâmicas e oferecendo segurança matemática no mapeamento de rotas narrativas.
 
 \section{Objetivos do Trabalho}
 \subsection{Objetivo Geral}
-Desenvolver uma plataforma \textit{web} modular que unifique a edição visual de grafos de histórias interativas Twee com um motor (\textit{engine}) integrado de localização multi-idioma e validação de caminhos lógicos.
+Desenvolver uma plataforma \textit{web} modular que unifique a edição visual de grafos de histórias interativas Twee com um motor integrado de localização multi-idioma e validação de caminhos lógicos.
 
 \subsection{Objetivos Específicos}
 Para a concretização do objetivo geral, definiram-se os seguintes objetivos específicos:
 \begin{enumerate}
-    \item \textbf{Interface Visual Neo-Brutalista e Acessível:} Implementar um \textit{canvas} de grafos interativo e de alto desempenho no estilo neo-brutalista com forte contraste visual, que suporte a criação de nós de cena, zonas de agrupamento visual, \textit{scripts} (JavaScript) e folhas de estilo (CSS), facilitando a utilização por pessoas com daltonismo.
-    \item \textbf{Otimização Visual com Waypoints:} Desenvolver um algoritmo de rota interativo através de \textit{waypoints} geométricos nas arestas para otimização visual e organização do espaço de trabalho.
-    \item \textbf{Parser Bidirecional Twee3:} Construir um analisador (\textit{parser}) bidirecional síncrono em tempo real capaz de ler a sintaxe Twine (\lstinline|[[Link|Destino]]|) e reconstruir a topologia do grafo instantaneamente, mantendo a compatibilidade e convertendo coordenadas.
-    \item \textbf{Matriz de Localização Integrada:} Criar uma matriz de localização baseada em grelha \textit{Flexbox} com suporte para importação/exportação em formato \gls{csv} e tradução \textit{inline} por células.
-    \item \textbf{Validador de Fluxo baseado em Listas de Adjacência:} Desenvolver um motor de verificação estática baseado em listas de adjacência para detetar nós inacessíveis/órfãos, becos sem saída ou \textit{loops} infinitos na narrativa.
-    \item \textbf{Simulador Imersivo e Tutorial Jogável:} Implementar um ambiente de simulação em tempo real (\textit{PlayMode}) e um tutorial jogável (\textit{Playable Tutorial}) para validação pedagógica das regras do editor.
+    \item \textbf{Interface Gráfica Baseada em Grafos:} Desenvolver um \textit{canvas} interativo de alto desempenho que utilize uma estética de alto contraste baseada no estilo \textit{neo-brutalista}. Este ambiente deve permitir a manipulação visual de nós narrativos, blocos de agrupamento por zonas, \textit{scripts} em JavaScript e estilização em CSS.
+    \item \textbf{Encaminhamento Geométrico de Arestas:} Desenvolver um algoritmo de vetorização que utilize \textit{waypoints} interativos nas ligações entre nós, prevenindo a sobreposição visual de caminhos e otimizando a organização do espaço de trabalho.
+    \item \textbf{Sincronização Bidirecional com Formato Twee3:} Construir um interpretador (\textit{parser}) capaz de traduzir a sintaxe de Twee3 (\lstinline{[[Link|Destino]]}) na topologia visual do grafo, gerindo a conversão de coordenadas espaciais de forma transparente.
+    \item \textbf{Módulo de Internacionalização Nativo:} Desenvolver uma matriz de localização flexível que permita a tradução direta por células e suporte a importação e exportação de dados em formato \gls{csv}, centralizando a gestão multi-idioma.
+    \item \textbf{Análise Estática de Integridade Narrativa:} Implementar um motor de validação baseado em listas de adjacência para auditar o grafo, detetando de forma automática anomalias estruturais como nós isolados, becos sem saída lógicos ou ciclos fechados de \textit{loops} infinitos.
+    \item \textbf{Automação Narrativa por Inteligência Artificial:} Projetar uma arquitetura de inferência local que utilize Modelos de Linguagem de Grande Escala (\textit{LLMs}) para processar narrativas escritas em linguagem natural e convertê-las automaticamente na estrutura formal de grafos do motor de jogo.
+    \item \textbf{Ambiente de Execução e Aprendizagem:} Criar um simulador integrado (\textit{PlayMode}) para testes imediatos do fluxo narrativo e um módulo pedagógico interativo (\textit{Playable Tutorial}) para a introdução assistida às regras e funcionalidades do editor.
 \end{enumerate}
-
-\section{Requisitos Gerais do Sistema}
-\label{sec:requisitos-gerais-sistema}
-Com o intuito de delimitar o âmbito do projeto e as necessidades fundamentais a que o \gls{piap} responde, foram estabelecidos os seguintes requisitos gerais que guiam o comportamento e a utilidade da aplicação:
-\begin{itemize}
-    \item \textbf{Modelador Narrativo Visual:} A aplicação deve disponibilizar uma interface gráfica baseada em grafos que permita modelar e ligar de forma dinâmica as cenas da história.
-    \item \textbf{Motor de Tradução Integrado:} Deve fornecer um sistema para traduzir e localizar textos diretamente na ferramenta de autoria, eliminando a dispersão de ficheiros externos.
-    \item \textbf{Análise e Validação de Consistência:} O sistema deve auditar as ligações criadas para detetar inconsistências como becos sem saída, nós isolados ou ciclos sem saída apropriada.
-    \item \textbf{Compatibilidade com o Ecossistema Twine:} O software deve garantir interoperabilidade bidirecional com o formato padrão Twee 3 (SugarCube), permitindo importar e exportar ficheiros sem perda de metadados.
-    \item \textbf{Simulação em Tempo Real:} Fornecer um modo interativo para jogar, depurar e testar a narrativa diretamente na ferramenta sem necessidade de compilação externa.
-    \item \textbf{Conversão Inteligente de Texto via IA:} O sistema deve permitir que autores escrevam histórias corridas em linguagem natural e convertam esses textos em grafos estruturados no formato Twee automaticamente usando inteligência artificial local.
-\end{itemize}
-
-\section{Métodos e Técnicas Utilizadas}
-O desenvolvimento do projeto apoiou-se em metodologias ágeis com ciclos rápidos de prototipagem e testes de esforço (\textit{stress}) de dados. Ao nível tecnológico e arquitetural, foram utilizadas as seguintes ferramentas e conceitos:
-\begin{itemize}
-    \item \textbf{Frontend e Canvas de Grafos:} Desenvolvimento baseado na biblioteca React \citep{ReactReference}. A escolha justifica-se pela sua elevada popularidade e suporte na indústria \citep{StatistaFrameworks2025} e, fundamentalmente, pela familiaridade e experiência prévia da equipa de desenvolvimento com este ecossistema, o que contribuiu para mitigar a curva de aprendizagem e acelerar a entrega do projeto. A manipulação interativa do grafo e renderização visual foram suportadas pelo ecossistema React Flow \citep{ReactFlowReference}, selecionado pela sua integração direta com a arquitetura baseada em componentes do React.
-    \item \textbf{Algoritmia e Teoria de Grafos:} Utilização de estruturas de dados baseadas em listas de adjacências para a implementação de algoritmos de pesquisa (\gls{bfs} e \gls{dfs}) que validam de forma estática e iterativa a integridade dos caminhos e simulam estados de variáveis em memória.
-    \item \textbf{Internacionalização e Parsing:} Integração da biblioteca i18next em conjunto com algoritmos de substituição baseados em \glspl{regex} para intercetar macros SugarCube e injetar as chaves da base de dados de localização em tempo real.
-\end{itemize}
-
 \section{Estrutura do Documento}
 Este relatório está estruturado em cinco capítulos principais. Além desta introdução, o documento apresenta:
 \begin{itemize}

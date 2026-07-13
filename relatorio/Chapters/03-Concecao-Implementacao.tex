@@ -35,6 +35,18 @@ O fluxo de funcionamento da aplicação e a relação de comunicação entre est
 \label{fig:arquitetura-conceptual}
 \end{figure}
 
+\section{Requisitos Gerais do Sistema}
+\label{sec:requisitos-gerais-sistema}
+Com o intuito de delimitar o âmbito do projeto e as necessidades fundamentais a que o \gls{piap} responde, foram estabelecidos os seguintes requisitos gerais que guiam o comportamento e a utilidade da aplicação:
+\begin{itemize}
+    \item \textbf{Modelador Narrativo Visual:} A aplicação deve disponibilizar uma interface gráfica baseada em grafos que permita modelar e ligar de forma dinâmica as cenas da história.
+    \item \textbf{Motor de Tradução Integrado:} Deve fornecer um sistema para traduzir e localizar textos diretamente na ferramenta de autoria, eliminando a dispersão de ficheiros externos.
+    \item \textbf{Análise e Validação de Consistência:} O sistema deve auditar as ligações criadas para detetar inconsistências como becos sem saída, nós isolados ou ciclos sem saída apropriada.
+    \item \textbf{Compatibilidade com o Ecossistema Twine:} O software deve garantir interoperabilidade bidirecional com o formato padrão Twee 3 (SugarCube), permitindo importar e exportar ficheiros sem perda de metadados.
+    \item \textbf{Simulação em Tempo Real:} Fornecer um modo interativo para jogar, depurar e testar a narrativa diretamente na ferramenta sem necessidade de compilação externa.
+    \item \textbf{Conversão Inteligente de Texto via IA:} O sistema deve permitir que os autores submetam histórias corridas em linguagem natural e convertam esses textos em grafos estruturados no formato Twee automaticamente, recorrendo a modelos de inteligência artificial locais.
+\end{itemize}
+
 \section{Requisitos Funcionais e Não Funcionais}
 \label{sec:requisitos-funcionais-nao-funcionais}
 Para a materialização prática do sistema, os objetivos e requisitos gerais delineados na introdução foram detalhados sob a forma de requisitos técnicos. Estes dividem-se em funcionais (o que o sistema deve executar diretamente) e não funcionais (as restrições técnicas, de qualidade e usabilidade sob as quais o sistema deve operar).
@@ -58,6 +70,14 @@ Para a materialização prática do sistema, os objetivos e requisitos gerais de
     \item[\textbf{RNF03 - Desempenho e Fluidez:}] O canvas do React Flow e a conversão do parser síncrono devem suportar dezenas de nós em simultâneo com latência de interação e atualização abaixo de 100 milissegundos.
     \item[\textbf{RNF04 - Privacidade e Soberania de Dados:}] Todos os dados introduzidos, incluindo ficheiros importados, tabelas de tradução e dados submetidos para inteligência artificial no Ollama local, devem permanecer estritamente no armazenamento local do utilizador para garantir segurança absoluta.
 \end{description}
+
+\section{Métodos e Técnicas Utilizadas}
+O desenvolvimento do projeto apoiou-se em metodologias ágeis com ciclos rápidos de prototipagem e testes de funcionalidades. Ao nível tecnológico e arquitetural, foram utilizadas as seguintes ferramentas e conceitos:
+\begin{itemize}
+    \item \textbf{Frontend e Canvas de Grafos:} Desenvolvimento baseado na biblioteca React \citep{ReactReference}. A escolha justifica-se pela sua elevada popularidade e suporte na indústria \citep{StatistaFrameworks2025} e, fundamentalmente, pela familiaridade e experiência prévia da equipa de desenvolvimento com este ecossistema, o que contribuiu para mitigar a curva de aprendizagem e acelerar a entrega do projeto. A manipulação interativa do grafo e renderização visual foram suportadas pelo ecossistema React Flow \citep{ReactFlowReference}, selecionado pela sua integração direta com a arquitetura baseada em componentes do React.
+    \item \textbf{Algoritmia e Teoria de Grafos:} Utilização de estruturas de dados baseadas em listas de adjacências para a implementação de algoritmos de pesquisa (\gls{bfs} e \gls{dfs}) que validam de forma estática e iterativa a integridade dos caminhos e simulam estados de variáveis em memória.
+    \item \textbf{Internacionalização e Parsing:} Integração da biblioteca i18next em conjunto com algoritmos de substituição baseados em \glspl{regex} para intercetar macros SugarCube e injetar as chaves da base de dados de localização em tempo real.
+\end{itemize}
 
 \section{Enquadramento e Implementação Tecnológica}
 \label{sec:enquadramento-tecnologico}
