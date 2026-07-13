@@ -12,6 +12,22 @@ Para ultrapassar estas limitações estruturais, \textit{frameworks} recentes re
 
 Tendo em conta o facto de ainda não existirem normas estabelecidas, ao formalizar uma narrativa como um Conjunto Parcialmente Ordenado (Poset)\footnote{As propriedades de reticulado são fundamentais para garantir a integridade lógica da narrativa.}, este projeto pode ir além da simples visualização para criar um Validador Lógico que assegura a integridade estrutural ao nível de arquitetura.
 
+
+\section{Conceitos Fundamentais da Autoria Narrativa}
+\label{sec:conceitos-fundamentais}
+Antes de abordar a modelação matemática do fluxo de jogo, importa clarificar os conceitos essenciais que regem as histórias ramificadas. Uma \textbf{narrativa não-linear} refere-se a uma obra onde a leitura não segue uma sequência única e predeterminada do início ao fim; em vez disso, o percurso ramifica-se em múltiplos caminhos alternativos com base nas ações do utilizador. Esta estrutura é composta por três elementos atómicos:
+\begin{itemize}
+    \item \textbf{Cena (ou Passagem):} A unidade dramática básica que contém o conteúdo textual, visual ou de áudio apresentado ao leitor num determinado momento.
+    \item \textbf{Escolha (ou Ligação):} O ponto de decisão apresentado ao utilizador no final ou ao longo do texto de uma cena, permitindo-lhe transitar para outra passagem.
+    \item \textbf{Variável de Estado:} Valores lógicos, numéricos ou de texto armazenados em memória (por exemplo, inventário, pontos de vida ou decisões tomadas anteriormente) que definem o estado da história e influenciam a acessibilidade de futuras escolhas.
+\end{itemize}
+
+Para ilustrar de forma prática estes conceitos, considere-se o exemplo clássico de uma bifurcação numa aventura baseada em texto:
+\begin{quote}
+O leitor encontra-se na \textit{Cena A (Clareira da Floresta)}. O texto descreve uma clareira silenciosa com dois caminhos visíveis. São disponibilizadas duas opções: a \textit{Escolha 1} (``Seguir pelo trilho da esquerda'') e a \textit{Escolha 2} (``Seguir pelo trilho da direita'').
+Caso o utilizador selecione a primeira opção, transita para a \textit{Cena B (Interior da Gruta)}, onde encontra uma chave dourada, alterando o seu \textit{Estado} (\texttt{\$temChave = true}). Se selecionar a segunda, transita para a \textit{Cena C (Margem do Rio)}, onde a presença ou ausência da chave no seu estado determinará se pode destrancar um barco para continuar a viagem.
+\end{quote}
+
 \section{Teoria de Grafos na Narrativa Interativa}
 A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$ \citep{BondyMurty2008}, onde:
 \begin{itemize}
