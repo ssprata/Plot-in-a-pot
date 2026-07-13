@@ -105,23 +105,25 @@ Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de 
     \label{fig:tipos-grafos}
 \end{figure}
 
-\subsection{Grafos Direcionados com Ciclos vs. Acíclicos}
-No desenvolvimento de sistemas narrativos, é frequente restringir a estrutura a Grafos Direcionados Acíclicos (\textit{DAGs}), onde a impossibilidade de regressar a um nó já visitado garante um fluxo estritamente unidirecional. Contudo, esta abordagem impede a criação de mecânicas essenciais como \textit{hubs} centrais de exploração ou sistemas de passagem de tempo baseados em ações recorrentes. 
+\subsection{Modelação por Grafo Controlado por Estados}
+Ao contrário dos sistemas tradicionais que mapeiam a narrativa como um grafo simples — onde uma ligação une rigidamente um nó $A$ a um nó $B$ —, o \textit{Plot in a Pot} implementa um modelo de \textbf{Grafo Controlado por Estados}. No contexto da aplicação, as ligações entre as cenas não são estáticas; o caminho percorrido depende diretamente das macros condicionais (\lstinline|<<if>>|) e do estado atual das variáveis do utilizador.
 
-Por este motivo, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral}, admitindo a existência de ciclos lógicos. Esta flexibilidade exige algoritmos de validação estática em segundo plano (como pesquisas \gls{bfs} e \gls{dfs} \citep{CLRS2009}) para garantir a conectividade e detetar anomalias estruturais antes da compilação final.
+Isto significa que a estrutura real da história não é determinada apenas pela geometria visual do canvas, mas sim pela computação em tempo de execução. Uma única escolha desenhada no editor pode direcionar o jogador para múltiplos destinos alternativos, dependendo estritamente do valor das suas variáveis em memória.
 
 \subsection{A Explosão Combinatória e o Espaço de Estados}
 \label{subsec:analise-matematica-complexidade}
 
-A necessidade de automação no processo de validação torna-se evidente ao analisar o crescimento do fluxo narrativo. Num grafo em árvore pura com um fator médio de ramificação $b$ (escolhas por cena) e uma profundidade média $d$, o número de caminhos únicos $P$ cresce de forma exponencial:
+A necessidade de automação no processo de validação torna-se evidente ao analisar o crescimento deste fluxo. Num modelo estrutural clássico com um fator médio de ramificação $b$ (escolhas por cena) e uma profundidade média $d$ (camadas da história), o número de caminhos únicos $P$ cresce de forma exponencial com base na relação:
+\[
+P = b^d
+\]
 
-$$P = \mathcal{O}(b^d)$$
+Esta explosão combinatória impossibilita a auditoria manual por parte do autor à medida que o projeto se expande. Como a aplicação admite a existência de ciclos e alterações de variáveis (como inventários ou decisões), o tamanho máximo do espaço de estados global explorável $|\mathcal{S}|$ é determinado pelo produto entre o número de nós de escrita $|\mathcal{N}|$ e as combinações das $|\mathcal{V}|$ variáveis booleanas do sistema:
+\[
+|\mathcal{S}| = |\mathcal{N}| \times 2^{|\mathcal{V}|}
+\]
 
-Esta explosão combinatória impossibilita a auditoria manual por parte do autor. O cenário complexifica-se com a introdução de ciclos e variáveis de estado (como inventários ou decisões morais), onde o número de caminhos lógicos se torna teoricamente infinito. O tamanho máximo do espaço de estados global explorável $|\mathcal{S}|$ é determinado pelo produto entre o número de nós de escrita $|\mathcal{N}|$ e as combinações das $|\mathcal{V}|$ variáveis booleanas do sistema:
-
-$$|\mathcal{S}| = |\mathcal{N}| \times 2^{|\mathcal{V}|}$$
-
-Se o autor introduzir um ciclo que altere uma destas variáveis sem uma condição de paragem adequada, o sistema entra em colapso lógico. Esta propriedade matemática demonstra que a validação geométrica simples (conectividade de vértices) é insuficiente, justificando o desenvolvimento do motor de verificação estática do projeto para explorar e podar o espaço de estados em tempo útil.
+Se o autor introduzir um ciclo que altere uma destas variáveis sem uma condição de paragem adequada, o fluxo entra num ciclo infinito. Esta propriedade demonstra que a validação geométrica simples (verificar apenas se as linhas estão ligadas no ecrã) é totalmente insuficiente para o formato Twee3. Justifica-se assim o desenvolvimento do motor de verificação do projeto, capaz de simular o comportamento das variáveis para detetar de forma precoce anomalias lógicas e becos sem saída que as ferramentas visuais comuns não conseguem prever.
 
 \section{Software de Criação de Histórias não Lineares}
 O conceito de \gls{fi} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
