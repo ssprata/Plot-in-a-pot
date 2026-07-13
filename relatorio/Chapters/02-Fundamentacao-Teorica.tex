@@ -130,14 +130,28 @@ Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferrament
     \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
 \end{itemize}
 
-O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da história) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TwineReference}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
+O fluxo de trabalho central do Twine assenta na criação de passagens (segmentos individuais da história) e na sua ligação através de hiperligações que representam escolhas do jogador. Estas passagens são exibidas como caixas num canvas com setas a indicar os caminhos narrativos \citep{TwineReference}, conforme ilustrado na Figura~\ref{fig:screenshot-twine}. Este paradigma mapeia-se diretamente para a representação em canvas de grafos interativos que constitui o núcleo visual do \gls{piap}, tornando a correspondência entre o modelo de dados interno e a interface imediata e semanticamente coerente.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/figures_twine.png}
+    \caption{Interface de utilizador do Twine com exibição gráfica de passagens e conexões.}
+    \label{fig:screenshot-twine}
+\end{figure}
 
 \subsection{Ink (Inkle Studios)}
-O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}).
+O Ink \citep{InkReference} é uma linguagem textual de scripting criada pela Inkle Studios (criadores de jogos como \textit{80 Days}). A sua escrita é efetuada no editor Inky (apresentado na Figura~\ref{fig:screenshot-ink}), que oferece pré-visualização em tempo real da narrativa criada.
 \begin{itemize}
     \item \textbf{Vantagens:} Altamente poderosa para controlo fino de estados narrativos, condicionais complexas e ramificações complexas; excelente integração técnica com motores de jogo; licenciada sob a licença MIT (totalmente livre); escala muito bem para projetos de grande envergadura.
     \item \textbf{Limitações:} Não é uma ferramenta visual (opera de forma textual como scripting acoplado a motores de jogo), o que dificulta o planeamento geográfico e a deteção de redundâncias de caminhos por autores não-técnicos; exige conhecimentos de lógica de programação.
 \end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/figures_ink.png}
+    \caption{Editor Inky para a linguagem Ink, com o painel de código (esquerda) e teste (direita).}
+    \label{fig:screenshot-ink}
+\end{figure}
 
 \subsection{ChoiceScript}
 Desenvolvido pela Choice of Games, o ChoiceScript é uma linguagem de programação simples e baseada em texto para a escrita de romances interativos baseados em escolhas.
@@ -147,59 +161,76 @@ Desenvolvido pela Choice of Games, o ChoiceScript é uma linguagem de programaç
 \end{itemize}
 
 \subsection{Yarn Spinner}
-O Yarn Spinner \citep{YarnSpinnerReference} é uma ferramenta focada na integração de diálogos em jogos interativos com motor gráfico.
+O Yarn Spinner \citep{YarnSpinnerReference} é uma ferramenta focada na integração de diálogos em jogos interativos com motor gráfico (ilustrada na Figura~\ref{fig:screenshot-yarn-spinner}).
 \begin{itemize}
     \item \textbf{Vantagens:} Sintaxe simples (semelhante a scripts de teatro); suporte nativo para variáveis; excelente portabilidade direta para Unity e Unreal Engine.
     \item \textbf{Limitações:} Carece de um planeador visual abstrato robusto fora do motor de jogo principal; não é adequado para desenhar fluxogramas abstratos de histórias antes da fase de produção do jogo.
 \end{itemize}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/figures_yarn_spinner.png}
+    \caption{Interface visual do Yarn Spinner integrada num ambiente de desenvolvimento.}
+    \label{fig:screenshot-yarn-spinner}
+\end{figure}
+
 \subsection{Narrative Flow}
-O Narrative Flow \citep{NarrativeFlowReference} é uma ferramenta emergente que tenta colmatar a lacuna entre Twine e Ink.
+O Narrative Flow \citep{NarrativeFlowReference} é uma ferramenta emergente que tenta colmatar a lacuna entre Twine e Ink através de um editor visual baseado em cartões (Figura~\ref{fig:screenshot-narrative-flow}).
 \begin{itemize}
     \item \textbf{Vantagens:} Oferece melhor organização estrutural do que o Twine e uma visualização mais clara que o Ink; ajuda a gerir a consistência da escrita.
     \item \textbf{Limitações:} É um software pago, com menor maturidade técnica e uma comunidade de utilizadores consideravelmente mais reduzida.
 \end{itemize}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/figures_narrative_flow.png}
+    \caption{Interface do editor visual do Narrative Flow com ligação de blocos lógicos.}
+    \label{fig:screenshot-narrative-flow}
+\end{figure}
+
 \subsection{Articy Draft}
-O Articy Draft \citep{ArticyDraftReference} é a solução comercial líder da indústria de videojogos AAA para planeamento de narrativas e bases de dados de escrita.
+O Articy Draft \citep{ArticyDraftReference} é a solução comercial líder da indústria de videojogos AAA para planeamento de narrativas e bases de dados de escrita (apresentado na Figura~\ref{fig:screenshot-articy-draft}).
 \begin{itemize}
     \item \textbf{Vantagens:} Altamente estruturado e profissional; gestão integrada de personagens, inventários e diálogos; escala com eficácia para equipas de desenvolvimento de grandes dimensões.
     \item \textbf{Limitações:} Curva de aprendizagem acentuada; software dispendioso (licença comercial paga); excessivamente complexo e pesado para autores independentes ou projetos pequenos.
 \end{itemize}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Figures/figures_articy_draft.png}
+    \caption{Interface do Articy Draft X para planeamento profissional de histórias interativas.}
+    \label{fig:screenshot-articy-draft}
+\end{figure}
+
 \subsection{Análise Comparativa}
 \label{sec:analise-comparativa}
-A fim de estruturar a comparação entre as diferentes abordagens, apresenta-se na Tabela~\ref{tab:comparacao-motores} uma síntese comparativa das três principais ferramentas de ficção interativa baseadas nos critérios extraídos da literatura e da prática de desenvolvimento.
+A fim de estruturar a comparação entre as diferentes abordagens, apresenta-se na Tabela~\ref{tab:comparacao-motores} uma síntese comparativa das ferramentas baseada nos seus recursos, suporte a lógica de jogo e preços.
 
 \begin{table}[!htbp]
 \centering
-\caption{Análise comparativa de motores de ficção interativa.}
+\caption{Comparação de características principais entre motores de ficção interativa.}
 \label{tab:comparacao-motores}
-\begin{tabularx}{\textwidth}{lLLL}
+\begin{tabularx}{\textwidth}{lCCCCCC}
 \toprule
-\textbf{Critério} & \textbf{Twine} & \textbf{Ink/Inky} & \textbf{ChoiceScript} \\
+\textbf{Característica} & \textbf{Twine} & \textbf{Ink} & \textbf{ChoiceScript} & \textbf{Yarn Spinner} & \textbf{Narrative Flow} & \textbf{Articy Draft} \\
 \midrule
-Licença & GPL v3 — livre (incl. comercial) & MIT — totalmente livre & CSL — não-comercial sem licença \\
-Interface de Edição & Visual (grafo de nós/arestas) & Textual (scripting em IDE) & Textual (scripting linear) \\
-Exportação Standalone & HTML autónomo (sem engine) & Requer engine externa (Unity/Unreal) & Web via plataforma CoG \\
-Adoção Académica/Indie & Muito elevada & Média (foco profissional) & Média (foco romances interativos) \\
-Integração com Motores & Limitada (plugins de terceiros) & Nativa (Unity, Unreal — oficial) & Nenhuma \\
-Ferramentas de Teste & Limitadas & Básicas & Avançadas (quicktest, randomtest) \\
-Formato Aberto & Sim (Twee3 — spec pública) & Sim (\gls{json} compilado) & Não (proprietário CoG) \\
-Curva de Aprendizagem & Baixa (visual, sem código) & Alta (linguagem scripting) & Média (sintaxe simples) \\
-Mapeamento para Grafo & Direto (passagem = nó, link = aresta) & Indireto (estrutura textual) & Indireto (estrutura textual) \\
+Edição Visual           & Sim            & Não          & Não                  & Sim                   & Sim                     & Sim \\
+Variáveis e Estado      & Sim            & Sim          & Sim                  & Sim                   & Sim                     & Sim \\
+Lógica Condicional      & Sim            & Sim          & Sim                  & Sim                   & Sim                     & Sim \\
+Verificação Estática    & Não            & Não          & Não                  & Não                   & Não                     & Não \\
+Integração (Engines)    & Não            & Sim          & Não                  & Sim                   & Sim                     & Sim \\
+Gratuito / Open-source  & Sim            & Sim          & Sim (Licença CSL)    & Sim                   & Não (Pago)              & Não (Pago) \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:comparacao-motores} justifica-se pela necessidade de analisar de que forma as soluções existentes respondem aos desafios práticos da autoria e produção de \gls{fi}:
 \begin{itemize}
-    \item \textbf{Licenciamento (Licença):} Define a liberdade comercial e legal do autor. Licenças livres como a GPL v3 (Twine) ou MIT (Ink) promovem a autonomia e a publicação sem restrições, ao passo que licenças proprietárias como a CSL (ChoiceScript) impõem limites à distribuição comercial e exigências de royalties.
-    \item \textbf{Interface de Edição e Mapeamento para Grafo:} Avaliam a carga cognitiva imposta ao autor durante a escrita. Um mapeamento direto em canvas visual (Twine) facilita o desenho de percursos geográficos, enquanto interfaces textuais (Ink e ChoiceScript) exigem que o escritor mantenha mentalmente o fluxo de caminhos ramificados.
-    \item \textbf{Exportação Standalone (Distribuição) e Integração com Motores:} Definem a flexibilidade técnica da obra final. A exportação para HTML autónomo (Twine) facilita a partilha web imediata, enquanto a integração nativa com motores de jogo como Unity e Unreal (Ink) é indispensável para produções comerciais de grande escala.
-    \item \textbf{Curva de Aprendizagem e Adoção Académica/Indie:} Refletem a acessibilidade para autores não-técnicos. Ferramentas sem código (Twine) apresentam baixa barreira de entrada e elevada popularidade na comunidade independente, enquanto linguagens de scripting avançadas (Ink) exigem conhecimentos de lógica de programação.
-    \item \textbf{Ferramentas de Teste e Garantia de Qualidade:} Em narrativas complexas com centenas de caminhos, a validação manual é inviável. A existência de testes automáticos baseados em aleatoriedade (como o \texttt{randomtest} do ChoiceScript) é crucial para detetar incoerências lógicas e becos sem saída.
-    \item \textbf{Formato Aberto:} Determina se o código e a estrutura do projeto pertencem a um padrão livre documentado (como o Twee 3 no Twine) que evite a dependência de plataformas proprietárias e garanta a perenidade do trabalho.
+    \item \textbf{Edição Visual:} Identifica se o motor oferece uma representação gráfica em forma de canvas ou nós para visualização e mapeamento direto dos caminhos narrativos (essencial para autores não-técnicos).
+    \item \textbf{Variáveis e Lógica Condicional:} Avalia o suporte para manter uma memória narrativa (estado) e a capacidade de restringir escolhas dinamicamente com base nas ações do leitor.
+    \item \textbf{Verificação Estática:} Determina se a ferramenta realiza auditorias automáticas para detetar becos sem saída, ciclos sem fim ou incoerências lógicas em tempo de desenho, uma funcionalidade tradicionalmente ausente nas soluções existentes.
+    \item \textbf{Integração com Engines:} Mede a portabilidade da narrativa para motores gráficos como Unity, Unreal Engine ou Godot, indispensável para produções de jogos modernos.
+    \item \textbf{Gratuito e Aberto:} Reflete a acessibilidade financeira e a ausência de restrições comerciais ou licenciamento fechado na distribuição das obras criadas.
 \end{itemize}
 
 \section{O Formato Twee3 e Linguagens de Scripting Narrativo}
