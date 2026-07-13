@@ -46,7 +46,7 @@ A estrutura básica de uma história interativa assenta na modelação geométri
 De seguida, são apresentadas as diferentes estruturas de grafos aplicadas ao design narrativo, a comparação fundamental entre fluxos acíclicos e com ciclos, e a fundamentação matemática que justifica a necessidade de ferramentas automatizadas para mitigar a explosão de complexidade lógica.
 
 \subsection{Tipos de Grafos e Aplicação Narrativa}
-Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de estruturas de grafos:
+Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de estruturas de grafos (ilustrados na Figura~\ref{fig:tipos-grafos}):
 \begin{enumerate}
     \item \textbf{Grafo Direcionado (Directed Graph):} Uma estrutura onde as ligações têm direção, ou seja, a existência de um caminho de $A \to B$ não implica o retorno de $B \to A$. Numa matriz de adjacência (uma tabela bidimensional que mapeia as conexões entre todos os nós do grafo, onde a linha $i$ e a coluna $j$ indicam a existência de uma ligação do nó $i$ ao nó $j$), isto traduz-se numa estrutura não-simétrica:
     \[
@@ -71,6 +71,39 @@ Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de 
     \]
     Estes pesos podem representar custos de recursos (tempo, pontos de vida), custos emocionais do personagem, ou a probabilidade de uma escolha ter sucesso.
 \end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_direcionado.png}
+        \caption{Grafo Direcionado (A) e respetiva Matriz de Adjacência (E).}
+        \label{fig:grafo-direcionado}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_nao_direcionado.png}
+        \caption{Grafo Não-Direcionado (B) e respetiva Matriz de Adjacência (F).}
+        \label{fig:grafo-nao-direcionado}
+    \end{subfigure}
+    \vskip\baselineskip
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_conhecimento.png}
+        \caption{Grafo de Conhecimento (C) e respetiva Matriz de Adjacência (G).}
+        \label{fig:grafo-conhecimento}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_ponderado.png}
+        \caption{Grafo Ponderado (D) e respetiva Matriz de Adjacência (H).}
+        \label{fig:grafo-ponderado}
+    \end{subfigure}
+    \caption{Diferentes tipologias de grafos e as suas representações em matrizes de adjacência.}
+    \label{fig:tipos-grafos}
+\end{figure}
 
 \subsection{Grafos Direcionados Acíclicos (\glspl{dag}) vs. Grafos com Ciclos}
 Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Acíclicos (\textit{Directed Acyclic Graph} - \gls{dag}). A propriedade acíclica garante que é impossível iniciar num vértice $V_i$ e, através de arestas direcionadas, regressar a $V_i$. Isto garante um fluxo estritamente unidirecional e progressivo de causa e efeito, facilitando a aplicação de algoritmos como a Ordenação Topológica (\textit{Topological Sorting}) com complexidade linear, \(\mathcal{O}(|V| + |E|)\). A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vértices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
