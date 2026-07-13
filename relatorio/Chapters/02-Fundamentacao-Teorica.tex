@@ -23,11 +23,18 @@ Do ponto de vista estrutural, e independentemente da tecnologia utilizada, qualq
     \item \textbf{Memória Narrativa (Estado):} O conjunto de dados acumulados que regista o histórico de ações, a posse de objetos ou os parâmetros quantificáveis do percurso do leitor. Esta memória altera o contexto da obra em tempo real, ditando se certos caminhos se tornam acessíveis ou bloqueados no futuro.
 \end{itemize}
 
-Para ilustrar de forma abrangente esta dinâmica, considere-se o cenário clássico de uma bifurcação literária ficcional:
+Para ilustrar estas dinâmicas de forma clara, considere-se o seguinte exemplo narrativo:
 \begin{quote}
-Um leitor deparar-se-ia inicialmente com o cenário de uma encruzilhada numa floresta silenciosa. O texto apresenta duas opções imediatas de progressão: explorar as ruínas de uma gruta antiga ou caminhar na direção da margem de um rio próximo. 
-Se o leitor optar por investigar a gruta, a narrativa conduz o seu percurso para um novo segmento textual onde o protagonista recolhe um objeto antigo. Esta ação altera de imediato o estado do sistema, registando a posse do item na memória da leitura. Se o utilizador decidisse, ao invés disso, caminhar para a margem do rio, a sua progressão subsequente estaria condicionada: a narrativa avaliaria retroativamente o estado atual do leitor, permitindo-lhe utilizar o objeto para desatar uma embarcação e prosseguir a viagem, ou retendo-o na margem caso o percurso pela gruta tivesse sido ignorado.
+    A sua personagem acorda numa clareira envolta por uma floresta densa e percebe que acabou de amanhecer. Ao olhar em redor com mais detalhe, nota dois elementos que lhe chamam a atenção: uma casa abandonada por entre as árvores e um trilho no lado oposto. A casa parece trancada, mas pressente que conseguirá abrir a porta se encontrar algo para forçar a entrada. O trilho, por outro lado, aparenta não oferecer qualquer tipo de bloqueio. 
+    
+    Para onde vai a sua personagem?
+    \begin{itemize}
+        \item Casa abandonada
+        \item Trilho oposto
+    \end{itemize}
 \end{quote}
+
+Neste cenário, a descrição inicial da clareira constitui a \textbf{Cena} ativa (o nó de partida). As opções dadas ao utilizador representam as \textbf{Escolhas} (as ligações ou arestas do grafo) que despoletam a transição estrutural. Se o utilizador optar por seguir o trilho e, mais à frente, recolher uma ferramenta, essa ação é registada na \textbf{Memória Narrativa} (o estado). Numa interação futura, caso decida regressar à casa abandonada, o motor avaliará retroativamente essa memória para validar se o caminho para o interior da habitação se deve abrir ou permanecer trancado.
 
 \section{Teoria de Grafos na Narrativa Interativa}
 A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$ \citep{BondyMurty2008}, onde:
