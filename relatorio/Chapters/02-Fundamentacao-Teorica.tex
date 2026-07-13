@@ -12,20 +12,21 @@ Para ultrapassar estas limitações estruturais, \textit{frameworks} recentes re
 
 Tendo em conta o facto de ainda não existirem normas estabelecidas, ao formalizar uma narrativa como um Conjunto Parcialmente Ordenado (Poset)\footnote{As propriedades de reticulado são fundamentais para garantir a integridade lógica da narrativa.}, este projeto pode ir além da simples visualização para criar um Validador Lógico que assegura a integridade estrutural ao nível de arquitetura.
 
-
-\section{Conceitos Fundamentais da Autoria Narrativa}
+\section{Conceitos Fundamentais de Narrativas Não-Lineares}
 \label{sec:conceitos-fundamentais}
-Antes de abordar a modelação matemática do fluxo de jogo, importa clarificar os conceitos essenciais que regem as histórias ramificadas. Uma \textbf{narrativa não-linear} refere-se a uma obra onde a leitura não segue uma sequência única e predeterminada do início ao fim; em vez disso, o percurso ramifica-se em múltiplos caminhos alternativos com base nas ações do utilizador. Esta estrutura é composta por três elementos atómicos:
+Antes de abordar a modelação computacional, importa clarificar a evolução e os conceitos essenciais que regem as narrativas não-lineares. Ao contrário do modelo tradicional, cuja progressão textual é puramente sequencial do início ao fim, uma \textbf{narrativa não-linear} caracteriza-se pela fragmentação do discurso e pela existência de múltiplos percursos de leitura.
+
+Do ponto de vista estrutural, e independentemente da tecnologia utilizada, qualquer história ramificada assenta em três elementos fundamentais:
 \begin{itemize}
-    \item \textbf{Cena (ou Passagem):} A unidade dramática básica que contém o conteúdo textual, visual ou de áudio apresentado ao leitor num determinado momento.
-    \item \textbf{Escolha (ou Ligação):} O ponto de decisão apresentado ao utilizador no final ou ao longo do texto de uma cena, permitindo-lhe transitar para outra passagem.
-    \item \textbf{Variável de Estado:} Valores lógicos, numéricos ou de texto armazenados em memória (por exemplo, inventário, pontos de vida ou decisões tomadas anteriormente) que definem o estado da história e influenciam a acessibilidade de futuras escolhas.
+    \item \textbf{Cenas (Nós):} Os fragmentos autónomos de conteúdo. sejam estes textuais, visuais ou sonoros. Contêm a substância dramática exposta ao leitor num determinado momento da história.
+    \item \textbf{Escolhas (Ligações):} Os mecanismos de bifurcação expostos ao longo da narrativa que convidam o utilizador a realizar uma escolha, determinando o vetor de transição para o fragmento de conteúdo seguinte.
+    \item \textbf{Memória Narrativa (Estado):} O conjunto de dados acumulados que regista o histórico de ações, a posse de objetos ou os parâmetros quantificáveis do percurso do leitor. Esta memória altera o contexto da obra em tempo real, ditando se certos caminhos se tornam acessíveis ou bloqueados no futuro.
 \end{itemize}
 
-Para ilustrar de forma prática estes conceitos, considere-se o exemplo clássico de uma bifurcação numa aventura baseada em texto:
+Para ilustrar de forma abrangente esta dinâmica, considere-se o cenário clássico de uma bifurcação literária ficcional:
 \begin{quote}
-O leitor encontra-se na \textit{Cena A (Clareira da Floresta)}. O texto descreve uma clareira silenciosa com dois caminhos visíveis. São disponibilizadas duas opções: a \textit{Escolha 1} (``Seguir pelo trilho da esquerda'') e a \textit{Escolha 2} (``Seguir pelo trilho da direita'').
-Caso o utilizador selecione a primeira opção, transita para a \textit{Cena B (Interior da Gruta)}, onde encontra uma chave dourada, alterando o seu \textit{Estado} (\texttt{\$temChave = true}). Se selecionar a segunda, transita para a \textit{Cena C (Margem do Rio)}, onde a presença ou ausência da chave no seu estado determinará se pode destrancar um barco para continuar a viagem.
+Um leitor deparar-se-ia inicialmente com o cenário de uma encruzilhada numa floresta silenciosa. O texto apresenta duas opções imediatas de progressão: explorar as ruínas de uma gruta antiga ou caminhar na direção da margem de um rio próximo. 
+Se o leitor optar por investigar a gruta, a narrativa conduz o seu percurso para um novo segmento textual onde o protagonista recolhe um objeto antigo. Esta ação altera de imediato o estado do sistema, registando a posse do item na memória da leitura. Se o utilizador decidisse, ao invés disso, caminhar para a margem do rio, a sua progressão subsequente estaria condicionada: a narrativa avaliaria retroativamente o estado atual do leitor, permitindo-lhe utilizar o objeto para desatar uma embarcação e prosseguir a viagem, ou retendo-o na margem caso o percurso pela gruta tivesse sido ignorado.
 \end{quote}
 
 \section{Teoria de Grafos na Narrativa Interativa}
@@ -35,21 +36,23 @@ A estrutura básica de uma história interativa assenta na modelação geométri
     \item $E$ representa o conjunto de \textbf{Arestas} (ou ligações direcionadas), que representam as escolhas disponibilizadas ao leitor para transitar de uma cena para a outra.
 \end{itemize}
 
+De seguida, são apresentadas as diferentes estruturas de grafos aplicadas ao design narrativo, a comparação fundamental entre fluxos acíclicos e com ciclos, e a fundamentação matemática que justifica a necessidade de ferramentas automatizadas para mitigar a explosão de complexidade lógica.
+
 \subsection{Tipos de Grafos e Aplicação Narrativa}
 Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de estruturas de grafos:
 \begin{enumerate}
-    \item \textbf{Grafo Direcionado (Directed Graph):} Uma estrutura onde as ligações têm direção, ou seja, a existência de um caminho de $A \to B$ não implica o retorno de $B \to A$. Na matriz de adjacência, isto traduz-se numa estrutura não-simétrica:
+    \item \textbf{Grafo Direcionado (Directed Graph):} Uma estrutura onde as ligações têm direção, ou seja, a existência de um caminho de $A \to B$ não implica o retorno de $B \to A$. Numa matriz de adjacência (uma tabela bidimensional que mapeia as conexões entre todos os nós do grafo, onde a linha $i$ e a coluna $j$ indicam a existência de uma ligação do nó $i$ ao nó $j$), isto traduz-se numa estrutura não-simétrica:
     \[
     M[i][j] \neq M[j][i]
     \]
     Representa o fluxo narrativo puro, onde cada escolha conduz o leitor numa direção específica.
     
-    \item \textbf{Grafo Não-Direcionado (Undirected Graph):} Representa relações simétricas e bidirecionais ($A - B$). Embora seja menos comum em narrativa linear, é útil para modelar redes de relacionamento social entre personagens ou conexões espaciais de livre exploração (ex: salas adjacentes de uma masmorra). Na matriz de adjacência, a estrutura é simétrica:
+    \item \textbf{Grafo Não-Direcionado (Undirected Graph):} Representa relações simétricas e bidirecionais ($A - B$). Embora seja menos comum em narrativa linear, é útil para modelar redes de relacionamento social entre personagens ou conexões espaciais de livre exploração (p. ex., salas adjacentes de uma masmorra). Na matriz de adjacência, a estrutura é simétrica:
     \[
     M[i][j] = M[j][i]
     \]
 
-    \item \textbf{Grafo de Conhecimento (Knowledge Graph):} Modela relações semânticas complexas entre entidades (ex: ``personagem conhece objeto'', ``porta depende de chave''). Exige múltiplas matrizes de adjacência ou uma estrutura tridimensional:
+    \item \textbf{Grafo de Conhecimento (Knowledge Graph):} Modela relações semânticas complexas entre entidades (p. ex., ``personagem conhece objeto'', ``porta depende de chave''). Exige múltiplas matrizes de adjacência ou uma estrutura tridimensional:
     \[
     M_{relation}[i][j]
     \]
@@ -63,11 +66,7 @@ Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de 
 \end{enumerate}
 
 \subsection{Grafos Direcionados Acíclicos (\glspl{dag}) vs. Grafos com Ciclos}
-Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Acíclicos (\textit{Directed Acyclic Graphs} - \glspl{dag}). A propriedade acíclica garante que é impossível iniciar num vértice $V_i$ e, através de arestas direcionadas, regressar a $V_i$. Isto garante um fluxo estritamente unidirecional e progressivo de causa e efeito, facilitando a aplicação de algoritmos como a Ordenação Topológica (\textit{Topological Sorting}) com complexidade linear:
-\[
-\mathcal{O}(V + E)
-\]
-A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vertices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
+Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Acíclicos (\textit{Directed Acyclic Graph} - \gls{dag}). A propriedade acíclica garante que é impossível iniciar num vértice $V_i$ e, através de arestas direcionadas, regressar a $V_i$. Isto garante um fluxo estritamente unidirecional e progressivo de causa e efeito, facilitando a aplicação de algoritmos como a Ordenação Topológica (\textit{Topological Sorting}) com complexidade linear, \(\mathcal{O}(|V| + |E|)\). A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vértices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
 
 No entanto, em narrativas complexas, a imposição de \glspl{dag} é altamente limitadora. A impossibilidade de introduzir ciclos impede a criação de:
 \begin{itemize}
@@ -208,6 +207,6 @@ Foram analisadas três das principais famílias de modelos em open-weight ajusta
     \begin{itemize}
         \item \textbf{Versão Recomendada:} Gemma 2 (9B).
         \item \textbf{Justificação:} Apesar do seu tamanho compacto de 9 mil milhões de parâmetros, destaca-se pelo seu desempenho elevado em raciocínio abstrato e análises textuais comparativas.
-        \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (ex: ``descreve os principais acontecimentos deste arco narrativo'').
+        \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (p. ex., ``descreve os principais acontecimentos deste arco narrativo'').
     \end{itemize}
 \end{enumerate}
