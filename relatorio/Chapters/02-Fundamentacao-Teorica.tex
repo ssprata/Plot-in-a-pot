@@ -105,37 +105,23 @@ Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de 
     \label{fig:tipos-grafos}
 \end{figure}
 
-\subsection{Grafos Direcionados Acíclicos (\glspl{dag}) vs. Grafos com Ciclos}
-Tradicionalmente, muitas plataformas limitam a escrita a Grafos Direcionados Acíclicos (\textit{Directed Acyclic Graph} - \gls{dag}). A propriedade acíclica garante que é impossível iniciar num vértice $V_i$ e, através de arestas direcionadas, regressar a $V_i$. Isto garante um fluxo estritamente unidirecional e progressivo de causa e efeito, facilitando a aplicação de algoritmos como a Ordenação Topológica (\textit{Topological Sorting}) com complexidade linear, \(\mathcal{O}(|V| + |E|)\). A ordenação topológica (através de abordagens como o algoritmo de Kahn \citep{Kahn1962}) alinha os vértices linearmente, facilitando o cálculo imediato do progresso da história e a identificação do caminho mais rápido.
+\subsection{Grafos Direcionados com Ciclos vs. Acíclicos}
+No desenvolvimento de sistemas narrativos, é frequente restringir a estrutura a Grafos Direcionados Acíclicos (\textit{DAGs}), onde a impossibilidade de regressar a um nó já visitado garante um fluxo estritamente unidirecional. Contudo, esta abordagem impede a criação de mecânicas essenciais como \textit{hubs} centrais de exploração ou sistemas de passagem de tempo baseados em ações recorrentes. 
 
-No entanto, em narrativas complexas, a imposição de \glspl{dag} é altamente limitadora. A impossibilidade de introduzir ciclos impede a criação de:
-\begin{itemize}
-    \item \textbf{Estruturas de Cubo (Hubs):} Onde o jogador explora vários caminhos secundários a partir de uma praça ou menu central e regressa recorrentemente ao mesmo ponto.
-    \item \textbf{Mecânicas de Simulação e Tempo:} Eventos baseados em estados lógicos recorrentes, como ``aguardar um turno'' no mesmo local para fazer avançar variáveis temporais.
-\end{itemize}
+Por este motivo, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral}, admitindo a existência de ciclos lógicos. Esta flexibilidade exige algoritmos de validação estática em segundo plano (como pesquisas \gls{bfs} e \gls{dfs} \citep{CLRS2009}) para garantir a conectividade e detetar anomalias estruturais antes da compilação final.
 
-Por esta razão, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral} que permite ciclos lógicos. Isto requer algoritmos de validação dinâmica em segundo plano (como pesquisas \gls{bfs} e \gls{dfs} \citep{CLRS2009}) para evitar a ocorrência de loops infinitos sem condições de saída logicamente definidas.
-
-\subsection{Análise Matemática da Explosão de Complexidade Lógica}
+\subsection{A Explosão Combinatória e o Espaço de Estados}
 \label{subsec:analise-matematica-complexidade}
 
-A modelação matemática de narrativas interativas permite compreender a necessidade de validadores automatizados ao expor o problema clássico da explosão de estados. Seja $G = (V, E)$ o grafo que modela a história. Se assumirmos uma estrutura de ramificação pura sem ciclos (um grafo em árvore direcionado), com um fator médio de ramificação $b$ (número médio de escolhas por nó) e uma profundidade média da narrativa $d$ (número de passagens percorridas do início ao fim), o número total de caminhos narrativos únicos e independentes $P$ cresce de forma exponencial:
-\[
-P = \mathcal{O}(b^d)
-\]
-Este crescimento exponencial (também conhecido por explosão combinatória ou combinatória de escolhas) torna impossível a um autor auditar manualmente todas as combinações de escolhas possíveis à medida que a história se expande.
+A necessidade de automação no processo de validação torna-se evidente ao analisar o crescimento do fluxo narrativo. Num grafo em árvore pura com um fator médio de ramificação $b$ (escolhas por cena) e uma profundidade média $d$, o número de caminhos únicos $P$ cresce de forma exponencial:
 
-O problema agrava-se substancialmente com a introdução de ciclos (onde $G$ deixa de ser acíclico, permitindo que $V_i \to \dots \to V_i$), uma vez que o número de caminhos matematicamente possíveis passa a ser infinito:
-\[
-P = \infty
-\]
-Neste cenário, a coerência da simulação passa a depender inteiramente da valoração do vetor de variáveis de estado $\sigma$. Definimos o espaço de estados global $\mathcal{S}$ da narrativa como o produto cartesiano entre o conjunto de nós de escrita $\mathcal{N}$ e o conjunto de valorações possíveis das variáveis globais da história. Se considerarmos um conjunto de $|\mathcal{V}|$ variáveis de estado do tipo booleanas (por exemplo, registos de inventário como \texttt{\$tem\_chave} ou escolhas morais binárias), o tamanho máximo do espaço de estados explorável $\mathcal{S}$ é dado por:
-\[
-|\mathcal{S}| = |\mathcal{N}| \times 2^{|\mathcal{V}|}
-\]
-Caso as variáveis tomem valores em domínios numéricos maiores (e.g. inteiros para pontos de vida ou reputação), o espaço cresce de forma ainda mais severa. A introdução de loops infinitos que incrementam repetidamente uma variável sem uma condição de paragem adequada fará com que o espaço de estados se torne teoricamente infinito, o que levaria a que uma travessia cega de pesquisa de caminhos nunca terminasse. 
+$$P = \mathcal{O}(b^d)$$
 
-Esta propriedade matemática demonstra que a validação estrutural simples de grafos geométricos (baseada puramente na conectividade de vértices) é insuficiente em \gls{fi} com lógica condicional. Justifica-se assim o desenvolvimento de um motor de validação estática capaz de explorar o espaço de estados reais $\langle v, \sigma \rangle$ e implementar podas algorítmicas rigorosas para garantir a paragem do algoritmo de verificação.
+Esta explosão combinatória impossibilita a auditoria manual por parte do autor. O cenário complexifica-se com a introdução de ciclos e variáveis de estado (como inventários ou decisões morais), onde o número de caminhos lógicos se torna teoricamente infinito. O tamanho máximo do espaço de estados global explorável $|\mathcal{S}|$ é determinado pelo produto entre o número de nós de escrita $|\mathcal{N}|$ e as combinações das $|\mathcal{V}|$ variáveis booleanas do sistema:
+
+$$|\mathcal{S}| = |\mathcal{N}| \times 2^{|\mathcal{V}|}$$
+
+Se o autor introduzir um ciclo que altere uma destas variáveis sem uma condição de paragem adequada, o sistema entra em colapso lógico. Esta propriedade matemática demonstra que a validação geométrica simples (conectividade de vértices) é insuficiente, justificando o desenvolvimento do motor de verificação estática do projeto para explorar e podar o espaço de estados em tempo útil.
 
 \section{Software de Criação de Histórias não Lineares}
 O conceito de \gls{fi} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
