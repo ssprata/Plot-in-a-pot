@@ -119,12 +119,12 @@ A necessidade de validação automatizada no desenvolvimento de narrativas inter
 Este problema agrava-se com a introdução de ciclos (que permitem regressar a cenas anteriores) e variáveis de estado (como inventários ou escolhas morais). Em projetos de grande dimensão, a complexidade resultante torna impossível a um autor humano auditar manualmente todas as combinações de escolhas e validar se existem caminhos bloqueados, becos sem saída ou loops infinitos onde o utilizador possa ficar preso. Justifica-se, assim, o desenvolvimento do motor de verificação estática do \textit{Plot in a Pot}, capaz de explorar automaticamente todas as possibilidades lógicas do projeto e alertar o criador sobre anomalias na escrita em tempo real.
 
 \section{Software de Criação de Histórias não Lineares}
-O conceito de \gls{fi} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Com a expansão do desenvolvimento de videojogos independentes e o crescente estudo de narratologia computacional, diversas ferramentas de autoria emergiram para suportar a criação deste tipo de estruturas ramificadas, destacando-se o Twine, o Ink e o ChoiceScript \citep{IFTFGDC2026}.
+O conceito de \gls{ni} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Embora a tecnologia digital tenha popularizado o termo, a literatura não-linear física remonta a precursores como os livros-jogo (\textit{gamebooks}) e a série \textit{Choose Your Own Adventure} popularizada nas décadas de 1970 e 1980 \citep{Packer1984}, bem como a experiências literárias ramificadas pioneiras (p. ex., o conto de Jorge Luis Borges em 1941) \citep{Borges1941, Aarseth1997}. Com a expansão recente do mercado de videojogos independentes \citep{Juul2005, Adams2014} e o desenvolvimento da narratologia computacional \citep{Tang2022NGEP, YanTang2023Narrative}, emergiram várias ferramentas de autoria gráfica e linguagens de scripting para suportar a criação de estruturas ramificadas \citep{IFTFGDC2026}.
 
 Apresenta-se, de seguida, uma análise detalhada das principais referências do mercado académico e profissional.
 
 \subsection{Twine}
-Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferramenta mais popular na comunidade de \gls{fi} baseada em texto.
+Lançado em 2009 por Chris Klimas \citep{TwineReference}, o Twine é a ferramenta mais popular na comunidade de \gls{ni} baseada em texto.
 \begin{itemize}
     \item \textbf{Vantagens:} Extremamente acessível (sem barreira de programação para escrita básica); visualização clara baseada em nós gráficos no canvas; open-source e gratuito (distribuído sob a licença GPL v3, permitindo qualquer utilização, incluindo comercial, sem restrições); rápido para prototipagem rápida.
     \item \textbf{Limitações:} A interface visual torna-se desorganizada e lenta em projetos muito grandes (efeito ``prato de esparguete''); a lógica de estado nativa é limitada; a integração com motores de jogos externos (como Unity ou Unreal) é complexa.
@@ -224,7 +224,7 @@ Gratuito / Open-source  & Sim            & Sim          & Sim (Licença CSL)    
 \end{tabularx}
 \end{table}
 
-A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:comparacao-motores} justifica-se pela necessidade de analisar de que forma as soluções existentes respondem aos desafios práticos da autoria e produção de \gls{fi}:
+A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:comparacao-motores} justifica-se pela necessidade de analisar de que forma as soluções existentes respondem aos desafios práticos da autoria e produção de \gls{ni}:
 \begin{itemize}
     \item \textbf{Edição Visual:} Identifica se o motor oferece uma representação gráfica em forma de canvas ou nós para visualização e mapeamento direto dos caminhos narrativos (essencial para autores não-técnicos).
     \item \textbf{Variáveis e Lógica Condicional:} Avalia o suporte para manter uma memória narrativa (estado) e a capacidade de restringir escolhas dinamicamente com base nas ações do leitor.
@@ -235,7 +235,7 @@ A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:compar
 
 \section{O Formato Twee3 e Linguagens de Scripting Narrativo}
 \label{sec:formato-twee3}
-Para além da representação visual em grafos, o ecossistema de ficção interativa apoia-se em formatos de serialização de texto que permitem aos autores escrever e armazenar as suas obras em ficheiros de texto simples (.txt ou .twee). O padrão da indústria para esta representação é o \textbf{Twee3}, uma especificação aberta mantida pela \textit{Interactive Fiction Technology Foundation} (IFTF) \citep{IFTFGDC2026}.
+Para além da representação visual em grafos, o ecossistema de narrativa interativa apoia-se em formatos de serialização de texto que permitem aos autores escrever e armazenar as suas obras em ficheiros de texto simples (.txt ou .twee). O padrão da indústria para esta representação é o \textbf{Twee3}, uma especificação aberta mantida pela \textit{Interactive Fiction Technology Foundation} (IFTF) \citep{IFTFGDC2026}.
 
 O formato Twee3 organiza o ficheiro narrativo através de blocos lógicos denominados \textbf{Passagens} (Passages). Cada passagem começa com um identificador de início (duas frações de dois pontos seguidas do título da passagem):
 
@@ -275,7 +275,7 @@ Esta estrutura híbrida — que combina geometria de grafos, marcação de texto
 Com o avanço recente no campo da Inteligência Artificial Generativa, a integração de Modelos de Linguagem de Grande Escala (\textit{Large Language Models} - LLMs) tornou-se um recurso valioso para auxiliar autores na expansão automática e co-criação de narrativas interativas. No entanto, para garantir a viabilidade prática do projeto \gls{piap} sem dependências financeiras ou de conectividade externa, focou-se a pesquisa em modelos de execução local e gratuita.
 
 \subsection{Análise de Famílias de Modelos e Recomendações}
-Foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de \gls{fi}:
+Foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de \gls{ni}:
 
 \begin{enumerate}
     \item \textbf{Família Llama 3 e 3.1 (Meta AI):}
