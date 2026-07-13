@@ -105,6 +105,11 @@ Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de 
     \label{fig:tipos-grafos}
 \end{figure}
 
+\subsection{Grafos Direcionados com Ciclos vs. Acíclicos}
+No desenvolvimento de sistemas narrativos, é frequente restringir a estrutura a Grafos Direcionados Acíclicos (\textit{DAGs}), onde a impossibilidade de regressar a um nó já visitado garante um fluxo estritamente unidirecional. Contudo, esta abordagem impede a criação de mecânicas essenciais como \textit{hubs} centrais de exploração ou sistemas de passagem de tempo baseados em ações recorrentes. 
+
+Por este motivo, o \textit{Plot in a Pot} adota um modelo de \textbf{Grafo Direcionado Geral}, admitindo a existência de ciclos lógicos. Esta flexibilidade exige algoritmos de validação estática em segundo plano (como pesquisas \gls{bfs} e \gls{dfs} \citep{CLRS2009}) para garantir a conectividade e detetar anomalias estruturais antes da compilação final.
+
 \subsection{Modelação por Grafo Controlado por Estados}
 Ao contrário dos sistemas tradicionais que mapeiam a narrativa como um grafo simples — onde uma ligação une rigidamente um nó $A$ a um nó $B$ —, o \textit{Plot in a Pot} implementa um modelo de \textbf{Grafo Controlado por Estados}. No contexto da aplicação, as ligações entre as cenas não são estáticas; o caminho percorrido depende diretamente das macros condicionais (\lstinline|<<if>>|) e do estado atual das variáveis do utilizador.
 
