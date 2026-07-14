@@ -105,19 +105,19 @@
 \contentsline {subsection}{\numberline {A.2.3}Criação de Ligações e Arestas de Escolha}{63}{subsection.A.2.3}%
 \contentsline {subsection}{\numberline {A.2.4}Agrupamento em Zonas (Capítulos)}{63}{subsection.A.2.4}%
 \contentsline {section}{\numberline {A.3}Programação de Lógica Narrativa e Variáveis}{64}{section.A.3}%
-\contentsline {subsection}{\numberline {A.3.1}Criação de Variáveis (Figma-Style Tokens)}{64}{subsection.A.3.1}%
-\contentsline {subsection}{\numberline {A.3.2}Edição de Lógica condicional por Código}{65}{subsection.A.3.2}%
+\contentsline {subsection}{\numberline {A.3.1}Gestão de Variáveis (Figma-Style Tokens)}{64}{subsection.A.3.1}%
+\contentsline {subsection}{\numberline {A.3.2}Edição de Lógica condicional por Código}{64}{subsection.A.3.2}%
 \contentsline {subsection}{\numberline {A.3.3}Editor de Lógica Estruturada}{65}{subsection.A.3.3}%
 \contentsline {section}{\numberline {A.4}Tradução e Localização Multi-idioma}{65}{section.A.4}%
 \contentsline {subsection}{\numberline {A.4.1}Configurar Idiomas}{65}{subsection.A.4.1}%
 \contentsline {subsection}{\numberline {A.4.2}Editar Textos na Matriz}{67}{subsection.A.4.2}%
 \contentsline {subsection}{\numberline {A.4.3}Importação e Exportação de Ficheiros \gls {csv}}{67}{subsection.A.4.3}%
 \contentsline {section}{\numberline {A.5}Validação Lógica e Simulação de Jogo}{67}{section.A.5}%
-\contentsline {subsection}{\numberline {A.5.1}O Painel de Erros de Validação Estática}{67}{subsection.A.5.1}%
+\contentsline {subsection}{\numberline {A.5.1}O Painel de Validação Estática}{67}{subsection.A.5.1}%
 \contentsline {subsection}{\numberline {A.5.2}Simulação Ativa (PlayMode) e Testes com o Smart Walker}{68}{subsection.A.5.2}%
 \contentsline {section}{\numberline {A.6}Operações de Ficheiros e Publicação do Projeto}{68}{section.A.6}%
 \contentsline {subsection}{\numberline {A.6.1}Importar Ficheiros Twee 3}{68}{subsection.A.6.1}%
-\contentsline {subsection}{\numberline {A.6.2}Exportar e Compilar a História}{68}{subsection.A.6.2}%
+\contentsline {subsection}{\numberline {A.6.2}Exportar a História}{68}{subsection.A.6.2}%
 \contentsline {chapter}{\numberline {B}Guião de Testes e Questionário de Avaliação}{69}{appendix.B}%
 \contentsline {section}{\numberline {B.1}Guião de Tarefas de Teste}{69}{section.B.1}%
 \contentsline {section}{\numberline {B.2}Questionário System Usability Scale (SUS)}{70}{section.B.2}%
