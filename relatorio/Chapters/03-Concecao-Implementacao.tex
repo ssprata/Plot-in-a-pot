@@ -142,7 +142,17 @@ Esta representação permite à aplicação realizar o mapeamento reverso instan
 Note-se que este modelo foca-se exclusivamente na estrutura topológica do grafo. As variáveis globais e as condições lógicas SugarCube não são serializadas na lista de adjacências, sendo integradas diretamente no corpo de texto (\texttt{conteudo}) das passagens e interpretadas em tempo de execução pelo simulador.
 
 \section{Parser Síncrono e Especificação Twee 3}
-O ficheiro \texttt{tweeParser.js} (localizado em \texttt{src/utils/tweeParser.js}) trata da sincronização bidirecional em tempo real entre o canvas do React Flow e o formato de texto Twee 3 \citep{Twee3Reference}.
+
+Para além do processamento interno em memória, a plataforma exige um mecanismo de serialização para guardar e carregar as histórias de forma estruturada. Em vez de criar um formato de ficheiro proprietário (como um esquema JSON customizado), optou-se por adotar a especificação aberta \textbf{Twee 3} como o padrão de persistência de dados da aplicação.
+
+Esta decisão fundamenta-se em três vantagens fundamentais para o ecossistema do projeto:
+\begin{itemize}
+    \item \textbf{Interoperabilidade e Compatibilidade Bidirecional:} A adoção do Twee 3 garante que qualquer história criada no \gls{piap} possa ser exportada e editada diretamente no Twine oficial (ou noutros editores compatíveis), e vice-versa. Isto evita o aprisionamento tecnológico (\textit{vendor lock-in}) e permite a integração em fluxos de trabalho já existentes.
+    \item \textbf{Compilação e Execução via Tweego:} O formato Twee 3 é a especificação nativa interpretada pelo compilador de linha de comandos Tweego. Isto possibilita que os ficheiros gerados pelo nosso editor sejam compilados de forma direta em ficheiros HTML executáveis com todos os recursos e estilos do formato SugarCube.
+    \item \textbf{Legibilidade e Controlo de Versões:} Sendo um formato baseado em texto simples, os ficheiros \texttt{.twee} são facilmente legíveis por humanos e ideais para controlo de versões (utilizando sistemas como o Git), permitindo acompanhar as alterações literárias e lógicas de forma clara ao longo do tempo.
+\end{itemize}
+
+O módulo responsável por fazer a ponte entre o modelo visual e a representação textual é o parser síncrono, implementado no ficheiro \texttt{tweeParser.js} (localizado em \texttt{src/utils/tweeParser.js}). Este módulo trata da sincronização bidirecional em tempo real entre o canvas do React Flow e o formato de texto Twee 3 \citep{Twee3Reference}.
 
 Esta sincronização acontece de forma síncrona diretamente na memória do navegador. Isto significa que qualquer alteração de coordenadas, edição de texto ou criação de novas ligações no canvas é traduzida de imediato para a estrutura Twee 3 interna (e o oposto também se verifica), sem tempos de espera ou passos de compilação. Como a ferramenta funciona inteiramente no lado do cliente (\textit{client-side}), este mapeamento apenas mantém o estado da sessão atualizado; a persistência física dos dados no disco rígido requer sempre que o utilizador exporte o ficheiro de forma explícita.
 

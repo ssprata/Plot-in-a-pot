@@ -41,6 +41,33 @@
     \field{year}{1997}
   \endentry
 
+  \entry{Aarts2018StackOverflow}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=AR}{%
+         family={Aarts},
+         familyi={A\bibinitperiod},
+         given={Roy},
+         giveni={R\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{AR1}
+    \strng{fullhash}{AR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2018}
+    \field{labeldatesource}{}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{howpublished}{Stack Overflow Answer}
+    \field{note}{Acedido em: 14-07-2026}
+    \field{title}{How to draw smooth curve through N points using javascript \&
+  HTML5 canvas?}
+    \verb{url}
+    \verb https://stackoverflow.com/a/49371661
+    \endverb
+    \field{year}{2018}
+  \endentry
+
   \entry{Adams2014}{book}{}
     \name{author}{1}{}{%
       {{hash=AE}{%
@@ -324,6 +351,114 @@
     \field{year}{2009}
   \endentry
 
+  \entry{Dubey2024Llama3}{article}{}
+    \true{moreauthor}
+    \true{morelabelname}
+    \name{author}{3}{}{%
+      {{hash=DA}{%
+         family={Dubey},
+         familyi={D\bibinitperiod},
+         given={Abhimanyu},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=JA}{%
+         family={Jauhri},
+         familyi={J\bibinitperiod},
+         given={Abhinav},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=PA}{%
+         family={Pandey},
+         familyi={P\bibinitperiod},
+         given={Abhinav},
+         giveni={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{DA+1}
+    \strng{fullhash}{DAJAPA+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2024}
+    \field{labeldatesource}{}
+    \field{sortinit}{D}
+    \field{sortinithash}{D}
+    \field{title}{The Llama 3 Herd of Models}
+    \verb{url}
+    \verb https://arxiv.org/abs/2407.21783
+    \endverb
+    \field{journaltitle}{arXiv preprint arXiv:2407.21783}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Ferreira2024Refactoring}{article}{}
+    \name{author}{3}{}{%
+      {{hash=FF}{%
+         family={Ferreira},
+         familyi={F\bibinitperiod},
+         given={F{\'a}bio},
+         giveni={F\bibinitperiod},
+      }}%
+      {{hash=BHS}{%
+         family={Borges},
+         familyi={B\bibinitperiod},
+         given={Hudson\bibnamedelima Silva},
+         giveni={H\bibinitperiod\bibinitdelim S\bibinitperiod},
+      }}%
+      {{hash=VMT}{%
+         family={Valente},
+         familyi={V\bibinitperiod},
+         given={Marco\bibnamedelima Tulio},
+         giveni={M\bibinitperiod\bibinitdelim T\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{FF+1}
+    \strng{fullhash}{FFBHSVMT1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2024}
+    \field{labeldatesource}{}
+    \field{sortinit}{F}
+    \field{sortinithash}{F}
+    \verb{doi}
+    \verb 10.1016/j.jss.2024.112105
+    \endverb
+    \field{pages}{112105}
+    \field{title}{Refactoring React-based Web apps}
+    \verb{url}
+    \verb https://doi.org/10.1016/j.jss.2024.112105
+    \endverb
+    \field{volume}{215}
+    \field{journaltitle}{Journal of Systems and Software}
+    \field{year}{2024}
+  \endentry
+
+  \entry{GemmaTeam2024Gemma2}{article}{}
+    \name{author}{2}{}{%
+      {{hash=G}{%
+         family={{Gemma Team}},
+         familyi={G\bibinitperiod},
+      }}%
+      {{hash=G}{%
+         family={Google},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G+1}
+    \strng{fullhash}{GG1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2024}
+    \field{labeldatesource}{}
+    \field{sortinit}{G}
+    \field{sortinithash}{G}
+    \field{title}{Gemma 2: Improving Open Models for Everyone}
+    \verb{url}
+    \verb https://arxiv.org/abs/2408.00118
+    \endverb
+    \field{journaltitle}{arXiv preprint arXiv:2408.00118}
+    \field{year}{2024}
+  \endentry
+
   \entry{InkReference}{misc}{}
     \name{author}{1}{}{%
       {{hash=I}{%
@@ -390,6 +525,45 @@
     \verb https://iftechfoundation.org/news/iftf-gdc-2026/
     \endverb
     \field{year}{2026}
+  \endentry
+
+  \entry{Jiang2023Mistral}{article}{}
+    \true{moreauthor}
+    \true{morelabelname}
+    \name{author}{3}{}{%
+      {{hash=JAQ}{%
+         family={Jiang},
+         familyi={J\bibinitperiod},
+         given={Albert\bibnamedelima Q.},
+         giveni={A\bibinitperiod\bibinitdelim Q\bibinitperiod},
+      }}%
+      {{hash=SA}{%
+         family={Sablayrolles},
+         familyi={S\bibinitperiod},
+         given={Alexandre},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=MA}{%
+         family={Mensch},
+         familyi={M\bibinitperiod},
+         given={Arthur},
+         giveni={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{JAQ+1}
+    \strng{fullhash}{JAQSAMA+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2023}
+    \field{labeldatesource}{}
+    \field{sortinit}{J}
+    \field{sortinithash}{J}
+    \field{title}{Mistral 7B}
+    \verb{url}
+    \verb https://arxiv.org/abs/2310.06825
+    \endverb
+    \field{journaltitle}{arXiv preprint arXiv:2310.06825}
+    \field{year}{2023}
   \endentry
 
   \entry{Juul2005}{book}{}
@@ -593,6 +767,56 @@
     \verb https://narrativeflow.dev/
     \endverb
     \field{year}{2023}
+  \endentry
+
+  \entry{OllamaIssue14571}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{Ollama Contributors}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O1}
+    \strng{fullhash}{O1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2024}
+    \field{labeldatesource}{}
+    \field{sortinit}{O}
+    \field{sortinithash}{O}
+    \field{howpublished}{GitHub Repository Issue Tracker}
+    \field{note}{Acedido em: 14-07-2026}
+    \field{title}{Issue \#14571: No way to stop control characters output from
+  'ollama run'}
+    \verb{url}
+    \verb https://github.com/ollama/ollama/issues/14571
+    \endverb
+    \field{year}{2024}
+  \endentry
+
+  \entry{OllamaPull17112}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{Ollama Contributors}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O1}
+    \strng{fullhash}{O1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2026}
+    \field{labeldatesource}{}
+    \field{sortinit}{O}
+    \field{sortinithash}{O}
+    \field{howpublished}{GitHub Repository Pull Requests}
+    \field{note}{Acedido em: 14-07-2026}
+    \field{title}{Pull Request \#17112: progress: suppress ANSI control
+  characters when stderr is not a TTY}
+    \verb{url}
+    \verb https://github.com/ollama/ollama/pull/17112
+    \endverb
+    \field{year}{2026}
   \endentry
 
   \entry{Packer1984}{book}{}
