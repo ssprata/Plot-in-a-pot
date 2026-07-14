@@ -149,13 +149,13 @@ Os testes de usabilidade foram realizados com um grupo diversificado de particip
 
 O grupo de teste foi composto por seis participantes (U1 a U6), caracterizado pelos seguintes perfis representativos:
 \begin{itemize}
+    \item \textbf{Perfil de Escrita Criativa e Humanidades (U1):} Escritora de 22 anos com formação secundária na área de Línguas e Humanidades e experiência prévia na criação de narrativas, servindo para validar a fluidez do editor e a facilidade de escrita sem necessidade de conhecimentos de programação.
     \item \textbf{Perfil Técnico (Desenvolvimento de Jogos Digitais):}
     \begin{itemize}
         \item \textbf{U2:} Estudante do Mestrado em Desenvolvimento de Jogos Digitais (\textit{Digital Games Development}) da ESTG com experiência consolidada em desenvolvimento de software, permitindo testar a eficiência da manipulação de dados e a clareza da lista de adjacências.
         \item \textbf{U3:} Estudante do Mestrado em Desenvolvimento de Jogos Digitais (\textit{Digital Games Development}) da ESTG em fase inicial de formação técnica, avaliando a clareza do grafo e a lógica estrutural da plataforma.
     \end{itemize}
     \item \textbf{Perfil de Design e Multimédia (U5):} Estudante de Artes com formação secundária na área de Multimédia, focada na avaliação estética do estilo neo-brutalista, na manipulação visual de caminhos e na ergonomia do \textit{canvas} interativo.
-    \item \textbf{Perfil de Escrita Criativa e Humanidades (U1):} Escritora de 22 anos com formação secundária na área de Línguas e Humanidades e experiência prévia na criação de narrativas, servindo para validar a fluidez do editor e a facilidade de escrita sem necessidade de conhecimentos de programação.
     \item \textbf{Perfil de Marketing (Utilizador não técnico - U4):} Estudante da área de Marketing sem qualquer experiência prévia em escrita interativa, lógica de grafos ou estruturas condicionais. Este perfil revelou-se fundamental para identificar os principais pontos de fricção na interface e as barreiras de entrada para utilizadores leigos.
     \item \textbf{Acessibilidade Visual (U6):} Utilizador com daltonismo severo e baixa acuidade visual, permitindo validar de forma prática a eficácia das redundâncias visuais, dos contornos espessos e da sinalização semântica dupla implementada no editor.
 \end{itemize}
@@ -183,10 +183,10 @@ A validação do \textit{Plot in a Pot} foi realizada seguindo um modelo de dese
     ]
         % Nodes
         \node [block] (wave1) {\textbf{Leva 1 (Abril)}\\Protótipo Inicial\\(Canvas básico)\\SUS: \textbf{61.5}};
-        \node [block, right=of wave1] (fix1) {\textbf{Ajustes 1}\\Zonas e\\Arestas Curvas};
-        \node [block, right=of fix1] (wave2) {\textbf{Leva 2 (Maio)}\\Protótipo Intermédio\\(SugarCube e CSV)\\SUS: \textbf{73.0}};
-        \node [block, right=of wave2] (fix2) {\textbf{Ajustes 2}\\VariablesModal e\\Parser CSV RFC-4180};
-        \node [block, right=of fix2] (wave3) {\textbf{Leva 3 (Junho)}\\Protótipo Final\\(PlayMode, BFS, Walker)\\SUS: \textbf{84.6}};
+        \node [block, right=of wave1] (fix1) {\textbf{Ajustes 1}\\PlayMode e\\Conversor IA};
+        \node [block, right=of fix1] (wave2) {\textbf{Leva 2 (Maio)}\\Protótipo Intermédio\\(IA e PlayMode)\\SUS: \textbf{73.0}};
+        \node [block, right=of wave2] (fix2) {\textbf{Ajustes 2}\\Zonas, Arestas e\\VariablesModal};
+        \node [block, right=of fix2] (wave3) {\textbf{Leva 3 (Junho)}\\Protótipo Final\\(BFS e Walker)\\SUS: \textbf{84.6}};
 
         % Connections
         \path [line] (wave1) -- (fix1);
@@ -199,21 +199,21 @@ A validação do \textit{Plot in a Pot} foi realizada seguindo um modelo de dese
 \end{figure}
 
 \subsection{Primeira Leva: Protótipo Inicial (Abril de 2026)}
-A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os utilizadores U1, U4 e U5, focando-se na validação do conceito do editor visual de grafos. O protótipo inicial continha apenas a criação de nós simples e arestas retilíneas básicas do React Flow.
+A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os utilizadores U1, U4 e U5, focando-se na validação do conceito do editor visual de grafos e da manipulação básica do canvas. O protótipo inicial continha apenas a criação de nós simples e arestas retilíneas.
 
 \begin{itemize}
     \item \textit{Resultados Quantitativos (SUS Estimado):} A pontuação média de usabilidade (escala SUS) nesta fase fixou-se nos \textit{61.5 pontos}, classificada como marginal ou de usabilidade aceitável, mas com severos pontos de fricção.
-    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores queixaram-se da desorganização visual do canvas à medida que o grafo crescia. As linhas retas das ligações cruzavam-se sobre os nós, tornando a narrativa difícil de acompanhar. Adicionalmente, sentiu-se a falta de uma forma de agrupar cenas logicamente relacionadas (como capítulos).
-    \item \textit{Medidas Corretivas Implementadas:} Em resposta ao feedback, foram desenhados e implementados os componentes \texttt{ZoneNode.jsx} (Zonas de agrupamento espacial) e o cálculo paramétrico das arestas curvas baseadas em Splines Cúbicas de Catmull-Rom com \textit{waypoints} de arrasto manual em \texttt{EditableEdge.jsx}.
+    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores queixaram-se da falta de interatividade imediata no teste de caminhos narrativos, obrigando a simulações manuais demoradas, e da ausência de assistência para autoria rápida baseada em texto livre.
+    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se e integrou-se o modo de simulação interativa (\textit{PlayMode}) direto no canvas e o módulo de conversor de IA local assente em LLMs (via Ollama) para a importação rápida de texto.
 \end{itemize}
 
 \subsection{Segunda Leva: Protótipo Intermédio (Maio de 2026)}
-A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizadores U2, U3 e U5, incidindo sobre o motor de tradução e a gestão de lógica SugarCube.
+A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizadores U2, U3 e U5, incidindo sobre o funcionamento do conversor de IA, o \textit{PlayMode} e a tradução.
 
 \begin{itemize}
-    \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias no ordenamento espacial, mas evidenciando falhas em fluxos de lógica complexa.
-    \item \textit{Feedback e Falhas Identificadas:} O utilizador U2 observou que renomear uma variável lógica global exigia alterar manualmente o texto de todas as passagens da história, o que gerava erros de digitação e quebrava a simulação. Além disso, a importação de \gls{csv} falhava quando as traduções continham vírgulas integradas no texto das cenas.
-    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se o painel \texttt{VariablesModal.jsx} com refatorização automática de nomes de variáveis via expressões regulares com barreira de palavra (\textit{word boundaries}) de forma síncrona. O parser de importação de \gls{csv} foi reescrito para suportar a norma RFC~4180.
+    \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias na interatividade e assistência, mas revelando fragilidades ergonómicas com grafos médios e problemas lógicos.
+    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores apontaram a sobreposição caótica de arestas retas, a ausência de agrupamento temático para cenas (capítulos) e a quebra frequente da simulação ao renomear variáveis lógicas globalmente. Adicionalmente, a importação de ficheiros \gls{csv} quebrava quando o texto continha vírgulas integradas.
+    \item \textit{Medidas Corretivas Implementadas:} Implementaram-se as arestas curvas paramétricas baseadas em Splines de Catmull-Rom com \textit{waypoints} em \texttt{EditableEdge.jsx}, as Zonas de agrupamento visual em \texttt{ZoneNode.jsx}, o painel \texttt{VariablesModal.jsx} para refatorização de variáveis e o suporte à norma RFC~4180 no parser de \gls{csv}.
 \end{itemize}
 
 \subsection{Terceira Leva: Protótipo Final (Junho de 2026)}
@@ -222,7 +222,7 @@ A terceira e última leva de testes realizou-se entre \textit{15 e 20 de junho d
 \subsubsection{Métricas de Conclusão e Tempos de Execução}
 Durante a sessão final de testes, foram registados os tempos de conclusão (em minutos) das quatro tarefas descritas na metodologia. Os resultados quantitativos encontram-se sumarizados na Tabela~\ref{tab:resultados-tarefas}.
 
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
 \caption{Taxa de sucesso e tempo de conclusão (em minutos) das tarefas por utilizador (Leva Final).}
 \label{tab:resultados-tarefas}
@@ -247,14 +247,13 @@ U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
 \small \textit{* Nota: O utilizador U4 não concluiu com sucesso a Tarefa 2 no tempo limite estabelecido devido a dificuldades na interpretação das mensagens de erro puramente textuais do validador \gls{bfs}, reforçando a necessidade de incluir marcadores de erro visuais diretamente sobre os nós no canvas.}
 \end{minipage}
 \end{table}
-\vfill
 
 A taxa de conclusão média fixou-se em 95.8\%. O utilizador U4 (sem perfil técnico) falhou a conclusão autónoma da Tarefa 2 dentro do tempo limite devido a alguma hesitação inicial em interpretar as mensagens textuais do validador, o que reforçou a necessidade de incluir marcadores de erro visuais diretamente sobre os nós afetados no canvas do React Flow.
 
 \subsubsection{Avaliação SUS da Leva Final}
 Após as tarefas, foi aplicado o questionário padronizado SUS aos participantes. As pontuações obtidas encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
 
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
 \caption{Pontuação obtida no questionário System Usability Scale (SUS) na leva final.}
 \label{tab:pontuacao-sus}
@@ -273,7 +272,6 @@ U6 & 85.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\vfill
 
 A média global final de \textit{84.6 pontos} situa o \textit{Plot in a Pot} no patamar de usabilidade ``Excelente'' (classificação de grau A+ na escala SUS), representando uma evolução muito expressiva face aos 61.5 e 73.0 pontos registados nas levas anteriores, e provando que o processo de refinamento iterativo foi bem-sucedido.
 
