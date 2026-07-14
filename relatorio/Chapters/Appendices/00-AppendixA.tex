@@ -33,7 +33,7 @@ A funcionalidade de conversão e importação automática de histórias escritas
     \end{verbatim}
     Pode também optar por modelos mais leves, como o \texttt{qwen2.5:7b} ou \texttt{gemma2:2b}, dependendo da memória de vídeo (VRAM) disponível no seu computador.
     \item Por padrão, o Ollama executa um servidor em segundo plano que escuta na porta local \texttt{http://localhost:11434}.
-    \item No editor do \gls{piap}, clique no botão de configurações (ícone de engrenagem) na barra superior, aceda ao painel de ligação da IA e ative a ligação local ao Ollama, especificando o modelo que descarregou.
+    \item No editor do \gls{piap}, clique no botão ``Converter'' na barra superior. No diálogo que se abre, selecione o fornecedor ``Ollama (Local)'' e insira o nome do modelo descarregado (e.g., \texttt{llama3}) no respetivo campo.
 \end{enumerate}
 
 \section{Manual de Utilização do Editor Gráfico}
@@ -50,7 +50,7 @@ O espaço central do editor representa a estrutura geral da história sob a form
 \subsection{Criação e Edição de Nós Narrativos (Cenas)}
 Para adicionar uma nova cena à história:
 \begin{enumerate}
-    \item Clique com o botão direito do rato num espaço livre do canvas e selecione ``Adicionar Nó Narrativo'', ou clique no botão correspondente na barra superior de ferramentas.
+    \item Clique no botão ``+ Adicionar Cena'' na barra superior de ferramentas (ou use o atalho de teclado \texttt{X}).
     \item Um novo nó azul com contorno espesso aparecerá no canvas. Clique duas vezes no nó ou selecione-o para abrir o \textbf{Inspetor Lateral}.
     \item No Inspetor, pode editar:
     \begin{itemize}
@@ -74,7 +74,7 @@ As arestas direcionadas do grafo representam as decisões disponíveis para o jo
 \subsection{Agrupamento em Zonas (Capítulos)}
 Para organizar visualmente projetos de escrita literária de grande envergadura:
 \begin{enumerate}
-    \item Clique no botão ``Criar Zona'' na barra superior. Um retângulo cinzento com contorno pontilhado aparecerá no ecrã.
+    \item Clique no botão ``+ Adicionar Zona'' na barra superior. Um retângulo cinzento com contorno pontilhado aparecerá no ecrã.
     \item Atribua um nome à Zona no seu cabeçalho (ex: \texttt{Capítulo 1}).
     \item Arraste nós narrativos existentes para dentro do retângulo da Zona. Estes passarão a ser filhos geométricos da zona.
     \item Ao mover ou arrastar a Zona, todos os nós contidos nela deslocar-se-ão de forma solidária.
@@ -84,14 +84,15 @@ Para organizar visualmente projetos de escrita literária de grande envergadura:
 \section{Programação de Lógica Narrativa e Variáveis}
 O \gls{piap} suporta a declaração de variáveis globais e condicionais lógicas nativas da macro-linguagem SugarCube.
 
-\subsection{Criação de Variáveis (Figma-Style Tokens)}
-Aceda ao menu ``Variáveis'' na barra superior de ferramentas:
+\subsection{Gestão de Variáveis (Figma-Style Tokens)}
+Para gerir as variáveis do jogo sem escrever código manualmente:
 \begin{enumerate}
-    \item Clique em ``Criar Variável'' e atribua um nome precedido do símbolo \texttt{\$} (ex: \texttt{\$tem\_chave}).
-    \item Escolha o tipo de dados (Booleano, Numérico ou String) e defina o valor inicial por defeito.
-    \item A inicialização correta destas variáveis é escrita de forma automática no nó de metadados especial da história (\texttt{StoryInit}) em segundo plano.
-    \item \textbf{Renomeação Segura (Refatorização):} Se renomear uma variável existente no painel, o editor varre sintonizadamente todo o texto e blocos lógicos do projeto e substitui as referências antigas, garantindo que não ocorrem falhas de simulação.
+    \item Selecione o nó especial \texttt{StoryInit} no canvas (ou use o menu \texttt{Sistema / Código} na barra superior) e clique no botão ``+ Criar Variável'' no painel do Inspetor lateral. Em alternativa, selecione qualquer outra cena e clique no botão ``+/- Alterar Valor'' no Inspetor.
+    \item No diálogo do Gestor de Variáveis que se abre, clique em ``Criar variável'' no topo. Uma nova linha surgirá na tabela.
+    \item Edite o nome da variável diretamente (o prefixo \texttt{\$} é gerido automaticamente pelo sistema), selecione o tipo de dados (\texttt{Booleano}, \texttt{Número} ou \texttt{Texto}) e insira o seu valor inicial.
 \end{enumerate}
+O motor do \gls{piap} injetará de forma autónoma as macros de inicialização correspondentes (como \lstinline|<<set $tem_chave to false>>|) no corpo do nó especial \texttt{StoryInit}.
+
 
 \begin{figure}[htbp]
     \centering
@@ -113,12 +114,12 @@ No conteúdo de qualquer nó de cena, pode inserir macros SugarCube utilizando a
     [[Abrir a porta trancada|cena_tesouro]]
     <<else>>
     A porta está trancada.
-    <<endif>>
+    <</if>>
     \end{verbatim}
 \end{itemize}
 
 \subsection{Editor de Lógica Estruturada}
-Caso não esteja familiarizado com regras de programação textual, selecione um nó e clique no botão ``Editor de Lógica'' no Inspetor:
+Caso não esteja familiarizado com regras de programação textual, selecione um nó de cena, clique no separador ``Visual'' e de seguida no botão ``Editor de Lógica Visual'' no Inspetor:
 \begin{enumerate}
     \item Um painel interativo de formulários estruturados será exibido, dividindo a cena em três secções lógicas: narrativa, modificadores de variáveis (\textit{setters}) e escolhas/caminhos condicionais.
     \item Utilize os menus de seleção (dropdowns) para definir quais as variáveis que mudam de valor ao entrar na cena ou quais os requisitos lógicos (ex: se tem a chave) necessários para libertar uma escolha narrativa.
@@ -143,11 +144,11 @@ A gestão de traduções no \gls{piap} baseia-se numa Matriz de Tradução únic
 \end{figure}
 
 \subsection{Configurar Idiomas}
-Aceda ao menu ``Matriz de Tradução'':
+Clique no botão ``Base de Chaves'' no painel lateral direito (Motor de Dados) para abrir a Matriz de Localização:
 \begin{enumerate}
     \item O idioma nativo padrão é exibido como a primeira coluna.
-    \item Clique em ``Adicionar Idioma'' e digite o código ISO de duas letras do novo idioma (ex: \texttt{en} para inglês, \texttt{es} para espanhol).
-    \item Uma nova coluna aparecerá na tabela.
+    \item Digite o código de duas ou três letras do novo idioma (ex: \texttt{en} para inglês, \texttt{es} para espanhol) no campo de texto ao lado do placeholder ``ADD'' e clique no botão ``+''.
+    \item Uma nova coluna aparecerá na tabela de tradução.
 \end{enumerate}
 
 \subsection{Editar Textos na Matriz}
@@ -169,11 +170,11 @@ Para enviar os ficheiros a um tradutor externo profissional:
 \section{Validação Lógica e Simulação de Jogo}
 Antes de disponibilizar o jogo ao público, utilize os motores integrados de auditoria.
 
-\subsection{O Painel de Erros de Validação Estática}
+\subsection{O Painel de Validação Estática}
 O validador estático analisa de forma contínua a correção topológica do grafo. Se existirem falhas lógicas:
 \begin{itemize}
     \item Os nós com erros serão destacados no canvas com uma borda pontilhada a vermelho e um sinal de alerta.
-    \item Clique no botão ``Erros de Validação'' na barra superior para ver a lista estruturada de avisos:
+    \item Clique no botão ``Validar Lógica'' no painel lateral direito do Motor de Dados para ver a lista estruturada de avisos:
     \begin{itemize}
         \item \textbf{Nós Inacessíveis:} Cenas que nunca podem ser acedidas a partir do nó inicial sob nenhum caminho explorável.
         \item \textbf{Ligações Partidas (Dead Ends):} Escolhas cujo ID de destino aponta para uma cena inexistente.
@@ -182,7 +183,7 @@ O validador estático analisa de forma contínua a correção topológica do gra
 \end{itemize}
 
 \subsection{Simulação Ativa (PlayMode) e Testes com o Smart Walker}
-Clique em ``Testar Jogo'' para abrir a sandbox de simulação:
+Clique no botão ``Jogar'' no painel lateral direito do Motor de Dados para abrir a sandbox de simulação:
 \begin{enumerate}
     \item Jogue a história clicando nas escolhas disponíveis no ecrã de simulação.
     \item Utilize o painel de variáveis lateral para ver, em tempo real, as alterações de valores e depurar as macros lógicas.
@@ -195,9 +196,9 @@ O editor suporta leitura e gravação no formato padrão da indústria.
 \subsection{Importar Ficheiros Twee 3}
 Clique em ``Importar ficheiro .twee'' na barra de menus e selecione um ficheiro de texto plano em formato Twee 3. O editor processará o cabeçalho e construirá automaticamente o canvas gráfico de nós e arestas correspondente.
 
-\subsection{Exportar e Compilar a História}
-Para guardar o seu trabalho de autoria ou disponibilizar o jogo final para os utilizadores:
+\subsection{Exportar a História}
+Para guardar o trabalho de autoria ou preparar a narrativa para publicação, o utilizador pode abrir o menu de exportação e descarregar o ficheiro em formato Twee 3 (.twee). São disponibilizados dois modos de exportação:
 \begin{itemize}
-    \item \textbf{Exportar Twee 3:} Clique em ``Exportar .twee'' para descarregar o ficheiro de texto estruturado. Este ficheiro preserva todos os dados posicionais das caixas e Zonas em metadados \gls{json} compatíveis com outros compiladores de Twine.
-    \item \textbf{Compilar para HTML:} Clique em ``Compilar HTML Jogável''. O motor lógico do \gls{piap} empaqueta a história, os dicionários de traduções e a biblioteca do jogador num único ficheiro \texttt{.html}. Este ficheiro pode ser publicado em plataformas de jogos independentes (como o \texttt{itch.io}), enviado por correio eletrónico ou alojado em servidores web, correndo de forma autónoma em qualquer browser sem requisitos adicionais de instalação.
+    \item \textbf{Exportar Base de Dados de Chaves (Keys Database):} Descarrega o ficheiro mantendo as chaves de tradução em formato de tokens (e.g., \lstinline|t("chave")|). Este modo é ideal para continuar o desenvolvimento noutras sessões e preservar os dados posicionais das passagens e Zonas nos metadados \gls{json}.
+    \item \textbf{Exportar História Monolíngue:} Compila a narrativa inteira para um idioma específico (ex: Português, Inglês), resolvendo e injetando as traduções diretamente nas passagens. O ficheiro \texttt{.twee} gerado está limpo de chaves técnicas e pronto para ser importado noutros editores ou compilado através do compilador de linha de comandos \textit{Tweego} para gerar a página HTML final do jogo.
 \end{itemize}
