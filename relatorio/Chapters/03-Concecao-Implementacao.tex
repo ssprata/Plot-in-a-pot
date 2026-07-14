@@ -448,28 +448,16 @@ const isTrue = evaluator(currentState);
         \bottomrule
     \end{tabular}
 \end{table}
-
 \section{Integração de Modelos de Linguagem (LLMs)}
 \label{sec:integracao-llms-implementacao}
-Para além do núcleo lógico de grafos e da simulação estática, a plataforma disponibiliza um assistente baseado em Modelos de Linguagem de Grande Escala (LLMs) para facilitar a importação rápida de histórias em formato de texto livre. A conceção e implementação desta funcionalidade assenta nos seguintes aspetos:
+Para além do núcleo lógico e da simulação estática, a plataforma disponibiliza um assistente baseado em Modelos de Linguagem de Grande Escala (LLMs) para a importação rápida de histórias em formato de texto livre. A conceção e implementação desta funcionalidade assenta nos seguintes aspetos:
 
 \subsection{Arquitetura de Integração Local}
-A integração com inteligência artificial foca-se em fornecer uma interface de comunicação local e assíncrona entre o editor gráfico e o servidor de inferência do utilizador. O trabalho de desenvolvimento consistiu em:
-\begin{itemize}
-    \item \textbf{Módulo de Comunicação REST (\texttt{aiGenerator.js}):} Implementação de um cliente HTTP em JavaScript para estabelecer a ligação assíncrona com o endpoint local do Ollama (\texttt{http://localhost:11434}), enviando os cabeçalhos e o corpo JSON com os parâmetros de temperatura e tokens.
-    \item \textbf{Engenharia de Prompt de Conversão:} Desenvolvimento e validação de um prompt de sistema especializado, com regras sintáticas rígidas, concebido para forçar o modelo de linguagem a gerar respostas estritamente em conformidade com a especificação Twee 3 (cabeçalhos, metadados e arestas literais), mitigando alucinações.
-    \item \textbf{Importação Automatizada Pós-Resposta:} Programação do fluxo de importação que recebe o texto estruturado retornado pela API local, encaminha-o para o parser e gera automaticamente os nós e arestas correspondentes no canvas.
-\end{itemize}
+A integração com inteligência artificial fornece uma interface de comunicação local e assíncrona entre o editor gráfico e o servidor de inferência do utilizador. O desenvolvimento focou-se na criação de um módulo de comunicação REST (\texttt{aiGenerator.js}) para estabelecer a ligação assíncrona com o endpoint local do Ollama (\texttt{http://localhost:11434}), enviando os parâmetros de temperatura e tokens via JSON. Em paralelo, desenhou-se um prompt de sistema especializado para forçar o modelo a gerar respostas estritamente em conformidade com a especificação Twee 3, mitigando alucinações. O fluxo de importação recebe o texto estruturado retornado pela API local, encaminha-o para o parser e gera automaticamente os nós e arestas correspondentes no canvas.
 
-A decisão de basear este assistente em inferência local (via Ollama) assenta nos seguintes compromissos:
-\begin{itemize}
-    \item \textbf{Privacidade e Soberania dos Dados:} Ao executar o modelo localmente no computador do autor, garante-se que toda a propriedade intelectual da história e os textos criados permanecem estritamente confidenciais. Não há partilha de dados com servidores externos de terceiros nem risco de recolha dos textos literários para treino de modelos comerciais.
-    \item \textbf{Custo Financeiro Zero:} A inferência local permite a utilização gratuita e ilimitada da funcionalidade de conversão inteligente, eliminando os custos de faturação associados a APIs proprietárias na nuvem.
-\end{itemize}
+A decisão de basear este assistente em inferência local (via Ollama) garante a privacidade e soberania dos dados, assegurando que a propriedade intelectual da história e os textos criados permanecem confidenciais e livres de partilhas com servidores externos para treino de modelos comerciais. Adicionalmente, esta abordagem elimina custos financeiros de faturação associados a APIs proprietárias na nuvem, oferecendo uma utilização gratuita e ilimitada. Por questões de flexibilidade, o sistema permite também a configuração de chaves de API para serviços externos na nuvem, assegurando o acesso a utilizadores cujo hardware local seja limitado.
 
 \subsection{Papel do LLM: Conversão e Importação Automática de Histórias}
-A abordagem de design delimitou de forma clara o papel do modelo de linguagem no ciclo de vida da narrativa. Visto que os LLMs podem alucinar, criar caminhos inacessíveis ou ignorar restrições de ciclos, o modelo não é integrado de forma dinâmica na simulação direta do jogo.
+A abordagem de design delimitou de forma clara o papel do modelo de linguagem no ciclo de vida da narrativa. Visto que os LLMs apresentam propensão a alucinações, criação de caminhos inacessíveis ou omissão de restrições de ciclos, o modelo não é integrado de forma dinâmica na simulação direta da história.
 
-O papel do LLM foi definido para atuar estritamente como uma ferramenta de conversão sintática em fase de pré-processamento. O modelo lê a narrativa em linguagem natural fornecida pelo autor e converte-a para a norma Twee 3. A partir desse ponto, o motor lógico da aplicação e o validador BFS assumem a responsabilidade de renderizar o canvas visual e garantir a integridade dos caminhos e das variáveis de estado no editor.
-
-
+O papel do LLM restringe-se a uma ferramenta de conversão sintática em fase de pré-processamento. O modelo analisa a narrativa em linguagem natural fornecida pelo autor e traduz-a para a norma Twee 3. A partir desse ponto, o motor lógico da aplicação e o validador BFS assumem a responsabilidade exclusiva de renderizar o canvas visual e garantir a integridade de todos os caminhos e variáveis de estado no editor.

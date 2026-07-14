@@ -58,7 +58,7 @@
 \contentsline {subsection}{\numberline {3.8.3}Motor de Compilação JIT de Macros SugarCube}{36}{subsection.3.8.3}%
 \contentsline {section}{\numberline {3.9}Integração de Modelos de Linguagem (LLMs)}{38}{section.3.9}%
 \contentsline {subsection}{\numberline {3.9.1}Arquitetura de Integração Local}{38}{subsection.3.9.1}%
-\contentsline {subsection}{\numberline {3.9.2}Papel do LLM: Conversão e Importação Automática de Histórias}{39}{subsection.3.9.2}%
+\contentsline {subsection}{\numberline {3.9.2}Papel do LLM: Conversão e Importação Automática de Histórias}{38}{subsection.3.9.2}%
 \contentsline {chapter}{\numberline {4}Implementação e Avaliação}{40}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Estrutura do Código e Detalhes de Implementação}{40}{section.4.1}%
 \contentsline {subsection}{\numberline {4.1.1}Funcionamento da Interface Visual}{40}{subsection.4.1.1}%
