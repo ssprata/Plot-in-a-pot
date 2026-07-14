@@ -113,9 +113,9 @@ Este ciclo automático garante que o autor vê os erros de escrita imediatamente
 
 \section{Testes de Conversão e Comparação de Modelos de Linguagem (IA Local)}
 
-Para avaliar o comportamento do assistente de importação rápida, realizámos testes com o objetivo de converter histórias escritas em texto livre (linguagem natural) para a estrutura do editor. O teste consistiu em fornecer um texto descritivo e verificar se os modelos de inteligência artificial conseguiam gerar o formato Twee 3 de forma correta e sem erros de formatação.
+Para avaliar o comportamento do assistente de importação rápida, foram realizados testes com o objetivo de converter histórias escritas em texto livre (linguagem natural) para a estrutura do editor. O teste consistiu em fornecer um texto descritivo e verificar se os modelos de inteligência artificial conseguiam gerar o formato Twee 3 de forma correta e sem erros de formatação.
 
-Escolhemos a ferramenta \textit{Ollama} por ser a solução líder de código aberto para correr modelos de linguagem (LLMs) localmente. Isto permitiu realizar os testes de forma gratuita, com total privacidade dos dados e sem dependência de chaves de acesso (APIs) externas. Os testes foram realizados com os seguintes modelos:
+A ferramenta \textit{Ollama} foi selecionada por ser a solução líder de código aberto para correr modelos de linguagem (LLMs) localmente. Isto permitiu realizar os testes de forma gratuita, com total privacidade dos dados e sem dependência de chaves de acesso (APIs) externas. Os testes foram realizados com os seguintes modelos:
 \begin{itemize}
     \item Gemma 2B (ID \texttt{8ccf136fdd52})
     \item Mistral 7B (ID \texttt{6577803aa9a0})
@@ -124,19 +124,19 @@ Escolhemos a ferramenta \textit{Ollama} por ser a solução líder de código ab
 \end{itemize}
 
 \subsection{Primeira Fase: Testes em Máquina Local (RTX 3050)}
-A primeira série de testes foi feita a 9 de maio no computador de desenvolvimento, que tem uma gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. Também testámos o modelo Claude (através de API externa) como termo de comparação. Devido ao limite de memória da placa gráfica local, nenhum dos modelos locais funcionou, causando erros de falta de memória (out of memory) e deixando o sistema muito lento.
+A primeira série de testes foi feita a 9 de maio no computador de desenvolvimento, que tem uma gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. O modelo Claude (através de API externa) também foi testado como termo de comparação. Devido ao limite de memória da placa gráfica local, nenhum dos modelos locais funcionou, causando erros de falta de memória (out of memory) e deixando o sistema muito lento.
 
 \subsection{Segunda Fase: Testes no Servidor com GPU Titan Xp (12\,GiB)}
 Para conseguir avaliar a qualidade dos modelos, a 19 de maio, os testes foram repetidos num servidor equipado com uma placa gráfica Nvidia Titan Xp de 12\,GiB. Nesta máquina, todos os testes correram com sucesso em termos de recursos (não havendo falhas de memória), permitindo analisar a estrutura do texto gerado por cada modelo:
 \begin{itemize}
     \item \textbf{Mistral 7B:} O resultado não foi útil, pois o modelo separou quase todas as frases do texto em passagens independentes. Isto criaria dezenas de nós para uma única cena, tornando o mapa confuso. Além disso, adicionou barras invertidas no fim das linhas e lixo de terminal (como \texttt{[3D [K}).
-    \item \textbf{Gemma 4B / 2B:} O modelo misturou os cabeçalhos de novos nós dentro do texto de outras passagens. Como o nosso parser não suporta nós aninhados, a importação leu isto como texto simples e falhou a criação no canvas.
+    \item \textbf{Gemma 4B / 2B:} O modelo misturou os cabeçalhos de novos nós dentro do texto de outras passagens. Como o parser da aplicação não suporta nós aninhados, a importação leu isto como texto simples e falhou a criação no canvas.
     \item \textbf{Qwen 3 8B:} O resultado foi inutilizável porque o modelo incluiu o seu raciocínio interno (a secção de pensamento \textit{"Thinking..."}) no início da resposta e deixou estruturas incompletas na resposta final.
     \item \textbf{Qwen 3.5 9B:} Apresentou o melhor desempenho na organização do fluxo. No entanto, ainda incluiu o texto de pensamento e criou alguns nós órfãos que não estavam ligados ao resto da história.
 \end{itemize}
 
 \subsection{Correção de Caracteres Estranhos e Ajustes de Execução}
-Mais tarde, identificámos que a presença de lixo no texto (códigos de controlo como \texttt{[3D [K}) se deveu à forma como o Ollama foi executado através da linha de comandos em processos automáticos. À data dos nossos testes (maio de 2026), tratava-se de uma limitação conhecida e documentada na plataforma de desenvolvimento do projeto \citep{OllamaIssue14571}. Embora esta limitação tenha vindo a ser resolvida recentemente através de uma atualização que suprime os caracteres de controlo quando a saída não é um terminal interativo \citep{OllamaPull17112}, na altura a solução passava por correr a execução através de um script de controlo (por exemplo, em Python) ou, de forma ideal, efetuando as chamadas diretamente à API REST local do Ollama na porta 11434, que fornece o texto puro sem lixo de consola.
+Mais tarde, foi identificado que a presença de lixo no texto (códigos de controlo como \texttt{[3D [K}) se deveu à forma como o Ollama foi executado através da linha de comandos em processos automáticos. À data dos testes realizados (maio de 2026), tratava-se de uma limitação conhecida e documentada na plataforma de desenvolvimento do projeto \citep{OllamaIssue14571}. Embora esta limitação tenha vindo a ser resolvida recentemente através de uma atualização que suprime os caracteres de controlo quando a saída não é um terminal interativo \citep{OllamaPull17112}, na altura a solução passava por correr a execução através de um script de controlo (por exemplo, em Python) ou, de forma ideal, efetuando as chamadas diretamente à API REST local do Ollama na porta 11434, que fornece o texto puro sem lixo de consola.
 
 \subsection{Estado Atual da Funcionalidade (Beta)}
 A funcionalidade de importação por Inteligência Artificial encontra-se em versão beta, uma vez que a precisão da conversão ainda depende da configuração dos prompts e do modelo utilizado. Contudo, em testes práticos adicionais realizados com o modelo Qwen 3.5 9B numa placa gráfica de gama intermédia (Nvidia RTX 5060 de 8\,GB de VRAM), a conversão correu de forma estável e com resultados satisfatórios. Isto demonstra que, em computadores modernos de consumo com esta capacidade de GPU, o assistente local é uma solução perfeitamente viável.
