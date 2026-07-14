@@ -26,7 +26,7 @@ Como exemplo, considera-se um nó inicial (Cena) onde o utilizador acorda numa c
 
 
 \section{Software de Criação de Histórias não Lineares}
-O conceito de \gls{ni} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Embora a tecnologia digital tenha popularizado o termo, a literatura não-linear física remonta a precursores como os livros-jogo (\textit{gamebooks}) e a série \textit{Choose Your Own Adventure} popularizada nas décadas de 1970 e 1980 \citep{Packer1984}, bem como a experiências literárias ramificadas pioneiras (p. ex., o conto de Jorge Luis Borges em 1941) \citep{Borges1941, Aarseth1997}. Com a expansão recente do mercado de videojogos independentes \citep{Juul2005, Adams2014} e o desenvolvimento da narratologia computacional \citep{Tang2022NGEP, YanTang2023Narrative}, emergiram várias ferramentas de autoria gráfica e linguagens de scripting para suportar a criação de estruturas ramificadas \citep{IFTFGDC2026}.
+O conceito de \gls{ni} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Embora a tecnologia digital tenha popularizado o termo, a literatura não-linear física remonta a precursores como os livros-jogo (\textit{gamebooks}) e a série \textit{Choose Your Own Adventure} popularizada nas décadas de 1970 e 1980 \citep{Packer1984}, bem como a experiências literárias ramificadas pioneiras (p. ex. o conto de Jorge Luis Borges em 1941) \citep{Borges1941, Aarseth1997}. Com a expansão recente do mercado de videojogos independentes \citep{Juul2005, Adams2014} e o desenvolvimento da narratologia computacional \citep{Tang2022NGEP, YanTang2023Narrative}, emergiram várias ferramentas de autoria gráfica e linguagens de scripting para suportar a criação de estruturas ramificadas \citep{IFTFGDC2026}.
 
 Apresenta-se, de seguida, uma análise detalhada das principais referências do mercado académico e profissional.
 
@@ -222,12 +222,12 @@ Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de 
     \]
     Representa o fluxo narrativo puro, onde cada escolha conduz o leitor numa direção específica.
     
-    \item \textbf{Grafo Não-Direcionado (Undirected Graph):} Representa relações simétricas e bidirecionais ($A - B$). Embora seja menos comum em narrativa linear, é útil para modelar redes de relacionamento social entre personagens ou conexões espaciais de livre exploração (p. ex., salas adjacentes de uma masmorra). Na matriz de adjacência, a estrutura é simétrica:
+    \item \textbf{Grafo Não-Direcionado (Undirected Graph):} Representa relações simétricas e bidirecionais ($A - B$). Embora seja menos comum em narrativa linear, é útil para modelar redes de relacionamento social entre personagens ou conexões espaciais de livre exploração (p. ex. salas adjacentes de uma masmorra). Na matriz de adjacência, a estrutura é simétrica:
     \[
     M[i][j] = M[j][i]
     \]
 
-    \item \textbf{Grafo de Conhecimento (Knowledge Graph):} Modela relações semânticas complexas entre entidades (p. ex., ``personagem conhece objeto'', ``porta depende de chave''). Exige múltiplas matrizes de adjacência ou uma estrutura tridimensional:
+    \item \textbf{Grafo de Conhecimento (Knowledge Graph):} Modela relações semânticas complexas entre entidades (p. ex. ``personagem conhece objeto'', ``porta depende de chave''). Exige múltiplas matrizes de adjacência ou uma estrutura tridimensional:
     \[
     M_{relation}[i][j]
     \]
@@ -312,7 +312,7 @@ Nessa pesquisa realizada a 13 de abril, foram analisadas três das principais fa
     \begin{itemize}
         \item \textbf{Versão Recomendada:} Gemma 2 (9B).
         \item \textbf{Justificação:} Apesar do seu tamanho compacto de 9 mil milhões de parâmetros, destaca-se pelo seu desempenho elevado em raciocínio abstrato e análises textuais comparativas.
-        \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (p. ex., ``descreve os principais acontecimentos deste arco narrativo'').
+        \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (p. ex. ``descreve os principais acontecimentos deste arco narrativo'').
     \end{itemize}
 \end{enumerate}
 
