@@ -1,7 +1,36 @@
 \chapter{Conceção e Desenvolvimento}
 \label{cp:concecao-implementacao}
 
-Este capítulo descreve a arquitetura geral do \textit{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
+Este capítulo descreve o cronograma e as fases de desenvolvimento do projeto, a arquitetura geral do \textit{Plot in a Pot}, detalhando as decisões de design de dados, o funcionamento dos algoritmos de processamento, as estratégias de visualização e acessibilidade adotadas, e o motor de simulação implementado.
+
+\section{Cronograma e Fases de Desenvolvimento}
+\label{sec:cronograma-desenvolvimento-fases}
+O projeto foi executado ao longo de um período aproximado de três meses, utilizando uma abordagem de desenvolvimento incremental assente em prototipagem rápida. O cronograma de implementação dividiu-se em cinco fases fundamentais, estruturadas conforme se descreve de seguida:
+
+\begin{table}[htbp]
+\centering
+\caption{Cronograma detalhado das fases de desenvolvimento do projeto.}
+\label{tab:cronograma-desenvolvimento}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Fase} & \textbf{Descrição das Atividades Realizadas} & \textbf{Intervalo de Datas} \\
+\midrule
+Fase 1 & Levantamento de requisitos e desenho conceitual da arquitetura. & 17/03/2026 -- 31/03/2026 \\
+Fase 2 & Programação do núcleo (\textit{core}) lógico: parser Twee 3 e validador \gls{bfs}. & 01/04/2026 -- 25/04/2026 \\
+Fase 3 & Interface e visualização: integração do React Flow e \textit{waypoints} nas arestas. & 26/04/2026 -- 20/05/2026 \\
+Fase 4 & Integração de IA local (Ollama) e otimização de acessibilidade visual. & 21/05/2026 -- 10/06/2026 \\
+Fase 5 & Testes com utilizadores, correção de erros e refinamento final. & 11/06/2026 -- 25/06/2026 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{description}
+    \item[Fase 1 -- Desenho e Requisitos:] Definição das especificações funcionais e não funcionais do sistema. Elaboração do diagrama de arquitetura modular para separar a camada gráfica do processamento de grafos.
+    \item[Fase 2 -- Motor Lógico:] Implementação da biblioteca \texttt{tweeParser.js} para ler e estruturar o formato Twee 3 em memória como uma lista de adjacências bidirecional, e do motor de validação estática assente em travessias \gls{bfs}.
+    \item[Fase 3 -- Componentes de Canvas:] Acoplamento do React Flow e desenho de nós customizados, incluindo a lógica de grupos (Zonas) com gestão de pointer events, e as arestas editáveis baseadas em curvas Spline Catmull-Rom.
+    \item[Fase 4 -- IA e Acessibilidade:] Configuração de chamadas HTTP para o Ollama local e validação da conversão de texto livre em nós Twee. Ajustes no design de Tailwind CSS para implementar a estética neo-brutalista de alto contraste e a redundância de traços para daltónicos.
+    \item[Fase 5 -- Validação Prática:] Realização de testes estruturados com utilizadores finais para identificar bloqueios cognitivos na interface e falhas de usabilidade.
+\end{description}
 
 \section{Arquitetura Geral do Sistema}
 \label{sec:arquitetura-geral}
