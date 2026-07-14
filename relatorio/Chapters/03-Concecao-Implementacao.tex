@@ -323,7 +323,7 @@ O simulador de jogo (\texttt{PlayMode.jsx}) mimetiza o comportamento do interpre
 
 Para testes automáticos de caminhos narrativos, a plataforma disponibiliza o agente autónomo \textbf{Smart Walker} (implementado em \texttt{storyTraversal.js}). Em vez de selecionar opções de forma puramente pseudo-aleatória (o que levaria a uma baixa cobertura de caminhos e retenção em ciclos curtos), o agente utiliza uma heurística baseada em \textit{Procura por Novidade} (\textit{Novelty Search}).
 
-Dada a vizinhança do nó atual, correspondente ao conjunto de opções de escolha alcançáveis a partir dele, o agente consulta o histórico de visitas acumuladas do simulador. Para cada opção de transição que leva a um nó vizinho, o Smart Walker obtém o número acumulado de visitas históricas registado na memória global da sessão. O Smart Walker escolhe automaticamente a transição para o nó vizinho que foi visitado menos vezes até ao momento.
+Para selecionar a próxima passagem, o agente analisa as opções de escolha direta que partem do nó atual (o que corresponde, na terminologia de grafos, à vizinhança de saída do nó corrente). Ele consulta o histórico de simulação da sessão para verificar quantas vezes cada uma das cenas de destino já foi alcançada. O Smart Walker seleciona então a escolha que conduz à cena de destino que registe o menor número de visitas acumuladas até ao momento.
 
 Este comportamento heurístico simples força o simulador a procurar caminhos narrativos raros e ramos profundos da história de forma automatizada, conseguindo mapear e encontrar becos sem saída ou ciclos lógicos fechados numa fração de segundo sem necessidade de intervenção manual do autor.
 
