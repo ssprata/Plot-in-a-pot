@@ -8,6 +8,8 @@ Neste contexto surge o \textit{Plot in a Pot}, um editor visual e simulador de n
 \section{Objeto do Trabalho}
 O objeto deste projeto consiste no desenvolvimento do \gls{piap}, uma aplicação e ambiente de desenvolvimento concebido para a criação, estruturação, simulação e tradução de narrativas interativas e não-lineares. O sistema foca-se na integração e suporte nativo ao ecossistema do motor Twine, operando especificamente com o formato de ficheiros Twee (versão 3) e com a macro-linguagem SugarCube. Através de uma interface gráfica baseada em grafos, a ferramenta permite a autores e \textit{narrative designers} gerir ramificações complexas e bases de dados de localização de uma forma unificada.
 
+A escolha pelo formato Twee 3 baseia-se na sua natureza como padrão aberto e amplamente suportado pela comunidade de narrativa interativa. Isto assegura compatibilidade universal com compiladores consolidados (como o Tweego) e com o Twine oficial, evitando o aprisionamento tecnológico e facilitando a legibilidade e o controlo de versões em texto simples.
+
 \section{Justificação e Pertinência do Tema}
 O \textit{design} de narrativas para jogos não-lineares enfrenta frequentemente problemas severos de escala, onde árvores de diálogo e escolhas crescem exponencialmente, tornando-se difíceis de procurar e propensas a erros lógicos. Embora o Twine seja uma das ferramentas de referência da comunidade independente e académica \citep{IFTFGDC2026} para a prototipagem rápida de \gls{ni}, o desenvolvimento de projetos profissionais de grande escala é severamente limitado pela falta de ferramentas nativas para a gestão multi-idioma (localização) e pela ausência de validadores estáticos de fluxo que previnam caminhos mortos antes da compilação.
 
@@ -28,6 +30,17 @@ Para a concretização do objetivo geral, definiram-se os seguintes objetivos es
     \item \textbf{Automação Narrativa por Inteligência Artificial:} Projetar uma arquitetura de inferência local que utilize Modelos de Linguagem de Grande Escala (\textit{LLMs}) para processar narrativas escritas em linguagem natural e convertê-las automaticamente na estrutura formal de grafos do motor de jogo.
     \item \textbf{Ambiente de Execução e Aprendizagem:} Criar um simulador integrado (\textit{PlayMode}) para testes imediatos do fluxo narrativo e um módulo pedagógico interativo (\textit{Playable Tutorial}) para a introdução assistida às regras e funcionalidades do editor.
 \end{enumerate}
+
+\section{Contributos do Trabalho}
+\label{sec:contributos-trabalho}
+Como resultado direto do trabalho de investigação, conceção e desenvolvimento levado a cabo neste projeto, foram alcançados os seguintes contributos práticos e científicos para a área da autoria de narrativas interativas:
+\begin{itemize}
+    \item \textbf{Plataforma Unificada de Autoria Visual e Lógica:} Criação de um ambiente que combina edição visual de grafos com a simulação dinâmica e reativa de variáveis de estado, preenchendo a lacuna existente entre ferramentas puramente visuais e ferramentas puramente textuais.
+    \item \textbf{Motor de Validação Estática Reativo:} Implementação de um validador de espaço de estados baseado em grafos direcionados e Pesquisa em Largura (BFS) que audita a integridade narrativa em tempo real, alertando o autor sobre nós órfãos, caminhos sem saída e loops infinitos antes de qualquer exportação ou compilação física.
+    \item \textbf{Inovação em Acessibilidade Prática:} Desenho de uma interface baseada em estética neo-brutalista de alto contraste e representação redundante de arestas por padrões de traço (contínuo/tracejado), validada com utilizadores daltónicos e com limitações de visão como uma alternativa inclusiva e funcional.
+    \item \textbf{Centralização da Localização Narrativa:} Introdução de uma matriz de tradução de grelha única baseada em chaves abstratas, com suporte para importação/exportação CSV compatível com a norma RFC~4180, eliminando a escrita de textos fixos nas passagens do Twine.
+    \item \textbf{Inferência Local com Soberania de Dados:} Desenvolvimento de um módulo de inteligência artificial assente em LLMs de pesos abertos e execução estritamente local (via API Ollama), viabilizando a conversão rápida de texto natural para formato de grafos de forma gratuita e sem partilha de propriedade intelectual com terceiros.
+\end{itemize}
 \section{Estrutura do Documento}
 Este relatório está estruturado em cinco capítulos principais. Além desta introdução, o documento apresenta:
 \begin{itemize}
