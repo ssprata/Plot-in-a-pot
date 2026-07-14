@@ -35,19 +35,19 @@
 \contentsline {subsection}{\numberline {2.6.2}Decisão de Design: Do Co-Criador ao Assistente de Conversão}{17}{subsection.2.6.2}%
 \contentsline {chapter}{\numberline {3}Conceção e Desenvolvimento}{19}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Cronograma e Fases de Desenvolvimento}{19}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Arquitetura Geral do Sistema}{19}{section.3.2}%
+\contentsline {section}{\numberline {3.2}Arquitetura Geral do Sistema}{20}{section.3.2}%
 \contentsline {section}{\numberline {3.3}Requisitos do Sistema}{21}{section.3.3}%
 \contentsline {subsection}{\numberline {3.3.1}Requisitos Funcionais}{21}{subsection.3.3.1}%
 \contentsline {subsection}{\numberline {3.3.2}Requisitos Não Funcionais}{22}{subsection.3.3.2}%
-\contentsline {section}{\numberline {3.4}Métodos, Técnicas e Enquadramento Tecnológico}{22}{section.3.4}%
+\contentsline {section}{\numberline {3.4}Métodos, Técnicas e Enquadramento Tecnológico}{23}{section.3.4}%
 \contentsline {subsection}{\numberline {3.4.1}Justificação das Decisões de Design}{23}{subsection.3.4.1}%
 \contentsline {section}{\numberline {3.5}Modelação de Dados: Lista de Adjacência}{24}{section.3.5}%
-\contentsline {section}{\numberline {3.6}Parser Síncrono e Especificação Twee 3}{24}{section.3.6}%
+\contentsline {section}{\numberline {3.6}Parser Síncrono e Especificação Twee 3}{25}{section.3.6}%
 \contentsline {subsection}{\numberline {3.6.1}Importação e Conversão de Coordenadas de Zonas}{25}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}Passagens Especiais}{25}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.2}Passagens Especiais}{26}{subsection.3.6.2}%
 \contentsline {subsection}{\numberline {3.6.3}Modelo SugarCube (Ligações e Macros)}{26}{subsection.3.6.3}%
-\contentsline {section}{\numberline {3.7}Interação Visual, Edição e Acessibilidade}{26}{section.3.7}%
-\contentsline {subsection}{\numberline {3.7.1}Zonas de Agrupamento Visual}{26}{subsection.3.7.1}%
+\contentsline {section}{\numberline {3.7}Interação Visual, Edição e Acessibilidade}{27}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}Zonas de Agrupamento Visual}{27}{subsection.3.7.1}%
 \contentsline {subsection}{\numberline {3.7.2}Arestas Curvadas com Waypoints}{27}{subsection.3.7.2}%
 \contentsline {subsection}{\numberline {3.7.3}Acessibilidade e Identidade Visual Customizada}{28}{subsection.3.7.3}%
 \contentsline {subsection}{\numberline {3.7.4}Modelação de Dados e Sincronização com o React Flow}{29}{subsection.3.7.4}%
