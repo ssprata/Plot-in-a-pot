@@ -249,23 +249,6 @@ O autor pode criar novos marcadores (\textit{waypoints}) com um duplo clique e a
 
 A interpolação matemática de Catmull-Rom foi programada diretamente no componente de forma a evitar dependências de pacotes externos, otimizando o desempenho e garantindo uma renderização leve no lado do cliente. Esta implementação foi adaptada a partir da solução documentada na comunidade de programadores do \textit{Stack Overflow} \citep{Aarts2018StackOverflow}. 
 
-O algoritmo funciona convertendo a sequência ordenada de pontos (composta pelo nó de origem, os \textit{waypoints} intermédios e o nó de destino) em segmentos de curvas Bézier Cúbicas nativas do formato SVG. Para cada par de pontos consecutivos $p_i$ e $p_{i+1}$, os respetivos pontos de controlo $cp_1$ e $cp_2$ da curva Bézier são gerados em tempo real recorrendo aos pontos adjacentes $p_{i-1}$ e $p_{i+2}$, de acordo com a formulação matemática:
-\[
-cp_{1,x} = p_{i,x} + \frac{p_{i+1,x} - p_{i-1,x}}{6}
-\]
-\[
-cp_{1,y} = p_{i,y} + \frac{p_{i+1,y} - p_{i-1,y}}{6}
-\]
-\[
-cp_{2,x} = p_{i+1,x} - \frac{p_{i+2,x} - p_{i,x}}{6}
-\]
-\[
-cp_{2,y} = p_{i+1,y} - \frac{p_{i+2,y} - p_{i,y}}{6}
-\]
-
-A divisão constante por $6$ corresponde à parametrização da tensão da spline, garantindo a continuidade de primeira ordem ($C^1$) na junção entre segmentos (suavidade tangencial). Os pontos calculados são de seguida serializados na propriedade \texttt{d} do elemento SVG \texttt{<path>} através do comando Bézier cúbico \texttt{C cp1.x,cp1.y cp2.x,cp2.y p2.x,p2.y}.
-
-
 \subsection{Acessibilidade e Identidade Visual Customizada}
 \label{subsec:acessibilidade-identidade-visual}
 Tendo em conta que o desenvolvimento do projeto beneficiou de validações diretas com utilizadores daltónicos, projetou-se uma estratégia de acessibilidade redundante baseada numa identidade visual neo-brutalista. A adoção desta estética neo-brutalista fundamentou-se em estudos que demonstram que contornos espessos, pesos tipográficos elevados e contrastes marcados beneficiam utilizadores com baixa acuidade visual ou daltonismo \citep{Babich2023, Loranger2022}. O aspeto geral desta interface e os seus elementos gráficos encontram-se representados na Figura~\ref{fig:editor-canvas-acessibilidade}.

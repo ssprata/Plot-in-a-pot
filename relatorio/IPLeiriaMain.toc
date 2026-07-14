@@ -50,15 +50,15 @@
 \contentsline {section}{\numberline {3.7}Interação Visual, Edição e Acessibilidade}{28}{section.3.7}%
 \contentsline {subsection}{\numberline {3.7.1}Zonas de Agrupamento Visual}{28}{subsection.3.7.1}%
 \contentsline {subsection}{\numberline {3.7.2}Arestas Curvadas com Waypoints}{28}{subsection.3.7.2}%
-\contentsline {subsection}{\numberline {3.7.3}Acessibilidade e Identidade Visual Customizada}{30}{subsection.3.7.3}%
+\contentsline {subsection}{\numberline {3.7.3}Acessibilidade e Identidade Visual Customizada}{29}{subsection.3.7.3}%
 \contentsline {subsection}{\numberline {3.7.4}Modelação de Dados e Sincronização com o React Flow}{30}{subsection.3.7.4}%
 \contentsline {section}{\numberline {3.8}Validação Estática e Simulação}{32}{section.3.8}%
 \contentsline {subsection}{\numberline {3.8.1}Algoritmo de Validação Estática e Exploração do Espaço de Estados}{32}{subsection.3.8.1}%
 \contentsline {subsection}{\numberline {3.8.2}Simulador em Tempo Real (PlayMode) e Smart Walker}{35}{subsection.3.8.2}%
 \contentsline {subsection}{\numberline {3.8.3}Motor de Compilação JIT de Macros SugarCube}{36}{subsection.3.8.3}%
-\contentsline {section}{\numberline {3.9}Integração de Modelos de Linguagem (LLMs)}{38}{section.3.9}%
+\contentsline {section}{\numberline {3.9}Integração de Modelos de Linguagem (LLMs)}{37}{section.3.9}%
 \contentsline {subsection}{\numberline {3.9.1}Arquitetura de Integração Local}{38}{subsection.3.9.1}%
-\contentsline {subsection}{\numberline {3.9.2}Papel do LLM: Conversão e Importação Automática de Histórias}{39}{subsection.3.9.2}%
+\contentsline {subsection}{\numberline {3.9.2}Papel do LLM: Conversão e Importação Automática de Histórias}{38}{subsection.3.9.2}%
 \contentsline {chapter}{\numberline {4}Implementação e Avaliação}{40}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Estrutura do Código e Detalhes de Implementação}{40}{section.4.1}%
 \contentsline {subsection}{\numberline {4.1.1}Funcionamento da Interface Visual}{40}{subsection.4.1.1}%
