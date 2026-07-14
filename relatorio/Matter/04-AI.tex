@@ -4,12 +4,14 @@
     
         \vspace{2em}
         
-Reconheço a utilização integrada do modelo de linguagem Gemini (\url{https://gemini.google.com}) como ferramenta de suporte no processo de desenvolvimento de software, refatorização de rotinas e automação de testes unitários para a aplicação \textit{Plot in a Pot}. A inteligência artificial operou sob estrita validação e supervisão humana, funcionando exclusivamente como um assistente de produtividade para tarefas delimitadas de programação e validação de sintaxe.
+% Alterado de "Reconheço" para "Reconhecemos" para manter a consistência do plural académica do grupo
+Reconhecemos a utilização integrada do modelo de linguagem Gemini (\url{https://gemini.google.com}) como ferramenta de suporte no processo de desenvolvimento de software, refatoração de rotinas e automação de testes unitários para a aplicação \textit{Plot in a Pot}. A inteligência artificial operou sob estrita validação e supervisão humana, funcionando exclusivamente como um assistente de produtividade para tarefas delimitadas de programação e validação de sintaxe.
 
 \vspace{1em}
 
 \noindent\textbf{Descrição da Utilização}
 
+% Mantém-se o exemplo real dos prompts utilizados no desenvolvimento do Plot in a Pot
 \prompt[1]{Gera uma expressão regular robusta em JavaScript para identificar a sintaxe de ligações Twee 3 do tipo [[Texto|Destino]] dentro de um bloco de texto corrido, e cria uma estrutura de testes unitários simples para validar se o parser em JavaScript captura corretamente o identificador do destino.}
 
 \aioutput[1]{[O modelo forneceu a expressão regular fundamentada para o motor do parser, acompanhada por um conjunto de asserções em Jest para testar variações na formatação de ligações com e sem espaços, o que serviu de base para a posterior implementação manual do ficheiro \texttt{tweeParser.js} na pasta de utilitários.]}
@@ -24,53 +26,17 @@ Reconheço a utilização integrada do modelo de linguagem Gemini (\url{https://
 
 \noindent\textbf{Processo de Validação Humana e Decisão Prática:}
 
-Estima-se que cerca de 15\% do código base utilitário da aplicação tenha contado com o apoio da inteligência artificial para a geração de protótipos iniciais de algoritmos padrão. No entanto, todas as decisões críticas de engenharia de software e arquitetura permanecem sob inteira autoria e responsabilidade humana. O processo de validação, correção e engenharia manual do sistema incluiu, de forma exclusiva:
+% Garantia de que a autoria e responsabilidade são atribuídas ao coletivo de autores
+Estima-se que cerca de 15 a 20\% do código-base utilitário da aplicação tenha contado com o apoio da inteligência artificial para a geração de protótipos iniciais de algoritmos padrão. No entanto, todas as decisões críticas de engenharia de software e arquitetura permanecem sob inteira autoria e responsabilidade dos autores. O processo de validação, correção e engenharia manual do sistema incluiu, de forma exclusiva:
 
 \begin{itemize}
     \item \textbf{Segurança e Soberania de Dados:} Toda a lógica de integração com o Ollama e tratamento de dados locais no cliente foi reconfigurada manualmente para garantir o cumprimento estrito do requisito RNF04, eliminando quaisquer fugas de informação para fora da máquina do utilizador.
-    \item \textbf{Lógica Algorítmica Dinâmica:} Os algoritmos de validação estrutural baseados em pesquisas \textit{BFS} e \textit{DFS} para deteção de ciclos, becos sem saída e nós órfãos na lista de adjacências bidirecional foram inteiramente projetados, escritos e depurados manualmente pelos autores.
+    \item \textbf{Lógica Algorítmica Dinâmica:} Os algoritmos de validação estrutural baseados em pesquisas \textit{BFS} (Breadth-First Search) e \textit{DFS} (Depth-First Search) para deteção de ciclos, becos sem saída e nós órfãos na lista de adjacências bidirecional foram inteiramente projetados, escritos e depurados manualmente por nós.
     \item \textbf{Interoperabilidade Twee 3:} O parser síncrono e síncro-bidirecional foi meticulosamente revisto à mão para assegurar a fidelidade de conversão de coordenadas espaciais que o formato original do Twine não suporta nativamente.
 \end{itemize}
 
 A arquitetura final da aplicação, o fluxo de execução síncrona de dados no React Flow e o controlo de integridade semântica da história constituem propriedade intelectual exclusiva da autoria humana do projeto.
-
-    }{\ifthenelse{\equal{\LanguageOption}{spanish}}{%
-        \chapter*{Declaración sobre el Uso de Inteligencia Artificial}
-
-        \guideinfo{Es una buena práctica académica indicar brevemente cómo, por qué y cuándo se utilizó la IA. Explicar las acciones tomadas y las razones detrás de ellas fomenta la reflexión crítica, profundiza la comprensión del papel de la IA en el aprendizaje y ayuda a evaluar su impacto en la calidad e integridad del trabajo. Esta página puede eliminarse configurando la opción \texttt{aiack} como \texttt{false} en las opciones de clase del documento.}
-    
-        \vspace{2em}
-        
-        \exampleinfo{%
-        Reconozco el uso de Gemini (\url{https://gemini.google.com}) para perfeccionar el tono académico y mejorar la precisión lingüística de este trabajo, incluyendo aspectos de gramática, puntuación y vocabulario.
-        
-        \vspace{1em}
-        
-        \noindent\textbf{Descripción del Uso}
-        
-        \prompt[1]{En un párrafo, describa simplemente qué es LaTeX.}
-        
-        \aioutput[1]{LaTeX es un sistema de composición tipográfica de alta calidad, comúnmente utilizado para producir documentos científicos y matemáticos debido a su potente manejo de fórmulas y bibliografías. A diferencia de los procesadores de texto, utiliza archivos de texto plano con etiquetas de marcado para definir la estructura y el formato de un documento, permitiendo un control preciso sobre la disposición y apariencia. Es especialmente popular en el ámbito académico y de investigación para la creación de tesis, artículos de revistas y presentaciones.}
-        }
-    }{%
-        \chapter*{AI Acknowledgement}
-
-        \guideinfo{It is good academic practice to briefly state how, why, and when AI was used. Explaining both the actions taken and the reasons behind them encourages critical reflection, deepens understanding of AI's role in learning, and supports the evaluation of its impact on your work's quality and integrity. This page can be removed by setting the option \texttt{aiack} to \texttt{false} in the document class options.}
-
-        \vspace{2em}
-        
-        \exampleinfo{%
-        I acknowledge the use of Gemini (\url{https://gemini.google.com}) to refine the academic tone and improve the linguistic accuracy of this work, including aspects of grammar, punctuation, and vocabulary.
-        
-        \vspace{1em}
-        
-        \noindent\textbf{Description of Use}
-        
-        \prompt[1]{In a paragraph, simply describe what LaTeX is.}
-        
-        \aioutput[1]{LaTeX is a high-quality typesetting system commonly used for producing scientific and mathematical documents due to its powerful handling of formulas and bibliographies. Unlike word processors, it uses plain text files with markup tags to define the structure and formatting of a document, allowing precise control over layout and appearance. It is especially popular in academia and research for creating theses, journal articles, and presentations.}
-        }
-    }}
+}{}
     
     \MediaOptionLogicBlank   
 }{}
