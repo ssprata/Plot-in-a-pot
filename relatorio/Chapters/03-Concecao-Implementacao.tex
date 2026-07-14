@@ -138,7 +138,7 @@ Note-se que este modelo foca-se exclusivamente na estrutura topológica do grafo
 \section{Arquitetura e Implementação do Parser Síncrono}
 \label{sec:arquitetura-parser-sincrono}
 
-O módulo responsável pela serialização e desserialização de histórias na plataforma é o parser síncrono, implementado em \texttt{tweeParser.js} (na diretoria \texttt{src/utils/}). Este módulo assegura a tradução bidirecional em tempo real entre a representação visual baseada em grafos do React Flow e a representação textual baseada na especificação \textbf{Twee 3} \citep{Twee3Reference}.
+O módulo responsável pela serialização e desserialização de histórias na plataforma é o parser síncrono, implementado em \texttt{tweeParser.js} (na diretoria \texttt{src/utils/}). Este módulo assegura a tradução bidirecional em tempo real entre a representação visual baseada em grafos do React Flow e a representação textual baseada na especificação Twee 3 \citep{Twee3Reference}.
 
 A sincronização ocorre de forma síncrona diretamente na memória do navegador. Qualquer alteração de coordenadas, edição de texto ou criação de novas ligações no canvas é imediatamente refletida na estrutura interna de passagens e arestas, e vice-versa. Por se tratar de uma aplicação que corre inteiramente no lado do cliente (\textit{client-side}), este mapeamento mantém o estado da sessão atualizado na memória da aplicação, sendo que a persistência física dos dados requer que o utilizador exporte explicitamente o ficheiro \texttt{.twee}.
 
@@ -149,7 +149,7 @@ O processo de importação é gerido pela função \texttt{parseTwee3(source)}, 
     
     \item \textbf{Extração de Cabeçalhos e Metadados:} Para cada bloco, a primeira linha (cabeçalho) é analisada para separar o nome da passagem, as etiquetas (delimitadas por \lstinline|[ ]|) e os metadados visuais (delimitados em formato JSON por \lstinline|{ }|). Esta separação é efetuada isolando a cadeia de caracteres a partir do primeiro caracter \lstinline|{| para evitar que expressões regulares falhem na presença de objetos JSON complexos ou aninhados.
     
-    \item \textbf{Conversão de Coordenadas de Zonas:} Os metadados visuais extraídos indicam a posição absoluta do nó (\lstinline|position|: \lstinline|X,Y|) e, opcionalmente, o identificador do nó pai (\lstinline|parent|). Quando um nó pertence a uma Zona de Agrupamento Visual (contentor espacial), o parser efetua a conversão de coordenadas absolutas para coordenadas locais relativas ao canto superior esquerdo da zona mãe:
+    \item \textbf{Conversão de Coordenadas de Zonas:} Os metadados visuais extraídos indicam a posição absoluta do nó (\lstinline|position|: \lstinline|X,Y|) e, opcionalmente, o identificador do nó pai (\lstinline|parent|). Quando um nó pertence a uma Zona de Agrupamento Visual (ver subsection \ref{subsec:zonas-agrupamento}), o parser efetua a conversão de coordenadas absolutas para coordenadas locais relativas ao canto superior esquerdo da zona mãe:
     \[
     X_{\text{relativo}} = X_{\text{absoluto}} - X_{\text{zona}}
     \]
