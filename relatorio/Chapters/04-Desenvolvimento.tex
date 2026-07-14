@@ -146,14 +146,14 @@ A funcionalidade de importação por Inteligência Artificial encontra-se em ver
 Para validar a flexibilidade e usabilidade do \textit{Plot in a Pot}, foram planeados e executados testes qualitativos e quantitativos com um grupo diversificado de participantes.
 
 \subsection{Perfil dos Participantes}
-Os testes foram realizados com seis utilizadores (U1 a U6) com perfis distintos, abrangendo estudantes de cursos tecnológicos, de design e de comunicação, bem como utilizadores com necessidades especiais de visualização:
+Os testes foram realizados com um grupo de seis utilizadores (U1 a U6) composto por estudantes de licenciatura e mestrado do Politécnico de Leiria. O grupo apresenta uma distribuição equilibrada de géneros (três masculinos e três femininos) e faixas etárias típicas da população académica (entre os 21 e os 25 anos), caracterizando-se por perfis e graus de especialização técnica distintos:
 \begin{itemize}
-    \item \textbf{U1:} Estudante de Design de Jogos Digitais, com alguma experiência em ferramentas de escrita não-linear como Twine (sem conhecimentos de programação).
-    \item \textbf{U2:} Estudante de Engenharia Informática, com forte experiência em desenvolvimento web e programação de sistemas.
-    \item \textbf{U3:} Estudante de Engenharia Informática, interessado na área técnica de desenvolvimento de jogos e lógica de grafos.
-    \item \textbf{U4:} Estudante de Comunicação e Média, sem experiência prévia em ferramentas digitais de escrita não-linear.
-    \item \textbf{U5:} Estudante de Design Gráfico, focado em usabilidade e interfaces visuais de utilizador.
-    \item \textbf{U6:} Estudante universitário com daltonismo severo (deuteranopia) e baixa acuidade visual, sem bases técnicas de desenvolvimento.
+    \item \textbf{U1:} Feminino, 23 anos. Estudante do \textbf{Mestrado em Desenvolvimento de Jogos Digitais} (ESTG/ESAD.CR), ramo de \textit{Game Arts}. Possui experiência em escrita de ficção interativa com Twine, mas sem qualquer base ou conhecimentos em programação.
+    \item \textbf{U2:} Masculino, 22 anos. Estudante da \textbf{Licenciatura em Engenharia Informática} (ESTG). Experiência avançada em desenvolvimento \textit{web} síncrono e arquitetura de sistemas.
+    \item \textbf{U3:} Masculino, 25 anos. Estudante do \textbf{Mestrado em Desenvolvimento de Jogos Digitais} (ESTG), ramo de \textit{Game Programming}. Interesse focado em lógica de grafos e motores de jogo.
+    \item \textbf{U4:} Feminino, 21 anos. Estudante da \textbf{Licenciatura em Comunicação e Média} (ESECS). Sem experiência anterior em escrita interativa ou lógica condicional.
+    \item \textbf{U5:} Feminino, 22 anos. Estudante da \textbf{Licenciatura em Design Gráfico} (ESAD.CR), com especial interesse em ergonomia visual e usabilidade de interfaces.
+    \item \textbf{U6:} Masculino, 24 anos. Estudante da \textbf{Licenciatura em Engenharia Informática} (ESTG), portador de daltonismo severo (deuteranopia) e baixa acuidade visual.
 \end{itemize}
 
 \subsection{Tarefas Avaliadas}
@@ -169,6 +169,30 @@ Cada participante foi instruído a realizar um conjunto de quatro tarefas estrut
 \label{sec:resultados-testes-iterativo}
 
 A validação do \textit{Plot in a Pot} foi realizada seguindo um modelo de desenvolvimento ágil e centrado no utilizador, dividido em três levas (\textit{waves}) sucessivas de testes ao longo do ciclo de vida do projeto. Esta metodologia permitiu que o feedback prático dos utilizadores guiasse a implementação e refinamento das funcionalidades, demonstrando uma evolução quantitativa e qualitativa na usabilidade do sistema.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance = 1.0cm and 0.3cm,
+        block/.style = {rectangle, draw, fill=gray!10, text width=6.0em, text centered, rounded corners, minimum height=3.5em, font=\scriptsize},
+        line/.style = {draw, -latex, thick}
+    ]
+        % Nodes
+        \node [block] (wave1) {\textbf{Leva 1 (Abril)}\\Protótipo Inicial\\(Canvas básico)\\SUS: \textbf{61.5}};
+        \node [block, right=of wave1] (fix1) {\textbf{Ajustes 1}\\Zonas e\\Arestas Curvas};
+        \node [block, right=of fix1] (wave2) {\textbf{Leva 2 (Maio)}\\Protótipo Intermédio\\(SugarCube e CSV)\\SUS: \textbf{73.0}};
+        \node [block, right=of wave2] (fix2) {\textbf{Ajustes 2}\\VariablesModal e\\Parser CSV RFC-4180};
+        \node [block, right=of fix2] (wave3) {\textbf{Leva 3 (Junho)}\\Protótipo Final\\(PlayMode, BFS, Walker)\\SUS: \textbf{84.6}};
+
+        % Connections
+        \path [line] (wave1) -- (fix1);
+        \path [line] (fix1) -- (wave2);
+        \path [line] (wave2) -- (fix2);
+        \path [line] (fix2) -- (wave3);
+    \end{tikzpicture}
+    \caption{Fluxograma do modelo de desenvolvimento iterativo centrado no utilizador e evolução SUS.}
+    \label{fig:modelo-iterativo}
+\end{figure}
 
 \subsection{Primeira Leva: Protótipo Inicial (Abril de 2026)}
 A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os utilizadores U1, U4 e U5, focando-se na validação do conceito do editor visual de grafos. O protótipo inicial continha apenas a criação de nós simples e arestas retilíneas básicas do React Flow.
