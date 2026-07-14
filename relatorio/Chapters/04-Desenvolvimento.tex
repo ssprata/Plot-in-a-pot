@@ -222,7 +222,7 @@ A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os ut
 \begin{itemize}
     \item \textit{Resultados Quantitativos (SUS Estimado):} A pontuação média de usabilidade (escala SUS) nesta fase fixou-se nos \textit{61.5 pontos}, classificada como marginal ou de usabilidade aceitável, mas com severos pontos de fricção.
     \item \textit{Feedback e Falhas Identificadas:} Os utilizadores queixaram-se da falta de interatividade imediata no teste de caminhos narrativos, obrigando a simulações manuais demoradas, e da ausência de assistência para autoria rápida baseada em texto livre.
-    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se e integrou-se o modo de simulação interativa (\textit{PlayMode}) direto no canvas e o módulo de conversor de IA local assente em LLMs (via Ollama) para a importação rápida de texto.
+    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se e integrou-se o modo de simulação interativa (\textit{PlayMode}) direto no canvas e o módulo de conversor de IA local numa versão beta assente em LLMs (via Ollama) para a tentativa de importação rápida de texto.
 \end{itemize}
 
 \subsection{Segunda Leva: Protótipo Intermédio (Maio de 2026)}
@@ -230,8 +230,8 @@ A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizador
 
 \begin{itemize}
     \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias na interatividade e assistência, mas revelando fragilidades ergonómicas com grafos médios e problemas lógicos.
-    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores apontaram a sobreposição caótica de arestas retas, a ausência de agrupamento temático para cenas (capítulos) e a quebra frequente da simulação ao renomear variáveis lógicas globalmente. Adicionalmente, a importação de ficheiros \gls{csv} quebrava quando o texto continha vírgulas integradas.
-    \item \textit{Medidas Corretivas Implementadas:} Implementaram-se as arestas curvas paramétricas baseadas em Splines de Catmull-Rom com \textit{waypoints} em \texttt{EditableEdge.jsx}, as Zonas de agrupamento visual em \texttt{ZoneNode.jsx}, o painel \texttt{VariablesModal.jsx} para refatorização de variáveis e o suporte à norma RFC~4180 no parser de \gls{csv}.
+    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores apontaram a sobreposição caótica de arestas retas, a ausência de agrupamento temático para cenas (capítulos) e a quebra frequente da simulação ao renomear variáveis lógicas globalmente. Adicionalmente, a importação de ficheiros \gls{csv} quebrava quando o texto continha vírgulas integradas. A conversão por IA local ainda apresentava diversos erros e demora um tempo considerável para processar histórias longas, tornando a experiência frustrante.
+    \item \textit{Medidas Corretivas Implementadas:} Implementaram-se as arestas curvas paramétricas baseadas em Splines de Catmull-Rom com \textit{waypoints} em \texttt{EditableEdge.jsx}, as Zonas de agrupamento visual em \texttt{ZoneNode.jsx}, o painel \texttt{VariablesModal.jsx} para refatorização de variáveis e o suporte à norma RFC~4180 no parser de \gls{csv}. Uma revisão do prompt de IA foi realizada para melhorar a precisão da conversão.
 \end{itemize}
 
 \subsection{Terceira Leva: Protótipo Final (Junho de 2026)}

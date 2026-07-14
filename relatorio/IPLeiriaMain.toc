@@ -82,12 +82,12 @@
 \contentsline {subsection}{\numberline {4.4.1}Primeira Leva: Protótipo Inicial (Abril de 2026)}{46}{subsection.4.4.1}%
 \contentsline {subsection}{\numberline {4.4.2}Segunda Leva: Protótipo Intermédio (Maio de 2026)}{46}{subsection.4.4.2}%
 \contentsline {subsection}{\numberline {4.4.3}Terceira Leva: Protótipo Final (Junho de 2026)}{46}{subsection.4.4.3}%
-\contentsline {subsubsection}{Métricas de Conclusão e Tempos de Execução}{46}{subsubsection*.38}%
+\contentsline {subsubsection}{Métricas de Conclusão e Tempos de Execução}{47}{subsubsection*.38}%
 \contentsline {subsubsection}{Avaliação SUS da Leva Final}{47}{subsubsection*.40}%
-\contentsline {subsection}{\numberline {4.4.4}Feedback Qualitativo e Usabilidade Visual}{48}{subsection.4.4.4}%
+\contentsline {subsection}{\numberline {4.4.4}Feedback Qualitativo e Usabilidade Visual}{47}{subsection.4.4.4}%
 \contentsline {section}{\numberline {4.5}Discussão e Limitações do Estudo}{48}{section.4.5}%
 \contentsline {subsection}{\numberline {4.5.1}Discussão Crítica do Desenvolvimento}{48}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}Limitações Metodológicas da Avaliação}{48}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.2}Limitações Metodológicas da Avaliação}{49}{subsection.4.5.2}%
 \contentsline {subsection}{\numberline {4.5.3}Limitações Tecnológicas e Funcionalidade de IA}{49}{subsection.4.5.3}%
 \contentsline {chapter}{\numberline {5}Conclusão e Trabalho Futuro}{50}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Conclusão}{50}{section.5.1}%
