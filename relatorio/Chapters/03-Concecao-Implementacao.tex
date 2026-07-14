@@ -227,6 +227,12 @@ No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicaç
 }
 \end{verbatim}
     Se o nó representar uma Zona de Agrupamento (\texttt{ZoneNode}), o tipo é alterado para \texttt{"zoneNode"} e o objeto passa a incluir propriedades de agrupamento como \texttt{parentId} nos nós filhos e dimensões explícitas de largura e altura controladas pelo utilizador.
+
+    Para além de cenas narrativas (\texttt{"storyNode"}) e Zonas (\texttt{"zoneNode"}), o editor suporta mais dois tipos de nós utilitários:
+    \begin{itemize}
+        \item \textbf{Nós de JavaScript (\texttt{"javascriptNode"}):} Nós dedicados à escrita de scripts globais em JavaScript. Estes scripts são úteis para inicializar funções auxiliares complexas ou configurar regras que serão executadas no simulador de jogo.
+        \item \textbf{Nós de CSS (\texttt{"cssNode"}):} Nós dedicados à escrita de estilos personalizados (CSS) que alteram a estética visual da história quando executada na simulação.
+    \end{itemize}
     
     \item \textbf{Vetor de Arestas do React Flow (\texttt{edges}):} Modela a conectividade geométrica das escolhas narrativas. Cada aresta é configurada como um componente personalizado (\texttt{EditableEdge}) e armazena os pontos geométricos intermédios (\textit{waypoints}) inseridos pelo autor para suavizar as curvas:
 \begin{verbatim}
@@ -309,10 +315,10 @@ Após o término da travessia (quando a fila de exploração fica vazia), o mód
 \subsection{Simulador em Tempo Real (PlayMode) e Smart Walker}
 \label{subsec:simulador-playmode-walker}
 
-O simulador de jogo (\texttt{PlayMode.jsx}) mimetiza o comportamento do interpretador SugarCube num ambiente controlado pelo navegador do autor. Para permitir a depuração em tempo real sem afetar os dados de edição, o motor executa sob um isolamento de contextos:
+O simulador de jogo (\texttt{PlayMode.jsx}) mimetiza o comportamento do interpretador SugarCube num ambiente controlado pelo navegador do autor. Para permitir a depuração em tempo real sem afetar os dados de edição, o motor executa as regras e os scripts dos nós utilitários sob um isolamento de contextos:
 \begin{itemize}
-    \item \textbf{Separação de Estilos:} Os nós categorizados com a tag \texttt{css} têm o seu conteúdo concatenado em tempo de execução e injetado sob a forma de uma tag \texttt{<style id=''playmode-styles''>} na raiz do cabeçalho da página, sendo totalmente limpos ao sair da simulação.
-    \item \textbf{Isolamento de Scripts:} Os nós lógicos contendo JavaScript são processados como funções anónimas com escopo isolado através do construtor \texttt{new Function('state', 'State', 'setup', script\_content)}, impedindo que variáveis globais escritas pelo utilizador interfiram com os estados internos do React ou do canvas do React Flow.
+    \item \textbf{Separação de Estilos:} Os nós de CSS (\texttt{"cssNode"}, descritos na Secção~\ref{subsec:modelacao-dados-reactflow}) têm o seu conteúdo textual compilado e injetado sob a forma de uma tag \texttt{<style id=''playmode-styles''>} na raiz do cabeçalho da página, sendo totalmente removidos da árvore do documento (DOM) ao encerrar a simulação.
+    \item \textbf{Isolamento de Scripts:} Os nós de JavaScript (\texttt{"javascriptNode"}, descritos na Secção~\ref{subsec:modelacao-dados-reactflow}) são compilados de forma dinâmica como funções anónimas com escopo isolado através do construtor \texttt{new Function('state', 'State', 'setup', script\_content)}. Isto garante que quaisquer funções ou variáveis criadas pelo utilizador permaneçam na sandbox local da simulação, impedindo que interfiram com os estados internos reativos do React ou com o motor gráfico do React Flow.
 \end{itemize}
 
 Para testes automáticos de caminhos narrativos, a plataforma disponibiliza o agente autónomo \textbf{Smart Walker} (implementado em \texttt{storyTraversal.js}). Em vez de selecionar opções de forma puramente pseudo-aleatória (o que levaria a uma baixa cobertura de caminhos e retenção em ciclos curtos), o agente utiliza uma heurística baseada em \textit{Procura por Novidade} (\textit{Novelty Search}).
