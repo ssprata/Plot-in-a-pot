@@ -119,26 +119,27 @@ A ferramenta \textit{Ollama} foi selecionada por ser a solução líder de códi
 \begin{itemize}
     \item Gemma 2B (ID \texttt{8ccf136fdd52})
     \item Mistral 7B (ID \texttt{6577803aa9a0})
-    \item Qwen 2.5 7B (ID \texttt{6488c96fa5fa})
+    \item Qwen 3.5 9B (ID \texttt{6488c96fa5fa})
+    \item DeepSeek Coder 6.7B (ID \texttt{ce298d984115})
 \end{itemize}
 
 \subsection{Primeira Fase: Testes em Máquina Local (RTX 3050)}
-A primeira série de testes foi feita a 9 de maio no computador de desenvolvimento, que tem uma gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. Devido ao limite de memória da placa gráfica local, nenhum dos modelos locais funcionou, causando erros de falta de memória (out of memory) e deixando o sistema muito lento.
+A primeira série de testes foi feita a 9 de maio no computador de desenvolvimento, que tem uma gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. O modelo Claude (através de API externa) também foi testado como termo de comparação. Devido ao limite de memória da placa gráfica local, nenhum dos modelos locais funcionou, causando erros de falta de memória (out of memory) e deixando o sistema muito lento.
 
 \subsection{Segunda Fase: Testes no Servidor com GPU Titan Xp (12\,GiB)}
 Para conseguir avaliar a qualidade dos modelos, a 19 de maio, os testes foram repetidos num servidor equipado com uma placa gráfica Nvidia Titan Xp de 12\,GiB. Nesta máquina, todos os testes correram com sucesso em termos de recursos (não havendo falhas de memória), permitindo analisar a estrutura do texto gerado por cada modelo:
 \begin{itemize}
     \item \textbf{Mistral 7B:} O resultado não foi útil, pois o modelo separou quase todas as frases do texto em passagens independentes. Isto criaria dezenas de nós para uma única cena, tornando o mapa confuso. Além disso, adicionou barras invertidas no fim das linhas e lixo de terminal (como \texttt{[3D [K}).
-    \item \textbf{Gemma 2B:} O modelo misturou os cabeçalhos de novos nós dentro do texto de outras passagens. Como o parser da aplicação não suporta nós aninhados, a importação leu isto como texto simples e falhou a criação no canvas.
-    \item \textbf{Qwen 2 7B:} O resultado foi problemático porque o modelo incluiu explicações textuais introdutórias em linguagem natural e deixou a estrutura do código incompleta na resposta final.
-    \item \textbf{Qwen 2.5 7B:} Apresentou o melhor desempenho na organização do fluxo. No entanto, ainda incluiu marcas de raciocínio intermédio (\textit{"Thinking..."}) no início da resposta e criou alguns nós órfãos que não estavam ligados ao resto da história.
+    \item \textbf{Gemma 4B / 2B:} O modelo misturou os cabeçalhos de novos nós dentro do texto de outras passagens. Como o parser da aplicação não suporta nós aninhados, a importação leu isto como texto simples e falhou a criação no canvas.
+    \item \textbf{Qwen 3 8B:} O resultado foi inutilizável porque o modelo incluiu o seu raciocínio interno (a secção de pensamento \textit{"Thinking..."}) no início da resposta e deixou estruturas incompletas na resposta final.
+    \item \textbf{Qwen 3.5 9B:} Apresentou o melhor desempenho na organização do fluxo. No entanto, ainda incluiu o texto de pensamento e criou alguns nós órfãos que não estavam ligados ao resto da história.
 \end{itemize}
 
 \subsection{Correção de Caracteres Estranhos e Ajustes de Execução}
 Mais tarde, foi identificado que a presença de lixo no texto (códigos de controlo como \texttt{[3D [K}) se deveu à forma como o Ollama foi executado através da linha de comandos em processos automáticos. À data dos testes realizados (maio de 2026), tratava-se de uma limitação conhecida e documentada na plataforma de desenvolvimento do projeto \citep{OllamaIssue14571}. Embora esta limitação tenha vindo a ser resolvida recentemente através de uma atualização que suprime os caracteres de controlo quando a saída não é um terminal interativo \citep{OllamaPull17112}, na altura a solução passava por correr a execução através de um script de controlo (por exemplo, em Python) ou, de forma ideal, efetuando as chamadas diretamente à API REST local do Ollama na porta 11434, que fornece o texto puro sem lixo de consola.
 
 \subsection{Estado Atual da Funcionalidade (Beta)}
-A funcionalidade de importação por Inteligência Artificial encontra-se em versão beta, uma vez que a precisão da conversão ainda depende da configuração dos prompts e do modelo utilizado. Contudo, em testes práticos adicionais realizados com o modelo Qwen 2.5 7B numa placa gráfica de gama intermédia (Nvidia RTX 5060 de 8\,GB de VRAM), a conversão correu de forma estável e com resultados satisfatórios. Isto demonstra que, em computadores modernos de consumo com esta capacidade de GPU, o assistente local é uma solução perfeitamente viável.
+A funcionalidade de importação por Inteligência Artificial encontra-se em versão beta, uma vez que a precisão da conversão ainda depende da configuração dos prompts e do modelo utilizado. Contudo, em testes práticos adicionais realizados com o modelo Qwen 3.5 9B numa placa gráfica de gama intermédia (Nvidia RTX 5060 de 8\,GB de VRAM), a conversão correu de forma estável e com resultados satisfatórios. Isto demonstra que, em computadores modernos de consumo com esta capacidade de GPU, o assistente local é uma solução perfeitamente viável.
 
 
 \section{Metodologia dos Testes de Utilizador}
@@ -321,6 +322,6 @@ Embora a avaliação quantitativa com utilizadores tenha revelado uma média de 
 \subsection{Limitações Tecnológicas e Funcionalidade de IA}
 Do ponto de vista tecnológico, identificaram-se limitações na persistência local e no assistente de importação baseado em inteligência artificial:
 \begin{itemize}
-    \item \textbf{Dependência de Hardware e VRAM:} O assistente de importação baseado em \glspl{llm} locais (como o Qwen 2.5 7B) exige uma placa gráfica dedicada com capacidade superior a 8\,GB de VRAM para correr localmente via Ollama com latência aceitável. Esta exigência limita a acessibilidade da funcionalidade em computadores portáteis normais ou de gama baixa (RTX 3050 com 4\,GB de VRAM).
+    \item \textbf{Dependência de Hardware e VRAM:} O assistente de importação baseado em \glspl{llm} locais (como o Qwen 3.5 9B) exige uma placa gráfica dedicada com capacidade superior a 8\,GB de VRAM para correr localmente via Ollama com latência aceitável. Esta exigência limita a acessibilidade da funcionalidade em computadores portáteis normais ou de gama baixa (RTX 3050 com 4\,GB de VRAM).
     \item \textbf{Instabilidade na Formatação Sintática:} Mesmo em ambientes de processamento com 12\,GB de VRAM, os modelos locais geram por vezes passagens aninhadas ou inserem marcas de raciocínio intermediário (\textit{``Thinking...''}) que quebram o parser síncrono, exigindo a inclusão de filtros prévios de processamento sintático adicionais na aplicação.
 \end{itemize}
