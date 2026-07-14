@@ -299,10 +299,10 @@ Esta estrutura híbrida — que combina geometria de grafos, marcação de texto
 
 \section{Integração de Modelos de Linguagem de Grande Escala (LLMs) Locais}
 \label{sec:integracao-llms}
-Com o avanço recente no campo da Inteligência Artificial Generativa, a integração de Modelos de Linguagem de Grande Escala (\textit{Large Language Models} - LLMs) tornou-se um recurso valioso para auxiliar autores na expansão automática e co-criação de narrativas interativas. No entanto, para garantir a viabilidade prática do projeto \gls{piap} sem dependências financeiras ou de conectividade externa, focou-se a pesquisa em modelos de execução local e gratuita.
+Com o avanço recente no campo da Inteligência Artificial Generativa, a integração de Modelos de Linguagem de Grande Escala (\textit{Large Language Models} - LLMs) locais e gratuitos foi analisada numa pesquisa realizada a 13 de abril. O objetivo inicial desta pesquisa foi avaliar a viabilidade prática de utilizar estas ferramentas para auxiliar autores na escrita criativa, na sugestão de caminhos e na co-criação de narrativas interativas, analisando o potencial de diferentes famílias de modelos para tarefas de geração e estruturação textual.
 
 \subsection{Análise de Famílias de Modelos e Recomendações}
-Foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de \gls{ni}:
+Nessa pesquisa realizada a 13 de abril, foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de \gls{ni}:
 
 \begin{enumerate}
     \item \textbf{Família Llama 3 e 3.1 (Meta AI):}
@@ -326,3 +326,14 @@ Foram analisadas três das principais famílias de modelos em open-weight ajusta
         \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (p. ex., ``descreve os principais acontecimentos deste arco narrativo'').
     \end{itemize}
 \end{enumerate}
+
+\subsection{Decisão de Design: Do Co-Criador ao Assistente de Conversão}
+Embora a pesquisa inicial (Secção~\ref{sec:integracao-llms}) tenha demonstrado o potencial dos LLMs para sugerir cenas e resumir narrativas, o desenvolvimento do \gls{piap} tomou a decisão de design de não incluir funcionalidades de geração automática ou co-criação literária na aplicação final. Esta escolha foi motivada pelo respeito à autoria humana exclusiva e pela forte oposição da comunidade de escritores a conteúdos gerados de forma não-humana, priorizando a integridade do processo de escrita do autor.
+
+Desta forma, o papel do LLM foi deliberadamente limitado a uma função técnica e utilitária: um assistente de importação rápida que converte texto livre (já escrito pelo autor) para a sintaxe estruturada Twee 3 interpretada pelo parser. 
+
+Para viabilizar esta aplicação sem custos de API ou quebras de privacidade, a integração é feita localmente com ferramentas como o \textit{Ollama} ou o \textit{LM Studio}, que disponibilizam o modelo numa porta local (11434) para chamadas HTTP internas. A integração segue uma divisão de trabalho estrita para garantir a fiabilidade do sistema:
+\begin{itemize}
+    \item \textbf{Lógica Estrutural (Grafo):} A validação de caminhos, a gestão do histórico e as regras de jogo são processadas de forma 100\% determinística pelo código da aplicação (Lista de Adjacência Bidirecional). Isto garante que a estrutura da narrativa nunca é corrompida.
+    \item \textbf{Assistente de Importação (LLM):} Atua apenas na análise semântica do texto ao nível do vértice (cena), convertendo o texto do autor para a marcação do parser ou sugerindo conexões textuais, sem interferir na integridade do grafo global.
+\end{itemize}

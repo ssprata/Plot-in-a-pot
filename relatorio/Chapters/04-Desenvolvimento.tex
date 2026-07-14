@@ -6,331 +6,70 @@ Este capítulo detalha o processo de implementação prática do \textit{Plot in
 \section{Estrutura do Código e Detalhes de Implementação}
 \label{sec:estrutura-codigo-implementacao}
 
-Para além da fundamentação teórica, o processo de desenvolvimento envolveu a estruturação de uma base de código robusta, modular e altamente reativa. O software está organizado de forma a garantir a separação de conceitos (\textit{Separation of Concerns}), dividindo-se entre componentes de interface visuais, ganchos customizados (\textit{custom hooks}) e utilitários de processamento lógico puro.
-
-\subsection{Gestão de Estado Global, Reatividade e Histórico}
-O componente principal \texttt{App.jsx} atua como o orquestrador reativo central do sistema. Para evitar a criação de um ficheiro monolítico, a equipa encapsulou a lógica de negócio em ganchos customizados (\textit{custom hooks}) específicos:
+Para além do trabalho de desenho, o desenvolvimento prático do \textit{Plot in a Pot} exigiu a criação de uma estrutura de código organizada e fácil de manter. O código da aplicação está guardado na diretoria centralizada \texttt{/src/} e divide-se em três pastas principais:
 \begin{itemize}
-    \item \textbf{\texttt{useSettings}:} Centraliza o estado e a persistência em \textit{LocalStorage} das opções de visualização (ex: exibição de erros, nós secretos, e grau de desfocagem da imagem de fundo).
-    \item \textbf{\texttt{useUndoRedo}:} Controla as pilhas de estados anteriores (\texttt{past}) e futuros (\texttt{future}) para as operações atómicas de desfazer e refazer no canvas.
-    \item \textbf{\texttt{useChoiceSync}:} Implementa a análise sintática em tempo real para sincronizar as ligações textuais com as arestas correspondentes a escolhas.
-    \item \textbf{\texttt{useNodeOperations}:} Encapsula a criação, remoção, duplicação e atualização de propriedades semânticas e posicionais de nós e zonas no editor.
-    \item \textbf{\texttt{useGraphHandlers}:} Gere as interações gráficas ligadas ao canvas (ligar nós, atualizar arestas, gerir arrasto e inserção em zonas de agrupamento).
-    \item \textbf{\texttt{useKeyboardShortcuts}:} Escuta eventos do teclado para acionar atalhos de produtividade global.
-    \item \textbf{\texttt{useProjectPersistence}:} Controla a gravação automática periódica, tradução em tempo real, importação bidirecional de ficheiros Twee 3 e carregamento de modelos base.
+    \item \textbf{Interface (\texttt{components/}):} Guarda os elementos visuais que o utilizador vê no ecrã, tais como os nós da história, as caixas de texto e os menus de opções.
+    \item \textbf{Estado e Comportamento (\texttt{hooks/}):} Controla a memória da aplicação, como as definições ativas, o histórico de ações para poder voltar atrás, e os atalhos do teclado.
+    \item \textbf{Lógica de Processamento (\texttt{utils/}):} Contém as rotinas matemáticas e os algoritmos que funcionam em segundo plano, como a validação de caminhos do grafo e a comunicação com a Inteligência Artificial.
 \end{itemize}
+Esta separação garante que a lógica interna do programa não interfere com o desenho visual da interface, facilitando o trabalho e tornando o software muito mais rápido \citep{Ferreira2024Refactoring}.
 
-A implementação do histórico colocou um desafio relevante no contexto de reatividade do React. Como o React Flow atualiza objetos de nós e arestas por referência, a simples inserção de estados na pilha de histórico resultaria na mutação dos estados passados sempre que o utilizador arrastasse um nó. Para resolver esta limitação, implementou-se uma estratégia de clonagem profunda (\textit{deep clone}) em cada instantâneo, conforme demonstrado na Listagem~\ref{lst:app-undo-redo}.
+\subsection{Funcionamento da Interface Visual}
+\label{subsec:camada-interface}
 
-\begin{listing}[H]
-\begin{lstlisting}
-// Registo de snapshots e funcoes de controlo em useUndoRedo.js
-const takeSnapshot = useCallback(() => {
-  setPast(prev => [
-    ...prev.slice(-50),
-    {
-      nodes: JSON.parse(JSON.stringify(nodesRef.current)),
-      edges: JSON.parse(JSON.stringify(edgesRef.current))
-    }
-  ]);
-  setFuture([]);
-}, []);
+Esta secção explica como os elementos visuais do editor foram construídos e como resolvemos alguns problemas práticos de utilização para tornar a experiência fluida.
 
-const undo = useCallback(() => {
-  if (past.length === 0) return;
-  const previous = past[past.length - 1];
-  setFuture(prev => [
-    {
-      nodes: JSON.parse(JSON.stringify(nodesRef.current)),
-      edges: JSON.parse(JSON.stringify(edgesRef.current))
-    },
-    ...prev
-  ]);
-  setPast(prev => prev.slice(0, -1));
-  setNodes(previous.nodes);
-  setEdges(previous.edges);
-}, [past]);
-\end{lstlisting}
-\caption{Mecanismo de clonagem profunda e gestão da pilha de histórico encapsulado em useUndoRedo.js.}
-\label{lst:app-undo-redo}
-\end{listing}
+\subsubsection{Organização do Canvas e Gestão de Cliques}
+O ecrã principal usa a biblioteca React Flow para desenhar o mapa de nós e ligações interativas. Desenvolvemos dois tipos de nós customizados: o nó de cena (\texttt{StoryNode}), que contém o texto da história e as ligações, e o nó de Zona (\texttt{ZoneNode}), que funciona como um retângulo para agrupar várias cenas em capítulos.
 
-Esta estrutura suporta o fluxo reativo unidirecional da aplicação. Quando o autor edita o texto de uma passagem no painel de propriedades, um evento de alteração é propagado para o estado central em \texttt{App.jsx}, que força a reavaliação síncrona e em segundo plano de dois subsistemas independentes: o parser de texto (que extrai as novas arestas baseadas em ligações double-bracket e reconstrói a Lista de Adjacência em memória) e o validador estático (que executa a travessia BFS sobre a nova lista de adjacência para detetar inconsistências e desenhar alertas visuais de aviso diretamente no canvas).
+Ao colocar nós de cena dentro de uma Zona, surgiu um problema de cliques sobrepostos: o retângulo da Zona bloqueava os cliques que o utilizador tentava dar nas cenas contidas lá dentro. Resolvemos isto de forma simples através de regras de estilos (CSS): configurámos a Zona exterior para ignorar cliques no seu corpo geral e aceitar cliques apenas nas suas bordas e na barra de título. Desta forma, o utilizador consegue mover e editar as cenas dentro das Zonas sem qualquer bloqueio.
 
-\subsection{Componentes Gráficos e Desafios de Interação (Canvas, Nós e Arestas)}
-Os nós gráficos que habitam o canvas estendem os componentes base da biblioteca React Flow (conforme ilustrado na Figura~\ref{fig:editor-canvas}):
-\begin{itemize}
-    \item \textbf{StoryNode.jsx:} Renderiza o título da passagem, o extrato de texto da história e as portas de ligação (\textit{handles}) de entrada e saída.
-    \item \textbf{ZoneNode.jsx (Agrupamento Visual):} Implementa o agrupamento de capítulos. Para resolver o conflito de eventos de rato (onde a Zona sobreposta impedia cliques no canvas de fundo ou nos nós filhos), aplicou-se a propriedade CSS \texttt{pointer-events: none} ao contêiner geral da Zona, e ativou-se \texttt{pointer-events: all} exclusivamente para as bordas de redimensionamento e barra de cabeçalho, como demonstrado na Listagem~\ref{lst:zone-pointer-events}.
-    \item \textbf{EditableEdge.jsx (Arestas Curvas):} Implementa o traçado curvo interativo. O utilizador pode efetuar um duplo clique sobre a linha para introduzir um ponto de controlo (\textit{waypoint}) geométrico. O algoritmo (Listagem~\ref{lst:edge-path-svg}) interpola os pontos e converte a spline Catmull-Rom em comandos de curva Bézier cúbica SVG (\texttt{C}) compatíveis com o navegador.
-\end{itemize}
-
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.85\linewidth]{Figures/editor_canvas.png}
+    \includegraphics[width=0.9\linewidth]{Figures/editor_canvas.png}
     \caption{Interface gráfica do canvas de grafos do Plot in a Pot, demonstrando a estética neo-brutalista de alto contraste com nós de cena e agrupamentos visuais (Zonas).}
     \label{fig:editor-canvas}
 \end{figure}
 
-\begin{listing}[H]
-\begin{lstlisting}
-<!-- Estrutura simplificada do componente ZoneNode -->
-<div 
-  className="zone-node-container" 
-  style={{ pointerEvents: 'none' }}
->
-  <div 
-    className="zone-node-header" 
-    style={{ pointerEvents: 'all' }}
-  >
-    <h3>{data.title}</h3>
-  </div>
-  <div 
-    className="zone-node-body" 
-    style={{ border: '2px dashed #000' }}
-  >
-    {/* Os nos filhos sao renderizados no topo e respondem a cliques */}
-  </div>
-</div>
-\end{lstlisting}
-\caption{Resolução de eventos de rato através de regras CSS em ZoneNode.jsx.}
-\label{lst:zone-pointer-events}
-\end{listing}
+\subsubsection{Caminhos Curvos e Pontos de Controlo}
+As linhas que ligam os nós representam as escolhas do jogador. Para evitar que as linhas fiquem retas e se cruzem de forma confusa por cima de outras cenas, utilizámos curvas matemáticas suaves (chamadas Splines de Catmull-Rom). Além do traçado curvo automático, o utilizador pode dar um duplo clique em qualquer linha para criar um ponto de controlo amarelo. Ao arrastar esse ponto, a linha de ligação curva-se de forma flexível, permitindo contornar obstáculos e manter o mapa organizado.
 
-\begin{listing}[H]
-\begin{lstlisting}
-// Geracao da curva SVG com interpolacao de pontos geometricos
-export function getCatmullRomPath(points) {
-  if (points.length < 2) return '';
-  let path = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] || points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] || p2;
-    
-    // Calculo dos pontos de controlo Bezier baseados em Catmull-Rom
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-    
-    path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-  }
-  return path;
-}
-\end{lstlisting}
-\caption{Algoritmo de interpolação e desenho de curvas no componente EditableEdge.jsx.}
-\label{lst:edge-path-svg}
-\end{listing}
 
-\subsection{Mapeamento Reverso, Expressões Regulares e Matriz de Localização}
-Para gerir a complexidade de narrativas extensas, a equipa implementou as seguintes soluções:
+Para ajudar a navegar em mapas grandes, o painel lateral de propriedades (\texttt{Inspector}) calcula em tempo real quais são os nós que entram e saem do nó selecionado. Isto cria atalhos rápidos para que o autor possa saltar de cena em cena sem ter de arrastar o ecrã manualmente.
+
+\subsubsection{Histórico de Ações (Desfazer e Refazer)}
+Para que o autor possa experimentar ideias sem medo de errar, a aplicação grava um histórico das alterações no mapa. Como o editor atualiza os nós muito rapidamente, foi necessário configurar o sistema para tirar cópias completas dos dados em memória de cada vez que o utilizador faz uma alteração. Se o autor quiser voltar atrás, a aplicação repõe a cópia guardada anteriormente, garantindo que o estado passado é restaurado de forma limpa e sem misturar dados antigos.
+
+\subsubsection{Funcionalidades de Apoio ao Autor}
+Para além do mapa principal, a interface tem outras ferramentas de suporte:
 \begin{itemize}
-    \item \textbf{Mapeamento Reverso no Inspector:} O painel lateral \texttt{Inspector.jsx} lê e sincroniza os dados do nó selecionado. Para evitar que o autor tenha de inspecionar visualmente todo o canvas, o componente realiza um mapeamento reverso sobre a lista de adjacências para identificar e expor em tempo real todos os caminhos incidentes de entrada e saída (Listagem~\ref{lst:inspector-adjacency}).
-    \item \textbf{Refatorização de Variáveis em VariablesModal:} Quando o utilizador renomeia uma variável global, o sistema varre e atualiza de forma atómica todas as ocorrências em todos os nós da história. A substituição recorre a uma expressão regular compilada com barreira de palavras (\texttt{\textbackslash b}) para evitar sobreposição de nomes parciais (conforme a Figura~\ref{fig:variables-modal} e Listagem~\ref{lst:variables-regex}).
-    \item \textbf{Matriz de Localização e Parser CSV:} O painel \texttt{TranslationMatrix.jsx} expõe uma grelha de tradução (ilustrada na Figura~\ref{fig:translation-matrix}). Para permitir a interoperabilidade com editores de folhas de cálculo externos, desenvolveu-se um parser de importação \gls{csv} personalizado aderente à norma RFC 4180 (Listagem~\ref{lst:translation-csv}).
+    \item \textbf{Simulação (PlayMode):} Abre um ecrã de simulação (como se vê na Figura~\ref{fig:playmode-simulation}) onde o autor pode jogar a sua história e ver como as variáveis mudam em tempo real.
+    \item \textbf{Gestão de Variáveis:} Um menu simples para criar variáveis (como chaves ou pontos de vida), como se ilustra na Figura~\ref{fig:variables-modal-app} do Apêndice~\ref{ap:manual-utilizador}. Se o autor mudar o nome de uma variável, a aplicação procura essa variável em todas as cenas e atualiza o nome de forma automática.
+    \item \textbf{Matriz de Tradução:} Uma tabela única (apresentada na Figura~\ref{fig:translation-matrix-app} do Apêndice~\ref{ap:manual-utilizador}) que lista todos os textos da história para facilitar a tradução para outros idiomas. O utilizador pode exportar esta tabela como um ficheiro CSV para enviar a um tradutor externo e depois voltar a importá-la com o trabalho concluído.
+    \item \textbf{Editor Visual de Lógica:} Um formulário alternativo (ilustrado na Figura~\ref{fig:visual-blocks-app} do Apêndice~\ref{ap:manual-utilizador}) que permite configurar caminhos condicionados por opções visuais (dropdowns), ideal para quem não quer escrever código manual.
 \end{itemize}
 
-\begin{listing}[H]
-\begin{lstlisting}
-// Calculo de caminhos incidentes no painel lateral
-const getConnections = (nodeId, edges, nodes) => {
-  const incoming = edges
-    .filter(edge => edge.target === nodeId)
-    .map(edge => {
-      const srcNode = nodes.find(n => n.id === edge.source);
-      return { id: edge.source, label: srcNode?.data?.label || edge.source };
-    });
-    
-  const outgoing = edges
-    .filter(edge => edge.source === nodeId)
-    .map(edge => {
-      const tgtNode = nodes.find(n => n.id === edge.target);
-      return { id: edge.target, label: tgtNode?.data?.label || edge.target };
-    });
-    
-  return { incoming, outgoing };
-};
-\end{lstlisting}
-\caption{Mapeamento dinâmico de nós predecessores e sucessores em Inspector.jsx.}
-\label{lst:inspector-adjacency}
-\end{listing}
-
-\begin{listing}[H]
-\begin{lstlisting}
-// Substituicao em lote de variaveis nos textos dos nos
-const refactorVariableInNodes = (oldName, newName, currentNodes) => {
-  const escapedOld = oldName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const regex = new RegExp(escapedOld + '\\b', 'g');
-  
-  return currentNodes.map(node => {
-    const text = node.data.content || '';
-    if (regex.test(text)) {
-      return {
-        ...node,
-        data: { ...node.data, content: text.replace(regex, newName) }
-      };
-    }
-    return node;
-  });
-};
-\end{lstlisting}
-\caption{Refatorização automática de variáveis lógicas baseada em \gls{regex} no VariablesModal.jsx.}
-\label{lst:variables-regex}
-\end{listing}
-
-\begin{listing}[H]
-\begin{lstlisting}
-// Conversao de texto CSV bruto numa matriz de traducao
-const parseCSVToTranslations = (csvText) => {
-  const rows = [];
-  let currentRow = [];
-  let currentCell = '';
-  let inQuotes = false;
-  
-  for (let i = 0; i < csvText.length; i++) {
-    const char = csvText[i];
-    const nextChar = csvText[i + 1];
-    
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        currentCell += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === ',' && !inQuotes) {
-      currentRow.push(currentCell.trim());
-      currentCell = '';
-    } else if ((char === '\n' || char === '\r') && !inQuotes) {
-      if (char === '\r' && nextChar === '\n') i++;
-      currentRow.push(currentCell.trim());
-      rows.push(currentRow);
-      currentRow = [];
-      currentCell = '';
-    } else {
-      currentCell += char;
-    }
-  }
-  return rows;
-};
-\end{lstlisting}
-\caption{Parser de importação de ficheiros \gls{csv} com suporte à norma RFC 4180 em TranslationMatrix.jsx.}
-\label{lst:translation-csv}
-\end{listing}
-
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.85\linewidth]{Figures/variables_modal.png}
-    \caption{Diálogo de gestão de variáveis globais (VariablesModal), apresentando os tokens de dados e a renomeação segura baseada em \gls{regex}.}
-    \label{fig:variables-modal}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Figures/translation_matrix.png}
-    \caption{Matriz de localização integrada no editor, exibindo a grelha de chaves de texto e a respetiva tradução direta para os idiomas selecionados.}
-    \label{fig:translation-matrix}
-\end{figure}
-
-\subsection{Sandbox de Simulação, Edição Lógica Estruturada e Utilitários}
-Para além dos componentes gráficos, a equipa implementou módulos de simulação, edição estruturada de lógica e processamento sintático puro (que operam fora do ciclo de renderização direta do DOM):
-\begin{itemize}
-    \item \textbf{PlayMode.jsx (Sandbox Isolada):} Mimetiza a execução da história. Para evitar que variáveis de script globais escritas pelo utilizador interfiram com os estados internos da aplicação React, o motor executa os blocos dinâmicos sob uma sandbox isolada baseada no construtor de funções dinâmicas (como exibido na Figura~\ref{fig:playmode-simulation} e Listagem~\ref{lst:playmode-sandbox}).
-    \item \textbf{VisualBlocksEditor.jsx (Edição Estruturada):} Permite que autores configurem prosa, setters de variáveis e escolhas condicionais graficamente, as quais são convertidas em macros SugarCube (apresentada na Figura~\ref{fig:visual-blocks} e Listagem~\ref{lst:visual-blocks}).
-    \item \textbf{tweeParser.js (Parser de Layout):} Converte o canvas reativo em ficheiro de texto Twee 3. O parser processa as coordenadas posicionais, convertendo-as de absolutas para relativas caso os nós estejam contidos em Zonas de Agrupamento (Listagem~\ref{lst:parser-coordinate-conversion}).
-    \item \textbf{storyTraversal.js e storyValidator.js (Validador BFS):} Executa a travessia de espaço de estados. A Listagem~\ref{lst:traversal-loop} ilustra o ciclo principal do algoritmo, evidenciando a paragem reguladora de segurança de visitas a nós a um limite $K = 10$ estados lógicos distintos.
-    \item \textbf{aiGenerator.js (Assistente de Conversão com IA):} Efetua chamadas assíncronas HTTP REST para o servidor Ollama na porta padrão, estruturando prompts de sistema para desativar saídas coloquiais e garantir o formato Twee 3 (Listagem~\ref{lst:ai-request}).
-\end{itemize}
-
-\begin{listing}[H]
-\begin{lstlisting}
-// Execucao controlada de scripts do utilizador
-const executeScriptInSandbox = (scriptContent, gameState) => {
-  try {
-    const sandbox = new Function('state', `
-      with(state) {
-        ${scriptContent}
-      }
-    `);
-    const stateClone = JSON.parse(JSON.stringify(gameState));
-    sandbox(stateClone);
-    return stateClone;
-  } catch (error) {
-    console.error("Erro na execucao do script:", error);
-    return gameState;
-  }
-};
-\end{lstlisting}
-\caption{Mecanismo de execução de scripts de lógica com isolamento de contexto no PlayMode.jsx.}
-\label{lst:playmode-sandbox}
-\end{listing}
-
-\begin{listing}[H]
-\begin{lstlisting}
-// Conversao de logica estruturada em texto de macros SugarCube
-export function serializeLogicToText(logic) {
-  const parts = [];
-  if (logic.narrative) {
-    parts.push(logic.narrative);
-    parts.push('');
-  }
-  if (logic.setters && logic.setters.length > 0) {
-    logic.setters.forEach(s => {
-      if (s.variable.trim()) {
-        parts.push(`<<set $${s.variable.trim()} to ${s.value}>>`);
-      }
-    });
-    parts.push('');
-  }
-  return parts.join('\n');
-}
-\end{lstlisting}
-\caption{Serialização da estrutura de formulários lógicos em macros SugarCube (logicParser.js).}
-\label{lst:visual-blocks}
-\end{listing}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Figures/playmode_simulation.png}
+    \includegraphics[width=0.9\linewidth]{Figures/playmode_simulation.png}
     \caption{Ecrã da sandbox de simulação (PlayMode), ilustrando a execução em tempo real da história com o painel de depuração de variáveis lógicas.}
     \label{fig:playmode-simulation}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Figures/visual_blocks.png}
-    \caption{Interface do editor visual de lógica estruturada (VisualBlocksEditor), dividindo as passagens em painéis de prosa, setters de variáveis e escolhas condicionais.}
-    \label{fig:visual-blocks}
-\end{figure}
+\subsection{Funcionamento da Camada de Lógica}
+\label{subsec:camada-logica}
 
-\begin{listing}[H]
-\begin{lstlisting}
-// Conversao de coordenadas na leitura de passagens Twee 3
-export function parsePassageMetadata(metaString, zoneMap) {
-  try {
-    const meta = JSON.parse(metaString || '{}');
-    let x = meta.position?.x ?? 0;
-    let y = meta.position?.y ?? 0;
-    const parentId = meta.parentId;
-    
-    if (parentId && zoneMap.has(parentId)) {
-      const zone = zoneMap.get(parentId);
-      x = x - (zone.position?.x ?? 0);
-      y = y - (zone.position?.y ?? 0);
-    }
-    return { x, y, parentId, width: meta.size?.width, height: meta.size?.height };
-  } catch (e) {
-    return { x: 0, y: 0 };
-  }
-}
-\end{lstlisting}
-\caption{Processamento de coordenadas absolutas e relativas de nós e Zonas em tweeParser.js.}
-\label{lst:parser-coordinate-conversion}
-\end{listing}
+A lógica do programa é composta por três módulos independentes: o leitor de ficheiros, o validador matemático de rotas (que deteta erros no fluxo) e o assistente de Inteligência Artificial (atualmente em versão beta, usado exclusivamente para converter histórias existentes em texto livre para o formato do mapa). Esta camada funciona de forma autónoma em segundo plano:
 
-\begin{listing}[H]
+\subsubsection{Leitor de Ficheiros Twee 3}
+O leitor (\texttt{tweeParser}) é o responsável por traduzir o mapa visual do canvas em ficheiros de texto no formato Twine (Twee 3) e vice-versa. Quando um ficheiro de texto é importado, o leitor decifra a posição das cenas e coloca-as no ecrã. Se um nó estiver dentro de uma Zona de capítulo, o leitor calcula a sua posição somando os desvios da Zona-mãe, para que as caixas fiquem organizadas exatamente como o autor as deixou.
+
+\subsubsection{Validação de Caminhos e Ciclos Infinitos}
+Para verificar se existem erros na história (como caminhos sem saída ou cenas impossíveis de alcançar), o sistema percorre automaticamente todas as rotas do grafo em largura (BFS). No entanto, como as histórias têm escolhas baseadas em variáveis (por exemplo, um loop onde o jogador volta à mesma sala até encontrar uma chave), a validação podia ficar presa num ciclo infinito em segundo plano.
+
+Para evitar isto e manter a aplicação rápida, o validador (\texttt{storyTraversal}) implementa uma regra de segurança: se o mesmo nó for visitado 10 vezes com estados diferentes das variáveis, o sistema assume que existe um ciclo infinito no mapa e interrompe a pesquisa, avisando de imediato o utilizador, conforme demonstrado no código da Listagem~\ref{lst:traversal-loop}.
+
+\begin{listing}[!htpb]
 \begin{lstlisting}
 // Travessia e controlo de ciclos por limite de estados visitados
 while (queue.length > 0) {
@@ -351,71 +90,48 @@ while (queue.length > 0) {
   
   visitedStates.get(nodeId).push(stateStr);
   arrivalHistory.get(nodeId).push({ path, state: newState });
-}
-\end{lstlisting}
-\caption{Ciclo principal de exploração do espaço de estados no motor storyTraversal.js.}
-\label{lst:traversal-loop}
-\end{listing}
-
-\begin{listing}[H]
-\begin{lstlisting}
-// Envio do prompt de conversao estrutural para o Ollama local
-export async function generateTweeFromText(userText, modelName = 'llama3') {
-  const response = await fetch('http://localhost:11434/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [
-        { role: 'system', content: 'You are a parser. Convert the story to Twee 3. Output ONLY raw Twee 3 format.' },
-        { role: 'user', content: userText }
-      ],
-      stream: false
-    })
-  });
-  const data = await response.json();
-  return data.message?.content || '';
-}
-\end{lstlisting}
-\caption{Estrutura de comunicação assíncrona com o Ollama local em aiGenerator.js.}
-\label{lst:ai-request}
-\end{listing}
+\subsubsection{Ligação à Inteligência Artificial}
+O módulo de IA (\texttt{aiGenerator}) permite converter histórias existentes, escritas em linguagem simples pelo autor, para o formato aceite pelo editor. O sistema faz um pedido de comunicação direto (via API REST local na porta 11434) a um modelo de linguagem a correr no computador do utilizador. O prompt enviado obriga o modelo de IA a estruturar a resposta no formato padrão Twine, garantindo que o nosso leitor de ficheiros possa criar os nós visuais e as ligações no canvas sem qualquer erro de formatação.
+\subsubsection{Fluxo de Atualização Reativa}
+Para manter a aplicação sempre coerente, o fluxo de dados é direto e contínuo:
+\begin{enumerate}
+    \item O utilizador edita o texto de uma cena.
+    \item Em segundo plano, o editor lê as alterações, cria as novas linhas de ligação e atualiza a estrutura do mapa.
+    \item O validador percorre de imediato a estrutura em largura (BFS) para descobrir novos erros de lógica.
+    \item Qualquer problema detetado é assinalado com uma borda amarela de alerta no ecrã.
+\end{enumerate}
+Este ciclo automático garante que o autor vê os erros de escrita imediatamente, enquanto escreve, sem ter de compilar ou jogar a história manualmente.
 
 \section{Testes de Conversão e Comparação de Modelos de Linguagem (IA Local)}
 
-Para analisar a viabilidade do assistente de importação de texto livre, foram realizados testes com diferentes modelos de linguagem (\glspl{llm}) executados localmente. A escolha do ecossistema Ollama para estes testes justifica-se por ser uma ferramenta leve e otimizada de orquestração local que expõe uma API REST padrão, facilitando a integração direta com o editor e assegurando a soberania dos dados sem custos de operação.
+Para avaliar o comportamento do assistente de importação rápida, realizámos testes com o objetivo de converter histórias escritas em texto livre (linguagem natural) para a estrutura do editor. O teste consistiu em fornecer um texto descritivo e verificar se os modelos de inteligência artificial conseguiam gerar o formato Twee 3 de forma correta e sem erros de formatação.
+
+Escolhemos a ferramenta \textit{Ollama} por ser a solução líder de código aberto para correr modelos de linguagem (LLMs) localmente. Isto permitiu realizar os testes de forma gratuita, com total privacidade dos dados e sem dependência de chaves de acesso (APIs) externas. Os testes foram realizados com os seguintes modelos:
+\begin{itemize}
+    \item Gemma 2B (ID \texttt{8ccf136fdd52})
+    \item Mistral 7B (ID \texttt{6577803aa9a0})
+    \item Qwen 3.5 9B (ID \texttt{6488c96fa5fa})
+    \item DeepSeek Coder 6.7B (ID \texttt{ce298d984115})
+\end{itemize}
 
 \subsection{Primeira Fase: Testes em Máquina Local (RTX 3050)}
-A primeira série de testes foi realizada a 9 de maio no computador do programador, equipado com uma placa gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. O objetivo do teste consistiu em submeter uma narrativa linear escrita em linguagem natural para avaliar a capacidade do modelo em estruturar as passagens e os respetivos caminhos de ligação conformes à sintaxe Twee 3. Selecionaram-se os seguintes modelos locais da biblioteca Ollama:
-\begin{itemize}
-    \item Gemma 2B: ID \texttt{8ccf136fdd52}
-    \item Mistral 7B: ID \texttt{6577803aa9a0}
-    \item Qwen 3.5 9B: ID \texttt{6488c96fa5fa}
-    \item DeepSeek Coder 6.7B: ID \texttt{ce298d984115}
-\end{itemize}
-Além destes, foi testado o modelo Claude (acessível via API externa). Contudo, devido às restrições severas de memória da placa gráfica local de 4\,GB, nenhum dos modelos locais funcionou adequadamente, gerando lentidão extrema no sistema operativo e erros de falta de memória (\textit{out of memory}).
+A primeira série de testes foi feita a 9 de maio no computador de desenvolvimento, que tem uma gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. Também testámos o modelo Claude (através de API externa) como termo de comparação. Devido ao limite de memória da placa gráfica local, nenhum dos modelos locais funcionou, causando erros de falta de memória (out of memory) e deixando o sistema muito lento.
 
-\subsection{Segunda Fase: Testes com Maior Capacidade de Processamento}
-Para viabilizar a execução e avaliação comparativa dos modelos locais, a 19 de maio realizaram-se os mesmos testes num servidor de desenvolvimento equipado com uma GPU Nvidia Titan Xp com 12\,GB de VRAM. A análise das respostas obtidas revelou falhas sistemáticas em cada modelo que inviabilizaram a importação direta:
+\subsection{Segunda Fase: Testes no Servidor com GPU Titan Xp (12\,GiB)}
+Para conseguir avaliar a qualidade dos modelos, a 19 de maio, os testes foram repetidos num servidor equipado com uma placa gráfica Nvidia Titan Xp de 12\,GiB. Nesta máquina, todos os testes correram com sucesso em termos de recursos (não havendo falhas de memória), permitindo analisar a estrutura do texto gerado por cada modelo:
 \begin{itemize}
-    \item \textbf{Mistral 7B (\texttt{mistral\_7b}):} O resultado revelou-se inadequado para a aplicação. O modelo separou quase todas as frases do texto em passagens independentes, gerando dezenas de pequenos nós para uma única cena, o que corrompeu o fluxo e a legibilidade do grafo. Adicionalmente, inseriu barras invertidas no final das linhas e lixo de terminal (como sequências de controlo ANSI). Posteriormente, identificou-se que esta poluição de caracteres se deveu ao modo como a ferramenta de linha de comandos (CLI) do Ollama lida com saídas direcionadas em processos automáticos sem terminal interativo (TTY), problema este contornável através da utilização de uma API REST ou via scripts Python.
-    \item \textbf{Gemma 4B / 2B (\texttt{gemma4\_e4b}):} O modelo esboçou a criação de passagens, mas inseriu os cabeçalhos de definição de passagem (o marcador \texttt{::}) no interior do corpo de texto de outros nós. Sendo que a especificação Twee 3 proíbe passagens aninhadas, o parser interpretou a totalidade da resposta como um único nó corrompido.
-    \item \textbf{Qwen 3 8B (\texttt{qwen3\_8b}):} O resultado revelou-se inutilizável pois o modelo incluiu os seus blocos de raciocínio interno (prefixados por \textit{``Thinking...''}) no início da resposta, inviabilizando o parsing. Adicionalmente, gerou um bloco JSON incompleto e caracteres ANSI no fluxo de texto.
-    \item \textbf{Qwen 3.5 9B (\texttt{qwen3.5\_9b}):} Apresentou o melhor desempenho de mapeamento e estrutura formal de caminhos, mas ainda assim falhou na conformidade total devido à inclusão de textos de raciocínio intermediário no início da resposta e à geração de nós órfãos desconetados da árvore principal.
+    \item \textbf{Mistral 7B:} O resultado não foi útil, pois o modelo separou quase todas as frases do texto em passagens independentes. Isto criaria dezenas de nós para uma única cena, tornando o mapa confuso. Além disso, adicionou barras invertidas no fim das linhas e lixo de terminal (como \texttt{[3D [K}).
+    \item \textbf{Gemma 4B / 2B:} O modelo misturou os cabeçalhos de novos nós dentro do texto de outras passagens. Como o nosso parser não suporta nós aninhados, a importação leu isto como texto simples e falhou a criação no canvas.
+    \item \textbf{Qwen 3 8B:} O resultado foi inutilizável porque o modelo incluiu o seu raciocínio interno (a secção de pensamento \textit{"Thinking..."}) no início da resposta e deixou estruturas incompletas na resposta final.
+    \item \textbf{Qwen 3.5 9B:} Apresentou o melhor desempenho na organização do fluxo. No entanto, ainda incluiu o texto de pensamento e criou alguns nós órfãos que não estavam ligados ao resto da história.
 \end{itemize}
 
-\subsection{Identificação do Bug Técnico no Ollama}
-Mais tarde, identificou-se que a presença de lixo do terminal (códigos ANSI, sequências \texttt{[3D [K}, etc.) se deve a um comportamento documentado do CLI do Ollama (Issue \#14571 no GitHub). Quando o utilitário \texttt{ollama run} é invocado programaticamente a partir de um processo em segundo plano, ele falha em detetar a ausência de um terminal interativo (TTY), continuando a injetar caracteres de escape ANSI de controlo de cursor na resposta textual.
+\subsection{Correção de Caracteres Estranhos e Ajustes de Execução}
+Mais tarde, identificámos que a presença de lixo no texto (códigos de controlo como \texttt{[3D [K}) se deveu à forma como o Ollama foi executado através da linha de comandos em processos automáticos. À data dos nossos testes (maio de 2026), tratava-se de uma limitação conhecida e documentada na plataforma de desenvolvimento do projeto \citep{OllamaIssue14571}. Embora esta limitação tenha vindo a ser resolvida recentemente através de uma atualização que suprime os caracteres de controlo quando a saída não é um terminal interativo \citep{OllamaPull17112}, na altura a solução passava por correr a execução através de um script de controlo (por exemplo, em Python) ou, de forma ideal, efetuando as chamadas diretamente à API REST local do Ollama na porta 11434, que fornece o texto puro sem lixo de consola.
 
-Para mitigar este problema no \gls{piap}, identificaram-se três abordagens corretivas:
-\begin{enumerate}
-    \item \textbf{Limpeza com Expressões Regulares:} Filtrar o texto de saída na aplicação aplicando uma expressão regular para expurgar as sequências ANSI.
-    \item \textbf{Descartar a Saída de Erros:} Redirecionar o fluxo de erro padrão (\texttt{stderr}) do processo do Ollama para o nulo.
-    \item \textbf{Uso da API REST do Ollama (Implementada):} Ligar a aplicação diretamente à API HTTP REST local do Ollama (na porta \texttt{11434}). A API REST contorna o CLI oficial e devolve o texto limpo de formatação.
-\end{enumerate}
+\subsection{Estado Atual da Funcionalidade (Beta)}
+A funcionalidade de importação por Inteligência Artificial encontra-se em versão beta, uma vez que a precisão da conversão ainda depende da configuração dos prompts e do modelo utilizado. Contudo, em testes práticos adicionais realizados com o modelo Qwen 3.5 9B numa placa gráfica de gama intermédia (Nvidia RTX 5060 de 8\,GB de VRAM), a conversão correu de forma estável e com resultados satisfatórios. Isto demonstra que, em computadores modernos de consumo com esta capacidade de GPU, o assistente local é uma solução perfeitamente viável.
 
-\subsection{Estado Atual da Funcionalidade (Beta) e Trabalho Futuro}
-Conclui-se que o modelo Qwen 3.5 9B apresenta a melhor estrutura narrativa e conformidade com o parser. No entanto, mesmo com acesso a hardware dedicado com capacidade superior a 8\,GB de VRAM, a funcionalidade de conversão por IA local permanece em fase experimental (beta), uma vez que a precisão de mapeamento estrutural e a correta filtragem de blocos de raciocínio interno (como tags \texttt{<think>...</think>}) exigem novos refinamentos de prompting e de filtros prévios de processamento. Esta funcionalidade constitui uma linha de investigação ativa para futuros desenvolvimentos.
 
 \section{Análise de Desempenho e Complexidade Algorítmica}
 \label{sec:analise-desempenho-complexidade}
@@ -442,11 +158,43 @@ Interpolação de Arestas (Catmull-Rom) & $\mathcal{O}(W)$ & $\mathcal{O}(W)$ \\
 \smallskip
 \begin{minipage}{\linewidth}
 \centering
-\small \textit{Nota: $L$ representa o número total de caracteres no ficheiro Twee; $V$ e $E$ indicam os vértices e arestas no grafo; $W$ é o número de waypoints da aresta; $K$ representa o limite regulador de estados visitados por nó ($K = 10$).}
+\small \textit{Nota: $L$ representa o número total de caracteres no ficheiro Twee; $V$ e $E$ indicam o número de vértices e arestas no grafo; $W$ é o número de waypoints da aresta; $K$ representa o limite regulador de estados visitados por nó ($K = 10$).}
 \end{minipage}
 \end{table}
 
-O parser opera com complexidade temporal linear $\mathcal{O}(L)$ na leitura do texto completo. O validador \gls{bfs} especial explora o espaço de estados com limite regulador $K$, garantindo complexidade controlada mesmo em grafos com ciclos infinitos, uma vez que a paragem é forçada no pior cenário após $K$ visitas redundantes ao mesmo vértice. O motor de splines Catmull-Rom opera de forma linear com base no número de waypoints da aresta ($W$), processando apenas as curvas ativas visíveis no ecrã.
+A análise destas complexidades ajudou a tomar decisões importantes sobre o funcionamento prático da aplicação:
+\begin{itemize}
+    \item \textbf{Processamento no Navegador:} Como a leitura do texto (Twee 3) é muito rápida e linear ($\mathcal{O}(L)$), percebemos que o browser conseguiria carregar histórias longas em milissegundos. Isto permitiu fazer todo o processamento localmente no computador do utilizador, sem necessidade de servidores externos.
+    \item \textbf{Evitar Bloqueios no Ecrã:} Numa verificação de caminhos normal, a existência de escolhas repetitivas ou caminhos circulares na história faria com que o validador ficasse preso num ciclo infinito. Ao limitarmos as visitas repetidas a cada nó ($K=10$), garantimos que a pesquisa de erros termina de imediato, evitando que o ecrã do utilizador congele.
+    \item \textbf{Desenho de Linhas em Tempo Real:} O cálculo matemático para desenhar as linhas curvas (Catmull-Rom) é muito leve ($\mathcal{O}(W)$) porque o utilizador usa poucos pontos de controlo nas curvas. Assim, pudemos calcular as posições em tempo real enquanto o utilizador arrasta o rato, mantendo as animações fluidas e sem consumir memória extra. A conversão de coordenadas para o formato Bézier Cúbico aceite pelo elemento SVG, baseada na formulação partilhada pela comunidade \citep{Aarts2018StackOverflow}, encontra-se descrita na Listagem~\ref{lst:catmull-rom-js}.
+\end{itemize}
+
+\begin{listing}[!htpb]
+\begin{lstlisting}
+// Conversao de pontos para spline Catmull-Rom no formato SVG
+const catmullRomPath = (points) => {
+  if (points.length < 2) return '';
+  let path = `M ${points[0].x},${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(i - 1, 0)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(i + 2, points.length - 1)];
+
+    // Calculo dos pontos de controlo da curva de Bezier
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+    path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+  }
+  return path;
+};
+\end{lstlisting}
+\caption{Função de conversão de caminhos para curvas Bézier baseada em Catmull-Rom.}
+\label{lst:catmull-rom-js}
+\end{listing}
 
 \subsection{Benchmarks de Desempenho Empíricos}
 Para medir a velocidade real de execução das rotinas da aplicação, montou-se um ambiente de testes sintéticos simulando três escalas crescentes de projetos de autoria. Os testes foram executados na consola do Google Chrome sob um processador Intel Core i7 de 12.ª geração com 16\,GB de RAM. Os tempos médios obtidos após 50 execuções sucessivas encontram-se sumarizados na Tabela~\ref{tab:benchmarks-desempenho}.
