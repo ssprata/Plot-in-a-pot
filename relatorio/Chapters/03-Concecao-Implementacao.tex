@@ -166,7 +166,7 @@ O processo de importação é gerido pela função \texttt{parseTwee3(source)}, 
         \begin{center}
         \lstinline|/<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g|
         \end{center}
-        O parser analisa o bloco interno à procura de comandos como \lstinline|<<goto "Destino">>| ou atribuições como \lstinline|<<set $proximo_destino = "Destino">>| para gerar as arestas direcionadas.
+        O parser analisa o bloco interno à procura de comandos como \lstinline|<<goto "Destino">>| para gerar as arestas direcionadas.
     \end{itemize}
     Se o nó de destino de qualquer ligação não for encontrado no mapeamento global de passagens, é gerado um aviso de link quebrado que é apresentado na interface visual (no painel laranja de alertas).
     
@@ -247,7 +247,24 @@ Para evitar a sobreposição visual das ligações e o cruzamento cego sobre os 
 
 O autor pode criar novos marcadores (\textit{waypoints}) com um duplo clique e arrastá-los livremente pelo ecrã. A curva é recalculada em tempo de execução à medida que os marcadores são movidos, interpolando a sua posição de forma contínua para manter a linha fluida e desimpedida de outros elementos do grafo.
 
-A interpolação matemática de Catmull-Rom foi programada de forma manual diretamente no componente (sem recurso a bibliotecas externas de cálculo geométrico ou de desenho), convertendo a sequência de pontos em segmentos de curvas Bézier Cúbicas nativas no formato de caminho SVG do navegador. Esta abordagem de implementação própria justifica-se por evitar a sobrecarga de dependências (NPM) adicionais na aplicação e por garantir que o processamento e a renderização das linhas ocorram de forma extremamente rápida e leve no lado do cliente.
+A interpolação matemática de Catmull-Rom foi programada diretamente no componente de forma a evitar dependências de pacotes externos, otimizando o desempenho e garantindo uma renderização leve no lado do cliente. Esta implementação foi adaptada a partir da solução documentada na comunidade de programadores do \textit{Stack Overflow} \citep{Aarts2018StackOverflow}. 
+
+O algoritmo funciona convertendo a sequência ordenada de pontos (composta pelo nó de origem, os \textit{waypoints} intermédios e o nó de destino) em segmentos de curvas Bézier Cúbicas nativas do formato SVG. Para cada par de pontos consecutivos $p_i$ e $p_{i+1}$, os respetivos pontos de controlo $cp_1$ e $cp_2$ da curva Bézier são gerados em tempo real recorrendo aos pontos adjacentes $p_{i-1}$ e $p_{i+2}$, de acordo com a formulação matemática:
+\[
+cp_{1,x} = p_{i,x} + \frac{p_{i+1,x} - p_{i-1,x}}{6}
+\]
+\[
+cp_{1,y} = p_{i,y} + \frac{p_{i+1,y} - p_{i-1,y}}{6}
+\]
+\[
+cp_{2,x} = p_{i+1,x} - \frac{p_{i+2,x} - p_{i,x}}{6}
+\]
+\[
+cp_{2,y} = p_{i+1,y} - \frac{p_{i+2,y} - p_{i,y}}{6}
+\]
+
+A divisão constante por $6$ corresponde à parametrização da tensão da spline, garantindo a continuidade de primeira ordem ($C^1$) na junção entre segmentos (suavidade tangencial). Os pontos calculados são de seguida serializados na propriedade \texttt{d} do elemento SVG \texttt{<path>} através do comando Bézier cúbico \texttt{C cp1.x,cp1.y cp2.x,cp2.y p2.x,p2.y}.
+
 
 \subsection{Acessibilidade e Identidade Visual Customizada}
 \label{subsec:acessibilidade-identidade-visual}

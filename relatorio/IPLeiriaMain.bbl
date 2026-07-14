@@ -41,6 +41,32 @@
     \field{year}{1997}
   \endentry
 
+  \entry{Aarts2018StackOverflow}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=AR}{%
+         family={Aarts},
+         familyi={A\bibinitperiod},
+         given={Roy},
+         giveni={R\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{AR1}
+    \strng{fullhash}{AR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2018}
+    \field{labeldatesource}{}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{howpublished}{Stack Overflow Answer}
+    \field{title}{How to draw smooth curve through N points using javascript \&
+  HTML5 canvas?}
+    \verb{url}
+    \verb https://stackoverflow.com/a/49371661
+    \endverb
+    \field{year}{2018}
+  \endentry
+
   \entry{Adams2014}{book}{}
     \name{author}{1}{}{%
       {{hash=AE}{%
