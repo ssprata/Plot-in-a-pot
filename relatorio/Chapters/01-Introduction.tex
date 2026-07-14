@@ -1,19 +1,17 @@
 \chapter{Introdução}
 \label{cp:introduction}
 
-O desenvolvimento de jogos e narrativas interativas tem vindo a ganhar uma importância crescente no panorama do entretenimento e da educação. Diferente do cinema ou da literatura tradicional, uma \gls{ni} coloca o utilizador no centro da tomada de decisões, permitindo-lhe moldar o rumo dos acontecimentos através das suas escolhas. Esta não-linearidade narrativa, no entanto, introduz uma complexidade acrescida na escrita e no planeamento das histórias, exigindo ferramentas capazes de gerir fluxos de informação complexos e lógica de estados dinâmicos.
+As narrativas interativas (\gls{ni}) colocam o utilizador no centro da tomada de decisões, permitindo-lhe moldar o rumo dos acontecimentos. Esta não-linearidade, contudo, aumenta exponencialmente a complexidade da escrita e do planeamento, exigindo ferramentas capazes de gerir fluxos de informação complexos e lógica de estados dinâmicos.
 
-Neste contexto surge o \textit{Plot in a Pot}, um editor visual e simulador de narrativas interativas. O projeto foi concebido para resolver os principais desafios enfrentados pelos autores de histórias não-lineares, combinando uma interface visual de alto desempenho baseada em grafos direcionados com um motor de simulação que suporta a execução de código e lógica em tempo real.
+Neste contexto surge o \textit{Plot in a Pot} (\gls{piap}), um editor visual e simulador de narrativas interativas concebido para resolver os desafios de autores não-lineares, combinando uma interface visual baseada em grafos direcionados com um motor de simulação lógica em tempo real.
 
 \section{Objeto do Trabalho}
-O objeto deste projeto consiste no desenvolvimento do \gls{piap}, uma aplicação e ambiente de desenvolvimento concebido para a criação, estruturação, simulação e tradução de narrativas interativas e não-lineares. O sistema foca-se na integração e suporte nativo ao ecossistema do motor Twine, operando especificamente com o formato de ficheiros Twee (versão 3) e com a macro-linguagem SugarCube. Através de uma interface gráfica baseada em grafos, a ferramenta permite a autores e \textit{narrative designers} gerir ramificações complexas e bases de dados de localização de uma forma unificada.
-
-A escolha pelo formato Twee 3 baseia-se na sua natureza como padrão aberto e amplamente suportado pela comunidade de narrativa interativa. Isto assegura compatibilidade universal com compiladores consolidados (como o Tweego) e com o Twine oficial, evitando o aprisionamento tecnológico e facilitando a legibilidade e o controlo de versões em texto simples.
+O objeto deste projeto é o desenvolvimento do \gls{piap}, um ambiente de desenvolvimento para criação, simulação e tradução de narrativas não-lineares. O sistema integra-se nativamente com o formato aberto Twee (versão 3) e com a macro-linguagem SugarCube do ecossistema Twine. Através de uma interface baseada em grafos, a ferramenta permite a autores e \textit{narrative designers} gerir ramificações complexas e bases de dados de localização de forma unificada, garantindo compatibilidade com compiladores externos (como o Tweego) e controlo de versões em texto simples.
 
 \section{Justificação e Pertinência do Tema}
-O \textit{design} de narrativas para jogos não-lineares enfrenta frequentemente problemas severos de escala, onde árvores de diálogo e escolhas crescem exponencialmente, tornando-se difíceis de procurar e propensas a erros lógicos. Embora o Twine seja uma das ferramentas de referência da comunidade independente e académica \citep{IFTFGDC2026} para a prototipagem rápida de \gls{ni}, o desenvolvimento de projetos profissionais de grande escala é severamente limitado pela falta de ferramentas nativas para a gestão multi-idioma (localização) e pela ausência de validadores estáticos de fluxo que previnam caminhos mortos antes da compilação.
+O \textit{design} de narrativas não-lineares enfrenta problemas severos de escala, onde árvores de diálogo e escolhas crescem de forma exponencial, tornando-se propensas a erros lógicos. Embora o Twine seja uma referência na prototipagem de \gls{ni} \citep{IFTFGDC2026}, o desenvolvimento de projetos de grande escala é limitado pela falta de ferramentas nativas para a gestão de localização (multi-idioma) e pela ausência de validadores estáticos de fluxo que previnam caminhos sem saída antes da compilação.
 
-O \gls{piap} justifica-se ao resolver esta lacuna, introduzindo uma estética neo-brutalista de alto contraste que otimiza o espaço de trabalho e melhora a acessibilidade de autores com limitações de visão \citep{Babich2023, Loranger2022}, permitindo isolar cadeias de texto rígidas (\textit{hardcoded}) através de um sistema abstrato de chaves de tradução dinâmicas e oferecendo segurança matemática no mapeamento de rotas narrativas.
+O \gls{piap} resolve esta lacuna ao introduzir uma estética neo-brutalista de alto contraste que otimiza o espaço de trabalho e melhora a acessibilidade de autores com limitações visuais \citep{Babich2023, Loranger2022}, permitindo isolar cadeias de texto rígidas através de chaves de tradução dinâmicas e oferecendo segurança matemática no mapeamento de rotas narrativas.
 
 \section{Objetivos do Trabalho}
 \subsection{Objetivo Geral}
@@ -22,30 +20,31 @@ Desenvolver uma plataforma \textit{web} modular que unifique a edição visual d
 \subsection{Objetivos Específicos}
 Para a concretização do objetivo geral, definiram-se os seguintes objetivos específicos:
 \begin{enumerate}
-    \item \textbf{Interface Gráfica Baseada em Grafos:} Desenvolver um \textit{canvas} interativo de alto desempenho que utilize uma estética de alto contraste baseada no estilo \textit{neo-brutalista}. Este ambiente deve permitir a manipulação visual de nós narrativos, blocos de agrupamento por zonas, \textit{scripts} em JavaScript e estilização em CSS.
-    \item \textbf{Encaminhamento Geométrico de Arestas:} Desenvolver um algoritmo de vetorização que utilize \textit{waypoints} interativos nas ligações entre nós, prevenindo a sobreposição visual de caminhos e otimizando a organização do espaço de trabalho.
-    \item \textbf{Sincronização Bidirecional com Formato Twee3:} Construir um interpretador (\textit{parser}) capaz de traduzir a sintaxe de Twee3 (\lstinline{[[Link|Destino]]}) na topologia visual do grafo, gerindo a conversão de coordenadas espaciais de forma transparente.
-    \item \textbf{Módulo de Internacionalização Nativo:} Desenvolver uma matriz de localização flexível que permita a tradução direta por células e suporte a importação e exportação de dados em formato \gls{csv}, centralizando a gestão multi-idioma.
-    \item \textbf{Análise Estática de Integridade Narrativa:} Implementar um motor de validação baseado em listas de adjacência para auditar o grafo, detetando de forma automática anomalias estruturais como nós isolados, becos sem saída lógicos ou ciclos fechados de \textit{loops} infinitos.
-    \item \textbf{Automação Narrativa por Inteligência Artificial:} Projetar uma arquitetura de inferência local que utilize Modelos de Linguagem de Grande Escala (\textit{LLMs}) para processar narrativas escritas em linguagem natural e convertê-las automaticamente na estrutura formal de grafos do motor de jogo.
-    \item \textbf{Ambiente de Execução e Aprendizagem:} Criar um simulador integrado (\textit{PlayMode}) para testes imediatos do fluxo narrativo e um módulo pedagógico interativo (\textit{Playable Tutorial}) para a introdução assistida às regras e funcionalidades do editor.
+    \item \textbf{Interface Gráfica Baseada em Grafos:} Desenvolver um \textit{canvas} interativo de alto desempenho com estética neo-brutalista de alto contraste para a manipulação visual de nós, zonas, \textit{scripts} em JavaScript e estilização em CSS.
+    \item \textbf{Encaminhamento Geométrico de Arestas:} Desenvolver um algoritmo de vetorização com \textit{waypoints} interativos para as ligações entre nós, evitando a sobreposição visual de caminhos.
+    \item \textbf{Sincronização Bidirecional com Twee 3:} Construir um interpretador (\textit{parser}) capaz de traduzir a sintaxe Twee 3 (\lstinline{[[Link|Destino]]}) na topologia do grafo, gerindo as coordenadas espaciais.
+    \item \textbf{Módulo de Internacionalização Nativo:} Desenvolver uma matriz de localização para tradução direta por células, com suporte à importação e exportação em formato \gls{csv}.
+    \item \textbf{Análise Estática de Integridade Narrativa:} Implementar um motor de validação baseado em listas de adjacência para detetar automaticamente nós isolados, becos sem saída ou ciclos infinitos.
+    \item \textbf{Automação Narrativa por Inteligência Artificial:} Projetar uma arquitetura de inferência local (via LLM) para processar texto em linguagem natural e convertê-lo automaticamente na estrutura formal de grafos do motor.
+    \item \textbf{Ambiente de Execução e Aprendizagem:} Criar um simulador integrado (\textit{PlayMode}) para testes em tempo real e um módulo pedagógico interativo (\textit{Playable Tutorial}) para introdução assistida ao editor.
 \end{enumerate}
 
 \section{Contributos do Trabalho}
 \label{sec:contributos-trabalho}
-Como resultado direto do trabalho de investigação, conceção e desenvolvimento levado a cabo neste projeto, foram alcançados os seguintes contributos práticos e científicos para a área da autoria de narrativas interativas:
+Como resultado direto do projeto, foram alcançados os seguintes contributos práticos e científicos:
 \begin{itemize}
-    \item \textbf{Plataforma Unificada de Autoria Visual e Lógica:} Criação de um ambiente que combina edição visual de grafos com a simulação dinâmica e reativa de variáveis de estado, preenchendo a lacuna existente entre ferramentas puramente visuais e ferramentas puramente textuais.
-    \item \textbf{Motor de Validação Estática Reativo:} Implementação de um validador de espaço de estados baseado em grafos direcionados e Pesquisa em Largura (BFS) que audita a integridade narrativa em tempo real, alertando o autor sobre nós órfãos, caminhos sem saída e loops infinitos antes de qualquer exportação ou compilação física.
-    \item \textbf{Inovação em Acessibilidade Prática:} Desenho de uma interface baseada em estética neo-brutalista de alto contraste e representação redundante de arestas por padrões de traço (contínuo/tracejado), validada com utilizadores daltónicos e com limitações de visão como uma alternativa inclusiva e funcional.
-    \item \textbf{Centralização da Localização Narrativa:} Introdução de uma matriz de tradução de grelha única baseada em chaves abstratas, com suporte para importação/exportação CSV compatível com a norma RFC~4180, eliminando a escrita de textos fixos nas passagens do Twine.
-    \item \textbf{Inferência Local com Soberania de Dados:} Desenvolvimento de um módulo de inteligência artificial assente em LLMs de pesos abertos e execução estritamente local (via API Ollama), viabilizando a conversão rápida de texto natural para formato de grafos de forma gratuita e sem partilha de propriedade intelectual com terceiros.
+    \item \textbf{Plataforma Unificada de Autoria:} Criação de um ambiente que combina edição visual de grafos com a simulação reativa de variáveis de estado, unindo abordagens visuais e textuais.
+    \item \textbf{Motor de Validação Estática Reativo:} Implementação de um validador baseado em grafos direcionados e Pesquisa em Largura (BFS) que audita a integridade narrativa em tempo real, alertando o autor sobre erros lógicos antes da compilação.
+    \item \textbf{Inovação em Acessibilidade Prática:} Desenho de uma interface baseada em estética neo-brutalista de alto contraste e representação redundante de arestas por padrões de traço (contínuo/tracejado), validada como uma alternativa inclusiva para utilizadores daltónicos.
+    \item \textbf{Centralização da Localização Narrativa:} Introdução de uma matriz de tradução por chaves abstratas com suporte para importação/exportação CSV (norma RFC~4180), eliminando textos fixos (\textit{hardcoded}) nas passagens do Twine.
+    \item \textbf{Inferência Local com Soberania de Dados:} Integração de um módulo de IA assente em LLMs de pesos abertos com execução local (via API Ollama), viabilizando a conversão rápida de texto natural para grafos sem partilha de dados externos.
 \end{itemize}
+
 \section{Estrutura do Documento}
-Este relatório está estruturado em cinco capítulos principais. Além desta introdução, o documento apresenta:
+Este relatório está estruturado em cinco capítulos principais:
 \begin{itemize}
-    \item \textbf{Capítulo~\ref{cp:fundamentacao-teorica}: Fundamentação Teórica e Estado da Arte}, onde se efetua uma análise comparativa das ferramentas existentes no mercado e se descrevem os conceitos matemáticos de teoria de grafos aplicados à narrativa.
-    \item \textbf{Capítulo~\ref{cp:concecao-implementacao}: Conceção e Desenvolvimento}, detalhando o cronograma e as fases de desenvolvimento do projeto, a arquitetura do software, a especificação Twee3, o modelo de lista de adjacências bidirecional, os modos de visualização e acessibilidade, e a simulação lógica.
-    \item \textbf{Capítulo~\ref{cp:desenvolvimento}: Implementação e Avaliação}, que descreve a estrutura física do código e detalhes de implementação da aplicação, bem como a metodologia e resultados dos testes de utilizador realizados para validar o sistema.
-    \item \textbf{Capítulo~\ref{cp:conclusao}: Conclusão e Trabalho Futuro}, onde são sumariados os resultados alcançados, as limitações da implementação e as propostas para futuros desenvolvimentos.
+    \item \textbf{Capítulo~\ref{cp:fundamentacao-teorica}: Fundamentação Teórica e Estado da Arte}: Análise comparativa das ferramentas de mercado e conceitos matemáticos de teoria de grafos aplicados à narrativa.
+    \item \textbf{Capítulo~\ref{cp:concecao-implementacao}: Conceção e Desenvolvimento}: Detalhe do planeamento, arquitetura de software, especificação Twee 3, listas de adjacências, modos de visualização e simulação lógica.
+    \item \textbf{Capítulo~\ref{cp:desenvolvimento}: Implementação e Avaliação}: Estrutura física do código, detalhes de implementação e metodologia dos testes de usabilidade com utilizadores.
+    \item \textbf{Capítulo~\ref{cp:conclusao}: Conclusão e Trabalho Futuro}: Síntese dos resultados alcançados, limitações identificadas e propostas para desenvolvimentos futuros.
 \end{itemize}
