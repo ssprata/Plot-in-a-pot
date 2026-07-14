@@ -148,7 +148,7 @@ Para validar a flexibilidade e usabilidade do \textit{Plot in a Pot}, foram plan
 \subsection{Perfil dos Participantes}
 Os testes de usabilidade foram realizados com um grupo diversificado de participantes, composto por perfis com diferentes graus de especialização técnica, formações académicas e níveis de experiência prévia com escrita interativa. Esta variedade permitiu avaliar a curva de aprendizagem da ferramenta tanto sob a perspetiva de engenharia como sob a ótica de utilizadores puramente criativos.
 
-O grupo de teste foi composto por seis participantes (U1 a U6), caracterizados pelos seguintes perfis ordenados:
+O grupo principal de teste que avaliou o protótipo final (Leva 3) foi composto por seis participantes (U1 a U6), caracterizados pelos seguintes perfis ordenados:
 \begin{itemize}
     \item \textbf{Utilizador U1 (Escrita Criativa e Humanidades):} Utilizadora com formação secundária na área de Línguas e Humanidades e experiência prévia na criação de narrativas, servindo para validar a fluidez do editor sem necessidade de conhecimentos de programação.
     \item \textbf{Utilizador U2 (Desenvolvimento de Jogos Digitais):} Estudante do Mestrado em Desenvolvimento de Jogos Digitais da ESTG. Possui bases de programação consolidadas, mas pouca experiência com narrativas interativas.
@@ -156,6 +156,12 @@ O grupo de teste foi composto por seis participantes (U1 a U6), caracterizados p
     \item \textbf{Utilizador U4 (Marketing e Multimédia):} Estudante da área de Marketing com formação secundária na área de Multimédia, sem qualquer experiência prévia em escrita interativa ou lógica de programação.
     \item \textbf{Utilizador U5 (Design e Artes):} Estudante do ensino superior na área de Artes com formação secundária na área de Artes, focada na avaliação estética e ergonomia visual do canvas interativo.
     \item \textbf{Utilizador U6 (Acessibilidade Visual):} Utilizador com daltonismo e baixa acuidade visual, permitindo validar de forma prática a eficácia das redundâncias visuais, contornos espessos e sinalização semântica dupla de alto contraste.
+\end{itemize}
+
+Adicionalmente, na fase de validação intermédia (Leva 2), o processo contou com o contributo de dois utilizadores adicionais:
+\begin{itemize}
+    \item \textbf{Utilizadora U7 (Multimédia):} Utilizadora com formação secundária na área de Multimédia, focada na validação visual do canvas.
+    \item \textbf{Utilizador U8 (Jogos Digitais e Multimédia):} Estudante da Licenciatura em Jogos Digitais e Multimédia da ESTG, focado nos aspetos de lógica interativa e programação.
 \end{itemize}
 
 A Tabela~\ref{tab:participacao-levas} detalha a distribuição de cada participante pelas três levas de testes:
@@ -169,11 +175,13 @@ A Tabela~\ref{tab:participacao-levas} detalha a distribuição de cada participa
 \textbf{Participante} & \textbf{Leva 1 (Abril)} & \textbf{Leva 2 (Maio)} & \textbf{Leva 3 (Junho)} \\
 \midrule
 U1 & \checkmark & --- & \checkmark \\
-U2 & --- & \checkmark & \checkmark \\
-U3 & --- & \checkmark & \checkmark \\
+U2 & --- & --- & \checkmark \\
+U3 & --- & --- & \checkmark \\
 U4 & \checkmark & --- & \checkmark \\
 U5 & \checkmark & \checkmark & \checkmark \\
 U6 & --- & --- & \checkmark \\
+U7 & --- & \checkmark & --- \\
+U8 & --- & \checkmark & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -226,7 +234,7 @@ A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os ut
 \end{itemize}
 
 \subsection{Segunda Leva: Protótipo Intermédio (Maio de 2026)}
-A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizadores U2, U3 e U5, incidindo sobre o funcionamento do conversor de IA, o \textit{PlayMode} e a tradução.
+A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizadores U5, U7 e U8, incidindo sobre o funcionamento do conversor de IA, o \textit{PlayMode} e a tradução.
 
 \begin{itemize}
     \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias na interatividade e assistência, mas revelando fragilidades ergonómicas com grafos médios e problemas lógicos.
@@ -313,7 +321,7 @@ O desenvolvimento do \gls{piap} demonstrou que a fusão de um editor visual de g
 Embora a avaliação quantitativa com utilizadores tenha revelado uma média de usabilidade global ``Excelente'' (84.6 pontos na escala SUS), o estudo apresenta duas limitações metodológicas importantes:
 \begin{itemize}
     \item \textbf{Dimensão Reduzida da Amostra:} O grupo de teste incluiu apenas seis participantes ($N = 6$). Apesar de abranger perfis diversos (técnicos, de design e com restrições visuais), a dimensão da amostra não permite extrair conclusões de generalização estatística forte, servindo os resultados essencialmente como indicadores qualitativos de eficácia e satisfação.
-    \item \textbf{Efeito de Aprendizagem (Viés de Familiaridade):} O refinamento iterativo do sistema expôs parte dos participantes a testes em múltiplas levas de desenvolvimento (conforme a Tabela~\ref{tab:participacao-levas}): apenas U5 participou nas três levas; U1 e U4 na primeira e na terceira; U2 e U3 na segunda e na terceira; U6 participou exclusivamente na leva final. O facto de alguns utilizadores já conhecerem o funcionamento básico da aplicação em testes subsequentes pode ter inflacionado as pontuações SUS das levas intermédia e final, camuflando eventuais atritos que utilizadores completamente estreantes poderiam experimentar no produto final.
+    \item \textbf{Efeito de Aprendizagem (Viés de Familiaridade):} O refinamento iterativo do sistema expôs parte dos participantes a testes em múltiplas levas de desenvolvimento (conforme a Tabela~\ref{tab:participacao-levas}): apenas U5 participou nas três levas; U1 e U4 participaram na primeira e na terceira levas. Os restantes utilizadores (U2, U3, U6, U7 e U8) participaram em apenas uma única leva. O facto de alguns utilizadores já conhecerem o funcionamento básico da aplicação em testes subsequentes (como U1, U4 e U5 na leva final) pode ter inflacionado as pontuações SUS das levas subsequentes, camuflando eventuais atritos que utilizadores completamente estreantes poderiam experimentar no produto final.
 \end{itemize}
 
 \subsection{Limitações Tecnológicas e Funcionalidade de IA}
