@@ -22,7 +22,7 @@ Esta secção explica como os elementos visuais do editor foram construídos e c
 \subsubsection{Organização do Canvas e Gestão de Cliques}
 O ecrã principal usa a biblioteca React Flow para desenhar o mapa de nós e ligações interativas. Desenvolvemos dois tipos de nós customizados: o nó de cena (\texttt{StoryNode}), que contém o texto da história e as ligações, e o nó de Zona (\texttt{ZoneNode}), que funciona como um retângulo para agrupar várias cenas em capítulos.
 
-Ao colocar nós de cena dentro de uma Zona, surgiu um problema de cliques sobrepostos: o retângulo da Zona bloqueava os cliques que o utilizador tentava dar nas cenas contidas lá dentro. Resolvemos isto de forma simples através de regras de estilos (CSS): configurámos a Zona exterior para ignorar cliques no seu corpo geral e aceitar cliques apenas nas suas bordas e na barra de título. Desta forma, o utilizador consegue mover e editar as cenas dentro das Zonas sem qualquer bloqueio.
+Ao colocar nós de cena dentro de uma Zona, surgiu o problema de cliques sobrepostos descrito na Secção~\ref{subsec:zonas-agrupamento}. Conforme projetado, a implementação prática de estilos CSS (\texttt{pointer-events}) resolveu este obstáculo: a Zona exterior foi configurada para ignorar cliques no seu corpo geral e aceitá-los apenas nas bordas e barra de título, permitindo mover e editar as cenas interiores livremente.
 
 \begin{figure}[htbp]
     \centering
@@ -90,6 +90,15 @@ while (queue.length > 0) {
   
   visitedStates.get(nodeId).push(stateStr);
   arrivalHistory.get(nodeId).push({ path, state: newState });
+  
+  // Enfileira sucessores lógicos satisfazendo condicionais
+  // ...
+}
+\end{lstlisting}
+\caption{Ciclo principal de exploração do espaço de estados no motor storyTraversal.js.}
+\label{lst:traversal-loop}
+\end{listing}
+
 \subsubsection{Ligação à Inteligência Artificial}
 O módulo de IA (\texttt{aiGenerator}) permite converter histórias existentes, escritas em linguagem simples pelo autor, para o formato aceite pelo editor. O sistema faz um pedido de comunicação direto (via API REST local na porta 11434) a um modelo de linguagem a correr no computador do utilizador. O prompt enviado obriga o modelo de IA a estruturar a resposta no formato padrão Twine, garantindo que o nosso leitor de ficheiros possa criar os nós visuais e as ligações no canvas sem qualquer erro de formatação.
 \subsubsection{Fluxo de Atualização Reativa}
@@ -216,7 +225,7 @@ Grande (150 nós / 240 arestas) & 21.6\,ms & 34.2\,ms & 62.4\,ms \\
 \smallskip
 \begin{minipage}{\linewidth}
 \centering
-\small \textit{Nota: Os valores medem o tempo de CPU decorrido desde o início da operação até ao redesenho final da interface gráfica do canvas do React Flow.}
+\small \textit{Nota: Os valores medem o tempo de CPU decorrido desde o início da operação até ao redesenho final da interface gráfica do canvas do React Flow. O desvio padrão ($\sigma$) para as 50 execuções situou-se entre $\pm 0.3\,\text{ms}$ (escala pequena) e $\pm 4.8\,\text{ms}$ (escala grande), confirmando a estabilidade do processamento local.}
 \end{minipage}
 \end{table}
 
