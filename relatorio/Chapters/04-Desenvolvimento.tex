@@ -280,63 +280,7 @@ A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizador
 \subsection{Terceira Leva: Protótipo Final (Junho de 2026)}
 A terceira e última leva de testes realizou-se entre \textit{15 e 20 de junho de 2026} com o grupo completo de seis participantes (U1 a U6), avaliando o sistema final integrado (incluindo o PlayMode, Smart Walker, validador \gls{bfs} e interface neo-brutalista de alto contraste).
 
-\subsubsection{Métricas de Conclusão e Tempos de Execução}
-Durante a sessão final de testes, foram registados os tempos de conclusão (em minutos) das quatro tarefas descritas na metodologia. Os resultados quantitativos encontram-se sumarizados na Tabela~\ref{tab:resultados-tarefas}.
-
-\begin{table}[H]
-\centering
-\caption{Taxa de sucesso e tempo de conclusão (em minutos) das tarefas por utilizador (Leva Final).}
-\label{tab:resultados-tarefas}
-\begin{tabularx}{\textwidth}{cCCCCL}
-\toprule
-\textbf{Utilizador} & \textbf{Tarefa 1} & \textbf{Tarefa 2} & \textbf{Tarefa 3} & \textbf{Tarefa 4} & \textbf{Taxa de Sucesso Total} \\
-\midrule
-U1 & 07:15 & 02:40 & 03:10 & 01:20 & 100\% \\
-U2 & 05:30 & 01:50 & 02:15 & 00:55 & 100\% \\
-U3 & 04:10 & 01:30 & 01:50 & 00:45 & 100\% \\
-U4 & 11:20 & 04:15 & 05:30 & 02:10 & 75\%* \\
-U5 & 09:45 & 03:30 & 04:20 & 01:40 & 100\% \\
-U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
-\midrule
-\textbf{Média} & \textbf{07:45} & \textbf{02:49} & \textbf{03:29} & \textbf{01:21} & \textbf{95.8\%} \\
-\bottomrule
-\end{tabularx}
-
-\smallskip
-\begin{minipage}{\linewidth}
-\centering
-\small \textit{* Nota: O utilizador U4 não concluiu com sucesso a Tarefa 2 (validação e correção de caminhos lógicos com o validador \gls{bfs}) no tempo limite estabelecido.}
-\end{minipage}
-\end{table}
-\vfill
-
-A taxa de conclusão média fixou-se em 95.8\%. O utilizador U4 (sem perfil técnico) falhou a conclusão autónoma da Tarefa 2 dentro do tempo limite devido a alguma hesitação inicial em interpretar as mensagens textuais do validador, o que reforçou a necessidade de incluir marcadores de erro visuais diretamente sobre os nós afetados no canvas do React Flow.
-
-\subsubsection{Avaliação SUS da Leva Final}
-Após as tarefas, foi aplicado o questionário padronizado SUS aos participantes. As pontuações obtidas encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
-
-\begin{table}[H]
-\centering
-\caption{Pontuação obtida no questionário System Usability Scale (SUS) na leva final.}
-\label{tab:pontuacao-sus}
-\begin{tabular}{cc}
-\toprule
-\textbf{Utilizador} & \textbf{Pontuação SUS obtida} \\
-\midrule
-U1 & 87.5 \\
-U2 & 90.0 \\
-U3 & 92.5 \\
-U4 & 72.5 \\
-U5 & 80.0 \\
-U6 & 85.0 \\
-\midrule
-\textbf{Média Global} & \textbf{84.6} \\
-\bottomrule
-\end{tabular}
-\end{table}
-\vfill
-
-A média global final de \textit{84.6 pontos} situa o \textit{Plot in a Pot} no patamar de usabilidade ``Excelente'' (classificação de grau A+ na escala SUS), representando uma evolução muito expressiva face aos 61.5 e 73.0 pontos registados nas levas anteriores, e provando que o processo de refinamento iterativo foi bem-sucedido.
+Os resultados desta fase foram altamente positivos, registando-se uma taxa média de conclusão de tarefas de 95,8\%. Apenas um participante (U4, sem perfil técnico) não concluiu a tarefa de validação autónoma dentro do tempo limite, devido a dificuldades em interpretar as mensagens textuais do validador, o que reforçou a necessidade de incluir alertas gráficos diretamente sobre os nós do canvas. No questionário \textit{System Usability Scale} (SUS), a plataforma obteve uma pontuação média global de 84,6 pontos, posicionando o \textit{Plot in a Pot} no nível de usabilidade considerado ``Excelente'' (Grau~A+). Estes valores traduzem uma evolução muito expressiva face às levas anteriores (61,5 e 73,0 pontos) e validam o sucesso do refinamento iterativo do protótipo.
 
 \subsection{Feedback Qualitativo e Usabilidade Visual}
 A compilação das entrevistas e observações comportamentais na última leva permitiu extrair as seguintes conclusões de usabilidade:
