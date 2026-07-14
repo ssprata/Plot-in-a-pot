@@ -758,7 +758,6 @@
     \field{sortinit}{O}
     \field{sortinithash}{O}
     \field{howpublished}{GitHub Repository Issue Tracker}
-    \field{note}{Acedido em: 14-07-2026}
     \field{title}{Issue \#14571: No way to stop control characters output from
   'ollama run'}
     \verb{url}
@@ -783,7 +782,6 @@
     \field{sortinit}{O}
     \field{sortinithash}{O}
     \field{howpublished}{GitHub Repository Pull Requests}
-    \field{note}{Acedido em: 14-07-2026}
     \field{title}{Pull Request \#17112: progress: suppress ANSI control
   characters when stderr is not a TTY}
     \verb{url}
