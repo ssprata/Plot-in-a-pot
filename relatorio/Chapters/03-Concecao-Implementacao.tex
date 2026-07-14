@@ -225,6 +225,8 @@ Para evitar a sobreposição visual das ligações e o cruzamento cego sobre os 
 
 O autor pode criar novos marcadores (\textit{waypoints}) com um duplo clique e arrastá-los livremente pelo ecrã. A curva é recalculada em tempo de execução à medida que os marcadores são movidos, interpolando a sua posição de forma contínua para manter a linha fluida e desimpedida de outros elementos do grafo.
 
+A interpolação matemática de Catmull-Rom foi programada de forma manual diretamente no componente (sem recurso a bibliotecas externas de cálculo geométrico ou de desenho), convertendo a sequência de pontos em segmentos de curvas Bézier Cúbicas nativas no formato de caminho SVG do navegador. Esta abordagem de implementação própria justifica-se por evitar a sobrecarga de dependências (NPM) adicionais na aplicação e por garantir que o processamento e a renderização das linhas ocorram de forma extremamente rápida e leve no lado do cliente.
+
 \subsection{Acessibilidade e Identidade Visual Customizada}
 \label{subsec:acessibilidade-identidade-visual}
 Tendo em conta que o desenvolvimento do projeto beneficiou de validações diretas com utilizadores daltónicos, projetou-se uma estratégia de acessibilidade redundante baseada numa identidade visual neo-brutalista. A adoção desta estética neo-brutalista fundamentou-se em estudos que demonstram que contornos espessos, pesos tipográficos elevados e contrastes marcados beneficiam utilizadores com baixa acuidade visual ou daltonismo \citep{Babich2023, Loranger2022}. O aspeto geral desta interface e os seus elementos gráficos encontram-se representados na Figura~\ref{fig:editor-canvas-acessibilidade}.
