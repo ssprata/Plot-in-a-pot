@@ -332,7 +332,7 @@ O algoritmo de auditoria executa a exploração de acordo com os seguintes passo
 
 \begin{enumerate}
     \item \textbf{Inicialização e Pré-computação de Dicionários:}
-    Para garantir a eficiência temporal do validador (com tempos de pesquisa de complexidade $\mathcal{O}(1)$), o motor começa por indexar e organizar os elementos do canvas em duas estruturas de dados fundamentais em memória:
+    Para garantir a eficiência temporal do validador, o motor começa por indexar e organizar os elementos do canvas em duas estruturas de dados fundamentais em memória:
     \begin{itemize}
         \item \textbf{Dicionário de Nós (\texttt{NodeMap}):} Um mapa chave-valor que associa o identificador único de cada cena (ID) ao seu objeto correspondente. Isto permite aceder instantaneamente ao conteúdo textual e metadados de qualquer nó.
         \item \textbf{Lista de Adjacência (\texttt{EdgesBySource}):} Um mapa que associa cada ID de cena de origem a uma lista com todas as escolhas (arestas) que partem dela.
