@@ -140,10 +140,11 @@ A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:compar
     \item \textbf{Integração com Engines:} Mede a portabilidade da narrativa para motores gráficos como Unity, Unreal Engine ou Godot, indispensável para produções de jogos modernos.
     \item \textbf{Gratuito e Aberto:} Reflete a acessibilidade financeira e a ausência de restrições comerciais ou licenciamento fechado na distribuição das obras criadas.
 \end{itemize}
-
 \section{O Formato Twee3 e Linguagens de Scripting Narrativo}
 \label{sec:formato-twee3}
-Para além da representação visual em grafos, o ecossistema de narrativa interativa apoia-se em formatos de serialização de texto que permitem aos autores escrever e armazenar as suas obras em ficheiros de texto simples (.txt ou .twee). O padrão da indústria para esta representação é o \textbf{Twee3}, uma especificação aberta mantida pela \textit{Interactive Fiction Technology Foundation} (IFTF) \citep{IFTFGDC2026}.
+Para além da representação visual em grafos, o ecossistema de narrativa interativa apoia-se em formatos de serialização de texto que permitem aos autores escrever e armazenar as suas obras em ficheiros de texto simples. O padrão da indústria para esta representação é o \textbf{Twee3}, uma especificação aberta mantida pela \textit{Interactive Fiction Technology Foundation} (IFTF) \citep{IFTFGDC2026}.
+
+A nossa opção pelo formato Twee3 prende-se com a sua natureza baseada em texto simples (\textit{plain text}), o que simplifica o controlo de versões (como a utilização de Git) e o trabalho colaborativo. Adicionalmente, este formato é usado por muitos motores de jogo e compiladores externos, como o Tweego, garantindo compatibilidade com ferramentas de terceiros e permitindo a exportação para múltiplos formatos de saída (HTML, PDF, etc.).
 
 O formato Twee3 organiza o ficheiro narrativo através de blocos lógicos denominados \textbf{Passagens} (Passages). Cada passagem começa com um identificador de início (duas frações de dois pontos seguidas do título da passagem):
 
@@ -154,7 +155,6 @@ Ves um trilho a tua frente.
 
 [[Seguir pelo trilho->Trilho]]
 \end{lstlisting}
-
 \subsection{Sintaxe de Ligações e Transições}
 No Twee3, as bifurcações narrativas e as escolhas do leitor são representadas por parênteses retos duplos. Existem duas sintaxes principais para definir transições:
 \begin{itemize}
@@ -317,12 +317,13 @@ Nessa pesquisa realizada a 13 de abril, foram analisadas três das principais fa
 \end{enumerate}
 
 \subsection{Decisão de Design: Do Co-Criador ao Assistente de Conversão}
-Embora a pesquisa inicial (Secção~\ref{sec:integracao-llms}) tenha demonstrado o potencial dos LLMs para sugerir cenas e resumir narrativas, o desenvolvimento do \gls{piap} tomou a decisão de design de não incluir funcionalidades de geração automática ou co-criação literária na aplicação final. Esta escolha foi motivada pelo respeito à autoria humana exclusiva e pela forte oposição da comunidade de escritores a conteúdos gerados de forma não-humana, priorizando a integridade do processo de escrita do autor.
+Embora a pesquisa inicial (Secção~\ref{sec:integracao-llms}) tenha demonstrado o potencial dos LLMs para sugerir cenas e resumir narrativas, o desenvolvimento do \gls{piap} tomou a decisão de design de não incluir funcionalidades de geração automática ou co-criação literária. Esta escolha foi motivada pelo respeito à autoria humana e pela oposição da comunidade de escritores a conteúdos gerados de forma não-humana, priorizando a integridade do processo criativo do autor.
 
-Desta forma, o papel do LLM foi deliberadamente limitado a uma função técnica e utilitária: um assistente de importação rápida que converte texto livre (já escrito pelo autor) para a sintaxe estruturada Twee 3 interpretada pelo parser. 
+Desta forma, o papel do LLM foi deliberadamente limitado a uma função técnica e utilitária: um assistente de importação rápida que converte texto livre (previamente escrito pelo autor) para a sintaxe estruturada Twee 3. 
 
-Para viabilizar esta aplicação sem custos de API ou quebras de privacidade, a integração é feita localmente com ferramentas como o \textit{Ollama} ou o \textit{LM Studio}, que disponibilizam o modelo numa porta local (11434) para chamadas HTTP internas. A integração segue uma divisão de trabalho estrita para garantir a fiabilidade do sistema:
+Para viabilizar esta aplicação de forma gratuita e sem quebras de privacidade, a integração é feita localmente com ferramentas como o \textit{Ollama} ou o \textit{LM Studio}, que disponibilizam o modelo numa porta local (11434) para chamadas HTTP internas. Adicionalmente, por questões de facilidade e para garantir o acesso a utilizadores cujo hardware local não possua capacidade de computação suficiente para executar modelos locais, o sistema permite também a configuração de uma chave de API externa para ligação a serviços na nuvem. A integração segue uma divisão de trabalho estrita para garantir a fiabilidade:
+
 \begin{itemize}
-    \item \textbf{Lógica Estrutural (Grafo):} A validação de caminhos, a gestão do histórico e as regras de jogo são processadas de forma 100\% determinística pelo código da aplicação (Lista de Adjacência Bidirecional). Isto garante que a estrutura da narrativa nunca é corrompida.
-    \item \textbf{Assistente de Importação (LLM):} Atua apenas na análise semântica do texto ao nível do vértice (cena), convertendo o texto do autor para a marcação do parser ou sugerindo conexões textuais, sem interferir na integridade do grafo global.
+    \item \textbf{Lógica Estrutural (Grafo):} A validação de caminhos, a gestão do histórico e as regras de jogo são processadas de forma 100\% determinística pelo código da aplicação, garantindo que a estrutura da narrativa nunca é corrompida.
+    \item \textbf{Assistente de Importação (LLM):} Atua apenas na análise semântica do texto, convertendo o conteúdo do autor para a marcação do parser, sem interferir na integridade do grafo global.
 \end{itemize}
