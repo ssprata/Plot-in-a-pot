@@ -173,6 +173,32 @@
     \field{year}{1941}
   \endentry
 
+  \entry{Brooke1996}{inbook}{}
+    \name{author}{1}{}{%
+      {{hash=BJ}{%
+         family={Brooke},
+         familyi={B\bibinitperiod},
+         given={John},
+         giveni={J\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Taylor \& Francis}%
+    }
+    \strng{namehash}{BJ1}
+    \strng{fullhash}{BJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1996}
+    \field{labeldatesource}{}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{booktitle}{Usability evaluation in industry}
+    \field{pages}{189\bibrangedash 194}
+    \field{title}{SUS: A 'quick and dirty' usability scale}
+    \field{year}{1996}
+  \endentry
+
   \entry{CatmullRom1974}{inproceedings}{}
     \name{author}{2}{}{%
       {{hash=CE}{%
@@ -648,6 +674,61 @@
     \verb https://www.nngroup.com/articles/neobrutalism/
     \endverb
     \field{year}{2022}
+  \endentry
+
+  \entry{Martins2015}{article}{}
+    \name{author}{5}{}{%
+      {{hash=MAI}{%
+         family={Martins},
+         familyi={M\bibinitperiod},
+         given={Ana\bibnamedelima Isabel},
+         giveni={A\bibinitperiod\bibinitdelim I\bibinitperiod},
+      }}%
+      {{hash=RAF}{%
+         family={Rosa},
+         familyi={R\bibinitperiod},
+         given={Alexandra\bibnamedelima F.},
+         giveni={A\bibinitperiod\bibinitdelim F\bibinitperiod},
+      }}%
+      {{hash=QA}{%
+         family={Queir{'o}s},
+         familyi={Q\bibinitperiod},
+         given={Anabela},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=SA}{%
+         family={Silva},
+         familyi={S\bibinitperiod},
+         given={Almerinda},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=RNP}{%
+         family={Rocha},
+         familyi={R\bibinitperiod},
+         given={Nelson\bibnamedelima Pacheco},
+         giveni={N\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{MAI+1}
+    \strng{fullhash}{MAIRAFQASARNP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2015}
+    \field{labeldatesource}{}
+    \field{sortinit}{M}
+    \field{sortinithash}{M}
+    \verb{doi}
+    \verb 10.1016/j.procs.2015.09.273
+    \endverb
+    \field{pages}{293\bibrangedash 300}
+    \field{title}{European Portuguese Validation of the System Usability Scale
+  (SUS)}
+    \verb{url}
+    \verb https://doi.org/10.1016/j.procs.2015.09.273
+    \endverb
+    \field{volume}{67}
+    \field{journaltitle}{Procedia Computer Science}
+    \field{year}{2015}
   \endentry
 
   \entry{ReactReference}{misc}{}
