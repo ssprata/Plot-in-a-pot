@@ -131,12 +131,26 @@ export function validateStoryFlow(nodes, edges) {
       pathTrace: arrivalHistory.get(node.id)?.at(-1)?.path ?? [],
     }));
 
+  const nodeWarnings = [];
+  nodes.forEach(node => {
+    if (node.data?.warnings && node.data.warnings.length > 0) {
+      node.data.warnings.forEach(warn => {
+        nodeWarnings.push({
+          nodeId: node.id,
+          nodeLabel: node.data?.label ?? 'Desconhecido',
+          message: warn
+        });
+      });
+    }
+  });
+
   return {
     unreachableEdges,
     orphanNodes,
     hasReachableEnd: reachableEndNodes.length > 0,
     reachableEndNodes,
     deadEndNodes,  // Nós com arestas mas todos os destinos são inválidos.
+    nodeWarnings,  // Coleção de avisos (ex: links com destinos inválidos)
     arrivalHistory,
     reachableNodes,
     reachableEdges,

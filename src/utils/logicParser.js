@@ -12,10 +12,10 @@ export function parseLogicFromText(text = '') {
   // regex para procurar padrões como: <<set $var to value>>
   const setRegex = /<<set\s+\$([\w]+)\s*(?:to|=)\s*(.*?)\s*>>/i;
 
-  const linkRegexPipe = /^\[\[([^|\]]*)\|([^\]]+)\]\]$/;        // [[Texto|Destino]]
-  const linkRegexArrow = /^\[\[([^>\]]*)->([^\]]+)\]\]$/;         // [[Texto->Destino]]
-  const linkRegexBack = /^\[\[([^<\]]+)<-([^\]]*)\]\]$/;        // [[Destino<-Texto]]
-  const linkRegexSimpl = /^\[\[([^\]|<>]+)\]\]$/;                 // [[Destino]]
+  const linkRegexPipe = /^(?:\s*[*+-]?\s*|\s*\d+\.\s*)?\[\[([^|\]]*)\|([^\]]+)\]\]$/;        // [[Texto|Destino]] ou * [[Texto|Destino]]
+  const linkRegexArrow = /^(?:\s*[*+-]?\s*|\s*\d+\.\s*)?\[\[([^>\]]*)->([^\]]+)\]\]$/;         // [[Texto->Destino]]
+  const linkRegexBack = /^(?:\s*[*+-]?\s*|\s*\d+\.\s*)?\[\[([^<\]]+)<-([^\]]*)\]\]$/;        // [[Destino<-Texto]]
+  const linkRegexSimpl = /^(?:\s*[*+-]?\s*|\s*\d+\.\s*)?\[\[([^\]|<>]+)\]\]$/;                 // [[Destino]]
 
   // regex para procurar blocos condicionais: <<if $var is value>>, <<else>>, <<endif>>
   const ifRegex = /<<if\s+\$([\w]+)\s*(is\s+not|isnot|gte|lte|gt|lt|==|!=|>=|<=|>|<|is)\s*(.*?)\s*>>/i;

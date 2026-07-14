@@ -59,6 +59,8 @@ export function useChoiceSync({ nodesRef, setNodes, setEdges, setPendingConnecti
           sourceHandle: choiceId,
           target: targetNode.id
         });
+      } else {
+        localWarnings.push(`A ligação para "${targetLabel}" aponta para um nó inexistente no grafo.`);
       }
     }
 
@@ -103,6 +105,8 @@ export function useChoiceSync({ nodesRef, setNodes, setEdges, setPendingConnecti
           sourceHandle: choiceId,
           target: targetNode.id
         });
+      } else {
+        localWarnings.push(`O destino "${targetTitleRaw}" da macro <<goto>> ou link não existe no grafo.`);
       }
     }
 

@@ -1,0 +1,24 @@
+\babel@toc {portuguese}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Diferentes tipologias de grafos e as suas representações em matrizes de adjacência.\relax }}{8}{figure.caption.11}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Interface de utilizador do Twine com exibição gráfica de passagens e conexões.\relax }}{10}{figure.caption.12}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Editor Inky para a linguagem Ink, com o painel de código (esquerda) e teste (direita).\relax }}{11}{figure.caption.13}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Interface visual do Yarn Spinner integrada num ambiente de desenvolvimento.\relax }}{12}{figure.caption.14}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Interface do editor visual do Narrative Flow com ligação de blocos lógicos.\relax }}{12}{figure.caption.15}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Interface do Articy Draft X para planeamento profissional de histórias interativas.\relax }}{13}{figure.caption.16}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagrama de blocos detalhado da arquitetura conceptual e fluxo de dados.\relax }}{19}{figure.caption.18}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Exemplo de uma Zona de Agrupamento Visual com nós de cena filhos no canvas.\relax }}{24}{figure.caption.20}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Exemplo de aresta suavizada com caminho curvado personalizável no canvas.\relax }}{25}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Interface gráfica global do editor (\textit {Plot in a Pot}), ilustrando a identidade visual neo-brutalista de alto contraste com contornos espessos e sinalização redundante para acessibilidade.\relax }}{26}{figure.caption.22}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Interface gráfica do canvas de grafos do Plot in a Pot, demonstrando a estética neo-brutalista de alto contraste com nós de cena e agrupamentos visuais (Zonas).\relax }}{35}{figure.caption.25}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Diálogo de gestão de variáveis globais (VariablesModal), apresentando os tokens de dados e a renomeação segura baseada em \gls {regex}.\relax }}{40}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Matriz de localização integrada no editor, exibindo a grelha de chaves de texto e a respetiva tradução direta para os idiomas selecionados.\relax }}{40}{figure.caption.32}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Ecrã da sandbox de simulação (PlayMode), ilustrando a execução em tempo real da história com o painel de depuração de variáveis lógicas.\relax }}{42}{figure.caption.35}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Interface do editor visual de lógica estruturada (VisualBlocksEditor), dividindo as passagens em painéis de prosa, setters de variáveis e escolhas condicionais.\relax }}{43}{figure.caption.36}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

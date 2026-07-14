@@ -254,6 +254,21 @@ export default function DataPanel({
             </div>
           )}
 
+          {validationResult?.nodeWarnings?.length > 0 && (
+            <div className="p-3 bg-red-950 text-red-100 rounded-none border-2 border-red-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
+              <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter text-red-400">
+                {t('dataPanel.syntaxWarnings', 'Erros de Sintaxe / Ligações')} ({validationResult.nodeWarnings.length})
+              </h4>
+              <ul className="text-[9px] space-y-2 uppercase font-mono leading-tight">
+                {validationResult.nodeWarnings.map((warn, i) => (
+                  <li key={i} className="border-b border-red-900 pb-2 last:border-0 text-red-200">
+                    <span className="font-bold text-red-550 mr-2">[!]</span>[{warn.nodeLabel}]: {warn.message}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {validationResult?.orphanNodes?.length > 0 && (
             <div className="p-3 bg-orange-950 text-orange-100 rounded-none border-2 border-orange-500 shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-y-auto">
               <h4 className="font-bold text-[10px] uppercase mb-2 underline tracking-tighter text-orange-400">

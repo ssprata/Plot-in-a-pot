@@ -1,0 +1,766 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{nyt/global//global/global}
+  \entry{Aarseth1997}{book}{}
+    \name{author}{1}{}{%
+      {{hash=AEJ}{%
+         family={Aarseth},
+         familyi={A\bibinitperiod},
+         given={Espen\bibnamedelima J.},
+         giveni={E\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Johns Hopkins University Press}%
+    }
+    \strng{namehash}{AEJ1}
+    \strng{fullhash}{AEJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1997}
+    \field{labeldatesource}{}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{title}{Cybertext: Perspectives on Ergodic Literature}
+    \field{year}{1997}
+  \endentry
+
+  \entry{Adams2014}{book}{}
+    \name{author}{1}{}{%
+      {{hash=AE}{%
+         family={Adams},
+         familyi={A\bibinitperiod},
+         given={Ernest},
+         giveni={E\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {New Riders}%
+    }
+    \strng{namehash}{AE1}
+    \strng{fullhash}{AE1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2014}
+    \field{labeldatesource}{}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{edition}{3rd}
+    \field{title}{Fundamentals of Game Design}
+    \field{year}{2014}
+  \endentry
+
+  \entry{ArticyDraftReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Articy Software}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A1}
+    \strng{fullhash}{A1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2010}
+    \field{labeldatesource}{}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{title}{articy:draft: Tool for storytelling and narrative design}
+    \verb{url}
+    \verb https://www.articy.com/
+    \endverb
+    \field{year}{2010}
+  \endentry
+
+  \entry{Babich2023}{article}{}
+    \name{author}{1}{}{%
+      {{hash=BN}{%
+         family={Babich},
+         familyi={B\bibinitperiod},
+         given={Nick},
+         giveni={N\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{BN1}
+    \strng{fullhash}{BN1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2023}
+    \field{labeldatesource}{}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{title}{Neubrutalism in Web Design: Principles and Accessibility Best
+  Practices}
+    \verb{url}
+    \verb https://www.uxbooth.com/articles/neubrutalism-in-web-design-principle
+    \verb s-and-accessibility-best-practices/
+    \endverb
+    \field{journaltitle}{UX Booth}
+    \field{year}{2023}
+  \endentry
+
+  \entry{BondyMurty2008}{book}{}
+    \name{author}{2}{}{%
+      {{hash=BJA}{%
+         family={Bondy},
+         familyi={B\bibinitperiod},
+         given={J.\bibnamedelima A.},
+         giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+      {{hash=MUSR}{%
+         family={Murty},
+         familyi={M\bibinitperiod},
+         given={U.\bibnamedelima S.\bibnamedelima R.},
+         giveni={U\bibinitperiod\bibinitdelim S\bibinitperiod\bibinitdelim
+  R\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Springer}%
+    }
+    \strng{namehash}{BJA+1}
+    \strng{fullhash}{BJAMUSR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2008}
+    \field{labeldatesource}{}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \verb{doi}
+    \verb 10.1007/978-1-84628-970-5
+    \endverb
+    \field{series}{Graduate Texts in Mathematics}
+    \field{title}{Graph Theory}
+    \field{volume}{244}
+    \field{year}{2008}
+  \endentry
+
+  \entry{Borges1941}{article}{}
+    \name{author}{1}{}{%
+      {{hash=BJL}{%
+         family={Borges},
+         familyi={B\bibinitperiod},
+         given={Jorge\bibnamedelima Luis},
+         giveni={J\bibinitperiod\bibinitdelim L\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{BJL1}
+    \strng{fullhash}{BJL1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1941}
+    \field{labeldatesource}{}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{title}{El jard\'{\i}n de senderos que se bifurcan}
+    \field{journaltitle}{Sur}
+    \field{year}{1941}
+  \endentry
+
+  \entry{CatmullRom1974}{inproceedings}{}
+    \name{author}{2}{}{%
+      {{hash=CE}{%
+         family={Catmull},
+         familyi={C\bibinitperiod},
+         given={Edwin},
+         giveni={E\bibinitperiod},
+      }}%
+      {{hash=RR}{%
+         family={Rom},
+         familyi={R\bibinitperiod},
+         given={Raphael},
+         giveni={R\bibinitperiod},
+      }}%
+    }
+    \name{editor}{2}{}{%
+      {{hash=BRE}{%
+         family={Barnhill},
+         familyi={B\bibinitperiod},
+         given={Robert\bibnamedelima E.},
+         giveni={R\bibinitperiod\bibinitdelim E\bibinitperiod},
+      }}%
+      {{hash=RRF}{%
+         family={Riesenfeld},
+         familyi={R\bibinitperiod},
+         given={Richard\bibnamedelima F.},
+         giveni={R\bibinitperiod\bibinitdelim F\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Academic Press}%
+    }
+    \strng{namehash}{CE+1}
+    \strng{fullhash}{CERR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1974}
+    \field{labeldatesource}{}
+    \field{sortinit}{C}
+    \field{sortinithash}{C}
+    \field{booktitle}{Computer Aided Geometric Design}
+    \field{pages}{317\bibrangedash 326}
+    \field{title}{A class of local interpolating splines}
+    \field{year}{1974}
+  \endentry
+
+  \entry{Chen2021GraphPlan}{unpublished}{}
+    \name{author}{4}{}{%
+      {{hash=CH}{%
+         family={Chen},
+         familyi={C\bibinitperiod},
+         given={H.},
+         giveni={H\bibinitperiod},
+      }}%
+      {{hash=SR}{%
+         family={Shu},
+         familyi={S\bibinitperiod},
+         given={R.},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=TH}{%
+         family={Takamura},
+         familyi={T\bibinitperiod},
+         given={H.},
+         giveni={H\bibinitperiod},
+      }}%
+      {{hash=NH}{%
+         family={Na},
+         familyi={N\bibinitperiod},
+         given={H.},
+         giveni={H\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{CH+1}
+    \strng{fullhash}{CHSRTHNH1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2021}
+    \field{labeldatesource}{}
+    \field{sortinit}{C}
+    \field{sortinithash}{C}
+    \field{note}{arXiv preprint arXiv:2102.02977}
+    \field{title}{GraphPlan: Story generation by planning with event grap}
+    \field{year}{2021}
+  \endentry
+
+  \entry{ChoiceOfGamesLicensing}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=C}{%
+         family={{Choice of Games}},
+         familyi={C\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{C1}
+    \strng{fullhash}{C1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2026}
+    \field{labeldatesource}{}
+    \field{sortinit}{C}
+    \field{sortinithash}{C}
+    \field{title}{ChoiceScript License and Terms of Use}
+    \verb{url}
+    \verb https://www.choiceofgames.com/make-your-own-games/choicescript-intro/
+    \endverb
+    \field{year}{2026}
+  \endentry
+
+  \entry{CLRS2009}{book}{}
+    \name{author}{4}{}{%
+      {{hash=CTH}{%
+         family={Cormen},
+         familyi={C\bibinitperiod},
+         given={Thomas\bibnamedelima H.},
+         giveni={T\bibinitperiod\bibinitdelim H\bibinitperiod},
+      }}%
+      {{hash=LCE}{%
+         family={Leiserson},
+         familyi={L\bibinitperiod},
+         given={Charles\bibnamedelima E.},
+         giveni={C\bibinitperiod\bibinitdelim E\bibinitperiod},
+      }}%
+      {{hash=RRL}{%
+         family={Rivest},
+         familyi={R\bibinitperiod},
+         given={Ronald\bibnamedelima L.},
+         giveni={R\bibinitperiod\bibinitdelim L\bibinitperiod},
+      }}%
+      {{hash=SC}{%
+         family={Stein},
+         familyi={S\bibinitperiod},
+         given={Clifford},
+         giveni={C\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {MIT Press}%
+    }
+    \strng{namehash}{CTH+1}
+    \strng{fullhash}{CTHLCERRLSC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2009}
+    \field{labeldatesource}{}
+    \field{sortinit}{C}
+    \field{sortinithash}{C}
+    \field{edition}{3rd}
+    \field{title}{Introduction to Algorithms}
+    \field{year}{2009}
+  \endentry
+
+  \entry{InkReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=I}{%
+         family={{Inkle Studios}},
+         familyi={I\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{I1}
+    \strng{fullhash}{I1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2016}
+    \field{labeldatesource}{}
+    \field{sortinit}{I}
+    \field{sortinithash}{I}
+    \field{title}{Ink: inkle's open source scripting language for writing
+  interactive narrative}
+    \verb{url}
+    \verb https://www.inklestudios.com/ink/
+    \endverb
+    \field{year}{2016}
+  \endentry
+
+  \entry{Twee3Reference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=I}{%
+         family={{Interactive Fiction Technology Foundation}},
+         familyi={I\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{I2}
+    \strng{fullhash}{I2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2020}
+    \field{labeldatesource}{}
+    \field{sortinit}{I}
+    \field{sortinithash}{I}
+    \field{title}{Twee 3 Specification}
+    \verb{url}
+    \verb https://github.com/iftechfoundation/twine-specs/blob/master/twee-3-sp
+    \verb ecification.md
+    \endverb
+    \field{year}{2020}
+  \endentry
+
+  \entry{IFTFGDC2026}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=I}{%
+         family={{Interactive Fiction Technology Foundation}},
+         familyi={I\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{I2}
+    \strng{fullhash}{I2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2026}
+    \field{labeldatesource}{}
+    \field{sortinit}{I}
+    \field{sortinithash}{I}
+    \field{title}{IFTF at GDC 2026: Recap and Reflections}
+    \verb{url}
+    \verb https://iftechfoundation.org/news/iftf-gdc-2026/
+    \endverb
+    \field{year}{2026}
+  \endentry
+
+  \entry{Juul2005}{book}{}
+    \name{author}{1}{}{%
+      {{hash=JJ}{%
+         family={Juul},
+         familyi={J\bibinitperiod},
+         given={Jesper},
+         giveni={J\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {MIT Press}%
+    }
+    \strng{namehash}{JJ1}
+    \strng{fullhash}{JJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2005}
+    \field{labeldatesource}{}
+    \field{sortinit}{J}
+    \field{sortinithash}{J}
+    \field{title}{Half-Real: Video Games between Real Rules and Fictional
+  Worlds}
+    \field{year}{2005}
+  \endentry
+
+  \entry{TwineReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=KC}{%
+         family={Klimas},
+         familyi={K\bibinitperiod},
+         given={Chris},
+         giveni={C\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{KC1}
+    \strng{fullhash}{KC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2009}
+    \field{labeldatesource}{}
+    \field{sortinit}{K}
+    \field{sortinithash}{K}
+    \field{title}{Twine: An open-source tool for telling interactive, nonlinear
+  stories}
+    \verb{url}
+    \verb https://twinery.org/
+    \endverb
+    \field{year}{2009}
+  \endentry
+
+  \entry{Li2018NEEG}{unpublished}{}
+    \name{author}{3}{}{%
+      {{hash=LZ}{%
+         family={Li},
+         familyi={L\bibinitperiod},
+         given={Z.},
+         giveni={Z\bibinitperiod},
+      }}%
+      {{hash=DX}{%
+         family={Ding},
+         familyi={D\bibinitperiod},
+         given={X.},
+         giveni={X\bibinitperiod},
+      }}%
+      {{hash=LT}{%
+         family={Liu},
+         familyi={L\bibinitperiod},
+         given={T.},
+         giveni={T\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{LZ+1}
+    \strng{fullhash}{LZDXLT1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2018}
+    \field{labeldatesource}{}
+    \field{sortinit}{L}
+    \field{sortinithash}{L}
+    \field{note}{arXiv preprint arXiv:1805.05081}
+    \field{title}{Constructing Narrative Event Evolutionary Graph for Script
+  Event Prediction}
+    \field{year}{2018}
+  \endentry
+
+  \entry{Loranger2022}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=LP}{%
+         family={Loranger},
+         familyi={L\bibinitperiod},
+         given={Page},
+         giveni={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{LP1}
+    \strng{fullhash}{LP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2022}
+    \field{labeldatesource}{}
+    \field{sortinit}{L}
+    \field{sortinithash}{L}
+    \field{note}{Nielsen Norman Group}
+    \field{title}{Neubrutalism: The Web Design Trend Challenging Usability
+  Conventions}
+    \verb{url}
+    \verb https://www.nngroup.com/articles/neobrutalism/
+    \endverb
+    \field{year}{2022}
+  \endentry
+
+  \entry{ReactReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=M}{%
+         family={{Meta Open Source}},
+         familyi={M\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{M1}
+    \strng{fullhash}{M1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2013}
+    \field{labeldatesource}{}
+    \field{sortinit}{M}
+    \field{sortinithash}{M}
+    \field{title}{React: A JavaScript library for building user interfaces}
+    \verb{url}
+    \verb https://react.dev/
+    \endverb
+    \field{year}{2013}
+  \endentry
+
+  \entry{Montfort2005}{book}{}
+    \name{author}{1}{}{%
+      {{hash=MN}{%
+         family={Montfort},
+         familyi={M\bibinitperiod},
+         given={Nick},
+         giveni={N\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {MIT Press}%
+    }
+    \strng{namehash}{MN1}
+    \strng{fullhash}{MN1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2005}
+    \field{labeldatesource}{}
+    \field{sortinit}{M}
+    \field{sortinithash}{M}
+    \field{title}{Twisty Little Passages: An Approach to Interactive Fiction}
+    \list{location}{1}{%
+      {Cambridge, MA}%
+    }
+    \field{year}{2005}
+  \endentry
+
+  \entry{Mormoris2024Comparing}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=MV}{%
+         family={Mormoris},
+         familyi={M\bibinitperiod},
+         given={V.},
+         giveni={V\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{MV1}
+    \strng{fullhash}{MV1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2024}
+    \field{labeldatesource}{}
+    \field{sortinit}{M}
+    \field{sortinithash}{M}
+    \field{title}{Comparing tools for nonlinear storytelling in video games}
+    \field{year}{2024}
+  \endentry
+
+  \entry{NarrativeFlowReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=N}{%
+         family={{NarrativeFlow}},
+         familyi={N\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{N1}
+    \strng{fullhash}{N1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2023}
+    \field{labeldatesource}{}
+    \field{sortinit}{N}
+    \field{sortinithash}{N}
+    \field{title}{NarrativeFlow: Visual scripting for interactive stories}
+    \verb{url}
+    \verb https://narrativeflow.dev/
+    \endverb
+    \field{year}{2023}
+  \endentry
+
+  \entry{Packer1984}{book}{}
+    \name{author}{1}{}{%
+      {{hash=PE}{%
+         family={Packer},
+         familyi={P\bibinitperiod},
+         given={Edward},
+         giveni={E\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Bantam Books}%
+    }
+    \strng{namehash}{PE1}
+    \strng{fullhash}{PE1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1984}
+    \field{labeldatesource}{}
+    \field{sortinit}{P}
+    \field{sortinithash}{P}
+    \field{title}{How to Write a Choose Your Own Adventure Book}
+    \field{year}{1984}
+  \endentry
+
+  \entry{YarnSpinnerReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=S}{%
+         family={{Secret Lab}},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{S1}
+    \strng{fullhash}{S1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2015}
+    \field{labeldatesource}{}
+    \field{sortinit}{S}
+    \field{sortinithash}{S}
+    \field{title}{Yarn Spinner: The friendly tool for game dialogue}
+    \verb{url}
+    \verb https://yarnspinner.dev/
+    \endverb
+    \field{year}{2015}
+  \endentry
+
+  \entry{TailwindCSSReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=T}{%
+         family={{Tailwind Labs}},
+         familyi={T\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{T1}
+    \strng{fullhash}{T1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2017}
+    \field{labeldatesource}{}
+    \field{sortinit}{T}
+    \field{sortinithash}{T}
+    \field{title}{Tailwind CSS: A utility-first CSS framework for rapid UI
+  development}
+    \verb{url}
+    \verb https://tailwindcss.com/
+    \endverb
+    \field{year}{2017}
+  \endentry
+
+  \entry{Tang2022NGEP}{unpublished}{}
+    \name{author}{5}{}{%
+      {{hash=TC}{%
+         family={Tang},
+         familyi={T\bibinitperiod},
+         given={C.},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=ZZ}{%
+         family={Zhang},
+         familyi={Z\bibinitperiod},
+         given={Z.},
+         giveni={Z\bibinitperiod},
+      }}%
+      {{hash=LT}{%
+         family={Loakman},
+         familyi={L\bibinitperiod},
+         given={T.},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=LC}{%
+         family={Lin},
+         familyi={L\bibinitperiod},
+         given={C.},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=GF}{%
+         family={Guerin},
+         familyi={G\bibinitperiod},
+         given={F.},
+         giveni={F\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{TC+1}
+    \strng{fullhash}{TCZZLTLCGF1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2022}
+    \field{labeldatesource}{}
+    \field{sortinit}{T}
+    \field{sortinithash}{T}
+    \field{note}{arXiv preprint arXiv:2210.10602}
+    \field{title}{NGEP: A Graph-based Event Planning Framework for Story
+  Generation}
+    \field{year}{2022}
+  \endentry
+
+  \entry{ReactFlowReference}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=w}{%
+         family={{webkid.io}},
+         familyi={w\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{w1}
+    \strng{fullhash}{w1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2021}
+    \field{labeldatesource}{}
+    \field{sortinit}{W}
+    \field{sortinithash}{W}
+    \field{title}{React Flow: A customizable React component for building
+  node-based editors and diagrams}
+    \verb{url}
+    \verb https://reactflow.dev/
+    \endverb
+    \field{year}{2021}
+  \endentry
+
+  \entry{YanTang2023Narrative}{article}{}
+    \name{author}{2}{}{%
+      {{hash=YZ}{%
+         family={Yan},
+         familyi={Y\bibinitperiod},
+         given={Z.},
+         giveni={Z\bibinitperiod},
+      }}%
+      {{hash=TX}{%
+         family={Tang},
+         familyi={T\bibinitperiod},
+         given={X.},
+         giveni={X\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{YZ+1}
+    \strng{fullhash}{YZTX1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2023}
+    \field{labeldatesource}{}
+    \field{sortinit}{Y}
+    \field{sortinithash}{Y}
+    \field{title}{Narrative Graph: Telling Evolving Stories Based on
+  Event-centric Temporal Knowledge Graph}
+    \field{journaltitle}{Journal of Systems Science and Systems Engineering}
+    \field{year}{2023}
+  \endentry
+\enddatalist
+\endinput

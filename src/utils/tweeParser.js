@@ -131,6 +131,7 @@ export function parseTwee3(source) {
         content, 
         tags, 
         choices: [],
+        warnings: [],
         ...(parent ? { parentName: parent } : {}),
         ...(size ? { size } : {}),
         ...(color ? { color } : {})
@@ -200,6 +201,9 @@ export function parseTwee3(source) {
         const choiceId = `c-${p.id}-${choiceCounter++}`;
         p.data.choices.push({ id: choiceId, text: rawChoiceText, target: targetId });
         edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
+      } else {
+        warnings.push(`Em [${p.data.label}], a ligação para "${targetTitle}" aponta para um nó inexistente no grafo.`);
+        p.data.warnings.push(`A ligação para "${targetTitle}" aponta para um nó inexistente no grafo.`);
       }
     }
 
@@ -235,6 +239,9 @@ export function parseTwee3(source) {
           const choiceId = `c-${p.id}-${choiceCounter++}`;
           p.data.choices.push({ id: choiceId, text: choiceText, target: targetId });
           edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
+        } else {
+          warnings.push(`Em [${p.data.label}], o destino "${targetTitleRaw}" da macro <<goto>> ou link não existe no grafo.`);
+          p.data.warnings.push(`O destino "${targetTitleRaw}" da macro <<goto>> ou link não existe no grafo.`);
         }
       }
     }

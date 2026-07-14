@@ -1,0 +1,57 @@
+\chapter{Guião de Testes e Questionário de Avaliação}
+\label{ap:guiao-questionarios}
+
+Este apêndice apresenta a documentação detalhada utilizada durante as sessões de avaliação com utilizadores realizadas na fase final do projeto. Inclui o guião de tarefas estruturadas fornecido aos participantes e o questionário padronizado \textit{System Usability Scale} (SUS) utilizado para medir a usabilidade percebida.
+
+\section{Guião de Tarefas de Teste}
+Os participantes receberam as seguintes instruções para a realização dos testes de usabilidade, sem intervenção ou ajuda dos investigadores:
+
+\subsection*{Tarefa 1: Criação Narrativa e Lógica de Variáveis}
+\textbf{Objetivo:} Avaliar a facilidade de criação de fluxos e manipulação de estado.
+\begin{enumerate}
+    \item Crie cinco nós de cena narrativos no canvas interativo.
+    \item Defina uma cena inicial e ligue-a a duas cenas intermédias através de opções textuais clássicas do Twine.
+    \item Num dos nós, insira uma macro de atribuição do SugarCube para criar uma variável de inventário (ex: \texttt{<<set \$temChave = true>>}).
+    \item Crie uma aresta condicional para um nó final que apenas fique visível se a condição lógica for satisfeita (ex: \texttt{<<if \$temChave === true>>}).
+\end{enumerate}
+
+\subsection*{Tarefa 2: Importação, Validação e Correção de Erros}
+\textbf{Objetivo:} Testar a eficácia do motor de validação estática \gls{bfs}.
+\begin{enumerate}
+    \item Importe para a aplicação o ficheiro de teste \texttt{story\_broken.twee} disponibilizado.
+    \item Ative o validador lógico e identifique os alertas vermelhos desenhados sobre as arestas e nós.
+    \item Corrija as ligações quebradas (que apontam para IDs inexistentes) e ligue os nós órfãos identificados pelo validador até que a interface gráfica fique limpa de avisos de erro.
+\end{enumerate}
+
+\subsection*{Tarefa 3: Tradução e Localização Multi-idioma}
+\textbf{Objetivo:} Validar o módulo de localização tabular.
+\begin{enumerate}
+    \item Abra a matriz de localização integrada no menu superior da aplicação.
+    \item Localize as três chaves de cena correspondentes à introdução da história.
+    \item Introduza a respetiva tradução direta para o idioma Inglês nas respetivas células de grelha.
+    \item Exporte o dicionário resultante no formato regulamentar \gls{csv}.
+\end{enumerate}
+
+\subsection*{Tarefa 4: Simulação e Automação com Smart Walker}
+\textbf{Objetivo:} Testar o PlayMode e a validação por procura de novidade.
+\begin{enumerate}
+    \item Inicialize o modo de simulação (\textit{PlayMode}) na barra superior.
+    \item Jogue a história manualmente durante alguns passos, verificando a reatividade das variáveis de inventário na barra lateral de depuração.
+    \item Ative o agente autónomo \textit{Smart Walker} e observe a exploração automática do espaço de estados para encontrar caminhos profundos na narrativa.
+\end{enumerate}
+
+\section{Questionário System Usability Scale (SUS)}
+Após a conclusão das tarefas, cada utilizador preencheu de forma anónima o questionário padronizado SUS, composto pelas seguintes dez perguntas base, avaliadas numa escala de Likert de 1 (Discordo Totalmente) a 5 (Concordo Totalmente):
+
+\begin{enumerate}
+    \item Eu penso que gostaria de usar este sistema frequentemente.
+    \item Eu achei o sistema desnecessariamente complexo.
+    \item Eu achei o sistema fácil de usar.
+    \item Eu acho que precisaria de apoio de um técnico para conseguir usar este sistema.
+    \item Eu achei que as várias funções do sistema estavam bem integradas.
+    \item Eu achei que o sistema tinha demasiadas inconsistências.
+    \item Eu imagino que a maioria das pessoas aprenderia a usar este sistema rapidamente.
+    \item Eu achei o sistema muito cansativo de usar.
+    \item Eu senti-me muito confiante a usar o sistema.
+    \item Eu precisei de aprender muitas coisas novas antes de conseguir usar o sistema.
+\end{enumerate}

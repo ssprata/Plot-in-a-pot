@@ -15,9 +15,9 @@ O sistema foi desenhado segundo uma arquitetura modular dividida em três camada
     \end{itemize}
     \item \textbf{Camada de Processamento Lógico (Núcleo):} Contém a inteligência do sistema e os motores de transformação. É constituída por:
     \begin{itemize}
-        \item \textbf{Parser Twee 3:} Módulo encarregue de ler ficheiros de texto estruturados em formato Twee 3 e convertê-los no modelo interno da aplicação, bem como exportá-los de volta.
+        \item \textbf{Parser Twee 3:} Módulo encarregue de ler ficheiros de texto estruturados em formato Twee 3 e convertê-los no modelo interno da aplicação, bem como serializar e exportá-los de volta.
         \item \textbf{Validador Estático:} Motor que executa travessias de grafo (\gls{bfs}/\gls{dfs}) para inspecionar inconsistências estruturais, como ciclos sem saída, nós inacessíveis ou hiperligações quebradas.
-        \item \textbf{Motor de Simulação:} Sandbox responsável por inicializar scripts customizados, interpretar condicionais lógicas e controlar o estado de jogo na simulação.
+        \item \textbf{Motor de Simulação:} Sandbox responsável por inicializar scripts customizados, interpretar condicionais lógicas e controlar o estado de jogo na simulação. Este estado é representado por um conjunto de variáveis lógicas globais e locais que registam as decisões do utilizador (ex: inventário, escolhas de caminhos ou pontuações).
     \end{itemize}
     \item \textbf{Camada de Dados e Persistência:} Representa o modelo de informação e o armazenamento. É constituída por:
     \begin{itemize}
@@ -35,32 +35,21 @@ O fluxo de funcionamento da aplicação e a relação de comunicação entre est
 \label{fig:arquitetura-conceptual}
 \end{figure}
 
-\section{Requisitos Gerais do Sistema}
-\label{sec:requisitos-gerais-sistema}
-Com o intuito de delimitar o âmbito do projeto e as necessidades fundamentais a que o \gls{piap} responde, foram estabelecidos os seguintes requisitos gerais que guiam o comportamento e a utilidade da aplicação:
-\begin{itemize}
-    \item \textbf{Modelador Narrativo Visual:} A aplicação deve disponibilizar uma interface gráfica baseada em grafos que permita modelar e ligar de forma dinâmica as cenas da história.
-    \item \textbf{Motor de Tradução Integrado:} Deve fornecer um sistema para traduzir e localizar textos diretamente na ferramenta de autoria, eliminando a dispersão de ficheiros externos.
-    \item \textbf{Análise e Validação de Consistência:} O sistema deve auditar as ligações criadas para detetar inconsistências como becos sem saída, nós isolados ou ciclos sem saída apropriada.
-    \item \textbf{Compatibilidade com o Ecossistema Twine:} O software deve garantir interoperabilidade bidirecional com o formato padrão Twee 3 (SugarCube), permitindo importar e exportar ficheiros sem perda de metadados.
-    \item \textbf{Simulação em Tempo Real:} Fornecer um modo interativo para jogar, depurar e testar a narrativa diretamente na ferramenta sem necessidade de compilação externa.
-    \item \textbf{Conversão Inteligente de Texto via IA:} O sistema deve permitir que os autores submetam histórias corridas em linguagem natural e convertam esses textos em grafos estruturados no formato Twee automaticamente, recorrendo a modelos de inteligência artificial locais.
-\end{itemize}
+\section{Requisitos do Sistema}
+\label{sec:requisitos-sistema}
 
-\section{Requisitos Funcionais e Não Funcionais}
-\label{sec:requisitos-funcionais-nao-funcionais}
-Para a materialização prática do sistema, os objetivos e requisitos gerais delineados na introdução foram detalhados sob a forma de requisitos técnicos. Estes dividem-se em funcionais (o que o sistema deve executar diretamente) e não funcionais (as restrições técnicas, de qualidade e usabilidade sob as quais o sistema deve operar).
+Com o intuito de delimitar o âmbito do projeto, o sistema foi estruturado para responder a necessidades fundamentais de modelação visual, internacionalização nativa, análise estática de integridade e inteligência artificial no cliente. Para a materialização prática do \gls{piap}, estas necessidades foram detalhadas sob a forma de requisitos técnicos, divididos entre funcionais (comportamento direto da aplicação) e não funcionais (restrições de qualidade, desempenho e usabilidade).
 
 \subsection{Requisitos Funcionais}
 \begin{description}
-    \item[\textbf{RF01 - Criação e Edição de Nós Narrativos (Cenas):}] O utilizador deve poder criar, mover, editar (alterando título e conteúdo de texto) e apagar nós no canvas interativo.
-    \item[\textbf{RF02 - Ligações Direcionadas entre Nós (Escolhas):}] O sistema deve ler ligações inseridas no texto através da sintaxe double-bracket (\texttt{[[Texto}Destino]]|) e criar arestas direcionadas automaticamente no grafo.
-    \item[\textbf{RF03 - Parser e Compatibilidade Twee 3:}] O software deve importar e exportar ficheiros no formato textual normativo \texttt{.twee} síncrona e bidirecionalmente, preservando a sintaxe Twine e convertendo coordenadas.
-    \item[\textbf{RF04 - Auditoria e Validação Estática de Fluxo:}] O sistema deve executar análises estáticas sobre a estrutura do grafo em segundo plano para detetar e alertar sobre nós órfãos (inacessíveis), ligações quebradas (que apontam para nós apagados) ou ciclos infinitos sem condição de saída lógica.
-    \item[\textbf{RF05 - Matriz de Localização Multi-idioma:}] Disponibilizar uma tabela em formato de grelha (\textit{grid}) que permita traduzir o texto das cenas para diferentes idiomas a partir de chaves dinâmicas, com suporte para exportação e importação em formato \gls{csv}.
-    \item[\textbf{RF06 - Simulador em Tempo Real (PlayMode):}] O utilizador deve poder testar a história jogando-a numa sandbox isolada dentro da aplicação que interprete as macros lógicas do SugarCube e execute código Javascript e CSS customizado.
-    \item[\textbf{RF07 - Zonas de Agrupamento Visual:}] O utilizador deve ser capaz de criar áreas retangulares redimensionáveis no canvas (Zonas) para agrupar nós de cena sob um mesmo contexto visual.
-    \item[\textbf{RF08 - Importação Inteligente via Conversor LLM:}] A aplicação deve permitir que o utilizador submeta uma história corrida em linguagem natural e, através de um modelo de linguagem local (Ollama) ou remoto (Gemini), a converta automaticamente em ficheiro no formato Twee 3 para gerar o respetivo grafo.
+    \item[\textbf{RF01 - Criação e Edição de Nós Narrativos (Cenas):}] O utilizador deve poder instanciar, arrastar, atualizar (título e corpo de texto das cenas) e remover de forma atómica nós narrativos no canvas bidimensional.
+    \item[\textbf{RF02 - Ligações Direcionadas entre Nós (Escolhas):}] O sistema deve inferir e instanciar arestas direcionadas automaticamente no grafo a partir da análise reativa de hiperligações double-bracket (\texttt{[[Texto|Destino]]}) inseridas pelo autor no texto das passagens.
+    \item[\textbf{RF03 - Parser e Compatibilidade Twee 3:}] O sistema deve assegurar a interoperabilidade bidirecional síncrona com a especificação Twee 3, suportando a importação e exportação de ficheiros com extensão \texttt{.twee}, mantendo a sintaxe e efetuando o mapeamento geométrico das coordenadas espaciais dos nós.
+    \item[\textbf{RF04 - Auditoria e Validação Estática de Fluxo:}] A plataforma deve executar análises estáticas e reativas sobre a topologia do grafo em plano secundário, sinalizando inconsistências estruturais como nós órfãos (inacessíveis), becos sem saída (hiperligações para identificadores inexistentes) ou caminhos inacessíveis devido a restrições lógicas.
+    \item[\textbf{RF05 - Matriz de Localização Multi-idioma:}] O sistema deve disponibilizar uma matriz de tradução tabular centralizada que associe chaves dinâmicas das passagens a múltiplos dicionários de tradução, permitindo a exportação e importação síncrona de ficheiros em formato \gls{csv} em conformidade com a norma RFC 4180.
+    \item[\textbf{RF06 - Simulador em Tempo Real (PlayMode):}] A aplicação deve integrar um simulador interativo em tempo real (\textit{PlayMode}) executado sob uma sandbox isolada do DOM, interpretando macros SugarCube, avaliando condições lógicas e executando scripts ou estilos customizados.
+    \item[\textbf{RF07 - Zonas de Agrupamento Visual:}] O utilizador deve ser capaz de delimitar contêineres espaciais redimensionáveis (Zonas) para agrupamento lógico e organização de nós de cena, permitindo a sua translação conjunta no canvas.
+    \item[\textbf{RF08 - Importação Inteligente via Conversor LLM:}] O sistema deve disponibilizar um assistente de inteligência artificial capaz de converter narrativas lineares em linguagem natural para o formato estruturado Twee 3, recorrendo à integração assíncrona com modelos de linguagem locais (Ollama) ou APIs externas.
 \end{description}
 
 \subsection{Requisitos Não Funcionais}
@@ -71,22 +60,23 @@ Para a materialização prática do sistema, os objetivos e requisitos gerais de
     \item[\textbf{RNF04 - Privacidade e Soberania de Dados:}] Todos os dados introduzidos, incluindo ficheiros importados, tabelas de tradução e dados submetidos para inteligência artificial no Ollama local, devem permanecer estritamente no armazenamento local do utilizador para garantir segurança absoluta.
 \end{description}
 
-\section{Métodos e Técnicas Utilizadas}
-O desenvolvimento do projeto apoiou-se em metodologias ágeis com ciclos rápidos de prototipagem e testes de funcionalidades. Ao nível tecnológico e arquitetural, foram utilizadas as seguintes ferramentas e conceitos:
-\begin{itemize}
-    \item \textbf{Frontend e Canvas de Grafos:} Desenvolvimento baseado na biblioteca React \citep{ReactReference}. A escolha justifica-se pela sua elevada popularidade e suporte na indústria \citep{StatistaFrameworks2025} e, fundamentalmente, pela familiaridade e experiência prévia da equipa de desenvolvimento com este ecossistema, o que contribuiu para mitigar a curva de aprendizagem e acelerar a entrega do projeto. A manipulação interativa do grafo e renderização visual foram suportadas pelo ecossistema React Flow \citep{ReactFlowReference}, selecionado pela sua integração direta com a arquitetura baseada em componentes do React.
-    \item \textbf{Algoritmia e Teoria de Grafos:} Utilização de estruturas de dados baseadas em listas de adjacências para a implementação de algoritmos de pesquisa (\gls{bfs} e \gls{dfs}) que validam de forma estática e iterativa a integridade dos caminhos e simulam estados de variáveis em memória.
-    \item \textbf{Internacionalização e Parsing:} Integração da biblioteca i18next em conjunto com algoritmos de substituição baseados em \glspl{regex} para intercetar macros SugarCube e injetar as chaves da base de dados de localização em tempo real.
-\end{itemize}
+\section{Métodos, Técnicas e Enquadramento Tecnológico}
+\label{sec:metodos-tecnologia}
 
-\section{Enquadramento e Implementação Tecnológica}
-\label{sec:enquadramento-tecnologico}
-Para concretizar as especificações da arquitetura conceptual descrita anteriormente, foi selecionada uma pilha tecnológica assente em padrões modernos de desenvolvimento web do lado do cliente:
+Para concretizar as especificações da arquitetura conceptual e responder aos requisitos definidos, o projeto apoia-se em metodologias ágeis de prototipagem rápida e numa seleção de tecnologias executadas do lado do cliente. As principais opções metodológicas e técnicas encontram-se estruturadas a seguir:
+
 \begin{itemize}
-    \item \textbf{Framework Frontend (React 19):} A aplicação foi desenvolvida como uma Single Page Application (\gls{spa}) utilizando a biblioteca \textbf{React 19} \citep{ReactReference}. A escolha justifica-se pela elevada eficiência do mecanismo de atualização do DOM virtual e pela facilidade na gestão dinâmica de estados complexos (nós, arestas e variáveis). A reatividade nativa do React assegura a propagação imediata de edições textuais e lógicas sem sobrecarregar o processador do cliente.
-    \item \textbf{Motor do Canvas de Grafos (ReactFlow 11):} O canvas interativo foi construído com a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference}. A sua seleção evitou o desenvolvimento de um motor de renderização de grafos a partir do zero, o qual seria complexo e propenso a erros de desempenho. O ReactFlow fornece suporte robusto para interações essenciais (arrastar, redimensionar, fazer zoom) e integra-se nativamente com componentes React customizados, viabilizando o desenho de nós de cena e Zonas personalizadas.
-    \item \textbf{Estilização e Identidade Visual (Tailwind CSS 3):} A estética neo-brutalista foi implementada com \textbf{Tailwind CSS 3} \citep{TailwindCSSReference}. A utilização de classes utilitárias acelerou significativamente a estilização de contornos espessos, sombras sólidas e regras de alto contraste necessárias para a acessibilidade visual da plataforma, garantindo uma folha de estilos limpa e de fácil manutenção sem necessidade de ficheiros CSS ad-hoc.
-    \item \textbf{Motor de Internacionalização (i18next):} A biblioteca \textbf{i18next} foi selecionada para a gestão de matrizes de localização, por constituir o padrão de facto para internacionalização em ecossistemas React. Permite o carregamento assíncrono de chaves \gls{json} de tradução dinamicamente na memória local via requisições HTTP locais no navegador (através de \texttt{i18next-http-backend}), assegurando a separação limpa de idiomas e a segurança dos dados.
+    \item \textbf{Desenvolvimento da SPA (React 19) e Estilização (Tailwind CSS 3):}
+    A aplicação foi inteiramente estruturada e programada pela equipa como uma \gls{spa} em \textbf{React 19} \citep{ReactReference}, tirando partido da nossa experiência prévia com esta tecnologia para gerir reativamente a árvore de componentes da interface. A identidade visual neo-brutalista (de alto contraste e bordas sólidas) foi desenhada e implementada por nós através da aplicação de classes utilitárias de \textbf{Tailwind CSS 3} \citep{TailwindCSSReference} nos componentes do editor.
+
+    \item \textbf{Extensões ao Canvas de Grafos (ReactFlow 11):}
+    Em vez de desenvolvermos um motor de desenho vetorial do zero, utilizámos a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference} como base para gerir interações de zoom e arrasto. O nosso trabalho consistiu em estender esta infraestrutura básica através do desenvolvimento de nós totalmente customizados de cena (\texttt{StoryNode.jsx}) e de agrupamento (\texttt{ZoneNode.jsx}), além de arestas interativas personalizadas.
+
+    \item \textbf{Algoritmia de Validação (Teoria de Grafos):}
+    Concebemos e implementámos um modelo de dados baseado em listas de adjacências bidirecionais locais. Sobre esta estrutura, programámos algoritmos específicos para realizar análises topológicas em plano secundário (deteção de inconsistências via BFS) e a simulação de caminhos heurística do \textit{Smart Walker}.
+
+    \item \textbf{Sistema de Internacionalização (i18next):}
+    Integrámos a biblioteca \textbf{i18next} para gerir dicionários locais. Desenvolvemos o mapeamento que associa os dados tabulares da matriz de tradução do utilizador a ficheiros JSON de localização estáticos, carregados dinamicamente no navegador com o plugin de cliente \texttt{i18next-http-backend} sob o modelo \textit{backendless}.
 \end{itemize}
 
 \subsection{Justificação das Decisões de Design}
@@ -94,65 +84,49 @@ Para concretizar as especificações da arquitetura conceptual descrita anterior
 Com base na análise comparativa das ferramentas existentes (ver Secção~\ref{sec:analise-comparativa}), as escolhas de design e de tecnologia para o \gls{piap} foram fundamentadas nos seguintes pontos:
 \begin{itemize}
     \item \textbf{Fusão de Paradigmas (Visual vs. Textual):} Enquanto o Twine se destaca pela interface puramente visual e o Ink pelo controlo fino de estados lógicos complexos, o \gls{piap} visa fundir ambas as forças, proporcionando um editor visual de grafos que não abdica da manipulação robusta de condicionais e variáveis (via macro-linguagem SugarCube).
-    \item \textbf{Adoção do Formato Aberto Twee 3 e Limitação de Grafos:} A especificação aberta Twee 3 possui um mapeamento direto entre passagens e grafos, o que suporta a decisão de adotá-lo como base de persistência do \gls{piap}. Contudo, para permitir que o sistema leia as saídas e as renderize visualmente como arestas de forma fiável, o projeto introduz um compromisso de design (\textit{trade-off}) em relação ao Twine tradicional: não é suportada a utilização de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Ir para o local|\$local]]}), exigindo que todos os destinos do grafo sejam estáticos.
+    \item \textbf{Adoção do Formato Aberto Twee 3 e Limitação de Grafos:} A especificação aberta Twee 3 possui um mapeamento direto entre passagens e grafos, o que suporta a decisão de adotá-lo como base de persistência do \gls{piap}. Contudo, para permitir que o sistema leia as saídas e as renderize visualmente como arestas de forma fiável, o projeto introduz um compromisso de design (\textit{trade-off}) em relação ao Twine tradicional: não é suportada a utilização de variáveis como destinos dinâmicos de hiperligações (ex: \texttt{[[Ir para o local|\$local]]}), exigindo que todos os destinos do grafo sejam estáticos (conforme detalhado na Secção~\ref{subsec:destinos-dinamicos}).
     \item \textbf{Validação Automática e Segurança do Fluxo:} O ChoiceScript é valorizado pelas suas ferramentas robustas de teste automático (\texttt{randomtest}), uma lacuna crítica do Twine. O \gls{piap} incorpora de raiz este princípio ao disponibilizar o validador estático (\gls{bfs}) e o Smart Walker no simulador para preencher esta falta, garantindo a correção imediata do fluxo narrativo.
     \item \textbf{Autonomia e Licenciamento Livre:} A restrição de uso comercial imposta pelo ChoiceScript salienta a importância de desenvolver uma ferramenta que promova a autonomia dos autores, permitindo a exportação de projetos sob licenças livres e sem taxas adicionais.
 \end{itemize}
 
-\section{Modelação de Dados: Lista de Adjacência Bidirecional}
-Para representar o fluxo da história no editor, evitou-se o uso de uma Matriz de Adjacência convencional devido ao desperdício de memória ($\mathcal{O}(V^2)$) e à fraca escalabilidade com o crescimento do número de nós. Em vez disso, implementou-se uma \textbf{Lista de Adjacência Bidirecional} com complexidade $\mathcal{O}(V + E)$.
-
-Cada cena no modelo de dados armazena de forma independente dois conjuntos de caminhos:
-\begin{enumerate}
+\section{Modelação de Dados: Lista de Adjacência}
+Para representar o fluxo da história no editor, o sistema utiliza uma \textbf{Lista de Adjacência Bidirecional}. Cada cena no modelo de dados armazena de forma independente dois conjuntos de caminhos:
+\begin{itemize}
     \item \textbf{Saídas (Sucessores):} Um vetor que contém as escolhas explícitas disponíveis para o leitor, mapeando o texto da opção e o ID do nó de destino.
     \item \textbf{Entradas (Predecessores):} Um vetor que regista as referências de todos os outros nós que contêm escolhas a apontar para o nó atual.
-\end{enumerate}
+\end{itemize}
 
-Esta representação bidirecional permite à aplicação realizar mapeamento reverso instantâneo (\textit{backward mapping}), fornecendo na barra lateral de propriedades os painéis ``Vens de...'' e ``Vais para...'', facilitando ao autor a navegação e a validação rápida de interconexões sem ter de vasculhar visualmente o canvas.
+Esta representação permite à aplicação realizar o mapeamento reverso instantâneo (\textit{backward mapping}), alimentando os painéis ``Vens de...'' e ``Vais para...'' na interface. A estrutura de dados \gls{json} representativa de um nó apresenta o seguinte formato simplificado:
 
-A estrutura de dados \gls{json} representativa de um nó e das suas ligações apresenta o seguinte formato:
 \begin{code}
 {
-  "cenas": [
-    {
-      "id": "cena_praca",
-      "titulo": "A Praça Central",
-      "conteudo": "O sol brilha no mercado central.",
-      "saidas": [
-        { "texto_escolha": "Entrar na taberna", "destino": "cena_taberna" },
-        { "texto_escolha": "Aguardar um momento", "destino": "cena_praca" }
-      ],
-      "entradas": ["cena_praca", "cena_taberna"]
-    },
-    {
-      "id": "cena_taberna",
-      "titulo": "Interior da Taberna",
-      "conteudo": "O cheiro a vinho enche o ar.",
-      "saidas": [
-        { "texto_escolha": "Voltar lá fora", "destino": "cena_praca" }
-      ],
-      "entradas": ["cena_praca"]
-    }
-  ]
+  "id": "cena_praca",
+  "titulo": "A Praça Central",
+  "conteudo": "O sol brilha no mercado central.",
+  "saidas": [
+    { "texto_escolha": "Entrar na taberna", "destino": "cena_taberna" }
+  ],
+  "entradas": ["cena_taberna"]
 }
 \end{code}
 
-\section{Parser Síncrono e Especificação Twee 3}
-O analisador desenvolvido em \texttt{tweeParser.js} (encontrado em \texttt{/src/utils/tweeParser.js}) realiza o mapeamento síncrono em tempo real entre a interface gráfica do React Flow e a representação textual no formato Twee 3 \citep{Twee3Reference}.
+Note-se que este modelo foca-se exclusivamente na estrutura topológica do grafo. As variáveis globais e as condições lógicas SugarCube não são serializadas na lista de adjacências, sendo integradas diretamente no corpo de texto (\texttt{conteudo}) das passagens e interpretadas em tempo de execução pelo simulador.
 
-\subsection{Importação e Conversão de Coordenadas em Zonas}
-No formato Twee 3 \citep{Twee3Reference}, as coordenadas de posição guardadas nos metadados \gls{json} das passagens são sempre absolutas no espaço do ecrã:
-\[
-(X_{\text{absoluto}}, Y_{\text{absoluto}})
-\]
-Quando um nó é importado como filho de uma Zona de Agrupamento Visual (\textit{ZoneNode}), o React Flow exige que a sua posição seja definida em coordenadas relativas ao canto superior esquerdo da zona mãe. O parser realiza esta conversão no momento da leitura:
+\section{Parser Síncrono e Especificação Twee 3}
+O ficheiro \texttt{tweeParser.js} (localizado em \texttt{/src/utils/tweeParser.js}) trata da sincronização bidirecional em tempo real entre o canvas do React Flow e o formato de texto Twee 3 \citep{Twee3Reference}.
+
+Esta sincronização acontece de forma síncrona diretamente na memória do navegador. Isto significa que qualquer alteração de coordenadas, edição de texto ou criação de novas ligações no canvas é traduzida de imediato para a estrutura Twee 3 interna (e o oposto também se verifica), sem tempos de espera ou passos de compilação. Como a ferramenta funciona inteiramente no lado do cliente (\textit{client-side}), este mapeamento apenas mantém o estado da sessão atualizado; a persistência física dos dados no disco rígido requer sempre que o utilizador exporte o ficheiro de forma explícita.
+
+\subsection{Importação e Conversão de Coordenadas de Zonas}
+\label{subsec:conversao-coordenadas-zonas}
+Durante a leitura e escrita de ficheiros, o parser converte as coordenadas de posição absolutas guardadas no formato Twee 3 (explicadas na Secção~\ref{subsec:metadados-tags-twee}) em coordenadas locais quando um nó é filho de uma Zona(explicado na Secção~\ref{subsec:zonas-agrupamento}). O React Flow exige que os nós filhos tenham posições relativas ao canto superior esquerdo da zona mãe, calculadas por:
 \[
 X_{\text{relativo}} = X_{\text{absoluto}} - X_{\text{zona}}
 \]
 \[
 Y_{\text{relativo}} = Y_{\text{absoluto}} - Y_{\text{zona}}
 \]
-Ao exportar o grafo novamente para o formato \texttt{.twee}, o parser faz a conversão inversa para garantir a compatibilidade com outros compiladores de Twine tradicionais:
+No processo inverso de exportação para ficheiro \texttt{.twee}, o parser executa a conversão inversa para manter a compatibilidade com outros compiladores de Twine:
 \[
 X_{\text{absoluto}} = X_{\text{zona}} + X_{\text{relativo}}
 \]
@@ -165,112 +139,113 @@ O parser reconhece passagens reservadas de metadados da especificação Twee 3:
 \begin{itemize}
     \item \texttt{:: StoryTitle}: Define o título do projeto.
     \item \texttt{:: StoryData}: Contém as configurações globais em formato \gls{json}, incluindo o identificador único da história (\texttt{ifid}), o formato de compilação (\texttt{SugarCube}), o nó de arranque (\texttt{start}) e o nível de zoom.
-    \item \texttt{:: StoryInit}: Nó especial não-narrativo onde são declaradas e inicializadas as variáveis de controlo de estado da simulação.
+    \item \texttt{:: StoryInit}: Nó especial não-narrativo onde são declaradas e inicializadas as variáveis lógicas de controlo do estado da simulação (as quais servem de memória do jogo, conforme introduzido na Secção~\ref{sec:arquitetura-geral}).
 \end{itemize}
 
 \subsection{Modelo SugarCube (Ligações e Macros)}
-As arestas são extraídas do texto narrativo de cada nó através de expressões regulares que identificam ligações no formato clássico:
+As arestas são extraídas do texto narrativo de cada nó através de expressões regulares que identificam ligações no formato clássico Twee:
 \begin{itemize}
     \item \textbf{Arestas Simples:} \texttt{[[Cena2]]}
-    \item \textbf{Arestas com Alias/Texto de Opção:} \texttt{[[Ir para a Taverna|cena\_taberna]]} ou \texttt{[[Abrir porta->cena\_interior]]}
+    \item \textbf{Arestas com Alias ou Direcionamento:} \texttt{[[Ir para a Taverna|cena\_taberna]]} ou \texttt{[[Abrir porta->cena\_interior]]}
 \end{itemize}
-As alterações de estado são definidas em macros como \texttt{<<set \$moedas += 10>>}, e as condições lógicas que limitam a visibilidade de opções são declaradas através de blocos \texttt{<<if \$tem\_chave>> ... <</if>>}.
+
+No caso das macros de alteração de estado (ex: \texttt{<<set \$moedas += 10>>}) e condicionais lógicas (ex: \texttt{<<if \$tem\_chave>> ... <</if>>}), o parser de importação não as compila nem as remove do texto. O parser executa duas operações:
+\begin{enumerate}
+    \item \textbf{Preservação de Código:} Mantém as macros intactas no corpo textual da passagem, permitindo que sejam interpretadas e executadas reativamente pelo simulador (\textit{PlayMode}) durante a execução do jogo (ver Secção~\ref{subsec:compilador-jit-macros}).
+    \item \textbf{Extração de Variáveis para Indexação:} Identifica os nomes das variáveis (iniciadas por \texttt{\$}) e regista-as no painel de gestão de variáveis, permitindo que o autor as rastreie ou renomeie de forma atómica em todo o projeto.
+\end{enumerate}
 
 \section{Interação Visual, Edição e Acessibilidade}
 
 \subsection{Zonas de Agrupamento Visual}
-A implementação de Zonas como nós customizados de grupo (\textit{ZoneNode}) exigiu uma resolução específica para um problema clássico de captura de cliques no React Flow. Como o contentor nativo das Zonas cobre uma área retangular considerável sobrepondo-se aos nós de cena interiores, os pointer events capturavam os cliques na tela, impedindo o arrasto ou seleção dos nós filhos.
+\label{subsec:zonas-agrupamento}
+As \textbf{Zonas de Agrupamento Visual} (\texttt{ZoneNode}) consistem em contentores espaciais retangulares que agrupam logicamente nós de cena relacionados (como capítulos ou localizações), conforme ilustrado na Figura~\ref{fig:exemplo-zona}.
 
-A solução consistiu em definir a propriedade CSS \texttt{pointer-events: none} dinamicamente na configuração global do React Flow para o contentor da Zona em \texttt{App.jsx} (encontrado em \texttt{/src/App.jsx}). Em paralelo, no componente \texttt{ZoneNode.jsx} (encontrado em \texttt{/src/components/ZoneNode.jsx}), forçou-se \texttt{pointer-events: auto} exclusivamente nas pegas de redimensionamento (\textit{NodeResizer}) e na barra de cabeçalho da zona (utilizada para arrastar a zona em bloco com todos os seus filhos).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Figures/zone.png}
+    \caption{Exemplo de uma Zona de Agrupamento Visual com nós de cena filhos no canvas.}
+    \label{fig:exemplo-zona}
+\end{figure}
 
-Para além do agrupamento espacial, as Zonas e os nós customizados suportam a injeção de imagens de fundo personalizadas (\textit{backgrounds}). Esta funcionalidade é gerida reativamente através de uma propriedade \texttt{bgImage} armazenada nos metadados de estado de cada nó. O renderizador do React Flow descodifica este campo em tempo de execução e aplica a imagem como máscara de fundo utilizando estilos embutidos do CSS, permitindo categorizar regiões do canvas visualmente.
+A sua implementação como nós de grupo personalizados exigiu contornar um problema de colisão de cliques no React Flow. Como o contentor cobre uma área retangular considerável sobreposta aos nós de cena interiores, os \textit{pointer events} capturavam os cliques no ecrã, impedindo a seleção ou arrasto dos filhos. Para resolver isto, definiu-se a propriedade CSS \texttt{pointer-events: none} dinamicamente na configuração global do React Flow para o contentor da Zona em \texttt{App.jsx}. Em paralelo, no componente \texttt{ZoneNode.jsx}, forçou-se \texttt{pointer-events: auto} exclusivamente nas pegas de redimensionamento (\textit{NodeResizer}) e na barra de cabeçalho (utilizada para arrastar a zona em bloco com todos os seus filhos).
+
+As Zonas suportam ainda imagens de fundo personalizadas (\textit{backgrounds}) geridas através da propriedade reativa \texttt{bgImage} nos metadados do nó, a qual é descodificada em tempo de execução e aplicada via CSS.
 
 \subsection{Arestas Curvadas com Waypoints}
 \label{subsec:arestas-curvadas-waypoints}
 
-Para evitar a sobreposição caótica de ligações direcionadas e o cruzamento cego sobre os nós de cena (que cria um efeito visual denso e desorganizado), a plataforma implementa arestas customizadas que utilizam a interpolação por Splines Cúbicas de Catmull-Rom \citep{CatmullRom1974} em \texttt{EditableEdge.jsx} (encontrado em \texttt{/src/components/EditableEdge.jsx}). 
+Para evitar a sobreposição visual das ligações e o cruzamento cego sobre os nós de cena, a plataforma implementa arestas personalizadas que utilizam a interpolação por \textit{Splines} Cúbicas de Catmull-Rom \citep{CatmullRom1974}. Esta lógica encontra-se implementada no componente \texttt{EditableEdge.jsx} (\texttt{/src/components/EditableEdge.jsx}), com o resultado visual exemplificado na Figura~\ref{fig:curved-edge}.
 
-O autor pode introduzir e arrastar marcadores circulares (\textit{waypoints}) interativos ao longo da linha no canvas do React Flow. A curva é calculada em tempo de execução interpolando sequencialmente estes waypoints de modo a gerar uma trajetória suave e contínua. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Figures/curved_edge.png}
+    \caption{Exemplo de aresta suavizada com caminho curvado personalizável no canvas.}
+    \label{fig:curved-edge}
+\end{figure}
 
-Formalmente, dada uma sequência de pontos de controlo tridimensionais ou bidimensionais no plano do canvas $\mathbf{P}_0, \mathbf{P}_1, \dots, \mathbf{P}_n$, a spline cúbica de Catmull-Rom para um segmento específico $i$ que conecta os pontos $\mathbf{P}_i$ e $\mathbf{P}_{i+1}$ (utilizando $\mathbf{P}_{i-1}$ e $\mathbf{P}_{i+2}$ como os pontos de controlo auxiliares para definir as tangentes nos extremos) é parametrizada por uma variável $t \in [0, 1]$. O vetor de posição da curva $\mathbf{C}(t)$ é dado por:
-\[
-\mathbf{C}(t) = \frac{1}{2} \begin{bmatrix} 1 & t & t^2 & t^3 \end{bmatrix} \mathbf{M}_{CR} \begin{bmatrix} \mathbf{P}_{i-1} \\ \mathbf{P}_i \\ \mathbf{P}_{i+1} \\ \mathbf{P}_{i+2} \end{bmatrix}
-\]
-onde $\mathbf{M}_{CR}$ representa a matriz de coeficientes característica da Spline de Catmull-Rom centripeta padrão (com $\alpha = 0.5$ para obter curvas sem auto-intersecções ou loops):
-\[
-\mathbf{M}_{CR} = \begin{bmatrix} 0 & 2 & 0 & 0 \\ -1 & 0 & 1 & 0 \\ 2 & -5 & 4 & -1 \\ -1 & 3 & -3 & 1 \end{bmatrix}
-\]
-Desta forma, expandindo a multiplicação matricial, cada coordenada $(x, y)$ da spline é calculada de forma explícita através de equações polinomiais cúbicas em $t$:
-\[
-\mathbf{C}(t) = \frac{1}{2} \left[ 2\mathbf{P}_i + (-\mathbf{P}_{i-1} + \mathbf{P}_{i+1})t + (2\mathbf{P}_{i-1} - 5\mathbf{P}_i + 4\mathbf{P}_{i+1} - \mathbf{P}_{i+2})t^2 + (-\mathbf{P}_{i-1} + 3\mathbf{P}_i - 3\mathbf{P}_{i+1} + \mathbf{P}_{i+2})t^3 \right]
-\]
-Este cálculo polinomial é executado em JavaScript na biblioteca gráfica \texttt{graphMath.js} para interpolar os waypoints introduzidos pelo utilizador. Visto que os navegadores web não conseguem renderizar splines de Catmull-Rom de forma nativa na especificação SVG, o módulo de visualização converte os segmentos de reta calculados em comandos de curvas Bézier cúbicas padrão (sintaxe do caminho SVG com as flags \texttt{C} e \texttt{S}). A conversão é feita calculando analiticamente os pontos de controlo Bézier correspondentes com base nas tangentes geradas pela formulação de Catmull-Rom em cada nó:
-\[
-\mathbf{B}_{control1} = \mathbf{P}_i + \frac{\mathbf{P}_{i+1} - \mathbf{P}_{i-1}}{6}
-\]
-\[
-\mathbf{B}_{control2} = \mathbf{P}_{i+1} - \frac{\mathbf{P}_{i+2} - \mathbf{P}_i}{6}
-\]
-Isto garante a renderização direta no navegador web por aceleração de hardware (GPU), mantendo a fluidez de arrasto e a complexidade temporal linear $\mathcal{O}(W)$ (onde $W$ é o número de waypoints da aresta).
+O autor pode criar novos marcadores (\textit{waypoints}) com um duplo clique e arrastá-los livremente pelo ecrã. A curva é recalculada em tempo de execução à medida que os marcadores são movidos, interpolando a sua posição de forma contínua para manter a linha fluida e desimpedida de outros elementos do grafo.
 
-\subsection{Gestão de Variáveis Estilo Figma}
-O componente \texttt{VariablesModal.jsx} (encontrado em \texttt{/src/components/VariablesModal.jsx}) centraliza a gestão de variáveis globais e locais da história através de uma interface inspirada na ferramenta Figma. Quando uma variável é renomeada no painel global (ex: de \texttt{\$ouro} para \texttt{\$moedas}), um mecanismo automático executa uma expressão regular compilada:
-\begin{code}
-new RegExp('\\$' + antigo + '\\b', 'g')
-\end{code}
-Esta regex varre e atualiza em tempo real todas as referências da variável dentro das macros \texttt{<<set>>}, \texttt{<<if>>} e inserções de texto em todos os nós da aplicação, prevenindo a quebra de referências em projetos grandes.
+\subsection{Acessibilidade e Identidade Visual Customizada}
+\label{subsec:acessibilidade-identidade-visual}
+Tendo em conta que o desenvolvimento do projeto beneficiou de validações diretas com utilizadores daltónicos, projetou-se uma estratégia de acessibilidade redundante baseada numa identidade visual neo-brutalista. A adoção desta estética neo-brutalista fundamentou-se em estudos que demonstram que contornos espessos, pesos tipográficos elevados e contrastes marcados beneficiam utilizadores com baixa acuidade visual ou daltonismo \citep{Babich2023, Loranger2022}. O aspeto geral desta interface e os seus elementos gráficos encontram-se representados na Figura~\ref{fig:editor-canvas-acessibilidade}.
 
-\subsection{Acessibilidade para Autores com Dificuldades Visuais}
-Tendo em conta que um dos autores da ferramenta, Miguel, apresenta limitações visuais (nomeadamente daltonismo), desenhou-se uma estratégia de representação de fluxo e interface adaptada. A escolha da estética neo-brutalista para a interface fundamenta-se no facto de este estilo, quando implementado com rigor técnico, favorecer a acessibilidade de utilizadores com deficiências visuais \citep{Babich2023, Loranger2022}, através de:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Figures/editor_canvas.png}
+    \caption{Interface gráfica global do editor (\textit{Plot in a Pot}), ilustrando a identidade visual neo-brutalista de alto contraste com contornos espessos e sinalização redundante para acessibilidade.}
+    \label{fig:editor-canvas-acessibilidade}
+\end{figure}
+
+O nosso trabalho de design e programação focou-se nos seguintes pilares:
 \begin{itemize}
-    \item \textbf{Contraste Elevado e Bordas Espessas:} O neo-brutalismo recorre a contornos pretos e espessos (de 2px ou mais) para delimitar elementos de interface (como botões e caixas de texto) e sombras projetadas sólidas e sem difusão, o que facilita a distinção visual de contêineres e controlos interativos por parte de pessoas com baixa acuidade visual.
-    \item \textbf{Tipografia Legível:} Uso de fontes sem serifa com pesos elevados (\textit{bold} e \textit{black}) que evitam o esbatimento visual do texto.
-    \item \textbf{Arestas de Alto Contraste:} As ligações entre nós utilizam cores de alto contraste (pretas no tema claro, brancas no tema escuro) e são sempre sólidas, garantindo excelente visibilidade sobre o fundo do canvas independentemente do tema ativo.
-    \item \textbf{Sinalização Semântica Redundante:} Cores de contraste elevado e símbolos iconográficos explícitos acompanham o feedback visual em detrimento de códigos de cores simples (verde/vermelho).
+    \item \textbf{Delimitação por Contornos Sólidos:} Implementação de contornos pretos de 2px (\texttt{border-2}) e sombras projetadas rígidas sem difusão (\texttt{shadow-[4px\_4px\_0px\_\#000]}) em todos os componentes visuais (\textit{StoryNode}, \textit{ZoneNode} e painéis), eliminando a dependência de cores ou gradientes suaves para distinguir elementos.
+    \item \textbf{Diferenciação Estrutural de Arestas:} As transições normais no grafo são desenhadas com traçados contínuos, enquanto as ligações inacessíveis ou com erros lógicos são renderizadas com traçados tracejados (\texttt{strokeDasharray="5,5"}). Esta distinção de padrão garante que o utilizador consiga identificar caminhos quebrados sem depender exclusivamente da cor.
+    \item \textbf{Sinalização Semântica Dupla de Alertas:} Configuração de etiquetas textuais explícitas (como o selo ``Aviso'' em fundo laranja nos nós com erros estruturais) em conjunto com listagens descritivas nos painéis, evitando a sinalização baseada apenas no par de cores verde/vermelho.
 \end{itemize}
 
 \subsection{Modelação de Dados e Sincronização com o React Flow}
 \label{subsec:modelacao-dados-reactflow}
-Para além da representação puramente abstrata da arquitetura modular, a implementação prática exige uma sincronização bidirecional em tempo real entre a interface gráfica gerida pela biblioteca \textit{React Flow} e a estrutura de dados semântica interna da história.
+Para além da representação abstrata da arquitetura, a implementação prática exige uma sincronização bidirecional em tempo real entre a interface gráfica gerida pela biblioteca \textit{React Flow} e a estrutura de dados semântica interna da história.
 
-No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicação (\texttt{App.jsx}) e modularizado através de ganchos customizados (\textit{custom hooks}), recorrendo a três vetores de dados estruturados em memória local:
+No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicação (\texttt{App.jsx}) e de forma modular através de ganchos personalizados (\textit{custom hooks}), recorrendo a três vetores de dados estruturados em memória local:
 \begin{enumerate}
     \item \textbf{Vetor de Nós do React Flow (\texttt{nodes}):} Contém a representação posicional e de renderização de cada elemento no canvas. Cada objeto de nó segue a especificação rígida da biblioteca:
-    \begin{code}
-    {
-      id: "cena_taberna",
-      type: "storyNode",
-      position: { x: 250, y: 180 },
-      data: {
-        title: "Interior da Taberna",
-        content: "O cheiro a hidromel preenche a sala...",
-        tags: ["secreto"],
-        bgImage: ""
-      },
-      width: 280,
-      height: 150
-    }
-    \end{code}
-    Se o nó representar uma Zona de Agrupamento (\texttt{ZoneNode}), o tipo é alterado para \texttt{''zoneNode''} e o objeto passa a incluir propriedades de agrupamento como \texttt{parentId} nos nós filhos e dimensões explícitas de largura e altura controladas pelo utilizador.
+\begin{verbatim}
+{
+  id: "cena_taberna",
+  type: "storyNode",
+  position: { x: 250, y: 180 },
+  data: {
+    title: "Interior da Taberna",
+    content: "O cheiro a hidromel preenche a sala...",
+    tags: ["secreto"],
+    bgImage: ""
+  },
+  width: 280,
+  height: 150
+}
+\end{verbatim}
+    Se o nó representar uma Zona de Agrupamento (\texttt{ZoneNode}), o tipo é alterado para \texttt{"zoneNode"} e o objeto passa a incluir propriedades de agrupamento como \texttt{parentId} nos nós filhos e dimensões explícitas de largura e altura controladas pelo utilizador.
     
-    \item \textbf{Vetor de Arestas do React Flow (\texttt{edges}):} Modela a conectividade geométrica das escolhas narrativas. Cada aresta é configurada como um componente customizado (\texttt{EditableEdge}) e armazena os pontos geométricos intermédios (\textit{waypoints}) inseridos pelo autor para suavizar as curvas:
-    \begin{code}
-    {
-      id: "edge-cena_praca-cena_taberna",
-      source: "cena_praca",
-      target: "cena_taberna",
-      type: "editableEdge",
-      data: {
-        choiceText: "Entrar na taberna",
-        waypoints: [{ x: 120, y: 150 }, { x: 180, y: 160 }]
-      }
-    }
-    \end{code}
+    \item \textbf{Vetor de Arestas do React Flow (\texttt{edges}):} Modela a conectividade geométrica das escolhas narrativas. Cada aresta é configurada como um componente personalizado (\texttt{EditableEdge}) e armazena os pontos geométricos intermédios (\textit{waypoints}) inseridos pelo autor para suavizar as curvas:
+\begin{verbatim}
+{
+  id: "edge-cena_praca-cena_taberna",
+  source: "cena_praca",
+  target: "cena_taberna",
+  type: "editableEdge",
+  data: {
+    choiceText: "Entrar na taberna",
+    waypoints: [{ x: 120, y: 150 }, { x: 180, y: 160 }]
+  }
+}
+\end{verbatim}
     
-    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação executar travessias e lookups rápidos de transição com complexidade constante $\mathcal{O}(1)$.
+    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação executar travessias e pesquisas rápidas.
 \end{enumerate}
 
-Esta tripla modelagem é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no inspetor, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada e encaminhada pelos hooks customizados em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a reatualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
+Esta tripla modelação é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no painel de detalhes, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada e encaminhada pelos ganchos personalizados em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a atualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
 
 \section{Validação Estática e Simulação}
 \label{sec:validacao-estatica-simulacao}
@@ -383,24 +358,23 @@ Para suportar as avaliações e atribuições de variáveis de estado descritas,
 \label{sec:integracao-llms-implementacao}
 Para além do núcleo lógico de grafos e da simulação estática, a plataforma disponibiliza um assistente baseado em Modelos de Linguagem de Grande Escala (LLMs) para facilitar a importação e co-criação de histórias. A conceção e implementação desta funcionalidade assenta nos seguintes aspetos:
 
-\subsection{Modelo de Integração Local sem Custos}
-Para evitar a necessidade de desenvolver e compilar motores de inferência de raiz, o \gls{piap} adota uma arquitetura baseada em servidores de inferência locais prontos a usar, nomeadamente o \textit{Ollama} ou o \textit{LM Studio}. O fluxo de comunicação processa-se conforme descrito de seguida:
-\begin{enumerate}
-    \item \textbf{Instalação Local:} O autor/utilizador instala o servidor \textit{Ollama} na sua máquina local.
-    \item \textbf{Execução em Segundo Plano:} O \textit{Ollama} descarrega o modelo pretendido (ex: \texttt{llama3.1:8b}) e executa a inferência local em segundo plano.
-    \item \textbf{Simulação de \gls{api}:} O servidor expõe uma \gls{api} REST local na porta padrão (tipicamente \texttt{http://localhost:11434}), que simula a interface padrão de chat da OpenAI.
-    \item \textbf{Pedidos HTTP:} O software \textit{Plot in a Pot} efetua pedidos HTTP padrão (\textit{fetch}) diretamente para este endpoint local, eliminando custos de infraestrutura e limites de chamadas impostos por \glspl{api} proprietárias na nuvem.
-\end{enumerate}
+\subsection{Arquitetura de Integração Local}
+A integração com inteligência artificial foca-se em fornecer uma interface de comunicação local e assíncrona entre o editor gráfico e o servidor de inferência do utilizador. O trabalho de desenvolvimento realizado pela equipa consistiu em:
+\begin{itemize}
+    \item \textbf{Módulo de Comunicação REST (\texttt{aiGenerator.js}):} Programámos o cliente HTTP em Javascript para estabelecer a ligação assíncrona com o endpoint local do Ollama (\texttt{http://localhost:11434}), enviando os cabeçalhos e o corpo JSON com os parâmetros de temperatura e tokens.
+    \item \textbf{Engenharia de Prompt de Conversão:} Desenvolvemos e validámos um prompt de sistema especializado, com regras sintáticas rígidas, concebido para forçar o modelo de linguagem a gerar respostas estritamente em conformidade com a especificação Twee 3 (cabeçalhos, metadados e arestas literais), mitigando alucinações.
+    \item \textbf{Importação Automatizada Pós-Resposta:} Desenvolvemos o fluxo de importação que recebe o texto estruturado retornado pela API local, encaminha-o para o nosso parser e gera automaticamente os nós e arestas correspondentes no canvas.
+\end{itemize}
 
-A escolha de investir no desenvolvimento de soluções de inferência locais (via Ollama) ao invés de recorrer a \glspl{api} de grandes fornecedores na nuvem (como OpenAI ou Anthropic) baseou-se em duas premissas estratégicas essenciais:
+A decisão de basear este assistente em inferência local (via Ollama) assenta nos seguintes compromissos:
 \begin{itemize}
     \item \textbf{Privacidade e Soberania dos Dados:} Ao executar o modelo localmente no computador do autor, garante-se que toda a propriedade intelectual da história e os textos criados permanecem estritamente confidenciais. Não há partilha de dados com servidores externos de terceiros nem risco de os textos literários serem recolhidos para treino de modelos comerciais.
-    \item \textbf{Custo Financeiro Zero:} \glspl{api} na nuvem implicam faturação contínua baseada em consumo de tokens (tanto para entrada como para saída), o que criaria barreiras ao uso regular e exigiria a gestão de chaves de \gls{api} pagas por parte do utilizador. A inferência local permite a utilização gratuita e ilimitada da funcionalidade de conversão inteligente.
+    \item \textbf{Custo Financeiro Zero:} APIs na nuvem implicam faturação contínua baseada em consumo de tokens, o que criaria barreiras ao uso regular. A inferência local permite a utilização gratuita e ilimitada da funcionalidade de conversão inteligente.
 \end{itemize}
 
 \subsection{Papel do LLM: Conversão e Importação Automática de Histórias}
-Uma conclusão crítica retirada da pesquisa reside no facto de que os LLMs não possuem fiabilidade suficiente para gerir a coerência estrutural de um grafo de estado de forma autónoma e dinâmica em tempo de execução. Os modelos de linguagem tendem a alucinar, esquecer nós, criar ligações logicamente impossíveis, ignorar restrições de ciclos e perder o mapeamento geral da árvore narrativa quando integrados no fluxo direto de jogo.
+A nossa abordagem de design delimitou de forma clara o papel do modelo de linguagem no ciclo de vida da narrativa. Visto que os LLMs tendem a alucinar, criar caminhos impossíveis e ignorar restrições de ciclos, o modelo não é integrado dinamicamente na simulação direta do jogo.
 
-Deste modo, no produto final, a função do LLM foi redefinida para atuar exclusivamente como uma ferramenta de conversão estrutural numa fase de pré-processamento. Em vez de ser integrado diretamente na simulação, o modelo é utilizado para ler uma história corrida escrita pelo utilizador em linguagem natural e convertê-la inteiramente para o formato normativo Twee 3 (identificando as passagens/nós, os seus títulos e as arestas de ligação). Uma vez gerada a representação textual Twee, a aplicação importa-a de forma automática para o programa. A partir desse ponto, o motor lógico proprietário e o validador estático (baseados em listas de adjacências) assumem a responsabilidade exclusiva de desenhar o canvas visual e garantir a coerência matemática do grafo de estados.
+O papel do LLM foi desenhado por nós para atuar estritamente como uma ferramenta de conversão sintática em fase de pré-processamento. O modelo lê a história linear fornecida pelo autor e converte-a para a norma Twee 3. A partir desse ponto, o nosso motor lógico e o validador BFS assumem a responsabilidade exclusiva de renderizar o canvas visual e garantir a integridade dos caminhos e das variáveis de estado no editor.
 
 

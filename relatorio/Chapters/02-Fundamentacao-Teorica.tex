@@ -255,6 +255,32 @@ No Twee3, as bifurcações narrativas e as escolhas do leitor são representadas
     \item \textbf{Ligação Rotulada:} \lstinline|[[Texto da Escolha->Destino]]|, onde o texto visível é separado do identificador da passagem por uma seta.
 \end{itemize}
 
+\subsection{Metadados Geométricos e Etiquetas (Tags)}
+\label{subsec:metadados-tags-twee}
+Para além do conteúdo narrativo e das ligações, a especificação normativa do Twee3 suporta a inclusão de metadados em formato \gls{json} e de etiquetas (\textit{tags}) diretamente no cabeçalho das passagens. O cabeçalho estendido obedece à seguinte estrutura:
+\begin{lstlisting}[caption={Exemplo de cabeçalho estendido com etiquetas e metadados geométricos em Twee3.}]
+:: Nome da Passagem [etiqueta1 etiqueta2] {"position":"100,200","size":"100,100"}
+\end{lstlisting}
+
+Onde:
+\begin{itemize}
+    \item \textbf{Etiquetas (Tags):} Declaradas entre parênteses retos (\texttt{[...]}) após o título da passagem, servem para catalogar ou aplicar propriedades especiais de visualização ou lógica.
+    \item \textbf{Metadados JSON:} Delimitados por chavetas (\texttt{\{...\}}), contêm dados estruturados de persistência da história. As propriedades padrão para a representação visual em editores gráficos são a \texttt{position} (coordenadas $X,Y$ absolutas no ecrã) e a \texttt{size} (largura e altura físicas da caixa no canvas).
+\end{itemize}
+
+\subsection{Destinos Dinâmicos vs. Validação Estática}
+\label{subsec:destinos-dinamicos}
+A especificação normativa do Twee3 permite que os autores utilizem expressões lógicas ou variáveis dinâmicas como destinos de transição (por exemplo, \texttt{[[Seguir em frente|\$destino]]} ou \texttt{[[Voltar|Trilho + \$passagemAnterior]]}). Em tempo de execução, o motor de jogo resolve o valor da variável e executa o redirecionamento para o nó correspondente.
+
+Embora esta flexibilidade dinâmica traga vantagens de modularidade, ela impede a representação estática do fluxo narrativo sob a forma de um grafo determinista e inviabiliza análises automáticas de integridade antes da execução. Visto que o destino de um nó não pode ser determinado sem correr o jogo passo a passo, o compilador fica impossibilitado de construir a lista de adjacências e mapear as arestas visuais.
+
+Por esta razão, o \gls{piap} introduz uma restrição sintática ao formato Twee3: todos os destinos de ligação devem ser estáticos e literais (isto é, referenciar textualmente o nome de uma passagem existente no grafo). Ao abdicar desta funcionalidade dinâmica de transição, a plataforma ganha a capacidade de:
+\begin{itemize}
+    \item Desenhar de forma determinista as arestas direcionadas que ligam as passagens no canvas interativo.
+    \item Executar com precisão o algoritmo de validação estática de caminhos baseada em \gls{bfs} para detetar nós órfãos e becos sem saída lógicos.
+    \item Viabilizar a exploração de estados e simulação inteligente de caminhos efetuada pelo agente \textit{Smart Walker}.
+\end{itemize}
+
 \subsection{Macros e Lógica Condicional}
 A especificação Twee3 é independente do formato de exibição (story format) utilizado em tempo de execução (como Harlowe, SugarCube ou Chapbook). Cada um destes formatos fornece um conjunto de \textbf{Macros} para manipulação do estado da narrativa:
 \begin{itemize}

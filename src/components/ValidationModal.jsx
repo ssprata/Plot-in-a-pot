@@ -11,7 +11,7 @@ export default function ValidationModal({ isOpen, onClose, result, showSimulatio
 
   if (!isOpen || !result) return null;
 
-  const hasErrors = result.unreachableEdges.length > 0 || result.orphanNodes.length > 0 || !result.hasReachableEnd;
+  const hasErrors = result.unreachableEdges.length > 0 || result.orphanNodes.length > 0 || !result.hasReachableEnd || (result.nodeWarnings && result.nodeWarnings.length > 0);
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -70,6 +70,23 @@ export default function ValidationModal({ isOpen, onClose, result, showSimulatio
                 </span>
               )}
             </div>
+
+            {/* Syntax Warnings / Broken Links */}
+            {result.nodeWarnings && result.nodeWarnings.length > 0 && (
+              <div className="border-2 border-gray-900 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-950">
+                <span className="block font-black text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+                  {t('dataPanel.syntaxWarnings', 'Erros de Sintaxe / Ligações')}
+                </span>
+                <ul className="text-[10px] font-mono leading-tight space-y-1.5 text-red-500 font-semibold uppercase">
+                  {result.nodeWarnings.map((warn, i) => (
+                    <li key={i} className="flex items-start gap-1.5">
+                      <span className="text-red-650 font-black shrink-0">[!]</span>
+                      <span>[{warn.nodeLabel}]: {warn.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Blocked Routes */}
             {result.unreachableEdges.length > 0 && (
