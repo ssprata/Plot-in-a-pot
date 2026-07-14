@@ -39,7 +39,7 @@ O sistema foi desenhado segundo uma arquitetura modular dividida em três camada
     \item \textbf{Camada de Processamento Lógico (Núcleo):} Contém a inteligência do sistema e os motores de transformação. É constituída por:
     \begin{itemize}
         \item \textbf{Parser Twee 3:} Módulo encarregue de ler ficheiros de texto estruturados em formato Twee 3 e convertê-los no modelo interno da aplicação, bem como serializar e exportá-los de volta.
-        \item \textbf{Validador Estático:} Motor que executa travessias de grafo (\gls{bfs}/\gls{dfs}) para inspecionar inconsistências estruturais, como ciclos sem saída, nós inacessíveis ou hiperligações quebradas.
+        \item \textbf{Validador Estático:} Motor que executa percursos em grafos (\gls{bfs}/\gls{dfs}) para inspecionar inconsistências estruturais, como ciclos sem saída, nós inacessíveis ou hiperligações quebradas.
         \item \textbf{Motor de Simulação:} Sandbox responsável por inicializar scripts customizados, interpretar condicionais lógicas e controlar o estado de jogo na simulação. Este estado é representado por um conjunto de variáveis lógicas globais e locais que registam as decisões do utilizador (ex: inventário, escolhas de caminhos ou pontuações).
     \end{itemize}
     \item \textbf{Camada de Dados e Persistência:} Representa o modelo de informação e o armazenamento. É constituída por:
@@ -311,7 +311,7 @@ No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicaç
 }
 \end{verbatim}
     
-    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação realizar travessias e pesquisas rápidas.
+    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação realizar percursos e pesquisas rápidas.
 \end{enumerate}
 
 Esta tripla modelação é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no painel de detalhes, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada e encaminhada pelos ganchos personalizados em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a atualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
@@ -324,11 +324,11 @@ O motor de autoria do \textit{Plot in a Pot} integra ferramentas robustas de val
 \subsection{Algoritmo de Validação Estática e Exploração do Espaço de Estados}
 \label{subsec:algoritmo-bfs-validacao}
 
-O validador estático, implementado nos módulos \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, uma travessia clássica de Pesquisa em Largura (BFS) seria suficiente para auditar a conectividade geométrica. Contudo, em narrativas interativas complexas, as escolhas do jogador (arestas) dependem frequentemente de condições lógicas associadas a variáveis de estado (por exemplo, macros de atribuição \texttt{<<set>>} e macros condicionais \texttt{<<if>>} do formato SugarCube).
+O validador estático, implementado nos módulos \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, um percurso clássico de Pesquisa em Largura (BFS) seria suficiente para auditar a conectividade geométrica. Contudo, em narrativas interativas complexas, as escolhas do jogador (arestas) dependem frequentemente de condições lógicas associadas a variáveis de estado (por exemplo, macros de atribuição \texttt{<<set>>} e macros condicionais \texttt{<<if>>} do formato SugarCube).
 
 Isto significa que a acessibilidade de uma determinada cena não depende apenas da existência de uma linha gráfica a conectá-la, mas também do estado atual da memória do jogo (as variáveis acumuladas até então). Desta forma, a validação lógica é modelada como um problema de \textit{Exploração do Espaço de Estados} (\textit{State Space Exploration}), onde cada elemento explorado é composto pelo par formado pelo nó atual do grafo e pela valoração instantânea do dicionário de variáveis.
 
-O algoritmo de auditoria executa a travessia de acordo com os seguintes passos estruturados e detalhados:
+O algoritmo de auditoria executa a exploração de acordo com os seguintes passos estruturados e detalhados:
 
 \begin{enumerate}
     \item \textbf{Inicialização e Pré-computação de Dicionários:}
@@ -368,11 +368,11 @@ O algoritmo de auditoria executa a travessia de acordo com os seguintes passos e
     \end{enumerate}
 \end{enumerate}
 
-Após o término da travessia (quando a fila de exploração fica vazia), o módulo de auditoria em \texttt{storyValidator.js} analisa os conjuntos acumulados para identificar e classificar as falhas de integridade narrativa no grafo:
+Após o término da exploração (quando a fila de exploração fica vazia), o módulo de auditoria em \texttt{storyValidator.js} analisa os conjuntos acumulados para identificar e classificar as falhas de integridade narrativa no grafo:
 \begin{itemize}
     \item \textbf{Nós Órfãos:} Cenas criadas no canvas que não constam no conjunto de nós alcançáveis (\texttt{Nreach}), significando que o jogador nunca conseguirá chegar a elas a partir do início da história. Para maior flexibilidade do autor, as cenas etiquetadas com a tag \texttt{secreto} (ou privada) são deliberadamente excluídas deste aviso, permitindo a existência de cenas soltas de teste ou passagens secretas acedidas exclusivamente por código sem poluir a interface com falsos erros.
     \item \textbf{Becos sem Saída (Hiperligações Quebradas):} Nós visitados pela exploração que contêm hiperligações cujo destino aponta para uma cena inexistente ou que foi apagada do canvas. É importante salvaguardar que nós terminais da narrativa (que representam finais de jogo e não possuem quaisquer escolhas de saída) são perfeitamente válidos e não geram erros. Este aviso foca-se estritamente em caminhos com destinos inválidos.
-    \item \textbf{Escolhas Inacessíveis:} Escolhas cuja condição lógica de acessibilidade nunca pôde ser satisfeita sob nenhuma das combinações de variáveis e caminhos explorados durante a travessia (por exemplo, exigir uma chave que nunca é definida como obtida em nenhuma cena anterior).
+    \item \textbf{Escolhas Inacessíveis:} Escolhas cuja condição lógica de acessibilidade nunca pôde ser satisfeita sob nenhuma das combinações de variáveis e caminhos explorados durante o percurso (por exemplo, exigir uma chave que nunca é definida como obtida em nenhuma cena anterior).
 \end{itemize}
 
 \subsection{Simulador em Tempo Real (PlayMode) e Smart Walker}
@@ -393,7 +393,7 @@ Este comportamento heurístico simples força o simulador a procurar caminhos na
 \subsection{Motor de Compilação JIT de Macros SugarCube}
 \label{subsec:compilador-jit-macros}
 
-Para suportar a avaliação de condições e a execução de modificadores de estado descritas no algoritmo de travessia, a plataforma integra um motor de compilação \textit{Just-In-Time} (JIT) simplificado, estruturado nos módulos \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}. A arquitetura deste motor divide-se em quatro fases principais:
+Para suportar a avaliação de condições e a execução de modificadores de estado descritas no algoritmo de exploração, a plataforma integra um motor de compilação \textit{Just-In-Time} (JIT) simplificado, estruturado nos módulos \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}. A arquitetura deste motor divide-se em quatro fases principais:
 
 \begin{enumerate}
     \item \textbf{Tradução Sintática e Mapeamento Léxico:}

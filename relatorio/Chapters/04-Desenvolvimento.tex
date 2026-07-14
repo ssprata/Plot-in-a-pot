@@ -71,7 +71,7 @@ Para evitar isto e manter a aplicação rápida, o validador (\texttt{storyTrave
 
 \begin{listing}[!htpb]
 \begin{lstlisting}
-// Travessia e controlo de ciclos por limite de estados visitados
+// Percurso e controlo de ciclos por limite de estados visitados
 while (queue.length > 0) {
   const { nodeId, state, path } = queue.shift();
   const currentNode = nodeMap.get(nodeId);
