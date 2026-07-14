@@ -142,7 +142,7 @@ Esta representação permite à aplicação realizar o mapeamento reverso instan
 Note-se que este modelo foca-se exclusivamente na estrutura topológica do grafo. As variáveis globais e as condições lógicas SugarCube não são serializadas na lista de adjacências, sendo integradas diretamente no corpo de texto (\texttt{conteudo}) das passagens e interpretadas em tempo de execução pelo simulador.
 
 \section{Parser Síncrono e Especificação Twee 3}
-O ficheiro \texttt{tweeParser.js} (localizado em \texttt{/src/utils/tweeParser.js}) trata da sincronização bidirecional em tempo real entre o canvas do React Flow e o formato de texto Twee 3 \citep{Twee3Reference}.
+O ficheiro \texttt{tweeParser.js} (localizado em \texttt{src/utils/tweeParser.js}) trata da sincronização bidirecional em tempo real entre o canvas do React Flow e o formato de texto Twee 3 \citep{Twee3Reference}.
 
 Esta sincronização acontece de forma síncrona diretamente na memória do navegador. Isto significa que qualquer alteração de coordenadas, edição de texto ou criação de novas ligações no canvas é traduzida de imediato para a estrutura Twee 3 interna (e o oposto também se verifica), sem tempos de espera ou passos de compilação. Como a ferramenta funciona inteiramente no lado do cliente (\textit{client-side}), este mapeamento apenas mantém o estado da sessão atualizado; a persistência física dos dados no disco rígido requer sempre que o utilizador exporte o ficheiro de forma explícita.
 
@@ -204,7 +204,7 @@ As Zonas suportam ainda imagens de fundo personalizadas (\textit{backgrounds}) g
 \subsection{Arestas Curvadas com Waypoints}
 \label{subsec:arestas-curvadas-waypoints}
 
-Para evitar a sobreposição visual das ligações e o cruzamento cego sobre os nós de cena, a plataforma implementa arestas personalizadas que utilizam a interpolação por \textit{Splines} Cúbicas de Catmull-Rom \citep{CatmullRom1974}. Esta lógica encontra-se implementada no componente \texttt{EditableEdge.jsx} (\texttt{/src/components/EditableEdge.jsx}), com o resultado visual exemplificado na Figura~\ref{fig:curved-edge}.
+Para evitar a sobreposição visual das ligações e o cruzamento cego sobre os nós de cena, a plataforma implementa arestas personalizadas que utilizam a interpolação por \textit{Splines} Cúbicas de Catmull-Rom \citep{CatmullRom1974}. Esta lógica encontra-se implementada no componente \texttt{EditableEdge.jsx} (\texttt{src/components/EditableEdge.jsx}), com o resultado visual exemplificado na Figura~\ref{fig:curved-edge}.
 
 \begin{figure}[H]
     \centering
