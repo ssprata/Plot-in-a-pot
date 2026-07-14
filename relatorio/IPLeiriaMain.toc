@@ -43,12 +43,12 @@
 \contentsline {subsection}{\numberline {3.4.1}Justificação das Decisões de Design}{23}{subsection.3.4.1}%
 \contentsline {section}{\numberline {3.5}Modelação de Dados: Lista de Adjacência}{24}{section.3.5}%
 \contentsline {section}{\numberline {3.6}Parser Síncrono e Especificação Twee 3}{25}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Importação e Conversão de Coordenadas de Zonas}{25}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.1}Importação e Conversão de Coordenadas de Zonas}{26}{subsection.3.6.1}%
 \contentsline {subsection}{\numberline {3.6.2}Passagens Especiais}{26}{subsection.3.6.2}%
 \contentsline {subsection}{\numberline {3.6.3}Modelo SugarCube (Ligações e Macros)}{26}{subsection.3.6.3}%
 \contentsline {section}{\numberline {3.7}Interação Visual, Edição e Acessibilidade}{27}{section.3.7}%
 \contentsline {subsection}{\numberline {3.7.1}Zonas de Agrupamento Visual}{27}{subsection.3.7.1}%
-\contentsline {subsection}{\numberline {3.7.2}Arestas Curvadas com Waypoints}{27}{subsection.3.7.2}%
+\contentsline {subsection}{\numberline {3.7.2}Arestas Curvadas com Waypoints}{28}{subsection.3.7.2}%
 \contentsline {subsection}{\numberline {3.7.3}Acessibilidade e Identidade Visual Customizada}{28}{subsection.3.7.3}%
 \contentsline {subsection}{\numberline {3.7.4}Modelação de Dados e Sincronização com o React Flow}{29}{subsection.3.7.4}%
 \contentsline {section}{\numberline {3.8}Validação Estática e Simulação}{31}{section.3.8}%
