@@ -14,27 +14,15 @@ Tendo em conta o facto de ainda não existirem normas estabelecidas, ao formaliz
 
 \section{Conceitos Fundamentais de Narrativas Não-Lineares}
 \label{sec:conceitos-fundamentais}
-Antes de abordar a modelação computacional, importa clarificar a evolução e os conceitos essenciais que regem as narrativas não-lineares. Ao contrário do modelo tradicional, cuja progressão textual é puramente sequencial do início ao fim, uma \textbf{narrativa não-linear} caracteriza-se pela fragmentação do discurso e pela existência de múltiplos percursos de leitura.
+Ao contrário do modelo tradicional sequencial, uma \textbf{narrativa não-linear} caracteriza-se pela fragmentação do discurso e pela existência de múltiplos percursos de leitura. Independentemente da tecnologia, qualquer história ramificada assenta em três elementos estruturais:
 
-Do ponto de vista estrutural, e independentemente da tecnologia utilizada, qualquer história ramificada assenta em três elementos fundamentais:
 \begin{itemize}
-    \item \textbf{Cenas (Nós):} Os fragmentos autónomos de conteúdo. sejam estes textuais, visuais ou sonoros. Contêm a substância dramática exposta ao leitor num determinado momento da história.
-    \item \textbf{Escolhas (Ligações):} Os mecanismos de bifurcação expostos ao longo da narrativa que convidam o utilizador a realizar uma escolha, determinando o vetor de transição para o fragmento de conteúdo seguinte.
-    \item \textbf{Memória Narrativa (Estado):} O conjunto de dados acumulados que regista o histórico de ações, a posse de objetos ou os parâmetros quantificáveis do percurso do leitor. Esta memória altera o contexto da obra em tempo real, ditando se certos caminhos se tornam acessíveis ou bloqueados no futuro.
+    \item \textbf{Cenas (Nós):} Fragmentos autónomos de conteúdo (textual, visual ou sonoro) que expõem a substância dramática num determinado momento.
+    \item \textbf{Escolhas (Ligações):} Mecanismos de bifurcação que permitem ao utilizador decidir o vetor de transição para o nó seguinte.
+    \item \textbf{Memória Narrativa (Estado):} Conjunto de variáveis que regista o histórico de ações do utilizador (ex.: inventário, decisões prévias), alterando o contexto em tempo real para bloquear ou desbloquear caminhos.
 \end{itemize}
 
-Para ilustrar estas dinâmicas de forma clara, considere-se o seguinte exemplo narrativo:
-\begin{quote}
-    A sua personagem acorda numa clareira envolta por uma floresta densa e percebe que acabou de amanhecer. Ao olhar em redor com mais detalhe, nota dois elementos que lhe chamam a atenção: uma casa abandonada por entre as árvores e um trilho no lado oposto. A casa parece trancada, mas pressente que conseguirá abrir a porta se encontrar algo para forçar a entrada. O trilho, por outro lado, aparenta não oferecer qualquer tipo de bloqueio. 
-    
-    Para onde vai a sua personagem?
-    \begin{itemize}
-        \item Casa abandonada
-        \item Trilho oposto
-    \end{itemize}
-\end{quote}
-
-Neste cenário, a descrição inicial da clareira constitui a \textbf{Cena} ativa (o nó de partida). As opções dadas ao utilizador representam as \textbf{Escolhas} (as ligações ou arestas do grafo) que despoletam a transição estrutural. Se o utilizador optar por seguir o trilho e, mais à frente, recolher uma ferramenta, essa ação é registada na \textbf{Memória Narrativa} (o estado). Numa interação futura, caso decida regressar à casa abandonada, o motor avaliará retroativamente essa memória para validar se o caminho para o interior da habitação se deve abrir ou permanecer trancado.
+Como exemplo, considera-se um nó inicial (Cena) onde o utilizador acorda numa clareira e pode escolher entre explorar uma \textit{Casa Abandonada} ou seguir por um \textit{Trilho} (Escolhas). Se o utilizador optar pelo trilho e recolher uma ferramenta, essa ação é guardada no Estado. Ao regressar mais tarde ao nó da casa, o motor avalia esta memória para validar se o caminho para o seu interior deve ser desbloqueado.
 
 \section{Teoria de Grafos na Narrativa Interativa}
 A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$ \citep{BondyMurty2008}, onde:
