@@ -160,6 +160,26 @@ O grupo de teste foi composto por seis participantes (U1 a U6), caracterizado pe
     \item \textbf{Acessibilidade Visual (U6):} Utilizador com daltonismo severo e baixa acuidade visual, permitindo validar de forma prática a eficácia das redundâncias visuais, dos contornos espessos e da sinalização semântica dupla implementada no editor.
 \end{itemize}
 
+A Tabela~\ref{tab:participacao-levas} detalha a distribuição de cada participante pelas três levas de testes:
+
+\begin{table}[!htbp]
+\centering
+\caption{Distribuição dos participantes pelas levas de testes de usabilidade.}
+\label{tab:participacao-levas}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Participante} & \textbf{Leva 1 (Abril)} & \textbf{Leva 2 (Maio)} & \textbf{Leva 3 (Junho)} \\
+\midrule
+U1 & \checkmark & --- & \checkmark \\
+U2 & --- & \checkmark & \checkmark \\
+U3 & --- & \checkmark & \checkmark \\
+U4 & \checkmark & --- & \checkmark \\
+U5 & \checkmark & \checkmark & \checkmark \\
+U6 & --- & --- & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Tarefas Avaliadas}
 Cada participante foi instruído a realizar um conjunto de quatro tarefas estruturadas na aplicação, sem qualquer ajuda externa, com base no guião detalhado apresentado no Apêndice~\ref{ap:guiao-questionarios}:
 \begin{enumerate}
@@ -251,7 +271,7 @@ U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
 A taxa de conclusão média fixou-se em 95.8\%. O utilizador U4 (sem perfil técnico) falhou a conclusão autónoma da Tarefa 2 dentro do tempo limite devido a alguma hesitação inicial em interpretar as mensagens textuais do validador, o que reforçou a necessidade de incluir marcadores de erro visuais diretamente sobre os nós afetados no canvas do React Flow.
 
 \subsubsection{Avaliação SUS da Leva Final}
-Após as tarefas, foi aplicado o questionário padronizado SUS aos participantes. As pontuações obtidas encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
+Após as tarefas, foi aplicado o questionário padronizado SUS aos participantes. O instrumento utilizado consistiu numa adaptação para língua portuguesa das dez perguntas originais do \textit{System Usability Scale} \citep{Brooke1996}, administrado de forma digital e anónima através da plataforma Google Forms. As pontuações obtidas encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
 
 \begin{table}[!htbp]
 \centering
@@ -295,7 +315,7 @@ O desenvolvimento do \gls{piap} demonstrou que a fusão de um editor visual de g
 Embora a avaliação quantitativa com utilizadores tenha revelado uma média de usabilidade global ``Excelente'' (84.6 pontos na escala SUS), o estudo apresenta duas limitações metodológicas importantes:
 \begin{itemize}
     \item \textbf{Dimensão Reduzida da Amostra:} O grupo de teste incluiu apenas seis participantes ($N = 6$). Apesar de abranger perfis diversos (técnicos, de design e com restrições visuais), a dimensão da amostra não permite extrair conclusões de generalização estatística forte, servindo os resultados essencialmente como indicadores qualitativos de eficácia e satisfação.
-    \item \textbf{Efeito de Aprendizagem (Viés de Familiaridade):} O refinamento iterativo do sistema expôs os mesmos participantes a testes em diferentes levas de desenvolvimento. O facto de os utilizadores já conhecerem o funcionamento básico e as regras da aplicação em testes subsequentes pode ter inflacionado as pontuações SUS das levas intermédia e final, camuflando eventuais atritos que utilizadores estreantes poderiam experimentar no produto final.
+    \item \textbf{Efeito de Aprendizagem (Viés de Familiaridade):} O refinamento iterativo do sistema expôs parte dos participantes a testes em múltiplas levas de desenvolvimento (conforme a Tabela~\ref{tab:participacao-levas}): apenas U5 participou nas três levas; U1 e U4 na primeira e na terceira; U2 e U3 na segunda e na terceira; U6 participou exclusivamente na leva final. O facto de alguns utilizadores já conhecerem o funcionamento básico da aplicação em testes subsequentes pode ter inflacionado as pontuações SUS das levas intermédia e final, camuflando eventuais atritos que utilizadores completamente estreantes poderiam experimentar no produto final.
 \end{itemize}
 
 \subsection{Limitações Tecnológicas e Funcionalidade de IA}
