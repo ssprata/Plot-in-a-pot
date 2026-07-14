@@ -13,12 +13,12 @@
 \contentsline {figure}{\numberline {3.3}{\ignorespaces Exemplo de aresta suavizada com caminho curvado personalizável no canvas.\relax }}{29}{figure.caption.23}%
 \contentsline {figure}{\numberline {3.4}{\ignorespaces Interface gráfica global do editor (\textit {Plot in a Pot}), ilustrando a identidade visual neo-brutalista de alto contraste com contornos espessos e sinalização redundante para acessibilidade.\relax }}{30}{figure.caption.24}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Interface gráfica do canvas de grafos do Plot in a Pot, demonstrando a estética neo-brutalista de alto contraste com nós de cena e agrupamentos visuais (Zonas).\relax }}{41}{figure.caption.27}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Ecrã da sandbox de simulação (PlayMode), ilustrando a execução em tempo real da história com o painel de depuração de variáveis lógicas.\relax }}{42}{figure.caption.31}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Fluxograma do modelo de desenvolvimento iterativo centrado no utilizador e evolução SUS.\relax }}{48}{figure.caption.38}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Interface gráfica do canvas de grafos do Plot in a Pot, demonstrando a estética neo-brutalista de alto contraste com nós de cena e agrupamentos visuais (Zonas).\relax }}{40}{figure.caption.27}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Ecrã da sandbox de simulação (PlayMode), ilustrando a execução em tempo real da história com o painel de depuração de variáveis lógicas.\relax }}{41}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Fluxograma do modelo de desenvolvimento iterativo centrado no utilizador e evolução SUS.\relax }}{47}{figure.caption.38}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {A.1}{\ignorespaces Diálogo de gestão de variáveis globais (VariablesModal), apresentando os tokens de dados e a renomeação segura baseada em \gls {regex}.\relax }}{67}{figure.caption.44}%
-\contentsline {figure}{\numberline {A.2}{\ignorespaces Interface do editor visual de lógica estruturada (VisualBlocksEditor), dividindo as passagens em painéis de prosa, setters de variáveis e escolhas condicionais.\relax }}{68}{figure.caption.45}%
-\contentsline {figure}{\numberline {A.3}{\ignorespaces Matriz de localização integrada no editor, exibindo a grelha de chaves de texto e a respetiva tradução direta para os idiomas selecionados.\relax }}{68}{figure.caption.46}%
+\contentsline {figure}{\numberline {A.1}{\ignorespaces Diálogo de gestão de variáveis globais (VariablesModal), apresentando os tokens de dados e a renomeação segura baseada em \gls {regex}.\relax }}{66}{figure.caption.44}%
+\contentsline {figure}{\numberline {A.2}{\ignorespaces Interface do editor visual de lógica estruturada (VisualBlocksEditor), dividindo as passagens em painéis de prosa, setters de variáveis e escolhas condicionais.\relax }}{67}{figure.caption.45}%
+\contentsline {figure}{\numberline {A.3}{\ignorespaces Matriz de localização integrada no editor, exibindo a grelha de chaves de texto e a respetiva tradução direta para os idiomas selecionados.\relax }}{67}{figure.caption.46}%
 \addvspace {10\p@ }
