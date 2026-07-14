@@ -324,11 +324,41 @@ Este comportamento heurístico simples força o simulador a procurar caminhos na
 \subsection{Motor de Compilação JIT de Macros SugarCube}
 \label{subsec:compilador-jit-macros}
 
-Para suportar as avaliações e atribuições de variáveis de estado descritas, a aplicação possui um compilador \textit{Just-In-Time} (JIT) simplificado estruturado em \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}:
-\begin{itemize}
-    \item \textbf{Análise Léxica e Mapeamento:} O interpretador analisa o conteúdo textual dos nós através de varrimentos que procuram padrões de macros \texttt{<<set>>} e \texttt{<<if>>}. Traduz os operadores clássicos da linguagem SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube}.
-    \item \textbf{Árvore de Sintaxe Abstrata (\gls{ast}):} O interpretador de condicionais analisa blocos lógicos aninhados construindo uma \gls{ast} simples que reflete a precedência de cláusulas. Esta estrutura é então avaliada em tempo de execução para calcular o valor de verdade das expressões.
-\end{itemize}
+Para suportar a avaliação de condições e a execução de modificadores de estado descritas no algoritmo de travessia, a plataforma integra um motor de compilação \textit{Just-In-Time} (JIT) simplificado, estruturado nos módulos \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}. A arquitetura deste motor divide-se em quatro fases principais:
+
+\begin{enumerate}
+    \item \textbf{Tradução Sintática e Mapeamento Léxico:}
+    Os utilizadores escrevem expressões lógicas recorrendo à sintaxe SugarCube (por exemplo, \texttt{<<if \$ouro is 10>>} ou \texttt{<<set \$chave to true>>}). Como o interpretador do navegador não consegue executar estes comandos diretamente, desenvolveu-se um tradutor baseado em expressões regulares e substituições lexicais em \texttt{sugarcubeLogic.js}. Este tradutor mapeia os operadores SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube} (apresentada abaixo). 
+    
+    Adicionalmente, o tradutor reescreve todas as variáveis do utilizador (prefixadas com \texttt{\$}) para referências seguras dentro do objeto de estado da aplicação (por exemplo, transformando \texttt{\$ouro} em \texttt{state.ouro}).
+    
+    \item \textbf{Construção da Árvore de Sintaxe Abstrata (AST) do Bloco Condicional:}
+    O módulo \texttt{logicParser.js} analisa o corpo textual das cenas para extrair as condicionais. Quando é detetado um bloco iniciado por \texttt{<<if>>} e encerrado por \texttt{<</if>>}, o analisador lê o seu conteúdo interior e divide-o recursivamente, procurando marcadores alternativos de desvio como \texttt{<<elseif>>} e \texttt{<<else>>}. 
+    
+    Este processo gera uma representação em memória estruturada como uma Árvore de Sintaxe Abstrata (AST) simplificada. Cada desvio condicional é guardado como um objeto contendo a condição lógica em formato de texto e o texto correspondente da ramificação narrada:
+    \begin{verbatim}
+Desvio = { condicao: string, texto: string }
+\end{verbatim}
+
+    \item \textbf{Compilação Dinâmica e Avaliação de Contexto (JIT):}
+    Sempre que a validação estática (ou o simulador) precisa de determinar se um desvio condicional está ativo ou precisa de aplicar uma atribuição de variáveis, o motor realiza a compilação JIT. Esta compilação converte a expressão JavaScript gerada no primeiro passo numa função executável em tempo de execução, tirando partido do construtor dinâmico de funções do navegador (\texttt{new Function}).
+    
+    Por exemplo, para a condição \texttt{<<if \$ouro >= 10>>}, o motor realiza o seguinte processo de compilação e execução:
+\begin{verbatim}
+// Compilacao JIT da expressao gerada: "return state.ouro >= 10;"
+const evaluator = new Function('state', 'return state.ouro >= 10;');
+
+// Execucao imediata passando a memoria reativa atual
+const isTrue = evaluator(currentState);
+\end{verbatim}
+    
+    Da mesma forma, as macros de modificação de estado (atribuições como \texttt{<<set \$ouro += 10>>}) são compiladas em funções mutadoras locais (por exemplo, \texttt{new Function('state', 'state.ouro += 10;')}) que atuam sobre uma cópia isolada da memória reativa, retornando o novo estado de variáveis.
+
+    \item \textbf{Mecanismo de Segurança e Proteção contra Injeção de Código:}
+    A execução dinâmica de funções no navegador (\texttt{new Function}) pode expor a aplicação a vulnerabilidades de segurança, tais como a injeção de scripts maliciosos ou ataques de poluição de protótipo (\textit{Prototype Pollution}). 
+    
+    Para mitigar estes riscos de segurança sem prejudicar o desempenho, implementou-se em \texttt{sugarcubeLogic.js} um mecanismo de validação ativa do estado (\texttt{safeguardState}). Este mecanismo intercepta a saída das funções JIT e remove de forma preventiva quaisquer chaves sensíveis que constem numa lista de bloqueio de propriedades proibidas, como \texttt{\_\_proto\_\_}, \texttt{constructor} e \texttt{prototype}. Isto impede a manipulação de métodos internos da linguagem e garante a sandbox do utilizador.
+\end{enumerate}
 
 \begin{table}[htbp]
     \centering
