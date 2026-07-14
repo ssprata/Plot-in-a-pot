@@ -24,87 +24,6 @@ Ao contrário do modelo tradicional sequencial, uma \textbf{narrativa não-linea
 
 Como exemplo, considera-se um nó inicial (Cena) onde o utilizador acorda numa clareira e pode escolher entre explorar uma \textit{Casa Abandonada} ou seguir por um \textit{Trilho} (Escolhas). Se o utilizador optar pelo trilho e recolher uma ferramenta, essa ação é guardada no Estado. Ao regressar mais tarde ao nó da casa, o motor avalia esta memória para validar se o caminho para o seu interior deve ser desbloqueado.
 
-\section{Teoria de Grafos na Narrativa Interativa}
-A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$ \citep{BondyMurty2008}, onde:
-\begin{itemize}
-    \item $V$ representa o conjunto de \textbf{Vértices} (ou nós), que correspondem a cenas, passagens de texto ou estados lógicos da história.
-    \item $E$ representa o conjunto de \textbf{Arestas} (ou ligações direcionadas), que representam as escolhas disponibilizadas ao leitor para transitar de uma cena para a outra.
-\end{itemize}
-
-De seguida, são apresentadas as diferentes estruturas de grafos aplicadas ao design narrativo, a comparação fundamental entre fluxos acíclicos e com ciclos, e a fundamentação matemática que justifica a necessidade de ferramentas automatizadas para mitigar a explosão de complexidade lógica.
-
-\subsection{Tipos de Grafos e Aplicação Narrativa}
-Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de estruturas de grafos (ilustrados na Figura~\ref{fig:tipos-grafos}):
-\begin{enumerate}
-    \item \textbf{Grafo Direcionado (Directed Graph):} Uma estrutura onde as ligações têm direção, ou seja, a existência de um caminho de $A \to B$ não implica o retorno de $B \to A$. Numa matriz de adjacência (uma tabela bidimensional que mapeia as conexões entre todos os nós do grafo, onde a linha $i$ e a coluna $j$ indicam a existência de uma ligação do nó $i$ ao nó $j$), isto traduz-se numa estrutura não-simétrica:
-    \[
-    M[i][j] \neq M[j][i]
-    \]
-    Representa o fluxo narrativo puro, onde cada escolha conduz o leitor numa direção específica.
-    
-    \item \textbf{Grafo Não-Direcionado (Undirected Graph):} Representa relações simétricas e bidirecionais ($A - B$). Embora seja menos comum em narrativa linear, é útil para modelar redes de relacionamento social entre personagens ou conexões espaciais de livre exploração (p. ex., salas adjacentes de uma masmorra). Na matriz de adjacência, a estrutura é simétrica:
-    \[
-    M[i][j] = M[j][i]
-    \]
-
-    \item \textbf{Grafo de Conhecimento (Knowledge Graph):} Modela relações semânticas complexas entre entidades (p. ex., ``personagem conhece objeto'', ``porta depende de chave''). Exige múltiplas matrizes de adjacência ou uma estrutura tridimensional:
-    \[
-    M_{relation}[i][j]
-    \]
-    É ideal para jogos com inventários complexos e decisões baseadas em conhecimento indireto acumulado pelo utilizador.
-
-    \item \textbf{Grafo Ponderado (Weighted Graph):} Atribui valores (pesos) às arestas:
-    \[
-    M[i][j] = \text{peso}
-    \]
-    Estes pesos podem representar custos de recursos (tempo, pontos de vida), custos emocionais do personagem, ou a probabilidade de uma escolha ter sucesso.
-\end{enumerate}
-
-\begin{figure}[htbp]
-    \centering
-    \begin{subfigure}[b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=0.8\linewidth]{Figures/grafo_direcionado.png}
-        \caption{Grafo Direcionado (A) e respetiva Matriz de Adjacência (E).}
-        \label{fig:grafo-direcionado}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=0.8\linewidth]{Figures/grafo_nao_direcionado.png}
-        \caption{Grafo Não-Direcionado (B) e respetiva Matriz de Adjacência (F).}
-        \label{fig:grafo-nao-direcionado}
-    \end{subfigure}
-    \vskip\baselineskip
-    \begin{subfigure}[b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=0.8\linewidth]{Figures/grafo_conhecimento.png}
-        \caption{Grafo de Conhecimento (C) e respetiva Matriz de Adjacência (G).}
-        \label{fig:grafo-conhecimento}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.45\linewidth}
-        \centering
-        \includegraphics[width=0.8\linewidth]{Figures/grafo_ponderado.png}
-        \caption{Grafo Ponderado (D) e respetiva Matriz de Adjacência (H).}
-        \label{fig:grafo-ponderado}
-    \end{subfigure}
-    \caption{Diferentes tipologias de grafos e as suas representações em matrizes de adjacência.}
-    \label{fig:tipos-grafos}
-\end{figure}
-
-\subsection{Modelação por Grafo Controlado por Estados}
-No desenvolvimento de sistemas narrativos, é frequente restringir a estrutura a Grafos Direcionados Acíclicos (\textit{DAGs}) para garantir um fluxo estritamente unidirecional. Contudo, essa abordagem impede a criação de mecânicas essenciais como \textit{hubs} centrais de exploração ou ciclos de passagem de tempo baseados em ações recorrentes. 
-
-Por este motivo, o \textit{Plot in a Pot} admite a existência de ciclos, mas afasta-se do modelo convencional de grafo direcionado simples onde uma aresta une rigidamente um nó $A$ a um nó $B$. Em vez disso, a aplicação implementa um modelo de \textbf{Grafo Controlado por Estados}. No contexto da ferramenta, as ligações entre as cenas não são estáticas; o caminho efetivamente percorrido depende diretamente das macros condicionais (p. ex. \lstinline|<<if>>|) e do estado atual das variáveis do utilizador.
-
-Isto significa que a estrutura real da história não é determinada apenas pelo visual do \textit{canvas}, mas sim pela computação em tempo de execução. Uma única escolha desenhada no editor pode direcionar o jogador para múltiplos destinos alternativos, dependendo estritamente do valor das variáveis em memória. Esta flexibilidade exige algoritmos de validação em segundo plano (como pesquisas \gls{bfs} e \gls{dfs} \citep{CLRS2009}) adaptados para analisar a conectividade considerando o impacto destas variáveis antes da compilação final.
-
-\subsection{O Desafio da Explosão Combinatória}
-\label{subsec:desafio-explosao-combinatoria}
-A necessidade de validação automatizada no desenvolvimento de narrativas interativas prende-se com o fenómeno da \textbf{explosão combinatória}. À medida que o autor adiciona novas escolhas e bifurcações à história, o número de caminhos lógicos possíveis cresce de forma exponencial.
-
-Este problema agrava-se com a introdução de ciclos (que permitem regressar a cenas anteriores) e variáveis de estado (como inventários ou escolhas morais). Em projetos de grande dimensão, a complexidade resultante torna impossível a um autor humano auditar manualmente todas as combinações de escolhas e validar se existem caminhos bloqueados, becos sem saída ou loops infinitos onde o utilizador possa ficar preso. Justifica-se, assim, o desenvolvimento do motor de verificação estática do \textit{Plot in a Pot}, capaz de explorar automaticamente todas as possibilidades lógicas do projeto e alertar o criador sobre anomalias na escrita em tempo real.
 
 \section{Software de Criação de Histórias não Lineares}
 O conceito de \gls{ni} refere-se a narrativas estruturadas onde a progressão do texto não é linear, dependendo diretamente das escolhas e ações submetidas pelo utilizador para navegar caminhos alternativos \citep{Montfort2005}. Embora a tecnologia digital tenha popularizado o termo, a literatura não-linear física remonta a precursores como os livros-jogo (\textit{gamebooks}) e a série \textit{Choose Your Own Adventure} popularizada nas décadas de 1970 e 1980 \citep{Packer1984}, bem como a experiências literárias ramificadas pioneiras (p. ex., o conto de Jorge Luis Borges em 1941) \citep{Borges1941, Aarseth1997}. Com a expansão recente do mercado de videojogos independentes \citep{Juul2005, Adams2014} e o desenvolvimento da narratologia computacional \citep{Tang2022NGEP, YanTang2023Narrative}, emergiram várias ferramentas de autoria gráfica e linguagens de scripting para suportar a criação de estruturas ramificadas \citep{IFTFGDC2026}.
@@ -284,6 +203,89 @@ A especificação Twee3 é independente do formato de exibição (story format) 
 \end{itemize}
 
 Esta estrutura híbrida que combina geometria de grafos, marcação de texto simples e scripting condicional é a especificação que o \textit{Plot in a Pot} adota nativamente, permitindo importar ficheiros externos de outras ferramentas (como o Twine) e exportar o trabalho final num formato de texto aberto e interoperável.
+
+\section{Teoria de Grafos na Narrativa Interativa}
+A estrutura básica de uma história interativa assenta na modelação geométrica e lógica de caminhos narrativos. Um fluxo de história pode ser formalmente representado como um Grafo $G = (V, E)$ \citep{BondyMurty2008}, onde:
+\begin{itemize}
+    \item $V$ representa o conjunto de \textbf{Vértices} (ou nós), que correspondem a cenas, passagens de texto ou estados lógicos da história.
+    \item $E$ representa o conjunto de \textbf{Arestas} (ou ligações direcionadas), que representam as escolhas disponibilizadas ao leitor para transitar de uma cena para a outra.
+\end{itemize}
+
+De seguida, são apresentadas as diferentes estruturas de grafos aplicadas ao design narrativo, a comparação fundamental entre fluxos acíclicos e com ciclos, e a fundamentação matemática que justifica a necessidade de ferramentas automatizadas para mitigar a explosão de complexidade lógica.
+
+\subsection{Tipos de Grafos e Aplicação Narrativa}
+Dependendo da natureza do jogo ou da história, utilizam-se diferentes tipos de estruturas de grafos (ilustrados na Figura~\ref{fig:tipos-grafos}):
+\begin{enumerate}
+    \item \textbf{Grafo Direcionado (Directed Graph):} Uma estrutura onde as ligações têm direção, ou seja, a existência de um caminho de $A \to B$ não implica o retorno de $B \to A$. Numa matriz de adjacência (uma tabela bidimensional que mapeia as conexões entre todos os nós do grafo, onde a linha $i$ e a coluna $j$ indicam a existência de uma ligação do nó $i$ ao nó $j$), isto traduz-se numa estrutura não-simétrica:
+    \[
+    M[i][j] \neq M[j][i]
+    \]
+    Representa o fluxo narrativo puro, onde cada escolha conduz o leitor numa direção específica.
+    
+    \item \textbf{Grafo Não-Direcionado (Undirected Graph):} Representa relações simétricas e bidirecionais ($A - B$). Embora seja menos comum em narrativa linear, é útil para modelar redes de relacionamento social entre personagens ou conexões espaciais de livre exploração (p. ex., salas adjacentes de uma masmorra). Na matriz de adjacência, a estrutura é simétrica:
+    \[
+    M[i][j] = M[j][i]
+    \]
+
+    \item \textbf{Grafo de Conhecimento (Knowledge Graph):} Modela relações semânticas complexas entre entidades (p. ex., ``personagem conhece objeto'', ``porta depende de chave''). Exige múltiplas matrizes de adjacência ou uma estrutura tridimensional:
+    \[
+    M_{relation}[i][j]
+    \]
+    É ideal para jogos com inventários complexos e decisões baseadas em conhecimento indireto acumulado pelo utilizador.
+
+    \item \textbf{Grafo Ponderado (Weighted Graph):} Atribui valores (pesos) às arestas:
+    \[
+    M[i][j] = \text{peso}
+    \]
+    Estes pesos podem representar custos de recursos (tempo, pontos de vida), custos emocionais do personagem, ou a probabilidade de uma escolha ter sucesso.
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_direcionado.png}
+        \caption{Grafo Direcionado (A) e respetiva Matriz de Adjacência (E).}
+        \label{fig:grafo-direcionado}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_nao_direcionado.png}
+        \caption{Grafo Não-Direcionado (B) e respetiva Matriz de Adjacência (F).}
+        \label{fig:grafo-nao-direcionado}
+    \end{subfigure}
+    \vskip\baselineskip
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_conhecimento.png}
+        \caption{Grafo de Conhecimento (C) e respetiva Matriz de Adjacência (G).}
+        \label{fig:grafo-conhecimento}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Figures/grafo_ponderado.png}
+        \caption{Grafo Ponderado (D) e respetiva Matriz de Adjacência (H).}
+        \label{fig:grafo-ponderado}
+    \end{subfigure}
+    \caption{Diferentes tipologias de grafos e as suas representações em matrizes de adjacência.}
+    \label{fig:tipos-grafos}
+\end{figure}
+
+\subsection{Modelação por Grafo Controlado por Estados}
+No desenvolvimento de sistemas narrativos, é frequente restringir a estrutura a Grafos Direcionados Acíclicos (\textit{DAGs}) para garantir um fluxo estritamente unidirecional. Contudo, essa abordagem impede a criação de mecânicas essenciais como \textit{hubs} centrais de exploração ou ciclos de passagem de tempo baseados em ações recorrentes. 
+
+Por este motivo, o \textit{Plot in a Pot} admite a existência de ciclos, mas afasta-se do modelo convencional de grafo direcionado simples onde uma aresta une rigidamente um nó $A$ a um nó $B$. Em vez disso, a aplicação implementa um modelo de \textbf{Grafo Controlado por Estados}. No contexto da ferramenta, as ligações entre as cenas não são estáticas; o caminho efetivamente percorrido depende diretamente das macros condicionais (p. ex. \lstinline|<<if>>|) e do estado atual das variáveis do utilizador.
+
+Isto significa que a estrutura real da história não é determinada apenas pelo visual do \textit{canvas}, mas sim pela computação em tempo de execução. Uma única escolha desenhada no editor pode direcionar o jogador para múltiplos destinos alternativos, dependendo estritamente do valor das variáveis em memória. Esta flexibilidade exige algoritmos de validação em segundo plano (como pesquisas \gls{bfs} e \gls{dfs} \citep{CLRS2009}) adaptados para analisar a conectividade considerando o impacto destas variáveis antes da compilação final.
+
+\subsection{O Desafio da Explosão Combinatória}
+\label{subsec:desafio-explosao-combinatoria}
+A necessidade de validação automatizada no desenvolvimento de narrativas interativas prende-se com o fenómeno da \textbf{explosão combinatória}. À medida que o autor adiciona novas escolhas e bifurcações à história, o número de caminhos lógicos possíveis cresce de forma exponencial.
+
+Este problema agrava-se com a introdução de ciclos (que permitem regressar a cenas anteriores) e variáveis de estado (como inventários ou escolhas morais). Em projetos de grande dimensão, a complexidade resultante torna impossível a um autor humano auditar manualmente todas as combinações de escolhas e validar se existem caminhos bloqueados, becos sem saída ou loops infinitos onde o utilizador possa ficar preso. Justifica-se, assim, o desenvolvimento do motor de verificação estática do \textit{Plot in a Pot}, capaz de explorar automaticamente todas as possibilidades lógicas do projeto e alertar o criador sobre anomalias na escrita em tempo real.
+
 \section{Integração de Modelos de Linguagem de Grande Escala (LLMs) Locais}
 \label{sec:integracao-llms}
 Com o avanço recente no campo da Inteligência Artificial Generativa, a integração de Modelos de Linguagem de Grande Escala (\textit{Large Language Models} - LLMs) locais e gratuitos foi analisada numa pesquisa realizada a 13 de abril. O objetivo inicial desta pesquisa foi avaliar a viabilidade prática de utilizar estas ferramentas para auxiliar autores na escrita criativa, na sugestão de caminhos e na co-criação de narrativas interativas, analisando o potencial de diferentes famílias de modelos para tarefas de geração e estruturação textual.

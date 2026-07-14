@@ -13,23 +13,23 @@
 \contentsline {chapter}{\numberline {2}Fundamentação Teórica e Estado da Arte}{4}{chapter.2}%
 \contentsline {section}{\numberline {2.1}Contexto Teórico}{4}{section.2.1}%
 \contentsline {section}{\numberline {2.2}Conceitos Fundamentais de Narrativas Não-Lineares}{5}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Teoria de Grafos na Narrativa Interativa}{5}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Tipos de Grafos e Aplicação Narrativa}{6}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Modelação por Grafo Controlado por Estados}{8}{subsection.2.3.2}%
-\contentsline {subsection}{\numberline {2.3.3}O Desafio da Explosão Combinatória}{8}{subsection.2.3.3}%
-\contentsline {section}{\numberline {2.4}Software de Criação de Histórias não Lineares}{8}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Twine}{9}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Ink (Inkle Studios)}{10}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}ChoiceScript}{10}{subsection.2.4.3}%
-\contentsline {subsection}{\numberline {2.4.4}Yarn Spinner}{11}{subsection.2.4.4}%
-\contentsline {subsection}{\numberline {2.4.5}Narrative Flow}{11}{subsection.2.4.5}%
-\contentsline {subsection}{\numberline {2.4.6}Articy Draft}{12}{subsection.2.4.6}%
-\contentsline {subsection}{\numberline {2.4.7}Análise Comparativa}{13}{subsection.2.4.7}%
-\contentsline {section}{\numberline {2.5}O Formato Twee3 e Linguagens de Scripting Narrativo}{13}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Sintaxe de Ligações e Transições}{14}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {2.5.2}Metadados Geométricos e Etiquetas (Tags)}{14}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}Destinos Dinâmicos vs. Validação Estática}{15}{subsection.2.5.3}%
-\contentsline {subsection}{\numberline {2.5.4}Macros e Lógica Condicional}{15}{subsection.2.5.4}%
+\contentsline {section}{\numberline {2.3}Software de Criação de Histórias não Lineares}{5}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Twine}{6}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Ink (Inkle Studios)}{6}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}ChoiceScript}{7}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}Yarn Spinner}{8}{subsection.2.3.4}%
+\contentsline {subsection}{\numberline {2.3.5}Narrative Flow}{8}{subsection.2.3.5}%
+\contentsline {subsection}{\numberline {2.3.6}Articy Draft}{9}{subsection.2.3.6}%
+\contentsline {subsection}{\numberline {2.3.7}Análise Comparativa}{10}{subsection.2.3.7}%
+\contentsline {section}{\numberline {2.4}O Formato Twee3 e Linguagens de Scripting Narrativo}{10}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Sintaxe de Ligações e Transições}{11}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Metadados Geométricos e Etiquetas (Tags)}{11}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Destinos Dinâmicos vs. Validação Estática}{12}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Macros e Lógica Condicional}{12}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}Teoria de Grafos na Narrativa Interativa}{13}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Tipos de Grafos e Aplicação Narrativa}{13}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Modelação por Grafo Controlado por Estados}{14}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}O Desafio da Explosão Combinatória}{14}{subsection.2.5.3}%
 \contentsline {section}{\numberline {2.6}Integração de Modelos de Linguagem de Grande Escala (LLMs) Locais}{16}{section.2.6}%
 \contentsline {subsection}{\numberline {2.6.1}Análise de Famílias de Modelos e Recomendações}{16}{subsection.2.6.1}%
 \contentsline {subsection}{\numberline {2.6.2}Decisão de Design: Do Co-Criador ao Assistente de Conversão}{17}{subsection.2.6.2}%
