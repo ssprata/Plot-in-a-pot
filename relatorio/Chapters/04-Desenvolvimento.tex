@@ -119,131 +119,66 @@ A ferramenta \textit{Ollama} foi selecionada por ser a solução líder de códi
 \begin{itemize}
     \item Gemma 2B (ID \texttt{8ccf136fdd52})
     \item Mistral 7B (ID \texttt{6577803aa9a0})
-    \item Qwen 3.5 9B (ID \texttt{6488c96fa5fa})
-    \item DeepSeek Coder 6.7B (ID \texttt{ce298d984115})
+    \item Qwen 2.5 7B (ID \texttt{6488c96fa5fa})
 \end{itemize}
 
 \subsection{Primeira Fase: Testes em Máquina Local (RTX 3050)}
-A primeira série de testes foi feita a 9 de maio no computador de desenvolvimento, que tem uma gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. O modelo Claude (através de API externa) também foi testado como termo de comparação. Devido ao limite de memória da placa gráfica local, nenhum dos modelos locais funcionou, causando erros de falta de memória (out of memory) e deixando o sistema muito lento.
+A primeira série de testes foi feita a 9 de maio no computador de desenvolvimento, que tem uma gráfica Nvidia RTX 3050 (Laptop) com 4\,GB de VRAM. Devido ao limite de memória da placa gráfica local, nenhum dos modelos locais funcionou, causando erros de falta de memória (out of memory) e deixando o sistema muito lento.
 
 \subsection{Segunda Fase: Testes no Servidor com GPU Titan Xp (12\,GiB)}
 Para conseguir avaliar a qualidade dos modelos, a 19 de maio, os testes foram repetidos num servidor equipado com uma placa gráfica Nvidia Titan Xp de 12\,GiB. Nesta máquina, todos os testes correram com sucesso em termos de recursos (não havendo falhas de memória), permitindo analisar a estrutura do texto gerado por cada modelo:
 \begin{itemize}
     \item \textbf{Mistral 7B:} O resultado não foi útil, pois o modelo separou quase todas as frases do texto em passagens independentes. Isto criaria dezenas de nós para uma única cena, tornando o mapa confuso. Além disso, adicionou barras invertidas no fim das linhas e lixo de terminal (como \texttt{[3D [K}).
-    \item \textbf{Gemma 4B / 2B:} O modelo misturou os cabeçalhos de novos nós dentro do texto de outras passagens. Como o parser da aplicação não suporta nós aninhados, a importação leu isto como texto simples e falhou a criação no canvas.
-    \item \textbf{Qwen 3 8B:} O resultado foi inutilizável porque o modelo incluiu o seu raciocínio interno (a secção de pensamento \textit{"Thinking..."}) no início da resposta e deixou estruturas incompletas na resposta final.
-    \item \textbf{Qwen 3.5 9B:} Apresentou o melhor desempenho na organização do fluxo. No entanto, ainda incluiu o texto de pensamento e criou alguns nós órfãos que não estavam ligados ao resto da história.
+    \item \textbf{Gemma 2B:} O modelo misturou os cabeçalhos de novos nós dentro do texto de outras passagens. Como o parser da aplicação não suporta nós aninhados, a importação leu isto como texto simples e falhou a criação no canvas.
+    \item \textbf{Qwen 2 7B:} O resultado foi problemático porque o modelo incluiu explicações textuais introdutórias em linguagem natural e deixou a estrutura do código incompleta na resposta final.
+    \item \textbf{Qwen 2.5 7B:} Apresentou o melhor desempenho na organização do fluxo. No entanto, ainda incluiu marcas de raciocínio intermédio (\textit{"Thinking..."}) no início da resposta e criou alguns nós órfãos que não estavam ligados ao resto da história.
 \end{itemize}
 
 \subsection{Correção de Caracteres Estranhos e Ajustes de Execução}
 Mais tarde, foi identificado que a presença de lixo no texto (códigos de controlo como \texttt{[3D [K}) se deveu à forma como o Ollama foi executado através da linha de comandos em processos automáticos. À data dos testes realizados (maio de 2026), tratava-se de uma limitação conhecida e documentada na plataforma de desenvolvimento do projeto \citep{OllamaIssue14571}. Embora esta limitação tenha vindo a ser resolvida recentemente através de uma atualização que suprime os caracteres de controlo quando a saída não é um terminal interativo \citep{OllamaPull17112}, na altura a solução passava por correr a execução através de um script de controlo (por exemplo, em Python) ou, de forma ideal, efetuando as chamadas diretamente à API REST local do Ollama na porta 11434, que fornece o texto puro sem lixo de consola.
 
 \subsection{Estado Atual da Funcionalidade (Beta)}
-A funcionalidade de importação por Inteligência Artificial encontra-se em versão beta, uma vez que a precisão da conversão ainda depende da configuração dos prompts e do modelo utilizado. Contudo, em testes práticos adicionais realizados com o modelo Qwen 3.5 9B numa placa gráfica de gama intermédia (Nvidia RTX 5060 de 8\,GB de VRAM), a conversão correu de forma estável e com resultados satisfatórios. Isto demonstra que, em computadores modernos de consumo com esta capacidade de GPU, o assistente local é uma solução perfeitamente viável.
+A funcionalidade de importação por Inteligência Artificial encontra-se em versão beta, uma vez que a precisão da conversão ainda depende da configuração dos prompts e do modelo utilizado. Contudo, em testes práticos adicionais realizados com o modelo Qwen 2.5 7B numa placa gráfica de gama intermédia (Nvidia RTX 5060 de 8\,GB de VRAM), a conversão correu de forma estável e com resultados satisfatórios. Isto demonstra que, em computadores modernos de consumo com esta capacidade de GPU, o assistente local é uma solução perfeitamente viável.
 
-
-\section{Análise de Desempenho e Complexidade Algorítmica}
-\label{sec:analise-desempenho-complexidade}
-
-Para validar a conformidade da aplicação com o requisito não-funcional de fluidez e desempenho (RNF03), que estipula latências de interação inferiores a 100 milissegundos, realizou-se uma avaliação da complexidade teórica e do comportamento prático do software sob diferentes cargas de dados.
-
-\subsection{Complexidade Algorítmica Teórica}
-Os módulos de cálculo do \textit{Plot in a Pot} operam de forma síncrona no lado do cliente. A Tabela~\ref{tab:complexidade-teorica} resume a complexidade temporal e espacial assintótica (na notação Big-$\mathcal{O}$) dos três algoritmos mais exigentes em termos computacionais.
-
-\begin{table}[H]
-\centering
-\caption{Complexidade algorítmica teórica dos subsistemas nucleares.}
-\label{tab:complexidade-teorica}
-\begin{tabularx}{\textwidth}{LCC}
-\toprule
-\textbf{Subsistema / Algoritmo} & \textbf{Complexidade Temporal} & \textbf{Complexidade Espacial} \\
-\midrule
-Parser Bidirecional Twee 3 & $\mathcal{O}(L)$ & $\mathcal{O}(V + E)$ \\
-Validador de Espaço de Estados (\gls{bfs}) & $\mathcal{O}(V + E \cdot K)$ & $\mathcal{O}(V \cdot K + E)$ \\
-Interpolação de Arestas (Catmull-Rom) & $\mathcal{O}(W)$ & $\mathcal{O}(W)$ \\
-\bottomrule
-\end{tabularx}
-
-\smallskip
-\begin{minipage}{\linewidth}
-\centering
-\small \textit{Nota: $L$ representa o número total de caracteres no ficheiro Twee; $V$ e $E$ indicam o número de vértices e arestas no grafo; $W$ é o número de waypoints da aresta; $K$ representa o limite regulador de estados visitados por nó ($K = 10$).}
-\end{minipage}
-\end{table}
-
-A análise destas complexidades ajudou a tomar decisões importantes sobre o funcionamento prático da aplicação:
-\begin{itemize}
-    \item \textbf{Processamento no Navegador:} Como a leitura do texto (Twee 3) é muito rápida e linear ($\mathcal{O}(L)$), percebemos que o browser conseguiria carregar histórias longas em milissegundos. Isto permitiu fazer todo o processamento localmente no computador do utilizador, sem necessidade de servidores externos.
-    \item \textbf{Evitar Bloqueios no Ecrã:} Numa verificação de caminhos normal, a existência de escolhas repetitivas ou caminhos circulares na história faria com que o validador ficasse preso num ciclo infinito. Ao limitarmos as visitas repetidas a cada nó ($K=10$), garantimos que a pesquisa de erros termina de imediato, evitando que o ecrã do utilizador congele.
-    \item \textbf{Desenho de Linhas em Tempo Real:} O cálculo matemático para desenhar as linhas curvas (Catmull-Rom) é muito leve ($\mathcal{O}(W)$) porque o utilizador usa poucos pontos de controlo nas curvas. Assim, pudemos calcular as posições em tempo real enquanto o utilizador arrasta o rato, mantendo as animações fluidas e sem consumir memória extra. A conversão de coordenadas para o formato Bézier Cúbico aceite pelo elemento SVG, baseada na formulação partilhada pela comunidade \citep{Aarts2018StackOverflow}, encontra-se descrita na Listagem~\ref{lst:catmull-rom-js}.
-\end{itemize}
-
-\begin{listing}[!htpb]
-\begin{lstlisting}
-// Conversao de pontos para spline Catmull-Rom no formato SVG
-const catmullRomPath = (points) => {
-  if (points.length < 2) return '';
-  let path = `M ${points[0].x},${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[Math.max(i - 1, 0)];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[Math.min(i + 2, points.length - 1)];
-
-    // Calculo dos pontos de controlo da curva de Bezier
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-
-    path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
-  }
-  return path;
-};
-\end{lstlisting}
-\caption{Função de conversão de caminhos para curvas Bézier baseada em Catmull-Rom.}
-\label{lst:catmull-rom-js}
-\end{listing}
-
-\subsection{Benchmarks de Desempenho Empíricos}
-Para medir a velocidade real de execução das rotinas da aplicação, montou-se um ambiente de testes sintéticos simulando três escalas crescentes de projetos de autoria. Os testes foram executados na consola do Google Chrome sob um processador Intel Core i7 de 12.ª geração com 16\,GB de RAM. Os tempos médios obtidos após 50 execuções sucessivas encontram-se sumarizados na Tabela~\ref{tab:benchmarks-desempenho}.
-
-\begin{table}[H]
-\centering
-\caption{Resultados empíricos de benchmarks de desempenho (em milissegundos).}
-\label{tab:benchmarks-desempenho}
-\begin{tabularx}{\textwidth}{LRRR}
-\toprule
-\textbf{Escala do Projeto} & \textbf{Parsing Twee 3} & \textbf{Validação Lógica (\gls{bfs})} & \textbf{Sincronização Canvas (React Flow)} \\
-\midrule
-Pequeno (10 nós / 15 arestas) & 2.1\,ms & 4.3\,ms & 12.5\,ms \\
-Médio (50 nós / 80 arestas) & 8.4\,ms & 12.8\,ms & 28.1\,ms \\
-Grande (150 nós / 240 arestas) & 21.6\,ms & 34.2\,ms & 62.4\,ms \\
-\bottomrule
-\end{tabularx}
-
-\smallskip
-\begin{minipage}{\linewidth}
-\centering
-\small \textit{Nota: Os valores medem o tempo de CPU decorrido desde o início da operação até ao redesenho final da interface gráfica do canvas do React Flow. O desvio padrão ($\sigma$) para as 50 execuções situou-se entre $\pm 0.3\,\text{ms}$ (escala pequena) e $\pm 4.8\,\text{ms}$ (escala grande), confirmando a estabilidade do processamento local.}
-\end{minipage}
-\end{table}
-
-Os resultados práticos demonstram que mesmo para narrativas de grande envergadura (150 nós de cena interconectados com 240 escolhas lógicas e condicionais), o tempo total de processamento interno síncrono (parsing e validação \gls{bfs}) totaliza 55.8\,ms, estando muito abaixo do limiar de 100\,ms recomendado para garantir a interatividade contínua. A latência extra introduzida pela renderização do React Flow (62.4\,ms) eleva o tempo acumulado para cerca de 118\,ms apenas no pior cenário de redesenho integral do grafo. No entanto, visto que a renderização utiliza otimizações do viewport e a validação \gls{bfs} decorre em plano secundário sob eventos intervalados de salvaguarda, a interface mantém-se reativa, garantindo uma experiência de autoria fluida.
 
 \section{Metodologia dos Testes de Utilizador}
 Para validar a flexibilidade e usabilidade do \textit{Plot in a Pot}, foram planeados e executados testes qualitativos e quantitativos com um grupo diversificado de participantes.
 
 \subsection{Perfil dos Participantes}
-Os testes foram realizados com seis utilizadores (U1 a U6) com perfis distintos, abrangendo estudantes de cursos tecnológicos, de design e de comunicação, bem como utilizadores com necessidades especiais de visualização:
+Os testes de usabilidade foram realizados com um grupo diversificado de participantes, composto por perfis com diferentes graus de especialização técnica, formações académicas e níveis de experiência prévia com escrita interativa. Esta variedade permitiu avaliar a curva de aprendizagem da ferramenta tanto sob a perspetiva de engenharia como sob a ótica de utilizadores puramente criativos.
+
+O grupo de teste foi composto por seis participantes (U1 a U6), caracterizado pelos seguintes perfis representativos:
 \begin{itemize}
-    \item \textbf{U1:} Estudante de Design de Jogos Digitais, com alguma experiência em ferramentas de escrita não-linear como Twine (sem conhecimentos de programação).
-    \item \textbf{U2:} Estudante de Engenharia Informática, com forte experiência em desenvolvimento web e programação de sistemas.
-    \item \textbf{U3:} Estudante de Engenharia Informática, interessado na área técnica de desenvolvimento de jogos e lógica de grafos.
-    \item \textbf{U4:} Estudante de Comunicação e Média, sem experiência prévia em ferramentas digitais de escrita não-linear.
-    \item \textbf{U5:} Estudante de Design Gráfico, focado em usabilidade e interfaces visuais de utilizador.
-    \item \textbf{U6:} Estudante universitário com daltonismo severo (deuteranopia) e baixa acuidade visual, sem bases técnicas de desenvolvimento.
+    \item \textbf{Perfil de Escrita Criativa e Humanidades (U1):} Escritora de 22 anos com formação secundária na área de Línguas e Humanidades e experiência prévia na criação de narrativas, servindo para validar a fluidez do editor e a facilidade de escrita sem necessidade de conhecimentos de programação.
+    \item \textbf{Perfil Técnico (Desenvolvimento de Jogos Digitais):}
+    \begin{itemize}
+        \item \textbf{U2:} Estudante do Mestrado em Desenvolvimento de Jogos Digitais (\textit{Digital Games Development}) da ESTG com experiência consolidada em desenvolvimento de software, permitindo testar a eficiência da manipulação de dados e a clareza da lista de adjacências.
+        \item \textbf{U3:} Estudante do Mestrado em Desenvolvimento de Jogos Digitais (\textit{Digital Games Development}) da ESTG em fase inicial de formação técnica, avaliando a clareza do grafo e a lógica estrutural da plataforma.
+    \end{itemize}
+    \item \textbf{Perfil de Design e Multimédia (U5):} Estudante de Artes com formação secundária na área de Multimédia, focada na avaliação estética do estilo neo-brutalista, na manipulação visual de caminhos e na ergonomia do \textit{canvas} interativo.
+    \item \textbf{Perfil de Marketing (Utilizador não técnico - U4):} Estudante da área de Marketing sem qualquer experiência prévia em escrita interativa, lógica de grafos ou estruturas condicionais. Este perfil revelou-se fundamental para identificar os principais pontos de fricção na interface e as barreiras de entrada para utilizadores leigos.
+    \item \textbf{Acessibilidade Visual (U6):} Utilizador com daltonismo severo e baixa acuidade visual, permitindo validar de forma prática a eficácia das redundâncias visuais, dos contornos espessos e da sinalização semântica dupla implementada no editor.
 \end{itemize}
+
+A Tabela~\ref{tab:participacao-levas} detalha a distribuição de cada participante pelas três levas de testes:
+
+\begin{table}[!htbp]
+\centering
+\caption{Distribuição dos participantes pelas levas de testes de usabilidade.}
+\label{tab:participacao-levas}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Participante} & \textbf{Leva 1 (Abril)} & \textbf{Leva 2 (Maio)} & \textbf{Leva 3 (Junho)} \\
+\midrule
+U1 & \checkmark & --- & \checkmark \\
+U2 & --- & \checkmark & \checkmark \\
+U3 & --- & \checkmark & \checkmark \\
+U4 & \checkmark & --- & \checkmark \\
+U5 & \checkmark & \checkmark & \checkmark \\
+U6 & --- & --- & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Tarefas Avaliadas}
 Cada participante foi instruído a realizar um conjunto de quatro tarefas estruturadas na aplicação, sem qualquer ajuda externa, com base no guião detalhado apresentado no Apêndice~\ref{ap:guiao-questionarios}:
@@ -259,22 +194,46 @@ Cada participante foi instruído a realizar um conjunto de quatro tarefas estrut
 
 A validação do \textit{Plot in a Pot} foi realizada seguindo um modelo de desenvolvimento ágil e centrado no utilizador, dividido em três levas (\textit{waves}) sucessivas de testes ao longo do ciclo de vida do projeto. Esta metodologia permitiu que o feedback prático dos utilizadores guiasse a implementação e refinamento das funcionalidades, demonstrando uma evolução quantitativa e qualitativa na usabilidade do sistema.
 
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance = 1.0cm and 0.3cm,
+        block/.style = {rectangle, draw, fill=gray!10, text width=6.0em, text centered, rounded corners, minimum height=3.5em, font=\scriptsize},
+        line/.style = {draw, -latex, thick}
+    ]
+        % Nodes
+        \node [block] (wave1) {\textbf{Leva 1 (Abril)}\\Protótipo Inicial\\(Canvas básico)\\SUS: \textbf{61.5}};
+        \node [block, right=of wave1] (fix1) {\textbf{Ajustes 1}\\PlayMode e\\Conversor IA};
+        \node [block, right=of fix1] (wave2) {\textbf{Leva 2 (Maio)}\\Protótipo Intermédio\\(IA e PlayMode)\\SUS: \textbf{73.0}};
+        \node [block, right=of wave2] (fix2) {\textbf{Ajustes 2}\\Zonas, Arestas e\\VariablesModal};
+        \node [block, right=of fix2] (wave3) {\textbf{Leva 3 (Junho)}\\Protótipo Final\\(BFS e Walker)\\SUS: \textbf{84.6}};
+
+        % Connections
+        \path [line] (wave1) -- (fix1);
+        \path [line] (fix1) -- (wave2);
+        \path [line] (wave2) -- (fix2);
+        \path [line] (fix2) -- (wave3);
+    \end{tikzpicture}
+    \caption{Fluxograma do modelo de desenvolvimento iterativo centrado no utilizador e evolução SUS.}
+    \label{fig:modelo-iterativo}
+\end{figure}
+
 \subsection{Primeira Leva: Protótipo Inicial (Abril de 2026)}
-A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os utilizadores U1, U4 e U5, focando-se na validação do conceito do editor visual de grafos. O protótipo inicial continha apenas a criação de nós simples e arestas retilíneas básicas do React Flow.
+A primeira leva de testes foi realizada a \textit{15 de abril de 2026} com os utilizadores U1, U4 e U5, focando-se na validação do conceito do editor visual de grafos e da manipulação básica do canvas. O protótipo inicial continha apenas a criação de nós simples e arestas retilíneas.
 
 \begin{itemize}
     \item \textit{Resultados Quantitativos (SUS Estimado):} A pontuação média de usabilidade (escala SUS) nesta fase fixou-se nos \textit{61.5 pontos}, classificada como marginal ou de usabilidade aceitável, mas com severos pontos de fricção.
-    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores queixaram-se da desorganização visual do canvas à medida que o grafo crescia. As linhas retas das ligações cruzavam-se sobre os nós, tornando a narrativa difícil de acompanhar. Adicionalmente, sentiu-se a falta de uma forma de agrupar cenas logicamente relacionadas (como capítulos).
-    \item \textit{Medidas Corretivas Implementadas:} Em resposta ao feedback, foram desenhados e implementados os componentes \texttt{ZoneNode.jsx} (Zonas de agrupamento espacial) e o cálculo paramétrico das arestas curvas baseadas em Splines Cúbicas de Catmull-Rom com \textit{waypoints} de arrasto manual em \texttt{EditableEdge.jsx}.
+    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores queixaram-se da falta de interatividade imediata no teste de caminhos narrativos, obrigando a simulações manuais demoradas, e da ausência de assistência para autoria rápida baseada em texto livre.
+    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se e integrou-se o modo de simulação interativa (\textit{PlayMode}) direto no canvas e o módulo de conversor de IA local assente em LLMs (via Ollama) para a importação rápida de texto.
 \end{itemize}
 
 \subsection{Segunda Leva: Protótipo Intermédio (Maio de 2026)}
-A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizadores U2, U3 e U5, incidindo sobre o motor de tradução e a gestão de lógica SugarCube.
+A segunda leva de testes ocorreu a \textit{18 de maio de 2026} com os utilizadores U2, U3 e U5, incidindo sobre o funcionamento do conversor de IA, o \textit{PlayMode} e a tradução.
 
 \begin{itemize}
-    \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias no ordenamento espacial, mas evidenciando falhas em fluxos de lógica complexa.
-    \item \textit{Feedback e Falhas Identificadas:} O utilizador U2 observou que renomear uma variável lógica global exigia alterar manualmente o texto de todas as passagens da história, o que gerava erros de digitação e quebrava a simulação. Além disso, a importação de \gls{csv} falhava quando as traduções continham vírgulas integradas no texto das cenas.
-    \item \textit{Medidas Corretivas Implementadas:} Desenvolveu-se o painel \texttt{VariablesModal.jsx} com refatorização automática de nomes de variáveis via expressões regulares com barreira de palavra (\textit{word boundaries}) de forma síncrona. O parser de importação de \gls{csv} foi reescrito para suportar a norma RFC~4180.
+    \item \textit{Resultados Quantitativos (SUS Estimado):} A usabilidade média SUS subiu para \textit{73.0 pontos}, refletindo melhorias na interatividade e assistência, mas revelando fragilidades ergonómicas com grafos médios e problemas lógicos.
+    \item \textit{Feedback e Falhas Identificadas:} Os utilizadores apontaram a sobreposição caótica de arestas retas, a ausência de agrupamento temático para cenas (capítulos) e a quebra frequente da simulação ao renomear variáveis lógicas globalmente. Adicionalmente, a importação de ficheiros \gls{csv} quebrava quando o texto continha vírgulas integradas.
+    \item \textit{Medidas Corretivas Implementadas:} Implementaram-se as arestas curvas paramétricas baseadas em Splines de Catmull-Rom com \textit{waypoints} em \texttt{EditableEdge.jsx}, as Zonas de agrupamento visual em \texttt{ZoneNode.jsx}, o painel \texttt{VariablesModal.jsx} para refatorização de variáveis e o suporte à norma RFC~4180 no parser de \gls{csv}.
 \end{itemize}
 
 \subsection{Terceira Leva: Protótipo Final (Junho de 2026)}
@@ -283,7 +242,7 @@ A terceira e última leva de testes realizou-se entre \textit{15 e 20 de junho d
 \subsubsection{Métricas de Conclusão e Tempos de Execução}
 Durante a sessão final de testes, foram registados os tempos de conclusão (em minutos) das quatro tarefas descritas na metodologia. Os resultados quantitativos encontram-se sumarizados na Tabela~\ref{tab:resultados-tarefas}.
 
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
 \caption{Taxa de sucesso e tempo de conclusão (em minutos) das tarefas por utilizador (Leva Final).}
 \label{tab:resultados-tarefas}
@@ -305,17 +264,16 @@ U6 & 08:30 & 03:10 & 03:40 & 01:15 & 100\% \\
 \smallskip
 \begin{minipage}{\linewidth}
 \centering
-\small \textit{* Nota: O utilizador U4 não concluiu com sucesso a Tarefa 2 (validação e correção de caminhos lógicos com o validador \gls{bfs}) no tempo limite estabelecido.}
+\small \textit{* Nota: O utilizador U4 não concluiu com sucesso a Tarefa 2 no tempo limite estabelecido devido a dificuldades na interpretação das mensagens de erro puramente textuais do validador \gls{bfs}, reforçando a necessidade de incluir marcadores de erro visuais diretamente sobre os nós no canvas.}
 \end{minipage}
 \end{table}
-\vfill
 
 A taxa de conclusão média fixou-se em 95.8\%. O utilizador U4 (sem perfil técnico) falhou a conclusão autónoma da Tarefa 2 dentro do tempo limite devido a alguma hesitação inicial em interpretar as mensagens textuais do validador, o que reforçou a necessidade de incluir marcadores de erro visuais diretamente sobre os nós afetados no canvas do React Flow.
 
 \subsubsection{Avaliação SUS da Leva Final}
-Após as tarefas, foi aplicado o questionário padronizado SUS aos participantes. As pontuações obtidas encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
+Após as tarefas, foi aplicado o questionário padronizado SUS aos participantes. O instrumento utilizado consistiu numa adaptação para língua portuguesa das dez perguntas originais do \textit{System Usability Scale} \citep{Brooke1996}, administrado de forma digital e anónima através da plataforma Google Forms. As pontuações obtidas encontram-se representadas na Tabela~\ref{tab:pontuacao-sus}.
 
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
 \caption{Pontuação obtida no questionário System Usability Scale (SUS) na leva final.}
 \label{tab:pontuacao-sus}
@@ -334,7 +292,6 @@ U6 & 85.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\vfill
 
 A média global final de \textit{84.6 pontos} situa o \textit{Plot in a Pot} no patamar de usabilidade ``Excelente'' (classificação de grau A+ na escala SUS), representando uma evolução muito expressiva face aos 61.5 e 73.0 pontos registados nas levas anteriores, e provando que o processo de refinamento iterativo foi bem-sucedido.
 
@@ -358,12 +315,12 @@ O desenvolvimento do \gls{piap} demonstrou que a fusão de um editor visual de g
 Embora a avaliação quantitativa com utilizadores tenha revelado uma média de usabilidade global ``Excelente'' (84.6 pontos na escala SUS), o estudo apresenta duas limitações metodológicas importantes:
 \begin{itemize}
     \item \textbf{Dimensão Reduzida da Amostra:} O grupo de teste incluiu apenas seis participantes ($N = 6$). Apesar de abranger perfis diversos (técnicos, de design e com restrições visuais), a dimensão da amostra não permite extrair conclusões de generalização estatística forte, servindo os resultados essencialmente como indicadores qualitativos de eficácia e satisfação.
-    \item \textbf{Efeito de Aprendizagem (Viés de Familiaridade):} O refinamento iterativo do sistema expôs os mesmos participantes a testes em diferentes levas de desenvolvimento. O facto de os utilizadores já conhecerem o funcionamento básico e as regras da aplicação em testes subsequentes pode ter inflacionado as pontuações SUS das levas intermédia e final, camuflando eventuais atritos que utilizadores estreantes poderiam experimentar no produto final.
+    \item \textbf{Efeito de Aprendizagem (Viés de Familiaridade):} O refinamento iterativo do sistema expôs parte dos participantes a testes em múltiplas levas de desenvolvimento (conforme a Tabela~\ref{tab:participacao-levas}): apenas U5 participou nas três levas; U1 e U4 na primeira e na terceira; U2 e U3 na segunda e na terceira; U6 participou exclusivamente na leva final. O facto de alguns utilizadores já conhecerem o funcionamento básico da aplicação em testes subsequentes pode ter inflacionado as pontuações SUS das levas intermédia e final, camuflando eventuais atritos que utilizadores completamente estreantes poderiam experimentar no produto final.
 \end{itemize}
 
 \subsection{Limitações Tecnológicas e Funcionalidade de IA}
 Do ponto de vista tecnológico, identificaram-se limitações na persistência local e no assistente de importação baseado em inteligência artificial:
 \begin{itemize}
-    \item \textbf{Dependência de Hardware e VRAM:} O assistente de importação baseado em \glspl{llm} locais (como o Qwen 3.5 9B) exige uma placa gráfica dedicada com capacidade superior a 8\,GB de VRAM para correr localmente via Ollama com latência aceitável. Esta exigência limita a acessibilidade da funcionalidade em computadores portáteis normais ou de gama baixa (RTX 3050 com 4\,GB de VRAM).
+    \item \textbf{Dependência de Hardware e VRAM:} O assistente de importação baseado em \glspl{llm} locais (como o Qwen 2.5 7B) exige uma placa gráfica dedicada com capacidade superior a 8\,GB de VRAM para correr localmente via Ollama com latência aceitável. Esta exigência limita a acessibilidade da funcionalidade em computadores portáteis normais ou de gama baixa (RTX 3050 com 4\,GB de VRAM).
     \item \textbf{Instabilidade na Formatação Sintática:} Mesmo em ambientes de processamento com 12\,GB de VRAM, os modelos locais geram por vezes passagens aninhadas ou inserem marcas de raciocínio intermediário (\textit{``Thinking...''}) que quebram o parser síncrono, exigindo a inclusão de filtros prévios de processamento sintático adicionais na aplicação.
 \end{itemize}

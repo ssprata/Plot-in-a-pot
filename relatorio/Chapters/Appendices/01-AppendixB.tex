@@ -1,127 +1,57 @@
-\chapter{Guia de Sintaxe e Modelagem de Macros Lógicas}
-\label{ap:guia-sintaxe-macros}
+\chapter{Guião de Testes e Questionário de Avaliação}
+\label{ap:guiao-questionarios}
 
-Este apêndice serve como guia de referência técnico para a especificação do formato Twee 3 e a sintaxe de macros lógicas SugarCube suportadas pelo editor do \gls{piap}. Inclui exemplos práticos de modelação de mecânicas de jogo comuns em narrativas interativas.
+Este apêndice apresenta a documentação detalhada utilizada durante as sessões de avaliação com utilizadores realizadas na fase final do projeto. Inclui o guião de tarefas estruturadas fornecido aos participantes e o questionário padronizado \textit{System Usability Scale} (SUS) utilizado para medir a usabilidade percebida.
 
-\section{Estrutura de um Documento Twee 3}
-O formato Twee 3 é uma representação textual de histórias não-lineares estruturada sob a forma de passagens de texto delimitadas por cabeçalhos iniciados por duas colunas (\texttt{::}). A estrutura de um projeto compila-se em passagens de sistema obrigatórias e passagens narrativas (cenas).
+\section{Guião de Tarefas de Teste}
+Os participantes receberam as seguintes instruções para a realização dos testes de usabilidade, sem intervenção ou ajuda dos investigadores:
 
-\subsection{Passagens Especiais de Sistema}
-Para ser considerado válido, um ficheiro Twee 3 importado no \gls{piap} deve conter os seguintes nós de sistema:
-\begin{itemize}
-    \item \textbf{StoryTitle:} Contém exclusivamente uma única linha de texto plano com o título geral do projeto.
-    \item \textbf{StoryData:} Contém um bloco estruturado em formato \gls{json} com as configurações globais da história. Os campos obrigatórios são o \texttt{ifid} (um identificador único de 128 bits para o projeto), o formato (\texttt{SugarCube}), e o nó de arranque (\texttt{start}):
-    \begin{code}
-    :: StoryData
-    {
-      "ifid": "A4B7D9E0-C2B1-4F2A-8E6D-009988776655",
-      "format": "SugarCube",
-      "start": "cena_inicial",
-      "zoom": 1.0
-    }
-    \end{code}
-    
-    \item \textbf{StoryInit:} O nó lógico de inicialização. É executado uma única vez ao carregar a história na memória, antes de renderizar qualquer cena ao utilizador. Destina-se à declaração de variáveis globais e valores por defeito:
-    \begin{code}
-    :: StoryInit
-    <<set $tem_chave = false>>
-    <<set $moedas = 0>>
-    <<set $nome_jogador = "Tomas">>
-    \end{code}
-\end{itemize}
-
-\subsection{Passagens Narrativas (Cenas)}
-As cenas contêm o texto da história, as atribuições de variáveis em tempo de execução e as escolhas de navegação do jogador. O cabeçalho de uma passagem narrativa no \gls{piap} pode incluir metadados de posicionamento posicional do canvas de grafos (X e Y) e Zonas (parentId) expressos em \gls{json}:
-\begin{code}
-:: cena_inicial {"position":{"x":100,"y":150},"size":{"width":250,"height":120},"parentId":"capitulo1"} [tag1 tag2]
-Aqui começa a aventura. O mercado está movimentado e podes ver uma taberna.
-[[Entrar na taberna|cena_taberna]]
-[[Ir para o beco escuro|cena_beco]]
-\end{code}
-
-\section{Sintaxe de Macros Lógicas (SugarCube)}
-O compilador JIT e interpretador integrado no editor do \gls{piap} processa as seguintes macros lógicas para manipulação de variáveis e controlo de fluxo:
-
-\subsection{Macro de Atribuição: \texttt{<<set>>}}
-Utilizada para modificar o valor de uma variável. O \gls{piap} suporta atribuições diretas, aritméticas e de strings:
-\begin{itemize}
-    \item \textbf{Atribuição Booleana:} \texttt{<<set \$tem\_espada = true>>}
-    \item \textbf{Incrementação/Decrementação:} \texttt{<<set \$vida = \$vida - 10>>} ou \texttt{<<set \$moedas = \$moedas + 5>>}
-    \item \textbf{Atribuição de Texto:} \texttt{<<set \$armadura = "cota\_de\_malha">>}
-\end{itemize}
-
-\subsection{Macro de Controlo Condicional: \texttt{<<if>>}}
-Permite criar ramificações dinâmicas na história com base nas variáveis lógicas. A estrutura suporta condicionamento encadeado:
-\begin{code}
-<<if $moedas >= 10>>
-  Podes comprar a poção de cura.
-  [[Comprar poção|cena_compra]]
-<<else>>
-  Não tens moedas suficientes para falar com o mercador.
-  [[Voltar à praça|cena_praca]]
-<<endif>>
-\end{code}
-
-\section{Padrões Comuns de Modelação Narrativa}
-Apresentam-se de seguida soluções estruturadas para programar mecânicas clássicas de jogos de aventura e RPG no editor do \gls{piap}:
-
-\subsection{Padrão 1: Inventário e Portas Trancadas}
-Mecânica em que o acesso a um determinado nó está bloqueado até que o jogador recolha um item de chave noutro local.
+\subsection*{Tarefa 1: Criação Narrativa e Lógica de Variáveis}
+\textbf{Objetivo:} Avaliar a facilidade de criação de fluxos e manipulação de estado.
 \begin{enumerate}
-    \item Inicializar a variável booleana no nó de metadados \texttt{StoryInit}:
-    \begin{code}
-    <<set $chave_portal = false>>
-    \end{code}
-    \item Na sala onde a chave é recolhida (\texttt{cena\_bau}), alterar o valor da variável:
-    \begin{code}
-    :: cena_bau
-    Abres o baú de madeira e encontras uma chave dourada e brilhante.
-    <<set $chave_portal = true>>
-    [[Voltar ao salão|cena_salao]]
-    \end{code}
-    \item Na sala do portal (\texttt{cena\_salao}), condicionar o acesso à porta trancada:
-    \begin{code}
-    :: cena_salao
-    Estás em frente ao portal de pedra. A fechadura parece requerer uma chave especial.
-    [[Voltar ao bau|cena_bau]]
-    <<if $chave_portal>>
-      [[Utilizar a chave e passar o portal|cena_vitoria]]
-    <<else>>
-      O portal está firmemente trancado.
-    <<endif>>
-    \end{code}
+    \item Crie cinco nós de cena narrativos no canvas interativo.
+    \item Defina uma cena inicial e ligue-a a duas cenas intermédias através de opções textuais clássicas do Twine.
+    \item Num dos nós, insira uma macro de atribuição do SugarCube para criar uma variável de inventário (ex: \texttt{<<set \$temChave = true>>}).
+    \item Crie uma aresta condicional para um nó final que apenas fique visível se a condição lógica for satisfeita (ex: \texttt{<<if \$temChave === true>>}).
 \end{enumerate}
 
-\subsection{Padrão 2: Contador de Tentativas e Fim de Jogo}
-Mecânica em que o jogador tem um limite de tentativas ou pontos de vida antes de ser derrotado.
+\subsection*{Tarefa 2: Importação, Validação e Correção de Erros}
+\textbf{Objetivo:} Testar a eficácia do motor de validação estática \gls{bfs}.
 \begin{enumerate}
-    \item Inicializar o contador numérico em \texttt{StoryInit}:
-    \begin{code}
-    <<set $tentativas = 3>>
-    \end{code}
-    \item Na cena onde ocorre o erro ou armadilha (\texttt{cena\_armadilha}), subtrair uma tentativa e verificar se o valor atinge zero:
-    \begin{code}
-    :: cena_armadilha
-    O mecanismo da parede dispara flechas na tua direção! Conseguiste esquivar-te, mas perdeste energia.
-    <<set $tentativas = $tentativas - 1>>
-    <<if $tentativas > 0>>
-      Tens ainda $tentativas pontos de vida restantes.
-      [[Tentar novamente com cautela|cena_salao]]
-    <<else>>
-      As tuas forças esgotaram-se.
-      [[Game Over|cena_derrota]]
-    <<endif>>
-    \end{code}
+    \item Importe para a aplicação o ficheiro de teste \texttt{story\_broken.twee} disponibilizado.
+    \item Ative o validador lógico e identifique os alertas vermelhos desenhados sobre as arestas e nós.
+    \item Corrija as ligações quebradas (que apontam para IDs inexistentes) e ligue os nós órfãos identificados pelo validador até que a interface gráfica fique limpa de avisos de erro.
 \end{enumerate}
 
-\subsection{Padrão 3: Caminhos Ocultos e Nós Secretos}
-Utilizado para cenas extra ou segredos da história recomendados apenas para leitores atentos.
-\begin{itemize}
-    \item Para evitar que nós em desenvolvimento ou caminhos secretos estraguem a compilação ou apareçam nos relatórios de erros de caminhos órfãos, adicione a etiqueta \texttt{secreto} nas tags do nó:
-    \begin{code}
-    :: cena_secreta {"position":{"x":500,"y":500}} [secreto]
-    Encontraste a sala secreta do programador! Parabéns!
-    [[Voltar à praça|cena_praca]]
-    \end{code}
-    O validador estático de grafos (\gls{bfs}) do \gls{piap} ignorará este nó ao verificar o alcance obrigatório da história, prevenindo falsos positivos de caminhos inacessíveis.
-\end{itemize}
+\subsection*{Tarefa 3: Tradução e Localização Multi-idioma}
+\textbf{Objetivo:} Validar o módulo de localização tabular.
+\begin{enumerate}
+    \item Abra a matriz de localização integrada no menu superior da aplicação.
+    \item Localize as três chaves de cena correspondentes à introdução da história.
+    \item Introduza a respetiva tradução direta para o idioma Inglês nas respetivas células de grelha.
+    \item Exporte o dicionário resultante no formato regulamentar \gls{csv}.
+\end{enumerate}
+
+\subsection*{Tarefa 4: Simulação e Automação com Smart Walker}
+\textbf{Objetivo:} Testar o PlayMode e a validação por procura de novidade.
+\begin{enumerate}
+    \item Inicialize o modo de simulação (\textit{PlayMode}) na barra superior.
+    \item Jogue a história manualmente durante alguns passos, verificando a reatividade das variáveis de inventário na barra lateral de depuração.
+    \item Ative o agente autónomo \textit{Smart Walker} e observe a exploração automática do espaço de estados para encontrar caminhos profundos na narrativa.
+\end{enumerate}
+
+\section{Questionário System Usability Scale (SUS)}
+Após a conclusão das tarefas, cada utilizador preencheu de forma anónima o questionário padronizado SUS, numa adaptação para língua portuguesa das dez perguntas originais do \textit{System Usability Scale} \citep{Brooke1996}, disponibilizado em formato digital via Google Forms em \url{https://docs.google.com/forms/d/e/1FAIpQLScRVPQsZ6PEBI_QndGLbjn3Qh3VBzqkTzIlVa29QI3qIsgtCQ/viewform}. As respostas foram avaliadas numa escala de Likert de 1 (Discordo Totalmente) a 5 (Concordo Totalmente):
+
+\begin{enumerate}
+    \item Eu penso que gostaria de usar este sistema frequentemente.
+    \item Eu achei o sistema desnecessariamente complexo.
+    \item Eu achei o sistema fácil de usar.
+    \item Eu acho que precisaria de apoio de um técnico para conseguir usar este sistema.
+    \item Eu achei que as várias funções do sistema estavam bem integradas.
+    \item Eu achei que o sistema tinha demasiadas inconsistências.
+    \item Eu imagino que a maioria das pessoas aprenderia a usar este sistema rapidamente.
+    \item Eu achei o sistema muito cansativo de usar.
+    \item Eu senti-me muito confiante a usar o sistema.
+    \item Eu precisei de aprender muitas coisas novas antes de conseguir usar o sistema.
+\end{enumerate}
