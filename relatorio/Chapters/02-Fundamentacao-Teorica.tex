@@ -295,42 +295,44 @@ A especificação Twee3 é independente do formato de exibição (story format) 
 \end{lstlisting}
 \end{itemize}
 
-Esta estrutura híbrida — que combina geometria de grafos, marcação de texto simples e scripting condicional — é a especificação que o \textit{Plot in a Pot} adota nativamente, permitindo importar ficheiros externos de outras ferramentas (como o Twine) e exportar o trabalho final num formato de texto aberto e interoperável.
-
+Esta estrutura híbrida que combina geometria de grafos, marcação de texto simples e scripting condicional é a especificação que o \textit{Plot in a Pot} adota nativamente, permitindo importar ficheiros externos de outras ferramentas (como o Twine) e exportar o trabalho final num formato de texto aberto e interoperável.
 \section{Integração de Modelos de Linguagem de Grande Escala (LLMs) Locais}
 \label{sec:integracao-llms}
-Com os avanços na área do processamento de linguagem natural, a viabilidade de executar Modelos de Linguagem de Grande Escala (\textit{Large Language Models} — LLMs) de forma local e gratuita tornou-se uma alternativa viável para auxiliar autores na estruturação e conversão de narrativas interativas. A análise destas ferramentas(feita a 13 de abril) foca-se na capacidade de diferentes famílias de modelos de pesos abertos (\textit{open-weights}) em compreender instruções estruturadas e converter linguagem natural para o formato Twee.
+Com o avanço recente no campo da Inteligência Artificial Generativa, a integração de Modelos de Linguagem de Grande Escala (\textit{Large Language Models} - LLMs) locais e gratuitos foi analisada numa pesquisa realizada a 13 de abril. O objetivo inicial desta pesquisa foi avaliar a viabilidade prática de utilizar estas ferramentas para auxiliar autores na escrita criativa, na sugestão de caminhos e na co-criação de narrativas interativas, analisando o potencial de diferentes famílias de modelos para tarefas de geração e estruturação textual.
 
-\subsection{Análise de Famílias de Modelos e Fundamentação}
-Para o contexto de ficção interativa, destacam-se três famílias de modelos otimizados para instruções (\textit{instruction-tuned}), cada uma suportada por metodologias de treino e arquiteturas distintas:
+\subsection{Análise de Famílias de Modelos e Recomendações}
+Nessa pesquisa realizada a 13 de abril, foram analisadas três das principais famílias de modelos em open-weight ajustados para instruções, avaliando a sua capacidade e adequabilidade para autoria de \gls{ni}:
 
 \begin{enumerate}
     \item \textbf{Família Llama 3 e 3.1 (Meta AI):}
     \begin{itemize}
-        \item \textbf{Versão de Referência:} Llama 3.1 (8B) \citep{Dubey2024Llama3}.
-        \item \textbf{Justificação e Capacidade:} Representa o estado da arte em modelos compactos, correndo de forma eficiente na maioria dos computadores modernos com placas gráficas dedicadas. Destaca-se pelo cumprimento estrito de diretrizes de formatação (\textit{system prompts} rígidos), o que o torna ideal para a geração de saídas estruturadas em formato \gls{json} sem desvios de sintaxe.
+        \item \textbf{Versão Recomendada:} Llama 3.1 (8B).
+        \item \textbf{Justificação:} Representa um dos modelos leves mais capazes do estado da arte. A versão de 8 mil milhões de parâmetros corre com excelente desempenho na maioria dos computadores modernos equipados com placa gráfica dedicada ou em arquiteturas Mac Apple Silicon (M1/M2/M3), requerendo investimentos de hardware reduzidos.
+        \item \textbf{Vantagem Narrativa:} Demonstra uma capacidade excecional no cumprimento estrito de diretrizes de formatação (\textit{system prompts} rígidos). Esta fiabilidade torna-o ideal para gerar respostas estruturadas (por exemplo, em formato \gls{json} contendo a sugestão de cena e as escolhas de saída), facilitando a integração direta no motor lógico do software.
     \end{itemize}
 
     \item \textbf{Família Mistral (Mistral AI):}
     \begin{itemize}
-        \item \textbf{Versão de Referência:} Mistral 7B v0.3 \citep{Jiang2023Mistral} ou Mistral NeMo (12B).
-        \item \textbf{Justificação e Capacidade:} Desenvolvida pela empresa europeia Mistral AI, esta família é amplamente reconhecida pela comunidade de escrita criativa pelo seu tom mais orgânico e natural na geração de texto. Adicionalmente, possui janelas de contexto eficientes, fundamentais para reter o histórico e as dependências de cenas longas.
+        \item \textbf{Versão Recomendada:} Mistral NeMo (12B) ou Mistral v0.3 (7B).
+        \item \textbf{Justificação:} Os modelos desenvolvidos pela empresa europeia Mistral AI são amplamente reconhecidos pela comunidade de escrita criativa pelo seu tom mais orgânico e natural. Adicionalmente, tendem a apresentar menor nível de censura prévia, facilitando a escrita livre em géneros literários como ficção geral, mistério ou terror.
+        \item \textbf{Vantagem Narrativa:} Apresentam janelas de contexto extremamente eficientes. A janela de contexto atua como a memória de curto prazo do modelo; numa narrativa ramificada, é fundamental que o LLM recorde o histórico de cenas e as decisões anteriores tomadas pelo utilizador para garantir a coerência semântica global do texto gerado.
     \end{itemize}
 
-    \item \textbf{Família Gemma 2 (Google):}
+    \item \textbf{Gemma 2 (Google):}
     \begin{itemize}
-        \item \textbf{Versão de Referência:} Gemma 2 (9B) \citep{GemmaTeam2024Gemma2}.
-        \item \textbf{Justificação e Capacidade:} Desenvolvida pela Google (Alphabet), esta família beneficia de métodos avançados de treino (como destilação de conhecimento a partir de modelos gigantes) e rigorosos testes de controlo e segurança. Estas técnicas de otimização, que não estão acessíveis a empresas de menor dimensão, conferem ao Gemma 2 um desempenho excecional em raciocínio lógico e síntese textual.
+        \item \textbf{Versão Recomendada:} Gemma 2 (9B).
+        \item \textbf{Justificação:} Apesar do seu tamanho compacto de 9 mil milhões de parâmetros, destaca-se pelo seu desempenho elevado em raciocínio abstrato e análises textuais comparativas.
+        \item \textbf{Vantagem Narrativa:} É altamente eficaz na realização de resumos e sínteses. Esta capacidade é ideal para funcionalidades auxiliares que leiam um determinado ramo completo da história e gerem um resumo conciso (p. ex., ``descreve os principais acontecimentos deste arco narrativo'').
     \end{itemize}
 \end{enumerate}
 
-\subsection{Decisão de Design: Assistente de Conversão de Texto}
- Embora os LLMs possuam capacidades criativas, o \textit{Plot in a Pot} adota uma decisão de \textit{design} clara: \textbf{rejeitar a geração automática ou a co-criação literária}. Esta escolha prioriza a autoria humana e respeita a forte oposição das comunidades de escritores à escrita gerada por inteligência artificial.
+\subsection{Decisão de Design: Do Co-Criador ao Assistente de Conversão}
+Embora a pesquisa inicial (Secção~\ref{sec:integracao-llms}) tenha demonstrado o potencial dos LLMs para sugerir cenas e resumir narrativas, o desenvolvimento do \gls{piap} tomou a decisão de design de não incluir funcionalidades de geração automática ou co-criação literária na aplicação final. Esta escolha foi motivada pelo respeito à autoria humana exclusiva e pela forte oposição da comunidade de escritores a conteúdos gerados de forma não-humana, priorizando a integridade do processo de escrita do autor.
 
-Desta forma, o papel do LLM é restrito a uma tarefa técnica e utilitária: servir como um assistente de importação rápida que lê texto livre escrito pelo autor e o converte para a sintaxe estruturada do Twee 3.
+Desta forma, o papel do LLM foi deliberadamente limitado a uma função técnica e utilitária: um assistente de importação rápida que converte texto livre (já escrito pelo autor) para a sintaxe estruturada Twee 3 interpretada pelo parser. 
 
-Para garantir a privacidade e eliminar custos de API, o modelo corre localmente através de ferramentas de orquestração como o \textit{Ollama} ou \textit{LM Studio}, dividindo o trabalho de forma a assegurar a fiabilidade do sistema:
+Para viabilizar esta aplicação sem custos de API ou quebras de privacidade, a integração é feita localmente com ferramentas como o \textit{Ollama} ou o \textit{LM Studio}, que disponibilizam o modelo numa porta local (11434) para chamadas HTTP internas. A integração segue uma divisão de trabalho estrita para garantir a fiabilidade do sistema:
 \begin{itemize}
-    \item \textbf{Lógica Estrutural do Grafo:} A validação de caminhos, ligações e regras do jogo é processada de forma 100\% determinística pelo código do editor, garantindo que o fluxo narrativo nunca é corrompido por alucinações da IA.
-    \item \textbf{Assistente de Conversão (LLM):} Atua apenas no processamento textual de entrada, interpretando as intenções do autor para sugerir nós e conexões no formato Twee 3, os quais são posteriormente revalidados pelo parser da aplicação.
+    \item \textbf{Lógica Estrutural (Grafo):} A validação de caminhos, a gestão do histórico e as regras de jogo são processadas de forma 100\% determinística pelo código da aplicação (Lista de Adjacência Bidirecional). Isto garante que a estrutura da narrativa nunca é corrompida.
+    \item \textbf{Assistente de Importação (LLM):} Atua apenas na análise semântica do texto ao nível do vértice (cena), convertendo o texto do autor para a marcação do parser ou sugerindo conexões textuais, sem interferir na integridade do grafo global.
 \end{itemize}

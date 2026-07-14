@@ -350,45 +350,6 @@
     \field{year}{2009}
   \endentry
 
-  \entry{Dubey2024Llama3}{article}{}
-    \true{moreauthor}
-    \true{morelabelname}
-    \name{author}{3}{}{%
-      {{hash=DA}{%
-         family={Dubey},
-         familyi={D\bibinitperiod},
-         given={Abhimanyu},
-         giveni={A\bibinitperiod},
-      }}%
-      {{hash=JA}{%
-         family={Jauhri},
-         familyi={J\bibinitperiod},
-         given={Abhinav},
-         giveni={A\bibinitperiod},
-      }}%
-      {{hash=PA}{%
-         family={Pandey},
-         familyi={P\bibinitperiod},
-         given={Abhinav},
-         giveni={A\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{DA+1}
-    \strng{fullhash}{DAJAPA+1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2024}
-    \field{labeldatesource}{}
-    \field{sortinit}{D}
-    \field{sortinithash}{D}
-    \field{title}{The Llama 3 Herd of Models}
-    \verb{url}
-    \verb https://arxiv.org/abs/2407.21783
-    \endverb
-    \field{journaltitle}{arXiv preprint arXiv:2407.21783}
-    \field{year}{2024}
-  \endentry
-
   \entry{Ferreira2024Refactoring}{article}{}
     \name{author}{3}{}{%
       {{hash=FF}{%
@@ -428,33 +389,6 @@
     \endverb
     \field{volume}{215}
     \field{journaltitle}{Journal of Systems and Software}
-    \field{year}{2024}
-  \endentry
-
-  \entry{GemmaTeam2024Gemma2}{article}{}
-    \name{author}{2}{}{%
-      {{hash=G}{%
-         family={{Gemma Team}},
-         familyi={G\bibinitperiod},
-      }}%
-      {{hash=G}{%
-         family={Google},
-         familyi={G\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{G+1}
-    \strng{fullhash}{GG1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2024}
-    \field{labeldatesource}{}
-    \field{sortinit}{G}
-    \field{sortinithash}{G}
-    \field{title}{Gemma 2: Improving Open Models for Everyone}
-    \verb{url}
-    \verb https://arxiv.org/abs/2408.00118
-    \endverb
-    \field{journaltitle}{arXiv preprint arXiv:2408.00118}
     \field{year}{2024}
   \endentry
 
@@ -524,45 +458,6 @@
     \verb https://iftechfoundation.org/news/iftf-gdc-2026/
     \endverb
     \field{year}{2026}
-  \endentry
-
-  \entry{Jiang2023Mistral}{article}{}
-    \true{moreauthor}
-    \true{morelabelname}
-    \name{author}{3}{}{%
-      {{hash=JAQ}{%
-         family={Jiang},
-         familyi={J\bibinitperiod},
-         given={Albert\bibnamedelima Q.},
-         giveni={A\bibinitperiod\bibinitdelim Q\bibinitperiod},
-      }}%
-      {{hash=SA}{%
-         family={Sablayrolles},
-         familyi={S\bibinitperiod},
-         given={Alexandre},
-         giveni={A\bibinitperiod},
-      }}%
-      {{hash=MA}{%
-         family={Mensch},
-         familyi={M\bibinitperiod},
-         given={Arthur},
-         giveni={A\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{JAQ+1}
-    \strng{fullhash}{JAQSAMA+1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2023}
-    \field{labeldatesource}{}
-    \field{sortinit}{J}
-    \field{sortinithash}{J}
-    \field{title}{Mistral 7B}
-    \verb{url}
-    \verb https://arxiv.org/abs/2310.06825
-    \endverb
-    \field{journaltitle}{arXiv preprint arXiv:2310.06825}
-    \field{year}{2023}
   \endentry
 
   \entry{Juul2005}{book}{}
