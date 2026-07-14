@@ -242,7 +242,7 @@ No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicaç
 }
 \end{verbatim}
     
-    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação executar travessias e pesquisas rápidas.
+    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação realizar travessias e pesquisas rápidas.
 \end{enumerate}
 
 Esta tripla modelação é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no painel de detalhes, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada e encaminhada pelos ganchos personalizados em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a atualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
@@ -252,62 +252,58 @@ Esta tripla modelação é sincronizada de forma atómica. Quando o autor arrast
 
 O motor de autoria do \textit{Plot in a Pot} integra ferramentas robustas de validação e execução reativa. Para além de permitir a escrita de histórias, a plataforma disponibiliza um sistema de verificação lógica que audita a estrutura narrativa de forma estática e uma sandbox de simulação dinâmica dotada de agentes de navegação autónoma.
 
-\subsection{Algoritmo de Validação Estática e Exploração do Espaço de Estados (\gls{bfs})}
+\subsection{Algoritmo de Validação Estática e Exploração do Espaço de Estados}
 \label{subsec:algoritmo-bfs-validacao}
 
-O validador estático, implementado em \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, uma travessia clássica de Pesquisa em Largura (\gls{bfs}) seria suficiente para auditar o grafo. Contudo, em \gls{ni}, as arestas (hiperligações) dependem frequentemente de expressões lógicas e variáveis de estado (macros \texttt{<<if>>} e \texttt{<<set>>} do SugarCube). A acessibilidade de um nó $v$ não depende apenas do caminho geométrico, mas também da valoração atual das variáveis de estado (memória).
+O validador estático, implementado nos módulos \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, uma travessia clássica de Pesquisa em Largura (BFS) seria suficiente para auditar a conectividade geométrica. Contudo, em narrativas interativas complexas, as escolhas do jogador (arestas) dependem frequentemente de condições lógicas associadas a variáveis de estado (por exemplo, macros de atribuição \texttt{<<set>>} e macros condicionais \texttt{<<if>>} do formato SugarCube).
 
-Assim, a validação lógica é modelada como um problema de \textit{Exploração do Espaço de Estados} (\textit{State Space Exploration}), onde o grafo de transições real é constituído por pares $\langle v, \sigma \rangle$, nos quais $v \in \mathcal{N}$ representa o nó do editor e $\sigma: \mathcal{V} \rightarrow \mathcal{D}$ representa um mapeamento de variáveis lógicas globais para os seus respetivos domínios de valores.
+Isto significa que a acessibilidade de uma determinada cena não depende apenas da existência de uma linha gráfica a conectá-la, mas também do estado atual da memória do jogo (as variáveis acumuladas até então). Desta forma, a validação lógica é modelada como um problema de \textit{Exploração do Espaço de Estados} (\textit{State Space Exploration}), onde cada elemento explorado é composto pelo par formado pelo nó atual do grafo e pela valoração instantânea do dicionário de variáveis.
 
-O algoritmo executa a travessia de acordo com os seguintes passos estruturados:
+O algoritmo de auditoria executa a travessia de acordo com os seguintes passos estruturados e detalhados:
 
 \begin{enumerate}
-    \item \textbf{Inicialização e Pré-computação:}
-    Para garantir a eficiência temporal ($\mathcal{O}(1)$ em lookups), o algoritmo pré-computa em memória:
+    \item \textbf{Inicialização e Pré-computação de Dicionários:}
+    Para garantir a eficiência temporal do validador (com tempos de pesquisa de complexidade $\mathcal{O}(1)$), o motor começa por indexar e organizar os elementos do canvas em duas estruturas de dados fundamentais em memória:
     \begin{itemize}
-        \item Um mapa de nós $NodeMap: \text{ID} \rightarrow Node$, indexando todos os vértices da narrativa.
-        \item Um mapa de adjacências de arestas $EdgesBySource: \text{ID} \rightarrow List\langle Edge \rangle$.
+        \item \textbf{Dicionário de Nós (\texttt{NodeMap}):} Um mapa chave-valor que associa o identificador único de cada cena (ID) ao seu objeto correspondente. Isto permite aceder instantaneamente ao conteúdo textual e metadados de qualquer nó.
+        \item \textbf{Lista de Adjacência (\texttt{EdgesBySource}):} Um mapa que associa cada ID de cena de origem a uma lista com todas as escolhas (arestas) que partem dela.
     \end{itemize}
-    O ponto de entrada $v_0$ é resolvido por $findStartNode(NodeMap)$, e o estado inicial $\sigma_0$ é lido a partir das declarações de variáveis do nó de sistema $StoryInit$.
-    
-    \item \textbf{Estrutura de Dados e Fila:}
-    Uma fila síncrona $\mathcal{Q}$ é instanciada e inicializada com o tuplo de arranque:
-    \[
-    \mathcal{Q} \leftarrow \text{enqueue}\left(\mathcal{Q}, \langle v_0, \sigma_0, \text{path} = [v_0.\text{label}] \rangle\right)
-    \]
-    São criados conjuntos vazios para registar nós alcançáveis ($\mathcal{N}_{reach}$), arestas alcançáveis ($\mathcal{E}_{reach}$), e tabelas hash de estados visitados por nó ($VisitedStates: \text{ID} \rightarrow Set\langle String \rangle$) para evitar caminhos redundantes e ciclos infinitos.
+    Em seguida, o validador determina o nó inicial da narrativa. Esta resolução é efetuada localizando no grafo o nó especial que possui o ID ou a etiqueta padrão de início (\texttt{Start}), ou, na sua ausência, o primeiro nó criado na história. A valoração inicial das variáveis (o estado inicial da memória) é lida a partir do nó de sistema \texttt{StoryInit}, que guarda as instruções de inicialização de variáveis (por exemplo, \texttt{<<set \$moedas to 0>>}).
+
+    \item \textbf{Preparação da Fila de Exploração e Estruturas de Rastreio:}
+    É instanciada uma fila de processamento (\textit{Queue}), que guardará os estados a explorar sequencialmente. A fila é inicializada com um elemento de arranque que agrupa: o nó inicial, a cópia do estado inicial de variáveis e a rota percorrida até ao momento (representada como uma lista de nomes de cenas, começando pelo nome do nó inicial). A gravação deste caminho (\textit{path}) é fundamental para que, caso seja detetado um erro ou beco sem saída, o validador consiga mostrar ao autor a sequência exata de escolhas que levou a essa falha (por exemplo, \textit{"Início $\rightarrow$ Taberna $\rightarrow$ Combate $\rightarrow$ Erro"}).
+
+    Para além da fila, são criados em memória os seguintes contentores:
+    \begin{itemize}
+        \item Um conjunto de nós alcançáveis (\texttt{Nreach}), que registará todas as cenas visitáveis.
+        \item Um conjunto de escolhas alcançáveis (\texttt{Ereach}), que registará todas as ligações que puderam ser abertas durante a simulação.
+        \item Um mapa de estados visitados por nó (\texttt{VisitedStates}): Este dicionário associa o ID de cada nó a um conjunto de strings. Sempre que o algoritmo entra num nó, ele serializa o estado atual das variáveis (como uma string JSON) e guarda-o neste conjunto. Isto é crucial para detetar ciclos redundantes e evitar ciclos infinitos no grafo.
+    \end{itemize}
     
     \item \textbf{Ciclo de Processamento Principal:}
-    Enquanto $\mathcal{Q}$ não estiver vazia, remove-se o primeiro elemento:
-    \[
-    \langle u, \sigma, \text{path} \rangle \leftarrow \text{dequeue}(\mathcal{Q})
-    \]
-    Para o nó corrente $u$, efetua-se o seguinte processamento:
+    Enquanto existirem elementos na fila de exploração, o algoritmo extrai o primeiro da fila (contendo o nó atual, a memória de variáveis associada e o caminho percorrido) e realiza o seguinte processamento:
     \begin{enumerate}
-        \item Adiciona-se o identificador de $u$ a $\mathcal{N}_{reach}$.
-        \item Executam-se as instruções de modificação de estado contidas no texto do nó (por exemplo, macros de atribuição \texttt{<<set>>}), produzindo um novo estado de memória $\sigma' \leftarrow applyModifiers(u.\text{content}, \sigma)$.
-        \item Verifica-se se o estado $\sigma'$ já foi visitado no nó $u$. Para tal, converte-se $\sigma'$ numa representação string serializada $S_{\sigma'}$ e verifica-se se $S_{\sigma'} \in VisitedStates[u]$. Em caso afirmativo, o ramo é podado (\textit{pruning}) para evitar ciclos redundantes no grafo.
-        \item Para evitar a explosão do espaço de estados em loops que incrementam variáveis infinitamente, impõe-se um limite de segurança de $K = 10$ estados únicos por nó. Se $|VisitedStates[u]| \ge K$, o algoritmo emite um aviso de ciclo infinito no terminal e poda o caminho.
-        \item Caso contrário, insere-se $S_{\sigma'}$ em $VisitedStates[u]$ e regista-se a rota percorrida e o estado final na tabela de histórico de chegada $ArrivalHistory[u]$.
+        \item O nó é inserido no conjunto de nós alcançáveis (\texttt{Nreach}).
+        \item \textbf{Modificação de Estado (\texttt{applyModifiers}):} O validador analisa o texto da cena corrente. Caso este texto contenha instruções de alteração de variáveis (como macros \texttt{<<set \$moedas += 10>>}), o motor interpreta estas instruções e updates o dicionário de variáveis local, gerando um novo estado de memória. Esta interpretação é efetuada por um analisador síncrono que converte a sintaxe SugarCube para expressões válidas de JavaScript.
+        \item \textbf{Verificação de Redundância e Poda de Caminho (\textit{Pruning}):} O novo estado de variáveis é serializado e comparado com a lista de estados já experimentados anteriormente no nó atual (pesquisando no mapa \texttt{VisitedStates}). Se o mesmo estado de variáveis já tiver sido registado neste nó, significa que quaisquer caminhos futuros a partir daqui seriam repetições exatas de rotas já exploradas. O algoritmo interrompe a exploração deste ramo (processo designado por \textit{poda de caminho} ou \textit{pruning}), evitando processamento redundante e garantindo que ciclos narrativos fechados não causem loops infinitos.
+        \item \textbf{Controlo contra Explosão de Estados (Limite de Segurança $K = 10$):} Caso o autor crie um ciclo que incrementa ou altera continuamente variáveis sem fim (como uma cena que adiciona uma moeda de cada vez que o jogador clica para voltar), o estado das variáveis seria sempre diferente, impedindo que a verificação de redundância anterior detetasse a repetição. Para evitar que o validador fique preso a explorar infinitamente estes loops e congele o navegador do utilizador, define-se um limite máximo de $K = 10$ estados únicos por nó. Se um nó foi visitado 10 vezes com estados de variáveis diferentes, a exploração deste ramo é forçosamente interrompida, e um aviso de suspeita de ciclo infinito é associado ao nó.
+        \item \textbf{Gravação de Histórico:} Se o estado de variáveis for inédito e estiver dentro do limite de segurança, ele é adicionado ao conjunto de estados visitados do nó no mapa \texttt{VisitedStates}. O caminho percorrido e o estado final são também registados no histórico de caminhos (\texttt{ArrivalHistory}) do nó para posterior consulta e depuração na interface.
     \end{enumerate}
     
     \item \textbf{Avaliação de Transições e Condicionais:}
-    Para cada aresta de saída $e \in EdgesBySource[u]$ que conecta o nó $u$ ao nó de destino $w$:
+    O algoritmo consulta a lista de adjacências para identificar todas as escolhas de saída que partem da cena atual. Para cada escolha (aresta) que conecta a cena atual a uma cena de destino, o validador realiza as seguintes operações:
     \begin{enumerate}
-        \item O validador extrai a hiperligação textual associada à aresta $e$ do conteúdo de $u$.
-        \item Avalia-se a condição de acessibilidade associada a essa escolha através da função $canAccessChoice(u.\text{content}, \text{link}, \sigma')$. Esta função analisa se o link está envolto por alguma macro condicional \texttt{<<if>>} e avalia a sua expressão lógica contra a memória $\sigma'$.
-        \item Se a condição for satisfeita ($true$), adiciona-se o ID da aresta $e$ a $\mathcal{E}_{reach}$ e enfileira-se o próximo estado:
-        \[
-        \mathcal{Q} \leftarrow \text{enqueue}\left(\mathcal{Q}, \langle w, \sigma', \text{path} \cup [w.\text{label}] \rangle\right)
-        \]
+        \item Extrai a hiperligação textual associada (o texto do link double-bracket) do conteúdo da cena de origem.
+        \item \textbf{Avaliação de Acessibilidade (\texttt{canAccessChoice}):} O validador verifica se a escolha está condicionada por alguma macro lógica (como \texttt{<<if \$moedas >= 10>> ... <</if>>}). O motor avalia esta expressão lógica contra o dicionário de variáveis gerado no passo anterior. Se a condição for satisfeita (ou se a escolha não tiver qualquer condicional), a ligação é marcada como aberta e o ID da escolha é adicionado ao conjunto de escolhas alcançáveis (\texttt{Ereach}).
+        \item O nó de destino da escolha é enfileirado na fila de exploração, acompanhado pelo estado de variáveis atualizado e pelo novo caminho de cenas (adicionando o nome do nó de destino ao caminho percorrido).
     \end{enumerate}
 \end{enumerate}
 
-Após o término da travessia (quando a fila $\mathcal{Q}$ fica vazia), o módulo de auditoria em \texttt{storyValidator.js} pós-processa os resultados recolhidos para isolar as falhas estruturais, categorizando-as em:
+Após o término da travessia (quando a fila de exploração fica vazia), o módulo de auditoria em \texttt{storyValidator.js} analisa os conjuntos acumulados para identificar e classificar as falhas de integridade narrativa no grafo:
 \begin{itemize}
-    \item \textbf{Nós Órfãos ($V_{orphan}$):} Nós $v \in \mathcal{N}$ que não pertencem a $\mathcal{N}_{reach}$ e cujas etiquetas não incluem a tag \texttt{''secreto''}.
-    \item \textbf{Becos sem Saída ($V_{dead\_end}$):} Nós $v \in \mathcal{N}_{reach}$ que contêm hiperligações cujo destino aponta para um ID de nó inexistente no grafo ($w \notin \mathcal{N}$).
-    \item \textbf{Arestas Inacessíveis ($E_{unreachable}$):} Arestas $e \in \mathcal{E}$ que não pertencem a $\mathcal{E}_{reach}$. Estas representam caminhos cujas condicionais lógicas nunca são satisfeitas sob nenhuma das valorações de variáveis exploradas.
+    \item \textbf{Nós Órfãos:} Cenas criadas no canvas que não constam no conjunto de nós alcançáveis (\texttt{Nreach}), significando que o jogador nunca conseguirá chegar a elas a partir do início da história. Para maior flexibilidade do autor, as cenas etiquetadas com a tag \texttt{secreto} (ou privada) são deliberadamente excluídas deste aviso, permitindo a existência de cenas soltas de teste ou passagens secretas acedidas exclusivamente por código sem poluir a interface com falsos erros.
+    \item \textbf{Becos sem Saída (Hiperligações Quebradas):} Nós visitados pela exploração que contêm hiperligações cujo destino aponta para uma cena inexistente ou que foi apagada do canvas. É importante salvaguardar que nós terminais da narrativa (que representam finais de jogo e não possuem quaisquer escolhas de saída) são perfeitamente válidos e não geram erros. Este aviso foca-se estritamente em caminhos com destinos inválidos.
+    \item \textbf{Escolhas Inacessíveis:} Escolhas cuja condição lógica de acessibilidade nunca pôde ser satisfeita sob nenhuma das combinações de variáveis e caminhos explorados durante a travessia (por exemplo, exigir uma chave que nunca é definida como obtida em nenhuma cena anterior).
 \end{itemize}
 
 \subsection{Simulador em Tempo Real (PlayMode) e Smart Walker}
@@ -321,11 +317,9 @@ O simulador de jogo (\texttt{PlayMode.jsx}) mimetiza o comportamento do interpre
 
 Para testes automáticos de caminhos narrativos, a plataforma disponibiliza o agente autónomo \textbf{Smart Walker} (implementado em \texttt{storyTraversal.js}). Em vez de selecionar opções de forma puramente pseudo-aleatória (o que levaria a uma baixa cobertura de caminhos e retenção em ciclos curtos), o agente utiliza uma heurística baseada em \textit{Procura por Novidade} (\textit{Novelty Search}).
 
-Dada a vizinhança do nó atual $v$, correspondente ao conjunto de nós adjacentes alcançáveis $N(v)$, o agente consulta o histórico de visitas acumuladas do simulador. Para cada opção de transição que leva ao nó vizinho $w \in N(v)$, o Smart Walker obtém o número acumulado de visitas históricas $H(w)$ registado na memória global do simulador. O Walker seleciona a transição para o nó vizinho $w_{next}$ que minimiza a frequência de visitas:
-\[
-w_{next} = \arg\min_{w \in N(v)} H(w)
-\]
-Este comportamento força o simulador a procurar caminhos narrativos raros e ramos profundos da história de forma automatizada, conseguindo mapear e encontrar becos sem saída ou ciclos lógicos fechados numa fração de segundo sem intervenção manual do autor.
+Dada a vizinhança do nó atual, correspondente ao conjunto de opções de escolha alcançáveis a partir dele, o agente consulta o histórico de visitas acumuladas do simulador. Para cada opção de transição que leva a um nó vizinho, o Smart Walker obtém o número acumulado de visitas históricas registado na memória global da sessão. O Smart Walker escolhe automaticamente a transição para o nó vizinho que foi visitado menos vezes até ao momento.
+
+Este comportamento heurístico simples força o simulador a procurar caminhos narrativos raros e ramos profundos da história de forma automatizada, conseguindo mapear e encontrar becos sem saída ou ciclos lógicos fechados numa fração de segundo sem necessidade de intervenção manual do autor.
 
 \subsection{Motor de Compilação JIT de Macros SugarCube}
 \label{subsec:compilador-jit-macros}
