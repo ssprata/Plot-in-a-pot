@@ -218,7 +218,7 @@ A fim de estruturar a comparação entre as diferentes abordagens, apresenta-se 
 Edição Visual           & Sim            & Não          & Não                  & Sim                   & Sim                     & Sim \\
 Variáveis e Estado      & Sim            & Sim          & Sim                  & Sim                   & Sim                     & Sim \\
 Lógica Condicional      & Sim            & Sim          & Sim                  & Sim                   & Sim                     & Sim \\
-Verificação Estática    & Não            & Não          & Não                  & Não                   & Não                     & Não \\
+Verificação Estática    & Básica         & Básica       & Não                  & Não                   & Não                     & Não \\
 Integração (Engines)    & Não            & Sim          & Não                  & Sim                   & Sim                     & Sim \\
 Gratuito e Aberto       & Sim            & Sim          & Sim                  & Sim                   & Não                     & Não \\
 \bottomrule
@@ -229,7 +229,7 @@ A seleção dos critérios de avaliação apresentados na Tabela~\ref{tab:compar
 \begin{itemize}
     \item \textbf{Edição Visual:} Identifica se o motor oferece uma representação gráfica em forma de canvas ou nós para visualização e mapeamento direto dos caminhos narrativos (essencial para autores não-técnicos).
     \item \textbf{Variáveis e Lógica Condicional:} Avalia o suporte para manter uma memória narrativa (estado) e a capacidade de restringir escolhas dinamicamente com base nas ações do leitor.
-    \item \textbf{Verificação Estática:} Determina se a ferramenta realiza auditorias automáticas para detetar becos sem saída, ciclos sem fim ou incoerências lógicas em tempo de desenho, uma funcionalidade tradicionalmente ausente nas soluções existentes.
+    \item \textbf{Verificação Estática:} Determina se a ferramenta realiza auditorias automáticas para detetar becos sem saída, nós inacessíveis ou incoerências lógicas em tempo de desenho. Embora motores como o \textit{Ink} realizem verificação de integridade de desvios (\textit{diverts}) inválidos durante a compilação, e o editor do \textit{Twine} sinalize visualmente ligações quebradas (sendo ambas assinaladas como "Básica"), estas soluções carecem de uma análise estática formal capaz de modelar e verificar de forma contínua e interativa o espaço de estados de variáveis e acessibilidade lógica geral em tempo de desenho.
     \item \textbf{Integração com Engines:} Mede a portabilidade da narrativa para motores gráficos como Unity, Unreal Engine ou Godot, indispensável para produções de jogos modernos.
     \item \textbf{Gratuito e Aberto:} Reflete a acessibilidade financeira e a ausência de restrições comerciais ou licenciamento fechado na distribuição das obras criadas.
 \end{itemize}
