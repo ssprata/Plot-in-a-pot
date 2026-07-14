@@ -135,58 +135,86 @@ Esta representação permite à aplicação realizar o mapeamento reverso instan
 
 Note-se que este modelo foca-se exclusivamente na estrutura topológica do grafo. As variáveis globais e as condições lógicas SugarCube não são serializadas na lista de adjacências, sendo integradas diretamente no corpo de texto (\texttt{conteudo}) das passagens e interpretadas em tempo de execução pelo simulador.
 
-\section{Parser Síncrono e Especificação Twee 3}
+\section{Arquitetura e Implementação do Parser Síncrono}
+\label{sec:arquitetura-parser-sincrono}
 
-Para além do processamento interno em memória, a plataforma exige um mecanismo de serialização para guardar e carregar as histórias de forma estruturada. Em vez de criar um formato de ficheiro proprietário (como um esquema JSON customizado), optou-se por adotar a especificação aberta \textbf{Twee 3} como o padrão de persistência de dados da aplicação.
+O módulo responsável pela serialização e desserialização de histórias na plataforma é o parser síncrono, implementado em \texttt{tweeParser.js} (na diretoria \texttt{src/utils/}). Este módulo assegura a tradução bidirecional em tempo real entre a representação visual baseada em grafos do React Flow e a representação textual baseada na especificação \textbf{Twee 3} \citep{Twee3Reference}.
 
-Esta decisão fundamenta-se em três vantagens fundamentais para o ecossistema do projeto:
-\begin{itemize}
-    \item \textbf{Interoperabilidade e Compatibilidade Bidirecional:} A adoção do Twee 3 garante que qualquer história criada no \gls{piap} possa ser exportada e editada diretamente no Twine oficial (ou noutros editores compatíveis), e vice-versa. Isto evita o aprisionamento tecnológico (\textit{vendor lock-in}) e permite a integração em fluxos de trabalho já existentes.
-    \item \textbf{Compatibilidade com Compiladores Externos (ex: Tweego):} Sendo o formato Twee 3 uma especificação padrão e aberta, qualquer ficheiro exportado pelo \gls{piap} é totalmente compatível com compiladores de linha de comandos externos como o \textit{Tweego} (permitindo gerar ficheiros HTML executáveis autónomos com todos os recursos e estilos do SugarCube). Contudo, importa clarificar que a nossa aplicação não necessita nem executa o \textit{Tweego} internamente; toda a validação e simulação interativa da história são processadas no próprio navegador através do simulador integrado (\textit{PlayMode}), dispensando quaisquer dependências ou passos de compilação adicionais.
-    \item \textbf{Legibilidade e Controlo de Versões:} Sendo um formato baseado em texto simples, os ficheiros \texttt{.twee} são facilmente legíveis por humanos e ideais para controlo de versões (utilizando sistemas como o Git), permitindo acompanhar as alterações literárias e lógicas de forma clara ao longo do tempo.
-\end{itemize}
+A sincronização ocorre de forma síncrona diretamente na memória do navegador. Qualquer alteração de coordenadas, edição de texto ou criação de novas ligações no canvas é imediatamente refletida na estrutura interna de passagens e arestas, e vice-versa. Por se tratar de uma aplicação que corre inteiramente no lado do cliente (\textit{client-side}), este mapeamento mantém o estado da sessão atualizado na memória da aplicação, sendo que a persistência física dos dados requer que o utilizador exporte explicitamente o ficheiro \texttt{.twee}.
 
-O módulo responsável por fazer a ponte entre o modelo visual e a representação textual é o parser síncrono, implementado no ficheiro \texttt{tweeParser.js} (localizado em \texttt{src/utils/tweeParser.js}). Este módulo trata da sincronização bidirecional em tempo real entre o canvas do React Flow e o formato de texto Twee 3 \citep{Twee3Reference}.
+\subsection{Processo de Importação (Desserialização)}
+O processo de importação é gerido pela função \texttt{parseTwee3(source)}, que recebe uma cadeia de caracteres de texto simples no formato Twee 3 e reconstrói o grafo em cinco etapas consecutivas:
+\begin{enumerate}
+    \item \textbf{Divisão Lógica em Blocos:} O parser segmenta a fonte de texto usando a expressão regular \lstinline|^::| (com flag multiline \lstinline|m|) para delimitar e isolar as passagens em blocos independentes.
+    
+    \item \textbf{Extração de Cabeçalhos e Metadados:} Para cada bloco, a primeira linha (cabeçalho) é analisada para separar o nome da passagem, as etiquetas (delimitadas por \lstinline|[ ]|) e os metadados visuais (delimitados em formato JSON por \lstinline|{ }|). Esta separação é efetuada isolando a cadeia de caracteres a partir do primeiro caracter \lstinline|{| para evitar que expressões regulares falhem na presença de objetos JSON complexos ou aninhados.
+    
+    \item \textbf{Conversão de Coordenadas de Zonas:} Os metadados visuais extraídos indicam a posição absoluta do nó (\lstinline|position|: \lstinline|X,Y|) e, opcionalmente, o identificador do nó pai (\lstinline|parent|). Quando um nó pertence a uma Zona de Agrupamento Visual (contentor espacial), o parser efetua a conversão de coordenadas absolutas para coordenadas locais relativas ao canto superior esquerdo da zona mãe:
+    \[
+    X_{\text{relativo}} = X_{\text{absoluto}} - X_{\text{zona}}
+    \]
+    \[
+    Y_{\text{relativo}} = Y_{\text{absoluto}} - Y_{\text{zona}}
+    \]
+    Esta conversão é obrigatória para que o React Flow renderize corretamente a hierarquia espacial e permita arrastar a Zona mãe juntamente com todos os nós filhos.
+    
+    \item \textbf{Extração de Ligações (Arestas):} As ligações direcionadas entre passagens são extraídas do corpo de texto (\texttt{conteudo}) do nó recorrendo a duas expressões regulares:
+    \begin{itemize}
+        \item \textbf{Ligações Twine Clássicas:} Processadas pela regex \lstinline|/\[\[(.*?)\]\]/g|. O parser analisa se a ligação contém caracteres de direcionamento como \lstinline/|/, \lstinline/->/ ou \lstinline/<-/ para separar o texto visível da escolha (rótulo) do identificador do nó de destino. Ligações dinâmicas que envolvam expressões matemáticas ou variáveis (p. ex. iniciadas por \lstinline|$|) são ignoradas pela validação estática de modo a evitar caminhos falsos no grafo.
+        
+        \item \textbf{Ligações de Macros SugarCube:} Detetadas por uma expressão regular que captura a estrutura de links e redirecionamentos:
+        \begin{center}
+        \lstinline|/<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g|
+        \end{center}
+        O parser analisa o bloco interno à procura de comandos como \lstinline|<<goto "Destino">>| ou atribuições como \lstinline|<<set $proximo_destino = "Destino">>| para gerar as arestas direcionadas.
+    \end{itemize}
+    Se o nó de destino de qualquer ligação não for encontrado no mapeamento global de passagens, é gerado um aviso de link quebrado que é apresentado na interface visual (no painel laranja de alertas).
+    
+    \item \textbf{Layout Automático de Salvaguarda:} Se o ficheiro importado não contiver metadados de coordenadas (uma situação comum quando as histórias são geradas por ferramentas de escrita pura), o parser deteta que todos os nós raiz estão posicionados em \lstinline|(0,0)| e invoca a biblioteca de layout automático Dagre (\texttt{layoutNodesAndEdges}) para organizar os nós hierarquicamente (de cima para baixo) antes da renderização.
+\end{enumerate}
 
-Esta sincronização acontece de forma síncrona diretamente na memória do navegador. Isto significa que qualquer alteração de coordenadas, edição de texto ou criação de novas ligações no canvas é traduzida de imediato para a estrutura Twee 3 interna (e o oposto também se verifica), sem tempos de espera ou passos de compilação. Como a ferramenta funciona inteiramente no lado do cliente (\textit{client-side}), este mapeamento apenas mantém o estado da sessão atualizado; a persistência física dos dados no disco rígido requer sempre que o utilizador exporte o ficheiro de forma explícita.
+\subsection{Processo de Exportação (Serialização)}
+O processo de exportação é efetuado pela função \texttt{exportToTwee3(nodes, edges)}, que traduz a estrutura de dados em memória de volta para uma cadeia de caracteres contínua compatível com a especificação Twee 3:
+\begin{enumerate}
+    \item \textbf{Garantia de Unicidade de Rótulos:} Como o formato Twee 3 utiliza o título da passagem como o identificador único para as transições, o parser verifica a existência de colisões de nomes entre nós. Se forem detetados nomes duplicados, o exportador adiciona um sufixo numérico (p. ex., \lstinline|Nome (2)|) de forma automática.
+    
+    \item \textbf{Escapes de Segurança:} Para evitar a quebra do formato do ficheiro e problemas de parsing em compiladores externos, o exportador limpa e escapa caracteres reservados:
+    \begin{itemize}
+        \item \textbf{No Cabeçalho:} A função \texttt{escapeForTweeHeader} escapa barras invertidas, parênteses retos e chavetas (\lstinline|\|, \lstinline|[|, \lstinline|]|, \lstinline|{|, \lstinline|}|) adicionando uma barra invertida antes de cada caractere.
+        
+        \item \textbf{No Corpo de Texto:} A função \texttt{escapeForTweeText} deteta ocorrências literais de \lstinline|::| no início de qualquer linha e substitui-as por \lstinline|\::|, impedindo que o compilador interprete incorretamente essa linha como o início de uma nova passagem.
+    \end{itemize}
+    
+    \item \textbf{Reconversão para Coordenadas Absolutas:} Para manter a compatibilidade com a especificação Twee 3, as posições relativas dos nós filhos de Zonas são convertidas novamente para coordenadas absolutas no plano cartesiano antes da escrita física no ficheiro:
+    \[
+    X_{\text{absoluto}} = X_{\text{zona}} + X_{\text{relativo}}
+    \]
+    \[
+    Y_{\text{absoluto}} = Y_{\text{zona}} + Y_{\text{relativo}}
+    \]
+    
+    \item \textbf{Escrita Física do Bloco:} O exportador compila e anexa as propriedades visuais (coordenadas \lstinline|position|, o nó pai \lstinline|parent|, a dimensão \lstinline|size| e a cor \lstinline|color| no caso das Zonas) num objeto JSON serializado de linha única. Cada nó é escrito no ficheiro respeitando a assinatura padrão:
+\begin{verbatim}
+:: NomePassagem [tags] {"position":"X,Y", ...}
+Conteúdo da passagem
+\end{verbatim}
+\end{enumerate}
 
-\subsection{Importação e Conversão de Coordenadas de Zonas}
-\label{subsec:conversao-coordenadas-zonas}
-Durante a leitura e escrita de ficheiros, o parser converte as coordenadas de posição absolutas guardadas no formato Twee 3 (explicadas na Secção~\ref{subsec:metadados-tags-twee}) em coordenadas locais quando um nó é filho de uma Zona(explicado na Secção~\ref{subsec:zonas-agrupamento}). O React Flow exige que os nós filhos tenham posições relativas ao canto superior esquerdo da zona mãe, calculadas por:
-\[
-X_{\text{relativo}} = X_{\text{absoluto}} - X_{\text{zona}}
-\]
-\[
-Y_{\text{relativo}} = Y_{\text{absoluto}} - Y_{\text{zona}}
-\]
-No processo inverso de exportação para ficheiro \texttt{.twee}, o parser executa a conversão inversa para manter a compatibilidade com outros compiladores de Twine:
-\[
-X_{\text{absoluto}} = X_{\text{zona}} + X_{\text{relativo}}
-\]
-\[
-Y_{\text{absoluto}} = Y_{\text{zona}} + Y_{\text{relativo}}
-\]
-
-\subsection{Passagens Especiais}
-O parser reconhece passagens reservadas de metadados da especificação Twee 3:
+\subsection{Gestão de Passagens Especiais}
+O parser reconhece passagens reservadas com funções específicas na inicialização da história:
 \begin{itemize}
     \item \texttt{:: StoryTitle}: Define o título do projeto.
-    \item \texttt{:: StoryData}: Contém as configurações globais em formato \gls{json}, incluindo o identificador único da história (\texttt{ifid}), o formato de compilação (\texttt{SugarCube}), o nó de arranque (\texttt{start}) e o nível de zoom.
+    \item \texttt{:: StoryData}: Contém as configurações globais em formato JSON, incluindo o identificador único da história (\texttt{ifid}), o formato de compilação (\texttt{SugarCube}), o nó de arranque (\texttt{start}) e o nível de zoom.
     \item \texttt{:: StoryInit}: Nó especial não-narrativo onde são declaradas e inicializadas as variáveis lógicas de controlo do estado da simulação (as quais servem de memória do jogo, conforme introduzido na Secção~\ref{sec:arquitetura-geral}).
 \end{itemize}
 
-\subsection{Modelo SugarCube (Ligações e Macros)}
-As arestas são extraídas do texto narrativo de cada nó através de expressões regulares que identificam ligações no formato clássico Twee:
-\begin{itemize}
-    \item \textbf{Arestas Simples:} \texttt{[[Cena2]]}
-    \item \textbf{Arestas com Alias ou Direcionamento:} \texttt{[[Ir para a Taverna|cena\_taberna]]} ou \texttt{[[Abrir porta->cena\_interior]]}
-\end{itemize}
-
-No caso das macros de alteração de estado (ex: \texttt{<<set \$moedas += 10>>}) e condicionais lógicas (ex: \texttt{<<if \$tem\_chave>> ... <</if>>}), o parser de importação não as compila nem as remove do texto. O parser executa duas operações:
+\subsection{Modelo SugarCube (Preservação de Código e Indexação)}
+No caso das macros de alteração de estado (ex: \lstinline|<<set $moedas += 10>>|) e condicionais lógicas (ex: \lstinline|<<if $tem_chave>> ... <</if>>|), o parser de importação não as compila nem as remove do texto. Em vez disso, o parser executa duas operações estruturais:
 \begin{enumerate}
     \item \textbf{Preservação de Código:} Mantém as macros intactas no corpo textual da passagem, permitindo que sejam interpretadas e executadas reativamente pelo simulador (\textit{PlayMode}) durante a execução do jogo (ver Secção~\ref{subsec:compilador-jit-macros}).
     \item \textbf{Extração de Variáveis para Indexação:} Identifica os nomes das variáveis (iniciadas por \texttt{\$}) e regista-as no painel de gestão de variáveis, permitindo que o autor as rastreie ou renomeie de forma atómica em todo o projeto.
 \end{enumerate}
+
 
 \section{Interação Visual, Edição e Acessibilidade}
 
