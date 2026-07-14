@@ -77,20 +77,20 @@ export function parseLogicFromText(text = '') {
 
     if (linkRegexPipe.test(trimmed)) {
       const m = trimmed.match(linkRegexPipe);
-      choiceText = m[1].trim();
+      choiceText = m[1];
       choiceTarget = m[2].trim();
     } else if (linkRegexArrow.test(trimmed)) {
       const m = trimmed.match(linkRegexArrow);
-      choiceText = m[1].trim();
+      choiceText = m[1];
       choiceTarget = m[2].trim();
     } else if (linkRegexBack.test(trimmed)) {
       // [[Destino<-Texto]]: destino é o grupo 1, texto é o grupo 2
       const m = trimmed.match(linkRegexBack);
       choiceTarget = m[1].trim();
-      choiceText = m[2].trim();
+      choiceText = m[2];
     } else if (linkRegexSimpl.test(trimmed)) {
       const m = trimmed.match(linkRegexSimpl);
-      choiceText = m[1].trim();
+      choiceText = m[1];
       choiceTarget = m[1].trim();
     }
 

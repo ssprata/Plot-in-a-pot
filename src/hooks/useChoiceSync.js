@@ -32,7 +32,7 @@ export function useChoiceSync({ nodesRef, setNodes, setEdges, setPendingConnecti
     while ((match = linkRegex.exec(text))) {
       const rawText = (match[1] !== undefined ? match[1] : match[3]) || '';
       const targetLabel = (match[2] !== undefined ? match[2] : (match[3] || '')).trim();
-      let choiceText = rawText.trim();
+      let choiceText = rawText;
 
       const translationMatch = choiceText.match(/^t\(['"]([^'"]+)['"]\)$/);
       if (translationMatch) choiceText = translationMatch[1];
@@ -69,7 +69,7 @@ export function useChoiceSync({ nodesRef, setNodes, setEdges, setPendingConnecti
     let macroMatch;
 
     while ((macroMatch = macroLinkRegex.exec(text))) {
-      let choiceText = macroMatch[1].trim();
+      let choiceText = macroMatch[1];
       const innerContent = macroMatch[2];
 
       const translationMatch = choiceText.match(/^t\(['"]([^'"]+)['"]\)$/);
