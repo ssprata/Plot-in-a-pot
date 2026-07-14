@@ -1,3 +1,4 @@
+% Seleção dinâmica do título do capítulo com base no idioma configurado
 \ifthenelse{\equal{\LanguageOption}{portuguese}}{%
     \chapter*{Agradecimentos}
 }{\ifthenelse{\equal{\LanguageOption}{spanish}}{%
@@ -8,7 +9,9 @@
 
 Gostaríamos de expressar o nosso mais sincero agradecimento a todos aqueles que, direta ou indiretamente, contribuíram para a realização deste projeto informático e para a elaboração deste relatório.
 
-À nossa orientadora, Professora Doutora Anabela Gonçalves Rodrigues Marto, pelo voto de confiança, paciência e precioso apoio técnico e científico, essenciais para superar os desafios metodológicos e organizacionais deste trabalho. Estendemos os nossos agradecimentos aos coorientadores, Professor Doutor Nelson Martins Ferreira e Professor Doutor Miguel Cerdeira Marreiros Negrão. O rigor do Professor Nelson na abordagem matemática e a experiência do Professor Miguel na arquitetura de sistemas informáticos trouxeram discussões valiosas e revisões que possibilitaram elevar a qualidade técnica da nossa solução.
+% Parágrafo unificado para os orientadores, tratando-os em pé de igualdade
+% e destacando o contributo específico de cada um para o projeto
+Aos nossos orientadores, Professora Doutora Anabela Gonçalves Rodrigues Marto, Professor Doutor Nelson Martins Ferreira e Professor Doutor Miguel Cerdeira Marreiros Negrão, pelo voto de confiança, paciência e precioso apoio científico e técnico. O acompanhamento constante e a partilha do seu conhecimento foram essenciais para superar os desafios metodológicos deste trabalho. Agradecemos o rigor do Professor Nelson na abordagem matemática, a experiência do Professor Miguel na arquitetura de sistemas informáticos e a orientação estruturante da Professora Anabela, cujas discussões valiosas e revisões minuciosas permitiram elevar a qualidade técnica da nossa solução.
 
 À Escola Superior de Tecnologia e Gestão (ESTG) do Politécnico de Leiria, por disponibilizar os recursos académicos e o ambiente propício ao nosso desenvolvimento pessoal e profissional ao longo da Licenciatura em Engenharia Informática.
 
@@ -16,4 +19,5 @@ Aos participantes que voluntariamente colaboraram nos testes de usabilidade e ac
 
 Por fim, expressamos um agradecimento muito especial às nossas famílias e amigos, pelo apoio incondicional, incentivo constante e paciência demonstrados durante este percurso académico.
 
+% Comando para garantir a correta paginação/inserção de página em branco, se necessário
 \MediaOptionLogicBlank
