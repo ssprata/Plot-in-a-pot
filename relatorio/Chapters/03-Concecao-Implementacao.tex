@@ -431,7 +431,7 @@ const isTrue = evaluator(currentState);
     Para mitigar estes riscos de segurança sem prejudicar o desempenho, implementou-se em \texttt{sugarcubeLogic.js} um mecanismo de validação ativa do estado (\texttt{safeguardState}). Este mecanismo intercepta a saída das funções JIT e remove de forma preventiva quaisquer chaves sensíveis que constem numa lista de bloqueio de propriedades proibidas, como \texttt{\_\_proto\_\_}, \texttt{constructor} e \texttt{prototype}. Isto mitiga a manipulação ilícita de métodos internos do protótipo JavaScript e oferece uma camada inicial de isolamento da execução de scripts lógicos. Contudo, importa ressalvar que esta higienização de propriedades constitui uma proteção parcial focada na prevenção de ataques simples de poluição de protótipos em memória, não correspondendo a uma \textit{sandbox} de segurança real ou totalmente hermética a nível do interpretador do navegador ou do sistema operativo.
 \end{enumerate}
 
-\begin{table}[htbp]
+\begin{table}[H]
     \centering
     \caption{Mapeamento de operadores lógicos SugarCube para JavaScript.}
     \label{tab:operadores-sugarcube}
