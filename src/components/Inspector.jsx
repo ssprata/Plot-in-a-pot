@@ -294,7 +294,7 @@ export default function Inspector({
                         <button
                           type="button"
                           onClick={() => updateSelectedNode({ bgImage: '' })}
-                          className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-755 text-left transition-colors cursor-pointer ${
+                          className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-700 text-left transition-colors cursor-pointer ${
                             !selectedNode.data.bgImage
                               ? 'bg-blue-600 text-white dark:bg-blue-500 border-gray-900'
                               : 'bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -311,7 +311,7 @@ export default function Inspector({
                               key={filename}
                               type="button"
                               onClick={() => updateSelectedNode({ bgImage: filename })}
-                              className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-755 text-left transition-colors cursor-pointer ${
+                              className={`px-2 py-1 text-[10px] font-bold border-2 border-gray-900 dark:border-gray-700 text-left transition-colors cursor-pointer ${
                                 isActive
                                   ? 'bg-blue-600 text-white dark:bg-blue-500 border-gray-900'
                                   : 'bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -427,7 +427,7 @@ export default function Inspector({
                   <button
                     type="button"
                     onClick={() => setStartNode(selectedNode.id)}
-                    className="w-full p-2 border-2 border-gray-900 dark:border-gray-750 bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-805 text-blue-900 dark:text-blue-100 font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                    className="w-full p-2 border-2 border-gray-900 dark:border-gray-700 bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-800 text-blue-900 dark:text-blue-100 font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
                   >
                     {t('inspector.setStart', 'SET START')}
                   </button>
@@ -510,7 +510,7 @@ export default function Inspector({
 
                   {selectedNode.data.nodeType === 'choice' && visualLogicEnabled && inspectorTab === 'visual' ? (
                     <div className="flex flex-col gap-2 mt-1">
-                      <div className="bg-gray-100 dark:bg-gray-950 border-2 border-gray-900 dark:border-gray-700 p-2.5 text-xs text-gray-755 dark:text-gray-300 max-h-[100px] overflow-y-auto leading-relaxed whitespace-pre-wrap font-mono">
+                      <div className="bg-gray-100 dark:bg-gray-950 border-2 border-gray-900 dark:border-gray-700 p-2.5 text-xs text-gray-700 dark:text-gray-300 max-h-[100px] overflow-y-auto leading-relaxed whitespace-pre-wrap font-mono">
                         {(selectedNode.data.content || '').slice(0, 150) || <span className="italic opacity-55">Sem conteúdo…</span>}
                         {(selectedNode.data.content || '').length > 150 && <span className="opacity-40">…</span>}
                       </div>
@@ -526,7 +526,7 @@ export default function Inspector({
                     (() => {
                       const hasGhostText = activeStep && activeStep.targetNodeId === selectedNode.id && activeStep.ghostText;
                       const isChoice = selectedNode.data.nodeType === 'choice';
-                      const wrapperBg = isChoice ? 'bg-white dark:bg-gray-955' : 'bg-gray-955';
+                      const wrapperBg = isChoice ? 'bg-white dark:bg-gray-950' : 'bg-gray-955';
                       const textareaFontClass = isChoice ? 'font-sans text-sm text-gray-900 dark:text-white' : 'font-mono text-xs text-emerald-400';
                       const textareaBgClass = hasGhostText ? 'bg-transparent' : wrapperBg;
 
@@ -567,7 +567,7 @@ export default function Inspector({
                       const textareaElement = (
                         <textarea
                           disabled={isContentDisabled}
-                          className={`w-full flex-1 p-2.5 border-2 border-gray-900 dark:border-gray-705 text-gray-900 dark:text-white rounded-none outline-none focus:outline-none transition-all resize-y min-h-[140px] ${textareaFontClass} ${textareaBgClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''}`}
+                          className={`w-full flex-1 p-2.5 border-2 border-gray-900 dark:border-gray-700 text-gray-900 dark:text-white rounded-none outline-none focus:outline-none transition-all resize-y min-h-[140px] ${textareaFontClass} ${textareaBgClass} ${isContentDisabled ? 'opacity-55 cursor-not-allowed' : ''} ${activeStep?.highlightButton === 'editContent' ? 'tutorial-btn-flash' : ''}`}
                           value={selectedNode.data.content || ''}
                           onChange={(e) => {
                             if (isChoice) {
@@ -581,7 +581,7 @@ export default function Inspector({
 
                       if (hasGhostText) {
                         return (
-                          <div className={`relative w-full flex-1 flex flex-col min-h-[140px] border-2 border-gray-900 dark:border-gray-705 ${wrapperBg} overflow-hidden`}>
+                          <div className={`relative w-full flex-1 flex flex-col min-h-[140px] border-2 border-gray-900 dark:border-gray-700 ${wrapperBg} overflow-hidden`}>
                             {/* Ghost Text Overlay */}
                             <div
                               ref={ghostScrollRef}
@@ -619,7 +619,7 @@ export default function Inspector({
 
                 {/* SYNTAX WARNINGS */}
                 {selectedNode.data.warnings && selectedNode.data.warnings.length > 0 && (
-                  <div className="mt-2 p-2 bg-orange-900/50 dark:bg-orange-955 border-2 border-orange-500">
+                  <div className="mt-2 p-2 bg-orange-900/50 dark:bg-orange-950 border-2 border-orange-500">
                     <span className="block mb-1 font-black uppercase text-[9px] text-orange-400 tracking-widest">{t('inspector.syntaxWarnings')}</span>
                     <ul className="space-y-1 text-orange-100 font-mono text-[10px]">
                       {selectedNode.data.warnings.map((w, i) => (
