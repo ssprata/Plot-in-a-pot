@@ -91,10 +91,17 @@ export function traverseGraph(nodes, edges) {
         const nextNode = nodeMap.get(edge.target);
         const nextLabel = nextNode ? nextNode.data.label : "Desconhecido";
 
+        let stateForNextNode = safeClone(newState);
+        if (choice.setter) {
+          const normalizedSetter = choice.setter.toLowerCase().includes('<<set') 
+            ? choice.setter 
+            : `<<set ${choice.setter}>>`;
+          stateForNextNode = applyModifiers(normalizedSetter, stateForNextNode);
+        }
+
         queue.push({
           nodeId: edge.target,
-          // Cada ramo do percurso recebe uma cópia independente do estado
-          state: safeClone(newState),
+          state: stateForNextNode,
           // Mantém apenas os últimos 50 nós no caminho para limitar o tamanho
           path: path.length < 50 ? [...path, nextLabel] : [...path.slice(-49), nextLabel]
         });

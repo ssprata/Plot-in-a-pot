@@ -82,10 +82,16 @@ export function applyModifiers(content, currentState) {
     const newState = { ...currentState };
     if (!content) return newState;
 
+    // Limpar conteúdo de escolhas [[...]] e macros <<link>>...</link>> para não executar os seus modificadores prematuramente
+    const cleanContent = content
+        .replace(/\[\[[\s\S]*?\]\]/g, '')
+        .replace(/<<link\s+"[^"]+"\s*>>[\s\S]*?<<\/link>>/g, '')
+        .replace(/<<link\s+'[^']+'\s*>>[\s\S]*?<<\/link>>/g, '');
+
     const setRegex = /<<set\s+(.+?)\s*>>/gi;
     let match;
 
-    while ((match = setRegex.exec(content))) {
+    while ((match = setRegex.exec(cleanContent))) {
         const expression = match[1];
         const jsExpression = sanitizeSugarCubeExpression(expression);
 
@@ -124,11 +130,20 @@ export function canAccessChoice(content, choiceText, currentState) {
         const innerContent = ifMatch[2];
 
         // Verifica se o texto da escolha aparece dentro do bloco condicional
-        // no formato exato de link Twine.
-        const choicePattern = new RegExp(
-            '\\[\\[' + choiceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[|\\]\\->]'
-        );
-        if (!choicePattern.test(entireBlock) && !entireBlock.includes(`[[${choiceText}]]`)) {
+        // (suporta links normais do Twine, macros <<link>> e macros <<goto>>).
+        let containsChoice = false;
+        if (choiceText.startsWith('<<goto')) {
+            containsChoice = entireBlock.includes(choiceText);
+        } else {
+            const choicePattern = new RegExp(
+                '\\[\\[' + choiceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[|\\]\\->]'
+            );
+            const isTwineLink = choicePattern.test(entireBlock) || entireBlock.includes(`[[${choiceText}]]`);
+            const isMacroLink = entireBlock.includes(`<<link "${choiceText}"`) || entireBlock.includes(`<<link '${choiceText}'`);
+            containsChoice = isTwineLink || isMacroLink;
+        }
+
+        if (!containsChoice) {
             continue;
         }
 

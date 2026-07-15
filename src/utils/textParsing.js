@@ -49,9 +49,9 @@ export const formatSystemNodes = (nodes) =>
 // Supports [[text|target]], [[text->target]], [[target]], and <<link>> macros.
 export const updateLinkInText = (textVal, choiceIndex, newTargetLabel, newDisplayText = null) => {
   let index = 0;
-  const linkRegex = /(\[\[(.*?)(?:\||-\>)(.*?)\]\])|(\[\[(.*?)\]\])|(\<\<link\s+"([^"]+)"\s*\>\>([\s\S]*?)\<\<\/link\>\>)/g;
+  const linkRegex = /(\[\[(.*?)(?:\||-\>)(.*?)\]\])|(\[\[(.*?)\]\])|(<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>)|(<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>)/gi;
 
-  return textVal.replace(linkRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8) => {
+  return textVal.replace(linkRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12) => {
     if (index === choiceIndex) {
       index++;
       if (p1) {
@@ -75,7 +75,15 @@ export const updateLinkInText = (textVal, choiceIndex, newTargetLabel, newDispla
             inner = inner.replace(setVarRegex, `$1"${newTargetLabel}"$2`);
           }
         }
-        return `<<link "${text}">>${inner}<</link>>`;
+        return `<<link "${text}">${inner}<</link>>`;
+      } else if (p9) {
+        if (p10 !== undefined) {
+          return `<<goto "${newTargetLabel}">>`;
+        } else if (p11 !== undefined) {
+          return `<<goto '${newTargetLabel}'>>`;
+        } else {
+          return `<<goto ${newTargetLabel}>>`;
+        }
       }
     }
     index++;

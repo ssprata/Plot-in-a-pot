@@ -163,85 +163,123 @@ export function parseTwee3(source) {
   passages.forEach((p) => {
     let choiceCounter = 1;
 
-    // --- PADRÃO 1: Links normais do Twine (Suporta |, ->, <- e simples) ---
-    const linkRegex = /\[\[(.*?)\]\]/g;
-    let linkMatch;
-    
-    while ((linkMatch = linkRegex.exec(p.data.content))) {
-      let rawContent = linkMatch[1];
-      let rawChoiceText = '';
-      let targetTitle = '';
+    // --- COMBINED SINGLE-PASS PARSER ---
+    const combinedRegex = /(\[\[(.*?)\]\])|(<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>)|(<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>)/gi;
+    let match;
 
-      if (rawContent.includes('|')) {
-        const parts = rawContent.split('|');
-        rawChoiceText = parts[0].trim();
-        targetTitle = parts[1].trim();
-      } else if (rawContent.includes('->')) {
-        const parts = rawContent.split('->');
-        rawChoiceText = parts[0].trim();
-        targetTitle = parts[1].trim();
-      } else if (rawContent.includes('<-')) {
-        const parts = rawContent.split('<-');
-        targetTitle = parts[0].trim();
-        rawChoiceText = parts[1].trim();
-      } else {
-        rawChoiceText = rawContent.trim();
-        targetTitle = rawContent.trim();
-      }
-
-      // Ignora links que usam variáveis ou expressões em vez de títulos de passagem estáticos.
-      if (targetTitle.startsWith('$') || targetTitle.startsWith('_') || targetTitle.match(/[()+\-*/=]/)) {
-        warnings.push(`Em [${p.data.label}], o link para "${targetTitle}" foi ignorado por conter variáveis ou matemática.`);
-        continue;
-      }
-
-      const targetId = idMap[targetTitle];
-
-      if (targetId) {
-        const choiceId = `c-${p.id}-${choiceCounter++}`;
-        p.data.choices.push({ id: choiceId, text: rawChoiceText, target: targetId });
-        edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
-      } else {
-        warnings.push(`Em [${p.data.label}], a ligação para "${targetTitle}" aponta para um nó inexistente no grafo.`);
-        p.data.warnings.push(`A ligação para "${targetTitle}" aponta para um nó inexistente no grafo.`);
-      }
-    }
-
-    // --- PADRÃO 2: Macros do SugarCube <<link "Texto">> ... <<goto "Destino">> <</link>> ---
-    const macroLinkRegex = /<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g;
-    let macroMatch;
-    
-    while ((macroMatch = macroLinkRegex.exec(p.data.content))) {
-      const choiceText = macroMatch[1].trim(); 
-      const innerContent = macroMatch[2];      
-
-      const gotoRegex = /<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
-      const gotoMatch = gotoRegex.exec(innerContent);
-      const gotoTarget = gotoMatch ? (gotoMatch[1] || gotoMatch[2] || gotoMatch[3]) : null;
-
-      const variavelDestinoRegex = /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
-      const variavelMatch = variavelDestinoRegex.exec(innerContent);
-      const varTarget = variavelMatch ? (variavelMatch[1] || variavelMatch[2] || variavelMatch[3]) : null;
-
-      let targetTitleRaw = varTarget || gotoTarget;
-      if (targetTitleRaw) targetTitleRaw = targetTitleRaw.trim();
-
-      if (targetTitleRaw) {
-        // Ignora destinos dinâmicos em macros <<goto>> que apontam para variáveis.
-        if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
-           warnings.push(`Em [${p.data.label}], o macro <<goto>> para "${targetTitleRaw}" foi ignorado por apontar para uma variável.`);
-           continue; 
+    while ((match = combinedRegex.exec(p.data.content))) {
+      if (match[1]) {
+        // Group 1: Twine link [[...]]
+        let linkInner = match[2];
+        let setter = null;
+        const setterIndex = linkInner.indexOf('][');
+        if (setterIndex !== -1) {
+          setter = linkInner.slice(setterIndex + 2).trim();
+          linkInner = linkInner.slice(0, setterIndex).trim();
         }
 
-        const targetId = idMap[targetTitleRaw];
+        let rawChoiceText = '';
+        let targetTitle = '';
+
+        if (linkInner.includes('|')) {
+          const parts = linkInner.split('|');
+          rawChoiceText = parts[0].trim();
+          targetTitle = parts[1].trim();
+        } else if (linkInner.includes('->')) {
+          const parts = linkInner.split('->');
+          rawChoiceText = parts[0].trim();
+          targetTitle = parts[1].trim();
+        } else if (linkInner.includes('<-')) {
+          const parts = linkInner.split('<-');
+          targetTitle = parts[0].trim();
+          rawChoiceText = parts[1].trim();
+        } else {
+          rawChoiceText = linkInner.trim();
+          targetTitle = linkInner.trim();
+        }
+
+        // Ignora links que usam variáveis ou expressões em vez de títulos de passagem estáticos.
+        if (targetTitle.startsWith('$') || targetTitle.startsWith('_') || targetTitle.match(/[()+\-*/=]/)) {
+          warnings.push(`Em [${p.data.label}], o link para "${targetTitle}" foi ignorado por conter variáveis ou matemática.`);
+          continue;
+        }
+
+        const targetId = idMap[targetTitle];
 
         if (targetId) {
           const choiceId = `c-${p.id}-${choiceCounter++}`;
-          p.data.choices.push({ id: choiceId, text: choiceText, target: targetId });
+          p.data.choices.push({
+            id: choiceId,
+            text: rawChoiceText,
+            target: targetId,
+            ...(setter ? { setter } : {})
+          });
           edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
         } else {
-          warnings.push(`Em [${p.data.label}], o destino "${targetTitleRaw}" da macro <<goto>> ou link não existe no grafo.`);
-          p.data.warnings.push(`O destino "${targetTitleRaw}" da macro <<goto>> ou link não existe no grafo.`);
+          warnings.push(`Em [${p.data.label}], a ligação para "${targetTitle}" aponta para um nó inexistente no grafo.`);
+          p.data.warnings.push(`A ligação para "${targetTitle}" aponta para um nó inexistente no grafo.`);
+        }
+      } else if (match[3]) {
+        // Group 3: Link macro <<link "Texto">> ... <</link>>
+        const choiceText = match[4].trim();
+        const innerContent = match[5];
+
+        const gotoRegex = /<<goto\s+(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
+        const gotoMatch = gotoRegex.exec(innerContent);
+        const gotoTarget = gotoMatch ? (gotoMatch[1] || gotoMatch[2] || gotoMatch[3]) : null;
+
+        const variavelDestinoRegex = /<<set\s+\$(?:passagem_retorno|proximo_destino)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^>\s]+))\s*>>/;
+        const variavelMatch = variavelDestinoRegex.exec(innerContent);
+        const varTarget = variavelMatch ? (variavelMatch[1] || variavelMatch[2] || variavelMatch[3]) : null;
+
+        let targetTitleRaw = varTarget || gotoTarget;
+        if (targetTitleRaw) targetTitleRaw = targetTitleRaw.trim();
+
+        if (targetTitleRaw) {
+          // Ignora destinos dinâmicos em macros <<goto>> que apontam para variáveis.
+          if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
+             warnings.push(`Em [${p.data.label}], o macro <<goto>> para "${targetTitleRaw}" foi ignorado por apontar para uma variável.`);
+             continue;
+          }
+
+          const targetId = idMap[targetTitleRaw];
+
+          if (targetId) {
+            const choiceId = `c-${p.id}-${choiceCounter++}`;
+            const setter = innerContent.trim();
+            p.data.choices.push({
+              id: choiceId,
+              text: choiceText,
+              target: targetId,
+              ...(setter ? { setter } : {})
+            });
+            edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
+          } else {
+            warnings.push(`Em [${p.data.label}], o destino "${targetTitleRaw}" da macro <<goto>> ou link não existe no grafo.`);
+            p.data.warnings.push(`O destino "${targetTitleRaw}" da macro <<goto>> ou link não existe no grafo.`);
+          }
+        }
+      } else if (match[6]) {
+        // Group 6: Freestanding goto <<goto ...>>
+        const gotoTarget = match[7] || match[8] || match[9];
+        if (gotoTarget) {
+          const targetTitleRaw = gotoTarget.trim();
+          if (targetTitleRaw.startsWith('$') || targetTitleRaw.startsWith('_')) {
+             warnings.push(`Em [${p.data.label}], o macro <<goto>> para "${targetTitleRaw}" foi ignorado por apontar para uma variável.`);
+             continue;
+          }
+
+          const targetId = idMap[targetTitleRaw];
+
+          if (targetId) {
+            const choiceId = `c-${p.id}-${choiceCounter++}`;
+            const choiceText = match[6];
+            p.data.choices.push({ id: choiceId, text: choiceText, target: targetId });
+            edges.push({ id: `e${p.id}-${targetId}-${choiceId}`, source: p.id, sourceHandle: choiceId, target: targetId });
+          } else {
+            warnings.push(`Em [${p.data.label}], o destino "${targetTitleRaw}" da macro <<goto>> não existe no grafo.`);
+            p.data.warnings.push(`O destino "${targetTitleRaw}" da macro <<goto>> não existe no grafo.`);
+          }
         }
       }
     }
