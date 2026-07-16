@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { generateFromGemini, generateFromOllama } from '../utils/aiGenerator';
 import { useInfoPopout } from '../contexts/InfoPopoutContext';
-// 1. Importação oficial para o motor de traduções
 import { useTranslation } from 'react-i18next';
 
 export default function AiImportModal({ isOpen, onClose, onImportSuccess }) {
