@@ -113,7 +113,11 @@ export default function useKeyboardShortcuts({
             takeSnapshot();
             setEdges(eds => eds.filter(ed => ed.id !== selectedEdgeId));
             setSelectedEdgeId(null);
-          } else if (selectedNodeId) {
+            return;
+          }
+        }
+        if (e.key === 'Delete') {
+          if (selectedNodeId) {
             deleteNode(selectedNodeId);
           }
           return;

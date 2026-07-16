@@ -116,6 +116,19 @@ export function getInitialState(nodes) {
 export function canAccessChoice(content, choiceText, currentState) {
     if (!content) return true;
 
+    const checkChoiceInText = (text) => {
+        if (!text) return false;
+        if (choiceText.startsWith('<<goto')) {
+            return text.includes(choiceText);
+        }
+        const choicePattern = new RegExp(
+            '\\[\\[' + choiceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[|\\]\\->]'
+        );
+        const isTwineLink = choicePattern.test(text) || text.includes(`[[${choiceText}]]`);
+        const isMacroLink = text.includes(`<<link "${choiceText}"`) || text.includes(`<<link '${choiceText}'`);
+        return isTwineLink || isMacroLink;
+    };
+
     // Rastreia se a escolha existe dentro de um bloco condicional.
     // Isso distingue escolhas livres de escolhas dependentes de condições.
     let choiceFoundInAnyBlock = false;
@@ -131,17 +144,7 @@ export function canAccessChoice(content, choiceText, currentState) {
 
         // Verifica se o texto da escolha aparece dentro do bloco condicional
         // (suporta links normais do Twine, macros <<link>> e macros <<goto>>).
-        let containsChoice = false;
-        if (choiceText.startsWith('<<goto')) {
-            containsChoice = entireBlock.includes(choiceText);
-        } else {
-            const choicePattern = new RegExp(
-                '\\[\\[' + choiceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[|\\]\\->]'
-            );
-            const isTwineLink = choicePattern.test(entireBlock) || entireBlock.includes(`[[${choiceText}]]`);
-            const isMacroLink = entireBlock.includes(`<<link "${choiceText}"`) || entireBlock.includes(`<<link '${choiceText}'`);
-            containsChoice = isTwineLink || isMacroLink;
-        }
+        const containsChoice = checkChoiceInText(entireBlock);
 
         if (!containsChoice) {
             continue;
@@ -182,7 +185,7 @@ export function canAccessChoice(content, choiceText, currentState) {
         }
 
         // A escolha é acessível apenas se estiver no ramo verdadeiro selecionado.
-        if (activeBranchIndex !== -1 && branches[activeBranchIndex].text.includes(choiceText)) {
+        if (activeBranchIndex !== -1 && checkChoiceInText(branches[activeBranchIndex].text)) {
             isAccessible = true;
         } else {
             isAccessible = false;
