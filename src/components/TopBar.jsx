@@ -119,7 +119,70 @@ export default function TopBar({
             onClick={() => openHelp(
               t('topBar.helpTitles.systemMenu', 'System & Code Nodes'),
               t('topBar.helpSubtitles.systemMenu', 'System config and scripting nodes'),
-              <p>{t('topBar.helpDescription.systemMenu', 'StoryInit, StoryTitle, StoryData, StoryCaption, JavaScript and CSS styles.')}</p>
+              <div className="space-y-4 text-left">
+                <p className="text-sm font-medium leading-relaxed">{t('topBar.helpSystem.intro')}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3 bg-purple-50/50 dark:bg-purple-950/20 border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-purple-700 dark:text-purple-300">StoryInit</h4>
+                      <p className="text-xs mt-1 text-gray-700 dark:text-gray-300">{t('topBar.helpSystem.storyInit')}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t-2 border-gray-900/10 dark:border-gray-200/10 text-[10px] font-bold tracking-wider uppercase text-gray-600 dark:text-gray-400">
+                      {t('hotkeys.storyInit')}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-purple-50/50 dark:bg-purple-950/20 border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-purple-700 dark:text-purple-300">StoryTitle</h4>
+                      <p className="text-xs mt-1 text-gray-700 dark:text-gray-300">{t('topBar.helpSystem.storyTitle')}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t-2 border-gray-900/10 dark:border-gray-200/10 text-[10px] font-bold tracking-wider uppercase text-gray-600 dark:text-gray-400">
+                      {t('hotkeys.storyTitle')}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-purple-50/50 dark:bg-purple-950/20 border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-purple-700 dark:text-purple-300">StoryData</h4>
+                      <p className="text-xs mt-1 text-gray-700 dark:text-gray-300">{t('topBar.helpSystem.storyData')}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t-2 border-gray-900/10 dark:border-gray-200/10 text-[10px] font-bold tracking-wider uppercase text-gray-600 dark:text-gray-400">
+                      {t('hotkeys.storyData')}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-purple-50/50 dark:bg-purple-950/20 border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-purple-700 dark:text-purple-300">StoryCaption</h4>
+                      <p className="text-xs mt-1 text-gray-700 dark:text-gray-300">{t('topBar.helpSystem.storyCaption')}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t-2 border-gray-900/10 dark:border-gray-200/10 text-[10px] font-bold tracking-wider uppercase text-gray-600 dark:text-gray-400">
+                      {t('hotkeys.storyCaption')}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-blue-700 dark:text-blue-300">{t('topBar.helpTitles.addScript')}</h4>
+                      <p className="text-xs mt-1 text-gray-700 dark:text-gray-300">{t('topBar.helpSystem.script')}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t-2 border-gray-900/10 dark:border-gray-200/10 text-[10px] font-bold tracking-wider uppercase text-gray-600 dark:text-gray-400">
+                      {t('hotkeys.addScript')}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border-2 border-gray-900 dark:border-gray-200 shadow-[2px_2px_0px_#000] dark:shadow-[2px_2px_0px_#fff] flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-blue-700 dark:text-blue-300">{t('topBar.helpTitles.addStyle')}</h4>
+                      <p className="text-xs mt-1 text-gray-700 dark:text-gray-300">{t('topBar.helpSystem.style')}</p>
+                    </div>
+                    <div className="mt-2 pt-2 border-t-2 border-gray-900/10 dark:border-gray-200/10 text-[10px] font-bold tracking-wider uppercase text-gray-600 dark:text-gray-400">
+                      {t('hotkeys.addStyle')}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
             className={helpButtonClass}
             aria-label={t('topBar.helpLabels.systemMenu', 'Help System & Code')}

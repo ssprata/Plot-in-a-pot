@@ -77,12 +77,13 @@
       "tutorial": "Opens the interactive guided tutorial menu to help you learn how to use the tool step by step."
     },
     "helpSystem": {
-      "intro": "These nodes control the invisible engine and structure of your game:",
-      "storyInit": "The engine starts here. This is the required place to declare all story variables before the first screen.",
-      "storyTitle": "Defines your project title.",
-      "storyData": "Stores important technical metadata in JSON format (such as the format version and start passage).",
-      "storyCaption": "What you write here stays visible in the game sidebar. Great for showing inventory, sanity, or stats in real time.",
-      "hotkeysLabel": "Hotkeys:"
+      "intro": "These nodes control the configuration and structure of your game:",
+      "storyInit": "Where game variables are initialized and stored.",
+      "storyTitle": "Defines the title of your game.",
+      "storyData": "Stores technical data and settings about the project.",
+      "storyCaption": "Defines information to be displayed in the game sidebar.",
+      "script": "Creates a node to add JavaScript code to the game.",
+      "style": "Creates a node to add custom CSS styles."
     },
     "languageToggleAria": "Switch language to Portuguese"
   },
@@ -356,7 +357,12 @@
     "generateAi": "Hotkey: Ctrl + I",
     "play": "Hotkey: Ctrl + P",
     "settings": "Hotkey: Ctrl + ,",
-    "navigator": "Hotkey: Ctrl + V"
+    "navigator": "Hotkey: Ctrl + V",
+    "validator": "Hotkey: Ctrl + V",
+    "storyInit": "Hotkey: Ctrl + Alt + I",
+    "storyTitle": "Hotkey: Ctrl + Alt + T",
+    "storyData": "Hotkey: Ctrl + Alt + D",
+    "storyCaption": "Hotkey: Ctrl + Alt + C"
   },
   "translationMatrix": {
     "title": "Localization Matrix",

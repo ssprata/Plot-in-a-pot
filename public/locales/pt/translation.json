@@ -77,12 +77,13 @@
       "tutorial": "Abre o menu de tutoriais interativos para aprenderes a criar a tua história passo a passo."
     },
     "helpSystem": {
-      "intro": "Estes nós controlam o motor invisível e a estrutura do teu jogo:",
-      "storyInit": "O motor arranca aqui. É o local obrigatório para declarares todas as variáveis da história antes do primeiro ecrã.",
-      "storyTitle": "Define o título do teu projeto.",
-      "storyData": "Guarda metadados técnicos em formato JSON (como a versão do formato e o nó inicial).",
-      "storyCaption": "O que escreveres aqui fica visível na barra lateral do jogo. Ótimo para inventário, sanidade ou atributos em tempo real.",
-      "hotkeysLabel": "Hotkeys:"
+      "intro": "Estes nós controlam a configuração e a estrutura do teu jogo:",
+      "storyInit": "Onde as variáveis do jogo são inicializadas e guardadas.",
+      "storyTitle": "Define o título do teu jogo.",
+      "storyData": "Guarda dados técnicos e definições sobre o projeto.",
+      "storyCaption": "Define informações para serem exibidas na barra lateral do jogo.",
+      "script": "Cria um nó para adicionar código JavaScript ao jogo.",
+      "style": "Cria um nó para adicionar estilos CSS personalizados."
     },
     "languageToggleAria": "Mudar idioma para inglês"
   },
@@ -356,7 +357,12 @@
     "generateAi": "Hotkey: Ctrl + I",
     "play": "Hotkey: Ctrl + P",
     "settings": "Hotkey: Ctrl + ,",
-    "validator": "Hotkey: Ctrl + V"
+    "navigator": "Hotkey: Ctrl + V",
+    "validator": "Hotkey: Ctrl + V",
+    "storyInit": "Hotkey: Ctrl + Alt + I",
+    "storyTitle": "Hotkey: Ctrl + Alt + T",
+    "storyData": "Hotkey: Ctrl + Alt + D",
+    "storyCaption": "Hotkey: Ctrl + Alt + C"
   },
   "translationMatrix": {
     "title": "Matriz de Localização",

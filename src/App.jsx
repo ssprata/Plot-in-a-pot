@@ -490,7 +490,7 @@ function App() {
               onNodeDoubleClick={onNodeClick}
               onEdgeClick={onEdgeClick}
               onEdgeDoubleClick={onEdgeDoubleClick}
-              deleteKeyCode={activeStep ? null : ['Backspace', 'Delete']}
+              deleteKeyCode={activeStep ? null : ['Delete']}
               fitView
               selectionOnDrag
             >
