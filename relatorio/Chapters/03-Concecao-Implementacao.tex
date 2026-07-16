@@ -33,7 +33,7 @@ O sistema foi desenhado segundo uma arquitetura modular dividida em três camada
     \item \textbf{Camada de Apresentação (Interface):} Responsável por gerir a interação direta com o utilizador. É constituída por:
     \begin{itemize}
         \item \textbf{Canvas de Grafos:} O espaço visual interativo onde o autor cria, manipula e liga os nós narrativos.
-        \item \textbf{Matriz de Tradução:} Uma grelha estruturada que expõe os dicionários de localização e permite a tradução de chaves de texto em tempo real.
+        \item \textbf{Matriz de Tradução:} Uma grelha estruturada que expõe os dicionários de localização e permite a tradução de chaves de texto.
         \item \textbf{Ecrã do Simulador:} A interface interativa de jogo onde o autor testa e experimenta a narrativa sob o ponto de vista do leitor.
     \end{itemize}
     \item \textbf{Camada de Processamento Lógico (Núcleo):} Contém a inteligência do sistema e os motores de transformação. É constituída por:
@@ -86,20 +86,20 @@ Com o intuito de delimitar o âmbito do projeto, o sistema foi estruturado para 
 \section{Métodos, Técnicas e Enquadramento Tecnológico}
 \label{sec:metodos-tecnologia}
 
-Para concretizar as especificações da arquitetura conceptual e responder aos requisitos definidos, o projeto apoia-se em metodologias ágeis de prototipagem rápida e numa seleção de tecnologias executadas do lado do cliente. As principais opções metodológicas e técnicas encontram-se estruturadas a seguir:
+Para concretizar as especificações da arquitetura conceptual e responder aos requisitos definidos, o projeto apoia-se numa seleção de paradigmas tecnológicos focados na execução do lado do cliente (client-side) e na modelação interativa. As principais opções metodológicas e técnicas que enquadram o desenvolvimento encontram-se estruturadas a seguir:
 
 \begin{itemize}
-    \item \textbf{Desenvolvimento da SPA (React 19) e Estilização (Tailwind CSS 3):}
-    A aplicação foi inteiramente estruturada e programada pela equipa como uma \gls{spa} em \textbf{React 19} \citep{ReactReference}, tirando partido da nossa experiência prévia com esta tecnologia para gerir reativamente a árvore de componentes da interface. A identidade visual neo-brutalista (de alto contraste e bordas sólidas) foi desenhada e implementada por nós através da aplicação de classes utilitárias de \textbf{Tailwind CSS 3} \citep{TailwindCSSReference} nos componentes do editor.
+    \item \textbf{Desenvolvimento sob o Paradigma de SPA (Single Page Application):}
+    A aplicação foi estruturada como uma SPA reativa baseada em componentes. Esta escolha metodológica permite gerir eficientemente o estado da interface gráfica, garantindo que as alterações no canvas de grafos (como a translação de nós ou edição de texto) se reflitam instantaneamente na árvore de componentes visuais do editor sem necessidade de recarregamentos de página.
+    
+    \item \textbf{Abstração e Extensões do Canvas de Grafos:}
+    Para focar o esforço nas regras de validação e tradução, o sistema utiliza um motor de grafos para gerir as interações geométricas básicas (zoom, arrasto e translação). A nossa contribuição centrou-se em estender esta infraestrutura através do desenvolvimento de elementos personalizados: nós de cenas narrativas, zonas de agrupamento visual (ver Secção~\ref{subsec:zonas-agrupamento}) e arestas parametrizáveis.
+    
+    \item \textbf{Algoritmia de Validação e Simulação:}
+    Concebemos e implementámos um modelo de dados assente na teoria de grafos para validar a integridade da história. Sobre esta estrutura, desenhou-se um validador baseado em algoritmos de pesquisa no espaço de estados e simulação heurística de caminhos, operando em plano secundário de forma assíncrona.
 
-    \item \textbf{Extensões ao Canvas de Grafos (ReactFlow 11):}
-    Em vez de desenvolvermos um motor de desenho vetorial do zero, utilizámos a biblioteca \textbf{ReactFlow 11} \citep{ReactFlowReference} como base para gerir interações de zoom e arrasto. O nosso trabalho consistiu em estender esta infraestrutura básica através do desenvolvimento de nós totalmente customizados de cena (\texttt{StoryNode.jsx}) e de agrupamento (\texttt{ZoneNode.jsx}), além de arestas interativas personalizadas.
-
-    \item \textbf{Algoritmia de Validação (Teoria de Grafos):}
-    Concebemos e implementámos um modelo de dados baseado em listas de adjacências bidirecionais locais. Sobre esta estrutura, programámos algoritmos específicos para realizar análises topológicas em plano secundário (deteção de inconsistências via BFS) e a simulação de caminhos heurística do \textit{Smart Walker}.
-
-    \item \textbf{Sistema de Internacionalização (i18next):}
-    Integrámos a biblioteca \textbf{i18next} para gerir dicionários locais. Desenvolvemos o mapeamento que associa os dados tabulares da matriz de tradução do utilizador a ficheiros JSON de localização estáticos, carregados dinamicamente no navegador com o plugin de cliente \texttt{i18next-http-backend} sob o modelo \textit{backendless}.
+    \item \textbf{Localização Descentralizada (i18n):}
+    O sistema foi projetado sob um modelo de internacionalização descentralizado e independente de servidor (\textit{backendless}). Concebeu-se um mapeamento que permite associar de forma reativa a matriz de tradução local a dicionários em formato estruturado que são carregados dinamicamente no navegador do utilizador.
 \end{itemize}
 
 \subsection{Justificação das Decisões de Design}
@@ -112,14 +112,26 @@ Com base na análise comparativa das ferramentas existentes (ver Secção~\ref{s
     \item \textbf{Autonomia e Licenciamento Livre:} A restrição de uso comercial imposta pelo ChoiceScript salienta a importância de desenvolver uma ferramenta que promova a autonomia dos autores, permitindo a exportação de projetos sob licenças livres e sem taxas adicionais.
 \end{itemize}
 
-\section{Modelação de Dados: Lista de Adjacência}
-Para representar o fluxo da história no editor, o sistema utiliza uma \textbf{Lista de Adjacência Bidirecional}. Cada cena no modelo de dados armazena de forma independente dois conjuntos de caminhos:
+\section{Modelação de Dados e Lista de Adjacência}
+\label{sec:modelacao-dados-grafo}
+
+Para representar e manipular a estrutura não-linear da narrativa no editor, o sistema concebido mapeia o fluxo da história sob a forma de um \textbf{Grafo Direcionado}. Esta representação assenta em dois elementos fundamentais:
+
 \begin{itemize}
-    \item \textbf{Saídas (Sucessores):} Um vetor que contém as escolhas explícitas disponíveis para o leitor, mapeando o texto da opção e o ID do nó de destino.
-    \item \textbf{Entradas (Predecessores):} Um vetor que regista as referências de todos os outros nós que contêm escolhas a apontar para o nó atual.
+    \item \textbf{Cenas (Nós):} Representam as unidades narrativas individuais ou passagens da história. Cada cena encapsula dados essenciais como um identificador único, um título descritivo, o conteúdo textual visível para o utilizador e o conjunto de modificadores de variáveis de estado (como instruções de alteração de inventário ou progresso do jogo).
+    
+    \item \textbf{Escolhas (Arestas/Ligações):} Representam as transições direcionadas que ligam uma cena a outra. Cada ligação possui um rótulo de texto (a opção selecionável exposta ao leitor) e uma regra ou condição de acessibilidade (uma restrição lógica que determina se essa escolha está disponível com base nas variáveis do jogo).
 \end{itemize}
 
-Esta representação permite à aplicação realizar o mapeamento reverso instantâneo (\textit{backward mapping}), alimentando os painéis ``Vens de...'' e ``Vais para...'' na interface. A estrutura de dados \gls{json} representativa de um nó apresenta o seguinte formato simplificado:
+Para a representação computacional desta rede na memória do navegador, avaliou-se o compromisso de design entre matrizes e listas de adjacência. Uma matriz de adjacência estruturaria o mapa de ligações como uma grelha quadrada bidimensional, o que seria muito ineficiente e consumiria memória desnecessária, visto que as narrativas interativas são estruturalmente esparsas (cada cena possui apenas um número muito reduzido de opções de saída, independentemente do tamanho total do projeto). Deste modo, optou-se por uma \textbf{Lista de Adjacência Bidirecional}, que otimiza o espaço de armazenamento e permite executar algoritmos de percurso e validação de forma extremamente rápida no navegador.
+
+Neste modelo, cada cena armazena localmente dois conjuntos de caminhos:
+\begin{itemize}
+    \item \textbf{Saídas (Sucessores):} O conjunto de opções diretas que partem da cena atual, permitindo a navegação no sentido de leitura da história.
+    \item \textbf{Entradas (Predecessores):} O conjunto de referências de todas as outras cenas que apontam para a cena atual. A manutenção deste registo invertido permite ao editor efetuar o mapeamento reverso instantâneo, identificando e expondo na interface as passagens que conduzem ao nó selecionado.
+\end{itemize}
+
+Uma representação em formato estruturado conceptual de um nó e das suas listas de adjacência bidirecionais apresenta-se a seguir:
 
 \begin{code}
 {
@@ -133,59 +145,55 @@ Esta representação permite à aplicação realizar o mapeamento reverso instan
 }
 \end{code}
 
-Note-se que este modelo foca-se exclusivamente na estrutura topológica do grafo. As variáveis globais e as condições lógicas SugarCube não são serializadas na lista de adjacências, sendo integradas diretamente no corpo de texto (\texttt{conteudo}) das passagens e interpretadas em tempo de execução pelo simulador.
+Note-se que este modelo lógico foca-se estritamente na topologia estrutural do grafo. A semântica lógica (como as condições de acesso e modificadores de variáveis) é mantida diretamente no corpo textual das passagens, sendo interpretada pelo validador e pelo motor de simulação apenas em tempo de execução.
 
-\section{Arquitetura e Implementação do Parser Síncrono}
+\section{Arquitetura e Fluxo do Parser}
 \label{sec:arquitetura-parser-sincrono}
 
-O módulo responsável pela serialização e desserialização de histórias na plataforma é o parser síncrono, implementado em \texttt{tweeParser.js} (na diretoria \texttt{src/utils/}). Este módulo assegura a tradução bidirecional em tempo real entre a representação visual baseada em grafos do React Flow e a representação textual baseada na especificação Twee 3 \citep{Twee3Reference}.
+O módulo responsável pela serialização e desserialização de histórias na plataforma assegura a sincronização bidirecional entre a representação visual baseada em grafos do editor e a representação textual baseada na especificação padrão Twee 3 \citep{Twee3Reference}.
 
-A sincronização ocorre de forma síncrona diretamente na memória do navegador. Qualquer alteração de coordenadas, edição de texto ou criação de novas ligações no canvas é imediatamente refletida na estrutura interna de passagens e arestas, e vice-versa. Por se tratar de uma aplicação que corre inteiramente no lado do cliente (\textit{client-side}), este mapeamento mantém o estado da sessão atualizado na memória da aplicação, sendo que a persistência física dos dados requer que o utilizador exporte explicitamente o ficheiro \texttt{.twee}.
+Esta sincronização ocorre diretamente na memória da aplicação do lado do cliente. Qualquer alteração geométrica de coordenadas, edição de texto ou criação de novas ligações no canvas visual reflete-se de imediato no modelo lógico do grafo, garantindo a consistência contínua dos dados.
 
-\subsection{Processo de Importação (Desserialização)}
-O processo de importação é gerido pela função \texttt{parseTwee3(source)}, que recebe uma cadeia de caracteres de texto simples no formato Twee 3 e reconstrói o grafo em cinco etapas consecutivas:
+\subsection{Processo de Desserialização (Importação)}
+O processo de importação traduz a especificação textual linear de volta para o modelo bidimensional de nós e arestas, estruturado em cinco etapas consecutivas:
 \begin{enumerate}
-    \item \textbf{Divisão Lógica em Blocos:} O parser segmenta a fonte de texto usando a expressão regular \lstinline|^::| (com flag multiline \lstinline|m|) para delimitar e isolar as passagens em blocos independentes.
+    \item \textbf{Segmentação Lógica do Texto:} O fluxo de caracteres é segmentado utilizando delimitadores de passagem padronizados (o marcador de cabeçalho da especificação Twee) para isolar cada nó da narrativa em blocos de texto independentes.
     
-    \item \textbf{Extração de Cabeçalhos e Metadados:} Para cada bloco, a primeira linha (cabeçalho) é analisada para separar o nome da passagem, as etiquetas (delimitadas por \lstinline|[ ]|) e os metadados visuais (delimitados em formato JSON por \lstinline|{ }|). Esta separação é efetuada isolando a cadeia de caracteres a partir do primeiro caracter \lstinline|{| para evitar que expressões regulares falhem na presença de objetos JSON complexos ou aninhados.
+    \item \textbf{Extração de Metadados e Cabeçalhos:} Para cada bloco isolado, a linha de cabeçalho é processada para separar o identificador da cena, as etiquetas de utilizador (tags) e os metadados visuais que definem a sua geometria (posição e contimento) no canvas. A extração é efetuada isolando o bloco de propriedades a partir do delimitador estrutural de metadados, prevenindo falhas de interpretação face a aninhamentos complexos no corpo do texto.
     
-    \item \textbf{Conversão de Coordenadas de Zonas:} Os metadados visuais extraídos indicam a posição absoluta do nó (\lstinline|position|: \lstinline|X,Y|) e, opcionalmente, o identificador do nó pai (\lstinline|parent|). Quando um nó pertence a uma Zona de Agrupamento Visual (ver subsection \ref{subsec:zonas-agrupamento}), o parser efetua a conversão de coordenadas absolutas para coordenadas locais relativas ao canto superior esquerdo da zona mãe:
+    \item \textbf{Tradução de Coordenadas de Agrupamento:} Quando um nó pertence a uma zonda de agrupamento visual (ver Secção~\ref{subsec:zonas-agrupamento}), o parser efetua a conversão de coordenadas absolutas do plano cartesiano para coordenadas locais relativas ao canto superior esquerdo da zona-mãe:
     \[
     X_{\text{relativo}} = X_{\text{absoluto}} - X_{\text{zona}}
     \]
     \[
     Y_{\text{relativo}} = Y_{\text{absoluto}} - Y_{\text{zona}}
     \]
-    Esta conversão é obrigatória para que o React Flow renderize corretamente a hierarquia espacial e permita arrastar a Zona mãe juntamente com todos os nós filhos.
+    Esta transformação geométrica é fundamental para manter a integridade da hierarquia espacial e permitir o arrasto e translação em bloco da zona-mãe juntamente com todos os seus nós filhos.
     
-    \item \textbf{Extração de Ligações (Arestas):} As ligações direcionadas entre passagens são extraídas do corpo de texto (\texttt{conteudo}) do nó recorrendo a duas expressões regulares:
+    \item \textbf{Extração Semântica de Ligações (Arestas):} As transições direcionadas entre passagens são extraídas a partir do conteúdo textual de cada nó, analisando dois tipos de estruturas sintáticas:
     \begin{itemize}
-        \item \textbf{Ligações Twine Clássicas:} Processadas pela regex \lstinline|/\[\[(.*?)\]\]/g|. O parser analisa se a ligação contém caracteres de direcionamento como \lstinline/|/, \lstinline/->/ ou \lstinline/<-/ para separar o texto visível da escolha (rótulo) do identificador do nó de destino. Ligações dinâmicas que envolvam expressões matemáticas ou variáveis (p. ex. iniciadas por \lstinline|$|) são ignoradas pela validação estática de modo a evitar caminhos falsos no grafo.
+        \item \textbf{Ligações Narrativas Clássicas:} Hiperligações delimitadas por parênteses retos duplos, onde o parser avalia a presença de operadores de direcionamento para separar o rótulo visual exposto ao jogador do identificador do nó de destino.
         
-        \item \textbf{Ligações de Macros SugarCube:} Detetadas por uma expressão regular que captura a estrutura de links e redirecionamentos:
-        \begin{center}
-        \lstinline|/<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g|
-        \end{center}
-        O parser analisa o bloco interno à procura de comandos como \lstinline|<<goto "Destino">>| para gerar as arestas direcionadas.
+        \item \textbf{Ligações Condicionais e de Desvio:} Comandos lógicos e macros de controlo que encapsulam hiperligações ou transições forçadas de estado. O parser analisa a estrutura sintática para registar a aresta correspondente no modelo de dados do grafo.
     \end{itemize}
-    Se o nó de destino de qualquer ligação não for encontrado no mapeamento global de passagens, é gerado um aviso de link quebrado que é apresentado na interface visual (no painel laranja de alertas).
+    Caso o nó de destino mapeado em qualquer ligação não corresponda a um nó válido na história, o parser emite um aviso de inconsistência estrutural (link quebrado) a ser sinalizado graficamente no editor.
     
-    \item \textbf{Layout Automático de Salvaguarda:} Se o ficheiro importado não contiver metadados de coordenadas (uma situação comum quando as histórias são geradas por ferramentas de escrita pura), o parser deteta que todos os nós raiz estão posicionados em \lstinline|(0,0)| e invoca a biblioteca de layout automático Dagre (\texttt{layoutNodesAndEdges}) para organizar os nós hierarquicamente (de cima para baixo) antes da renderização.
+    \item \textbf{Determinação de Layout de Salvaguarda:} Se o ficheiro importado não contiver metadados de posicionamento espacial (situação comum em histórias escritas em editores de texto puros), o parser deteta a colisão de todos os nós na origem espacial e invoca uma rotina de layout automático hierárquico (de cima para baixo) para organizar espacialmente o grafo antes de o expor no canvas.
 \end{enumerate}
 
-\subsection{Processo de Exportação (Serialização)}
-O processo de exportação é efetuado pela função \texttt{exportToTwee3(nodes, edges)}, que traduz a estrutura de dados em memória de volta para uma cadeia de caracteres contínua compatível com a especificação Twee 3:
+\subsection{Processo de Serialização (Exportação)}
+O processo de exportação traduz o estado atualizado do grafo visual de volta para uma cadeia de caracteres contínua compatível com a especificação Twee 3, seguindo as seguintes etapas:
 \begin{enumerate}
-    \item \textbf{Garantia de Unicidade de Rótulos:} Como o formato Twee 3 utiliza o título da passagem como o identificador único para as transições, o parser verifica a existência de colisões de nomes entre nós. Se forem detetados nomes duplicados, o exportador adiciona um sufixo numérico (p. ex. \lstinline|Nome (2)|) de forma automática.
+    \item \textbf{Resolução de Unicidade de Rótulos:} Como a especificação textual mapeia as transições diretamente através dos títulos das passagens, o sistema audita os identificadores dos nós e resolve automaticamente colisões de nomes duplicados, anexando sufixos distintivos para prevenir ambiguidades no interpretador de jogo final.
     
-    \item \textbf{Escapes de Segurança:} Para evitar a quebra do formato do ficheiro e problemas de parsing em compiladores externos, o exportador limpa e escapa caracteres reservados:
+    \item \textbf{Sanitização e Escapes Sintáticos:} Para prevenir a quebra do formato do ficheiro em compiladores externos, o exportador efetua a higienização de caracteres reservados:
     \begin{itemize}
-        \item \textbf{No Cabeçalho:} A função \texttt{escapeForTweeHeader} escapa barras invertidas, parênteses retos e chavetas (\lstinline|\|, \lstinline|[|, \lstinline|]|, \lstinline|{|, \lstinline|}|) adicionando uma barra invertida antes de cada caractere.
+        \item \textbf{Propriedades de Cabeçalho:} Escapes preventivos sobre delimitadores estruturais (como parênteses retos e chavetas).
         
-        \item \textbf{No Corpo de Texto:} A função \texttt{escapeForTweeText} deteta ocorrências literais de \lstinline|::| no início de qualquer linha e substitui-as por \lstinline|\::|, impedindo que o compilador interprete incorretamente essa linha como o início de uma nova passagem.
+        \item \textbf{Corpo de Texto:} Escapes sobre ocorrências literais dos marcadores de início de passagem, prevenindo falsas segmentações de nós.
     \end{itemize}
     
-    \item \textbf{Reconversão para Coordenadas Absolutas:} Para manter a compatibilidade com a especificação Twee 3, as posições relativas dos nós filhos de Zonas são convertidas novamente para coordenadas absolutas no plano cartesiano antes da escrita física no ficheiro:
+    \item \textbf{Reconversão para Coordenadas Absolutas:} Para conformidade com a especificação de posicionamento padrão, as coordenadas relativas dos nós filhos de Zonas são convertidas novamente para coordenadas absolutas no plano cartesiano global:
     \[
     X_{\text{absoluto}} = X_{\text{zona}} + X_{\text{relativo}}
     \]
@@ -193,34 +201,35 @@ O processo de exportação é efetuado pela função \texttt{exportToTwee3(nodes
     Y_{\text{absoluto}} = Y_{\text{zona}} + Y_{\text{relativo}}
     \]
     
-    \item \textbf{Escrita Física do Bloco:} O exportador compila e anexa as propriedades visuais (coordenadas \lstinline|position|, o nó pai \lstinline|parent|, a dimensão \lstinline|size| e a cor \lstinline|color| no caso das Zonas) num objeto JSON serializado de linha única. Cada nó é escrito no ficheiro respeitando a assinatura padrão:
-\begin{verbatim}
-:: NomePassagem [tags] {"position":"X,Y", ...}
-Conteúdo da passagem
-\end{verbatim}
+    \item \textbf{Geração do Ficheiro Linearizado:} O exportador compila e anexa as propriedades visuais num objeto estruturado de metadados em linha única para cada nó, escrevendo consecutivamente a assinatura de cabeçalho e o corpo de texto correspondente.
 \end{enumerate}
 
-\subsection{Gestão de Passagens Especiais}
-O parser reconhece passagens reservadas com funções específicas na inicialização da história:
+\subsection{Gestão de Cenas de Sistema}
+\label(subsec:gestao-cenas-sistema)
+O parser reconhece passagens reservadas de sistema com funções específicas na inicialização da história:
 \begin{itemize}
-    \item \texttt{:: StoryTitle}: Define o título do projeto.
-    \item \texttt{:: StoryData}: Contém as configurações globais em formato JSON, incluindo o identificador único da história (\texttt{ifid}), o formato de compilação (\texttt{SugarCube}), o nó de arranque (\texttt{start}) e o nível de zoom.
-    \item \texttt{:: StoryInit}: Nó especial não-narrativo onde são declaradas e inicializadas as variáveis lógicas de controlo do estado da simulação (as quais servem de memória do jogo, conforme introduzido na Secção~\ref{sec:arquitetura-geral}).
+    \item \textbf{Metadados do Projeto (StoryTitle):} Define o título global da obra.
+    \item \textbf{Configurações Globais (StoryData):} Regista definições estruturais como o formato de compilação, o nó inicial de arranque da narrativa e os metadados do estado inicial da janela visual.
+    \item \textbf{Inicialização do Estado (StoryInit):} Cena especial não-narrativa destinada a declarar e inicializar as variáveis globais de controlo da simulação.
 \end{itemize}
 
-\subsection{Modelo SugarCube (Preservação de Código e Indexação)}
-No caso das macros de alteração de estado (ex: \lstinline|<<set $moedas += 10>>|) e condicionais lógicas (ex: \lstinline|<<if $tem_chave>> ... <</if>>|), o parser de importação não as compila nem as remove do texto. Em vez disso, o parser executa duas operações estruturais:
+\subsection{Processamento e Preservação de Lógica}
+No tratamento de macros condicionais e de modificação de estado, o parser adota duas regras de processamento conceptual:
 \begin{enumerate}
-    \item \textbf{Preservação de Código:} Mantém as macros intactas no corpo textual da passagem, permitindo que sejam interpretadas e executadas reativamente pelo simulador (\textit{PlayMode}) durante a execução do jogo (ver Secção~\ref{subsec:compilador-jit-macros}).
-    \item \textbf{Extração de Variáveis para Indexação:} Identifica os nomes das variáveis (iniciadas por \texttt{\$}) e regista-as no painel de gestão de variáveis, permitindo que o autor as rastreie ou renomeie de forma atómica em todo o projeto.
+    \item \textbf{Preservação de Código:} As instruções lógicas são mantidas intactas no corpo de texto do nó, permitindo que a avaliação lógica seja diferida para tempo de execução na simulação.
+    
+    \item \textbf{Indexação de Variáveis de Estado:} O parser mapeia todas as referências a variáveis lógicas (identificadas por prefixos estruturais) e cria um índice global reativo no editor. Isto possibilita rastrear a utilização de variáveis e efetuar renomeações atómicas em todo o grafo da história.
 \end{enumerate}
 
 
 \section{Interação Visual, Edição e Acessibilidade}
+\label{sec:interacao-visual-acessibilidade}
+
+A interface gráfica de autoria foi concebida para fornecer uma representação espacial clara do fluxo não-linear da história, abordando os desafios de agrupamento organizacional, legibilidade das rotas de ligação e acessibilidade sensorial.
 
 \subsection{Zonas de Agrupamento Visual}
 \label{subsec:zonas-agrupamento}
-As \textbf{Zonas de Agrupamento Visual} (\texttt{ZoneNode}) consistem em contentores espaciais retangulares que agrupam logicamente nós de cena relacionados (como capítulos ou localizações), conforme ilustrado na Figura~\ref{fig:exemplo-zona}.
+As Zonas de Agrupamento Visual consistem em contentores espaciais retangulares e redimensionáveis que permitem agrupar logicamente nós de cena relacionados (como capítulos ou localizações geográficas), conforme ilustrado na Figura~\ref{fig:exemplo-zona}.
 
 \begin{figure}[H]
     \centering
@@ -229,14 +238,14 @@ As \textbf{Zonas de Agrupamento Visual} (\texttt{ZoneNode}) consistem em content
     \label{fig:exemplo-zona}
 \end{figure}
 
-A sua implementação como nós de grupo personalizados exigiu contornar um problema de colisão de cliques no React Flow. Como o contentor cobre uma área retangular considerável sobreposta aos nós de cena interiores, os \textit{pointer events} capturavam os cliques no ecrã, impedindo a seleção ou arrasto dos filhos. Para resolver isto, definiu-se a propriedade CSS \texttt{pointer-events: none} dinamicamente na configuração global do React Flow para o contentor da Zona em \texttt{App.jsx}. Em paralelo, no componente \texttt{ZoneNode.jsx}, forçou-se \texttt{pointer-events: auto} exclusivamente nas pegas de redimensionamento (\textit{NodeResizer}) e na barra de cabeçalho (utilizada para arrastar a zona em bloco com todos os seus filhos).
+A nível conceptual, as zonas definem uma relação de parentesco hierárquico no grafo visual. A translação da zona-mãe no plano cartesiano propaga-se de forma automática para todos os nós pertencentes ao seu espaço delimitador, mantendo o alinhamento relativo. Para suportar esta funcionalidade sem perturbar a manipulação direta dos nós filhos, concebeu-se um modelo de encaminhamento seletivo de eventos de ponteiro (clique/arrasto), distinguindo as áreas de controlo estrutural da zona (cabeçalho e pegas de redimensionamento) do seu corpo de fundo passivo.
 
-As Zonas suportam ainda imagens de fundo personalizadas (\textit{backgrounds}) geridas através da propriedade reativa \texttt{bgImage} nos metadados do nó, a qual é descodificada em tempo de execução e aplicada via CSS.
+As Zonas suportam ainda imagens de fundo personalizadas para ambientação visual, descodificadas em tempo de execução e aplicadas dinamicamente como propriedades geométricas dos contentores.
 
-\subsection{Arestas Curvadas com Waypoints}
+\subsection{Arestas Curvadas com Waypoints (Interpolação de Catmull-Rom)}
 \label{subsec:arestas-curvadas-waypoints}
 
-Para evitar a sobreposição visual das ligações e o cruzamento cego sobre os nós de cena, a plataforma implementa arestas personalizadas que utilizam a interpolação por \textit{Splines} Cúbicas de Catmull-Rom \citep{CatmullRom1974}. Esta lógica encontra-se implementada no componente \texttt{EditableEdge.jsx} (\texttt{src/components/EditableEdge.jsx}), com o resultado visual exemplificado na Figura~\ref{fig:curved-edge}.
+Para evitar o cruzamento cego de caminhos sobre os nós de cena e a sobreposição visual caótica de rotas em histórias complexas, a plataforma implementa arestas curvas editáveis de forma interativa. O resultado visual encontra-se exemplificado na Figura~\ref{fig:curved-edge}.
 
 \begin{figure}[H]
     \centering
@@ -245,13 +254,13 @@ Para evitar a sobreposição visual das ligações e o cruzamento cego sobre os 
     \label{fig:curved-edge}
 \end{figure}
 
-O autor pode criar novos marcadores (\textit{waypoints}) com um duplo clique e arrastá-los livremente pelo ecrã. A curva é recalculada em tempo de execução à medida que os marcadores são movidos, interpolando a sua posição de forma contínua para manter a linha fluida e desimpedida de outros elementos do grafo.
+Em vez de adotar curvas de Bézier clássicas, que requerem vetores tangentes e pegas de controlo cuja manipulação é frequentemente contra-intuitiva para escritores sem formação em modelação vetorial, o sistema utiliza a interpolação matemática por \textbf{Splines Cúbicas de Catmull-Rom} \citep{CatmullRom1974}. 
 
-A interpolação matemática de Catmull-Rom foi programada diretamente no componente de forma a evitar dependências de pacotes externos, otimizando o desempenho e garantindo uma renderização leve no lado do cliente. Esta implementação foi adaptada a partir da solução documentada na comunidade de programadores do \textit{Stack Overflow} \citep{Aarts2018StackOverflow}. 
+A spline cúbica de Catmull-Rom possui a propriedade matemática fundamental de passar exatamente por todos os pontos de controlo intermédios (marcadores ou \textit{waypoints}) inseridos pelo utilizador.
 
-\subsection{Acessibilidade e Identidade Visual Customizada}
+\subsection{Acessibilidade e Identidade Visual Baseada em Dupla Codificação}
 \label{subsec:acessibilidade-identidade-visual}
-Tendo em conta que o desenvolvimento do projeto beneficiou de validações diretas com utilizadores daltónicos, projetou-se uma estratégia de acessibilidade redundante baseada numa identidade visual neo-brutalista. A adoção desta estética neo-brutalista fundamentou-se em estudos que demonstram que contornos espessos, pesos tipográficos elevados e contrastes marcados beneficiam utilizadores com baixa acuidade visual ou daltonismo \citep{Babich2023, Loranger2022}. O aspeto geral desta interface e os seus elementos gráficos encontram-se representados na Figura~\ref{fig:editor-canvas-acessibilidade}.
+Tendo em conta que o desenvolvimento do projeto beneficiou de validações diretas com utilizadores daltónicos, projetou-se uma estratégia de acessibilidade redundante assente numa identidade visual neo-brutalista de alto contraste. Estudos na área de design de interfaces demonstram que contornos espessos, sombras sólidas e pesos tipográficos acentuados beneficiam a usabilidade geral e auxiliam utilizadores com baixa acuidade visual ou daltonismo \citep{Malewicz2022, Sheikh2025}. A interface global do editor encontra-se representada na Figura~\ref{fig:editor-canvas-acessibilidade}.
 
 \begin{figure}[H]
     \centering
@@ -259,200 +268,98 @@ Tendo em conta que o desenvolvimento do projeto beneficiou de validações diret
     \caption{Interface gráfica global do editor (\textit{Plot in a Pot}), ilustrando a identidade visual neo-brutalista de alto contraste com contornos espessos e sinalização redundante para acessibilidade.}
     \label{fig:editor-canvas-acessibilidade}
 \end{figure}
+O design da interface gráfica baseia-se no princípio da Dupla Codificação Visual, eliminando a dependência exclusiva de cores para transmitir estados lógicos:
 
-O nosso trabalho de design e programação focou-se nos seguintes pilares:
 \begin{itemize}
-    \item \textbf{Delimitação por Contornos Sólidos:} Implementação de contornos pretos de 2px (\texttt{border-2}) e sombras projetadas rígidas sem difusão (\texttt{shadow-[4px\_4px\_0px\_\#000]}) em todos os componentes visuais (\textit{StoryNode}, \textit{ZoneNode} e painéis), eliminando a dependência de cores ou gradientes suaves para distinguir elementos.
-    \item \textbf{Diferenciação Estrutural de Arestas:} As transições normais no grafo são desenhadas com traçados contínuos, enquanto as ligações inacessíveis ou com erros lógicos são renderizadas com traçados tracejados (\texttt{strokeDasharray="5,5"}). Esta distinção de padrão garante que o utilizador consiga identificar caminhos quebrados sem depender exclusivamente da cor.
-    \item \textbf{Sinalização Semântica Dupla de Alertas:} Configuração de etiquetas textuais explícitas (como o selo ``Aviso'' em fundo laranja nos nós com erros estruturais) em conjunto com listagens descritivas nos painéis, evitando a sinalização baseada apenas no par de cores verde/vermelho.
+    \item \textbf{Delimitação Estrutural Rígida:} Painéis e nós utilizam contornos espessos e sombras sólidas (sem difusão), garantindo a distinção inequívoca de limites sob qualquer nível de iluminação ou variação de daltonismo.
+    
+    \item \textbf{Diferenciação por Padrões em Arestas:} As ligações ativas normais utilizam linhas sólidas, enquanto as transições com erros lógicos (como links quebrados) são renderizadas com padrões tracejados. Esta distinção formal assegura que utilizadores identifiquem caminhos incorretos sem depender de contrastes de cor.
+    
+    \item \textbf{Sinalização Semântica de Alertas:} As anomalias nos nós são identificadas por um indicador textual explícito (ex.: rótulo ``Aviso'') e detalhadas em listas estruturadas no painel lateral de diagnóstico, eliminando a dependência de indicadores puramente cromáticos.
 \end{itemize}
 
-\subsection{Modelação de Dados e Sincronização com o React Flow}
+\subsection{Mapeamento e Sincronização de Estados}
 \label{subsec:modelacao-dados-reactflow}
-Para além da representação abstrata da arquitetura, a implementação prática exige uma sincronização bidirecional em tempo real entre a interface gráfica gerida pela biblioteca \textit{React Flow} e a estrutura de dados semântica interna da história.
-
-No \gls{piap}, o estado centralizado da narrativa é mantido na raiz da aplicação (\texttt{App.jsx}) e de forma modular através de ganchos personalizados (\textit{custom hooks}), recorrendo a três vetores de dados estruturados em memória local:
+A integridade da aplicação assenta na sincronização atómica e de estado de três modelos de representação lógica em memória:
 \begin{enumerate}
-    \item \textbf{Vetor de Nós do React Flow (\texttt{nodes}):} Contém a representação posicional e de renderização de cada elemento no canvas. Cada objeto de nó segue a especificação rígida da biblioteca:
-\begin{verbatim}
-{
-  id: "cena_taberna",
-  type: "storyNode",
-  position: { x: 250, y: 180 },
-  data: {
-    title: "Interior da Taberna",
-    content: "O cheiro a hidromel preenche a sala...",
-    tags: ["secreto"],
-    bgImage: ""
-  },
-  width: 280,
-  height: 150
-}
-\end{verbatim}
-    Se o nó representar uma Zona de Agrupamento (\texttt{ZoneNode}), o tipo é alterado para \texttt{"zoneNode"} e o objeto passa a incluir propriedades de agrupamento como \texttt{parentId} nos nós filhos e dimensões explícitas de largura e altura controladas pelo utilizador.
-
-    Para além de cenas narrativas (\texttt{"storyNode"}) e Zonas (\texttt{"zoneNode"}), o editor suporta mais dois tipos de nós utilitários:
-    \begin{itemize}
-        \item \textbf{Nós de JavaScript (\texttt{"javascriptNode"}):} Nós dedicados à escrita de scripts globais em JavaScript. Estes scripts são úteis para inicializar funções auxiliares complexas ou configurar regras que serão executadas no simulador de jogo.
-        \item \textbf{Nós de CSS (\texttt{"cssNode"}):} Nós dedicados à escrita de estilos personalizados (CSS) que alteram a estética visual da história quando executada na simulação.
-    \end{itemize}
+    \item \textbf{Modelo de Nós Visuais:} Controla o posicionamento geométrico ($X, Y$), as dimensões de renderização (largura e altura) e o tipo de elemento no canvas (cena narrativa, contentor de Zona, ou nós de scripts de CSS e JavaScript utilitários).
     
-    \item \textbf{Vetor de Arestas do React Flow (\texttt{edges}):} Modela a conectividade geométrica das escolhas narrativas. Cada aresta é configurada como um componente personalizado (\texttt{EditableEdge}) e armazena os pontos geométricos intermédios (\textit{waypoints}) inseridos pelo autor para suavizar as curvas:
-\begin{verbatim}
-{
-  id: "edge-cena_praca-cena_taberna",
-  source: "cena_praca",
-  target: "cena_taberna",
-  type: "editableEdge",
-  data: {
-    choiceText: "Entrar na taberna",
-    waypoints: [{ x: 120, y: 150 }, { x: 180, y: 160 }]
-  }
-}
-\end{verbatim}
+    \item \textbf{Modelo de Arestas Visuais:} Regista as conexões físicas entre os nós e a matriz geométrica contendo os marcadores de desvio (waypoints) introduzidos para a modelação da curva Catmull-Rom.
     
-    \item \textbf{Lista de Adjacência Bidirecional (\texttt{adjacencyList}):} Representa o grafo direcionado de estados do ponto de vista do motor lógico. É recalculada de forma síncrona a cada modificação nos vetores de nós ou arestas. Esta lista mapeia cada identificador de cena ao seu conjunto de sucessores (saídas) e predecessores (entradas), permitindo ao validador e ao motor de simulação realizar percursos e pesquisas rápidas.
+    \item \textbf{Grafo Direcionado Interno (Lista de Adjacência):} Modelo puramente lógico que representa as relações topológicas sucessor/predecessor da história, alimentando os algoritmos de validação e o simulador.
 \end{enumerate}
-
-Esta tripla modelação é sincronizada de forma atómica. Quando o autor arrasta um nó ou altera o texto de uma escolha no painel de detalhes, os manipuladores de eventos reativos do React Flow (como \texttt{onNodesChange} ou \texttt{onEdgesChange}) capturam a alteração física. Esta alteração é processada e encaminhada pelos ganchos personalizados em \texttt{App.jsx}, gerando novos vetores imutáveis de estado que forçam a atualização dos componentes visuais e o recálculo imediato da lista de adjacências e do mapa de erros lógicos.
 
 \section{Validação Estática e Simulação}
 \label{sec:validacao-estatica-simulacao}
 
-O motor de autoria do \textit{Plot in a Pot} integra ferramentas robustas de validação e execução reativa. Para além de permitir a escrita de histórias, a plataforma disponibiliza um sistema de verificação lógica que audita a estrutura narrativa de forma estática e uma sandbox de simulação dinâmica dotada de agentes de navegação autónoma.
+O motor lógico do editor integra ferramentas de auditoria topológica e de simulação interativa. Além da edição visual, o sistema concebe um mecanismo de verificação estática que inspeciona de forma determinística a integridade do fluxo e uma sandbox de execução reativa com navegação heurística autónoma.
 
 \subsection{Algoritmo de Validação Estática e Exploração do Espaço de Estados}
 \label{subsec:algoritmo-bfs-validacao}
 
-O validador estático, implementado nos módulos \texttt{storyValidator.js} e \texttt{storyTraversal.js}, resolve o problema de acessibilidade e integridade da narrativa. Em grafos estáticos simples, um percurso clássico de Pesquisa em Largura (BFS) seria suficiente para auditar a conectividade geométrica. Contudo, em narrativas interativas complexas, as escolhas do jogador (arestas) dependem frequentemente de condições lógicas associadas a variáveis de estado (por exemplo, macros de atribuição \texttt{<<set>>} e macros condicionais \texttt{<<if>>} do formato SugarCube).
+Para resolver o problema de acessibilidade e consistência lógica em narrativas interativas, o validador concebido não se limita a analisar a topologia pura das ligações. Em narrativas complexas, as escolhas do jogador dependem de condições associadas a variáveis lógicas globais (como inventário, progresso, ou pontuações), e as cenas contêm instruções que alteram esse mesmo estado.
 
-Isto significa que a acessibilidade de uma determinada cena não depende apenas da existência de uma linha gráfica a conectá-la, mas também do estado atual da memória do jogo (as variáveis acumuladas até então). Desta forma, a validação lógica é modelada como um problema de \textit{Exploração do Espaço de Estados} (\textit{State Space Exploration}), onde cada elemento explorado é composto pelo par formado pelo nó atual do grafo e pela valoração instantânea do dicionário de variáveis.
+Deste modo, a validação é modelada conceptualmente como um problema de exploração do espaço de estados. O estado de simulação em qualquer ponto da história é caracterizado pela cena em que o utilizador se encontra combinada com os valores atuais de todas as variáveis do jogo no instante em que a cena é alcançada.
 
-O algoritmo de auditoria executa a exploração de acordo com os seguintes passos estruturados e detalhados:
+O algoritmo de percurso de validação baseia-se num fluxo estruturado sob os seguintes princípios conceptuais:
 
 \begin{enumerate}
-    \item \textbf{Inicialização e Pré-computação de Dicionários:}
-    Para garantir a eficiência temporal do validador, o motor começa por indexar e organizar os elementos do canvas em duas estruturas de dados fundamentais em memória:
-    \begin{itemize}
-        \item \textbf{Dicionário de Nós (\texttt{NodeMap}):} Um mapa chave-valor que associa o identificador único de cada cena (ID) ao seu objeto correspondente. Isto permite aceder instantaneamente ao conteúdo textual e metadados de qualquer nó.
-        \item \textbf{Lista de Adjacência (\texttt{EdgesBySource}):} Um mapa que associa cada ID de cena de origem a uma lista com todas as escolhas (arestas) que partem dela.
-    \end{itemize}
-    Em seguida, o validador determina o nó inicial da narrativa. Esta resolução é efetuada localizando no grafo o nó especial que possui o ID ou a etiqueta padrão de início (\texttt{Start}), ou, na sua ausência, o primeiro nó criado na história. A valoração inicial das variáveis (o estado inicial da memória) é lida a partir do nó de sistema \texttt{StoryInit}, que guarda as instruções de inicialização de variáveis (por exemplo, \texttt{<<set \$moedas to 0>>}).
+    \item \textbf{Inicialização do Estado de Arranque:}
+    O sistema localiza a cena definida como ponto de partida da história. O estado inicial das variáveis é computado a partir do nó \textit{Storyinit} (como dito na Secção~\ref{gestao-cenas-sistema}). Este estado de arranque é enfileirado no pipeline de exploração, juntamente com o registo do caminho percorrido até ao momento, permitindo traçar rotas exatas em caso de falha.
 
-    \item \textbf{Preparação da Fila de Exploração e Estruturas de Rastreio:}
-    É instanciada uma fila de processamento (\textit{Queue}), que guardará os estados a explorar sequencialmente. A fila é inicializada com um elemento de arranque que agrupa: o nó inicial, a cópia do estado inicial de variáveis e a rota percorrida até ao momento (representada como uma lista de nomes de cenas, começando pelo nome do nó inicial). A gravação deste caminho (\textit{path}) é fundamental para que, caso seja detetado um erro ou beco sem saída, o validador consiga mostrar ao autor a sequência exata de escolhas que levou a essa falha (por exemplo, \textit{"Início $\rightarrow$ Taberna $\rightarrow$ Combate $\rightarrow$ Erro"}).
-
-    Para além da fila, são criados em memória os seguintes contentores:
+    \item \textbf{Gestão de Fila de Exploração e Histórico de Visitas:}
+    A exploração ocorre de forma iterativa extraindo caminhos da fila de processamento. Para cada ponto de verificação, o validador atualiza e acompanha três registos globais:
     \begin{itemize}
-        \item Um conjunto de nós alcançáveis (\texttt{Nreach}), que registará todas as cenas visitáveis.
-        \item Um conjunto de escolhas alcançáveis (\texttt{Ereach}), que registará todas as ligações que puderam ser abertas durante a simulação.
-        \item Um mapa de estados visitados por nó (\texttt{VisitedStates}): Este dicionário associa o ID de cada nó a um conjunto de strings. Sempre que o algoritmo entra num nó, ele serializa o estado atual das variáveis (como uma string JSON) e guarda-o neste conjunto. Isto é crucial para detetar ciclos redundantes e evitar ciclos infinitos no grafo.
+        \item O conjunto de cenas que foram alcançadas pelo menos uma vez durante a simulação.
+        \item O conjunto de escolhas ou ligações que puderam ser abertas e percorridas.
+        \item Um mapa histórico que associa cada cena ao conjunto de combinações de variáveis com que esta já foi anteriormente visitada.
     \end{itemize}
-    
-    \item \textbf{Ciclo de Processamento Principal:}
-    Enquanto existirem elementos na fila de exploração, o algoritmo extrai o primeiro da fila (contendo o nó atual, a memória de variáveis associada e o caminho percorrido) e realiza o seguinte processamento:
-    \begin{enumerate}
-        \item O nó é inserido no conjunto de nós alcançáveis (\texttt{Nreach}).
-        \item \textbf{Modificação de Estado (\texttt{applyModifiers}):} O validador analisa o texto da cena corrente. Caso este texto contenha instruções de alteração de variáveis (como macros \texttt{<<set \$moedas += 10>>}), o motor interpreta estas instruções e atualiza o dicionário de variáveis local, gerando um novo estado de memória. Esta interpretação é efetuada por um analisador síncrono que converte a sintaxe SugarCube para expressões válidas de JavaScript.
-        \item \textbf{Verificação de Redundância e Poda de Caminho (\textit{Pruning}):} O novo estado de variáveis é serializado e comparado com a lista de estados já experimentados anteriormente no nó atual (pesquisando no mapa \texttt{VisitedStates}). Se o mesmo estado de variáveis já tiver sido registado neste nó, significa que quaisquer caminhos futuros a partir daqui seriam repetições exatas de rotas já exploradas. O algoritmo interrompe a exploração deste ramo (processo designado por \textit{poda de caminho} ou \textit{pruning}), evitando processamento redundante e garantindo que ciclos narrativos fechados não causem loops infinitos.
-        \item \textbf{Controlo contra Explosão de Estados (Limite de Segurança $K = 10$):} Caso o autor crie um ciclo que incrementa ou altera continuamente variáveis sem fim (como uma cena que adiciona uma moeda de cada vez que o jogador clica para voltar), o estado das variáveis seria sempre diferente, impedindo que a verificação de redundância anterior detetasse a repetição. Para evitar que o validador fique preso a explorar infinitamente estes loops e congele o navegador do utilizador, define-se um limite máximo de $K = 10$ estados únicos por nó. Se um nó foi visitado 10 vezes com estados de variáveis diferentes, a exploração deste ramo é forçosamente interrompida, e um aviso de suspeita de ciclo infinito é associado ao nó.
-        \item \textbf{Gravação de Histórico:} Se o estado de variáveis for inédito (isto é, diferente das vezes anteriores neste node) e estiver dentro do limite de segurança, ele é adicionado ao conjunto de estados visitados do nó no mapa \texttt{VisitedStates}. O caminho percorrido e o estado final são também registados no histórico de caminhos (\texttt{ArrivalHistory}) do nó para posterior consulta e depuração na interface.
-    \end{enumerate}
-    
-    \item \textbf{Avaliação de Transições e Condicionais:}
-    O algoritmo consulta a lista de adjacências para identificar todas as escolhas de saída que partem da cena atual. Para cada escolha (aresta) que conecta a cena atual a uma cena de destino, o validador realiza as seguintes operações:
-    \begin{enumerate}
-        \item Extrai a hiperligação textual associada (p. ex. [[link]]) do conteúdo da cena de origem.
-        \item \textbf{Avaliação de Acessibilidade (\texttt{canAccessChoice}):} O validador verifica se a escolha está condicionada por alguma macro lógica (p. ex. \texttt{<<if \$moedas >= 10>> ... <</if>>}). O motor avalia esta expressão lógica contra o dicionário de variáveis gerado no passo anterior. Se a condição for satisfeita (ou se a escolha não tiver qualquer condicional), a ligação é marcada como aberta e o ID da escolha é adicionado ao conjunto de escolhas alcançáveis (\texttt{Ereach}).
-        \item O nó de destino da escolha é enfileirado na fila de exploração, acompanhado pelo estado de variáveis atualizado e pelo novo caminho de cenas (adicionando o nome do nó de destino ao caminho percorrido).
-    \end{enumerate}
+
+    \item \textbf{Modificação de Estado e Poda de Caminho (Pruning):}
+    Ao analisar uma cena, o validador avalia as instruções locais que atualizam as variáveis de jogo. Para evitar cálculos redundantes e garantir que a validação termine em histórias com ciclos simples (por exemplo, quando o leitor entra numa sala e regressa à anterior sem que nada tenha mudado no inventário), o validador compara a nova combinação de variáveis com a lista de visitas anteriores àquela mesma cena. Se a mesma combinação de variáveis já tiver sido registada para aquela cena, o ramo é cortado (processo designado por \textit{poda de caminho}), interrompendo a exploração dessa trajetória repetida.
+
+    \item \textbf{Mitigação do Problema de Paragem (Limite de Segurança):}
+    Caso a história contenha ciclos lógicos de incremento cumulativo infinito (p. ex. um loop onde uma variável acumula valores continuamente a cada repetição), a combinação de variáveis será sempre diferente, impedindo que a poda de caminhos simples trave o ciclo. Para evitar que o validador congele a aplicação cliente em loops infinitos, estabeleceu-se um limite máximo de segurança de 10 visitas por cena com estados de variáveis diferentes. Se uma cena for visitada 10 vezes com configurações de variáveis distintas, a exploração do ramo é interrompida forçosamente e é gerado um aviso de ciclo infinito no editor.
+
+    \item \textbf{Avaliação Condicional de Transições:}
+    Para cada opção de saída da cena atual, o validador verifica se as condições de acesso são satisfeitas pelos valores atuais das variáveis. Se a transição for permitida, o novo estado (a cena de destino e a configuração atualizada de variáveis) é adicionado à fila para ser verificado posteriormente.
 \end{enumerate}
 
-Após o término da exploração (quando a fila de exploração fica vazia), o módulo de auditoria em \texttt{storyValidator.js} analisa os conjuntos acumulados para identificar e classificar as falhas de integridade narrativa no grafo:
+Após a exploração completa, a análise dos conjuntos acumulados permite classificar de forma precisa os seguintes erros de integridade na interface:
 \begin{itemize}
-    \item \textbf{Nós Órfãos:} Cenas criadas no canvas que não constam no conjunto de nós alcançáveis (\texttt{Nreach}), significando que o jogador nunca conseguirá chegar a elas a partir do início da história. Para maior flexibilidade do autor, as cenas etiquetadas com a tag \texttt{secreto} (ou privada) são deliberadamente excluídas deste aviso, permitindo a existência de cenas soltas de teste ou passagens secretas acedidas exclusivamente por código sem poluir a interface com falsos erros.
-    \item \textbf{Becos sem Saída (Hiperligações Quebradas):} Nós visitados pela exploração que contêm hiperligações cujo destino aponta para uma cena inexistente ou que foi apagada do canvas. É importante salvaguardar que nós terminais da narrativa (que representam finais de jogo e não possuem quaisquer escolhas de saída) são perfeitamente válidos e não geram erros. Este aviso foca-se estritamente em caminhos com destinos inválidos.
-    \item \textbf{Escolhas Inacessíveis:} Escolhas cuja condição lógica de acessibilidade nunca pôde ser satisfeita sob nenhuma das combinações de variáveis e caminhos explorados durante o percurso (por exemplo, exigir uma chave que nunca é definida como obtida em nenhuma cena anterior).
+    \item \textbf{Nós Órfãos:} Cenas criadas que nunca foram alcançadas sob nenhum caminho válido de variáveis (excluindo aquelas marcadas explicitamente pelo autor como secretas usando a tag \textit{secreto}).
+    \item \textbf{Becos Sem Saída:} Cenas ou opções que apontam para nós inexistentes ou apagados do canvas.
+    \item \textbf{Escolhas Inacessíveis:} Ligações cujas condições lógicas de acesso nunca foram satisfeitas por nenhuma combinação de variáveis no decorrer dos caminhos explorados.
 \end{itemize}
 
-\subsection{Simulador em Tempo Real (PlayMode) e Smart Walker}
+\subsection{Isolamento e Execução no Simulador (PlayMode)}
 \label{subsec:simulador-playmode-walker}
 
-O simulador de jogo (\texttt{PlayMode.jsx}) mimetiza o comportamento do interpretador SugarCube num ambiente controlado pelo navegador do autor. Para permitir a depuração em tempo real sem afetar os dados de edição, o motor executa as regras e os scripts dos nós utilitários sob um isolamento de contextos:
+O simulador de jogo disponibiliza uma sandbox controlada para testar a história e inspecionar a alteração de variáveis em tempo real. A execução obedece a princípios conceituais de isolamento de estilos e scripts utilitários:
 \begin{itemize}
-    \item \textbf{Separação de Estilos:} Os nós de CSS (\texttt{"cssNode"}, descritos na Secção~\ref{subsec:modelacao-dados-reactflow}) têm o seu conteúdo textual compilado e injetado sob a forma de uma tag \texttt{<style id=''playmode-styles''>} na raiz do cabeçalho da página, sendo totalmente removidos da árvore do documento (DOM) ao encerrar a simulação.
-    \item \textbf{Isolamento de Scripts:} Os nós de JavaScript (\texttt{"javascriptNode"}, descritos na Secção~\ref{subsec:modelacao-dados-reactflow}) são compilados de forma dinâmica como funções anónimas com escopo isolado através do construtor \texttt{new Function('state', 'State', 'setup', script\_content)}. Isto isola o contexto de execução de variáveis da simulação, impedindo que interfiram com os estados internos reativos do React ou com o motor gráfico do React Flow.
+    \item \textbf{Isolamento de Estilos:} Estilos CSS definidos em nós utilitários são injetados de forma efémera no cabeçalho da simulação, sendo limpos e removidos integralmente do documento do editor ao encerrar a simulação, impedindo efeitos secundários na interface de autoria.
+    
+    \item \textbf{Isolamento de Contexto de Execução:} Scripts globais escritos em JavaScript são executados sob um escopo funcional isolado em tempo de execução. Isto impede a poluição global da janela do browser e assegura que variáveis do utilizador não interfiram com o estado reativo da aplicação de autoria.
 \end{itemize}
 
-Para testes automáticos de caminhos narrativos, a plataforma disponibiliza o agente autónomo \textbf{Smart Walker} (implementado em \texttt{storyTraversal.js}). Em vez de selecionar opções de forma puramente pseudo-aleatória (o que levaria a uma baixa cobertura de caminhos e retenção em ciclos curtos), o agente utiliza uma heurística baseada em \textit{Procura por Novidade} (\textit{Novelty Search}).
+\subsection{Navegação Autónoma Heurística (Smart Walker)}
+\label{subsec:smart-walker-novelty}
 
-Para selecionar a próxima passagem, o agente analisa as opções de escolha direta que partem do nó atual (o que corresponde, na terminologia de grafos, à vizinhança de saída do nó corrente). Ele consulta o histórico de simulação da sessão para verificar quantas vezes cada uma das cenas de destino já foi alcançada. O Smart Walker seleciona então a escolha que conduz à cena de destino que registe o menor número de visitas acumuladas até ao momento.
+Para testes automáticos rápidos de caminhos narrativos, o sistema integra o agente autónomo \textbf{Smart Walker}. Em vez de optar por escolhas pseudo-aleatórias (as quais resultariam numa exploração ineficiente em árvores ramificadas e aprisionamento em loops curtos), o agente baseia-se nos princípios de \textit{procura por novidade} (\textit{Novelty Search}).
 
-Este comportamento heurístico simples força o simulador a procurar caminhos narrativos raros e ramos profundos da história de forma automatizada, conseguindo mapear e encontrar becos sem saída ou ciclos lógicos fechados numa fração de segundo sem necessidade de intervenção manual do autor.
+Ao atingir uma cena que disponha de múltiplas escolhas acessíveis, o agente consulta o histórico de visitas acumulado durante a simulação ativa. O Smart Walker avalia o conjunto de nós de destino imediatos e seleciona de forma determinística a aresta que conduz ao nó que regista o menor número de visitas no histórico da sessão.
 
-\subsection{Motor de Compilação JIT de Macros SugarCube}
-\label{subsec:compilador-jit-macros}
+Esta heurística simples força o simulador a procurar caminhos narrativos raros e ramos profundos da história de forma automatizada, conseguindo mapear e encontrar becos sem saída ou ciclos lógicos fechados de forma autónoma e sem necessidade de exploração manual repetitiva por parte do autor.
 
-Para suportar a avaliação de condições e a execução de modificadores de estado descritas no algoritmo de exploração, a plataforma integra um motor de compilação \textit{Just-In-Time} (JIT) simplificado, estruturado nos módulos \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}. A arquitetura deste motor divide-se em quatro fases principais:
-
-\begin{enumerate}
-    \item \textbf{Tradução Sintática e Mapeamento Léxico:}
-    Os utilizadores escrevem expressões lógicas recorrendo à sintaxe SugarCube (por exemplo, \texttt{<<if \$ouro is 10>>} ou \texttt{<<set \$chave to true>>}). Como o interpretador do navegador não consegue executar estes comandos diretamente, desenvolveu-se um tradutor baseado em expressões regulares e substituições lexicais em \texttt{sugarcubeLogic.js}. Este tradutor mapeia os operadores SugarCube para os operadores lógicos válidos de JavaScript, conforme resumido na Tabela~\ref{tab:operadores-sugarcube} (apresentada abaixo). 
-    
-    Adicionalmente, o tradutor reescreve todas as variáveis do utilizador (prefixadas com \texttt{\$}) para referências seguras dentro do objeto de estado da aplicação (por exemplo, transformando \texttt{\$ouro} em \texttt{state.ouro}).
-
-    No entanto, por se tratar de um tradutor simplificado baseado em substituições lexicais de expressões regulares, este mecanismo apresenta limitações inerentes de desenho: não valida nem analisa blocos lógicos \texttt{<<if>>} aninhados no mesmo nó da cena, e é frágil face a expressões SugarCube mais elaboradas que utilizem agrupamentos de parênteses complexos, funções nativas do motor de jogo ou macros personalizadas de terceiros. Trata-se de um compromisso deliberado de desenho em prol da leveza e do desempenho síncrono da aplicação no navegador.
-    
-    \item \textbf{Construção da Árvore de Sintaxe Abstrata (AST) do Bloco Condicional:}
-    O módulo \texttt{logicParser.js} analisa o corpo textual das cenas para extrair as condicionais. Quando é detetado um bloco iniciado por \texttt{<<if>>} e encerrado por \texttt{<</if>>}, o analisador lê o seu conteúdo interior e divide-o recursivamente, procurando marcadores alternativos de desvio como \texttt{<<elseif>>} e \texttt{<<else>>}. 
-    
-    Este processo gera uma representação em memória estruturada como uma Árvore de Sintaxe Abstrata (AST) simplificada. Cada desvio condicional é guardado como um objeto contendo a condição lógica em formato de texto e o texto correspondente da ramificação narrada:
-    \begin{verbatim}
-Desvio = { condicao: string, texto: string }
-\end{verbatim}
-
-    \item \textbf{Compilação Dinâmica e Avaliação de Contexto (JIT):}
-    Sempre que a validação estática (ou o simulador) precisa de determinar se um desvio condicional está ativo ou precisa de aplicar uma atribuição de variáveis, o motor realiza a compilação JIT. Esta compilação converte a expressão JavaScript gerada no primeiro passo numa função executável em tempo de execução, tirando partido do construtor dinâmico de funções do navegador (\texttt{new Function}).
-    
-    Por exemplo, para a condição \texttt{<<if \$ouro >= 10>>}, o motor realiza o seguinte processo de compilação e execução:
-\begin{verbatim}
-// Compilacao JIT da expressao gerada: "return state.ouro >= 10;"
-const evaluator = new Function('state', 'return state.ouro >= 10;');
-
-// Execucao imediata passando a memoria reativa atual
-const isTrue = evaluator(currentState);
-\end{verbatim}
-    
-    Da mesma forma, as macros de modificação de estado (atribuições como \texttt{<<set \$ouro += 10>>}) são compiladas em funções mutadoras locais (por exemplo, \texttt{new Function('state', 'state.ouro += 10;')}) que atuam sobre uma cópia isolada da memória reativa, retornando o novo estado de variáveis.
-
-    \item \textbf{Mecanismo de Segurança e Proteção contra Injeção de Código:}
-    A execução dinâmica de funções no navegador (\texttt{new Function}) pode expor a aplicação a vulnerabilidades de segurança, tais como a injeção de scripts maliciosos ou ataques de poluição de protótipo (\textit{Prototype Pollution}). 
-    
-    Para mitigar estes riscos de segurança sem prejudicar o desempenho, implementou-se em \texttt{sugarcubeLogic.js} um mecanismo de validação ativa do estado (\texttt{safeguardState}). Este mecanismo intercepta a saída das funções JIT e remove de forma preventiva quaisquer chaves sensíveis que constem numa lista de bloqueio de propriedades proibidas, como \texttt{\_\_proto\_\_}, \texttt{constructor} e \texttt{prototype}. Isto mitiga a manipulação ilícita de métodos internos do protótipo JavaScript e oferece uma camada inicial de isolamento da execução de scripts lógicos. Contudo, importa ressalvar que esta higienização de propriedades constitui uma proteção parcial focada na prevenção de ataques simples de poluição de protótipos em memória, não correspondendo a uma \textit{sandbox} de segurança real ou totalmente hermética a nível do interpretador do navegador ou do sistema operativo.
-\end{enumerate}
-
-\begin{table}[H]
-    \centering
-    \caption{Mapeamento de operadores lógicos SugarCube para JavaScript.}
-    \label{tab:operadores-sugarcube}
-    \begin{tabular}{lll}
-        \toprule
-        \textbf{Operador SugarCube} & \textbf{Operador JavaScript} & \textbf{Significado} \\
-        \midrule
-        \texttt{is} / \texttt{eq} & \texttt{===} & Igualdade estrita \\
-        \texttt{neq} & \texttt{!==} & Diferença estrita \\
-        \texttt{and} & \texttt{\&\&} & E lógico \\
-        \texttt{or} & \texttt{||} & OU lógico \\
-        \texttt{to} & \texttt{=} & Atribuição de valor \\
-        \texttt{\$variavel} & \texttt{state.variavel} & Acesso ao estado reativo \\
-        \bottomrule
-    \end{tabular}
-\end{table}
 \section{Integração de Modelos de Linguagem (LLMs)}
 \label{sec:integracao-llms-implementacao}
-Para além do núcleo lógico e da simulação estática, a plataforma disponibiliza um assistente baseado em Modelos de Linguagem de Grande Escala (LLMs) para a importação rápida de histórias em formato de texto livre. A conceção e implementação desta funcionalidade assenta nos seguintes aspetos:
 
-\subsection{Arquitetura de Integração e Papel do LLM}
-A integração com modelos de linguagem fornece uma interface de comunicação assíncrona entre o editor gráfico e o servidor de inferência. O desenvolvimento focou-se na criação do módulo \texttt{aiGenerator.js}, um cliente REST que estabelece a ligação com o endpoint local do Ollama (\texttt{http://localhost:11434}) ou, alternativamente, com APIs na nuvem (como o Gemini) através de chaves externas, garantindo acessibilidade a utilizadores com limitações de hardware local. A inferência local, prioritária no sistema, assegura a soberania dos dados e a confidencialidade da propriedade intelectual, além de eliminar custos financeiros associados a serviços proprietários.
+Como complemento ao editor visual, o sistema integra um assistente baseado em Modelos de Linguagem de Grande Escala (LLMs) para permitir a importação rápida de narrativas escritas em texto livre. A sua implementação assenta em dois pilares conceituais:
 
-Para mitigar a propensão de alucinações, omissão de ciclos ou criação de caminhos inacessíveis por parte dos LLMs, o modelo não intervém na simulação direta ou no fluxo de execução do jogo. O seu papel restringe-se estritamente a uma ferramenta de conversão sintática em fase de pré-processamento. Através de um prompt de sistema especializado, o LLM analisa a narrativa em linguagem natural fornecida pelo autor e traduz-a para a norma Twee 3. O bloco de texto gerado é enviado para o interpretador da aplicação, que assume o controlo determinístico do grafo, restando ao validador BFS a responsabilidade exclusiva de auditar a integridade de todos os caminhos e variáveis de estado no canvas visual.
+\subsection{Arquitetura de Integração e Soberania de Dados}
+A arquitetura define uma interface abstrata entre o editor e um motor de inferência (local ou na nuvem). Como premissa de design, prioriza-se a inferência local no dispositivo do utilizador, assegurando a soberania dos dados e a privacidade da propriedade intelectual, além de eliminar custos de subscrição e a dependência de servidores terceiros. Caso existam restrições de hardware, a interface permite a comutação para serviços externos via chaves de API do utilizador.
+
+\subsection{Princípio de Segurança por Desenho (Safety-by-Design)}
+Para mitigar a propensão dos LLMs a alucinações ou à geração de fluxos inválidos, adota-se o princípio de \textit{Safety-by-Design}. O modelo de linguagem é desacoplado da execução dinâmica da história e das regras do simulador, atuando apenas como ferramenta de tradução e estruturação sintática. 
+
+O utilizador fornece a narrativa em linguagem natural e a IA converte-a para a especificação estruturada Twee 3. O resultado é processado pelo parser determinístico da plataforma, que reconstrói o grafo visual, deixando a cargo do validador topológico BFS a auditoria de integridade (como a deteção de nós órfãos ou caminhos inacessíveis). Este desacoplamento garante que eventuais falhas do LLM sejam imediatamente expostas pelo sistema de validação formal, salvaguardando a estabilidade do motor de jogo.

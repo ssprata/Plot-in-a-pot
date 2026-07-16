@@ -1,0 +1,61 @@
+:: StoryTitle
+A Floresta dos Espelhos
+
+:: StoryData
+{
+  "ifid": "C5F82260-1419-48CB-B1DC-2C3C56D7324E",
+  "format": "SugarCube",
+  "format-version": "2.36.0",
+  "start": "Inicio",
+  "zoom": 1
+}
+
+:: StoryInit
+<<set $hasKey to false>>
+
+:: Inicio
+t("intro.welcome")
+
+* [[t("choices.explore_lake")|Lago]]
+* [[t("choices.climb_hill")|Colina]]
+
+:: Lago
+t("lake.desc")
+t("lake.ask_riddle")
+
+* [[t("choices.answer_silence")|RespostaSilencio]]
+* [[t("choices.answer_oblivion")|RespostaEsquecimento]]
+* [[t("choices.go_back")|Inicio]]
+
+:: RespostaSilencio
+<<set $hasKey to true>>
+t("silence.outcome")
+
+* [[t("choices.go_back")|Inicio]]
+
+:: RespostaEsquecimento
+t("oblivion.outcome")
+
+* [[t("choices.go_back")|Inicio]]
+
+:: Colina
+t("hill.desc")
+t("hill.locked_chest")
+
+<<if $hasKey is true>>
+  * [[t("choices.open_chest")|Vitoria]]
+<<else>>
+  * [[t("system.need_key")|Colina]] <<if $hasKey is false>><<type "disabled">><</if>>
+</if>>
+* [[t("choices.break_mirror")|Derrota]]
+* [[t("choices.go_back")|Inicio]]
+
+:: Vitoria
+t("chest.victory")
+
+* [[t("choices.restart")|Inicio]] <<set $hasKey to false>>
+
+:: Derrota
+t("mirror.defeat")
+
+* [[t("choices.restart")|Inicio]] <<set $hasKey to false>>

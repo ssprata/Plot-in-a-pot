@@ -6,23 +6,57 @@ Este capítulo detalha o processo de implementação prática do \textit{Plot in
 \section{Estrutura do Código e Detalhes de Implementação}
 \label{sec:estrutura-codigo-implementacao}
 
-Para além do trabalho de desenho, o desenvolvimento prático do \textit{Plot in a Pot} exigiu a criação de uma estrutura de código organizada e fácil de manter. O código da aplicação está guardado na diretoria centralizada \texttt{src/} e divide-se em três pastas principais:
+Para além do trabalho conceptual, o desenvolvimento prático do \textit{Plot in a Pot} estruturou-se sob uma arquitetura cliente executada inteiramente no navegador. A aplicação adota a seguinte pilha tecnológica base de desenvolvimento:
 \begin{itemize}
-    \item \textbf{Interface (\texttt{components/}):} Guarda os elementos visuais que o utilizador vê no ecrã, tais como os nós da história, as caixas de texto e os menus de opções.
-    \item \textbf{Estado e Comportamento (\texttt{hooks/}):} Controla a memória da aplicação, como as definições ativas, o histórico de ações para poder voltar atrás, e os atalhos do teclado.
-    \item \textbf{Lógica de Processamento (\texttt{utils/}):} Contém as rotinas matemáticas e os algoritmos que funcionam em segundo plano, como a validação de caminhos do grafo e a comunicação com a Inteligência Artificial.
+    \item \textbf{React 19} \citep{ReactReference}: Para a gestão reativa do estado e renderização eficiente do ecossistema de componentes em árvore.
+    \item \textbf{Tailwind CSS 3} \citep{TailwindCSSReference}: Classes utilitárias aplicadas no desenho e estilização da identidade visual neo-brutalista de alto contraste.
+    \item \textbf{React Flow 11} \citep{ReactFlowReference}: Como motor geométrico para renderização e manipulação do canvas interativo de nós.
+    \item \textbf{i18next}: Biblioteca local com o plugin \texttt{i18next-http-backend} para a gestão descentralizada (\textit{backendless}) de localização.
+    \item \textbf{Dagre}: Biblioteca de layout automático para organização hierárquica inicial de grafos sem coordenadas.
 \end{itemize}
-Esta separação garante que a lógica interna do programa não interfere com o desenho visual da interface, facilitando o trabalho e tornando o software muito mais rápido \citep{Ferreira2024Refactoring}.
+
+O código fonte encontra-se centralizado na diretoria \texttt{src/} e está organizado na seguinte estrutura física de pastas:
+\begin{itemize}
+    \item \textbf{\texttt{components/}:} Ficheiros React contendo os elementos de interface, como os nós customizados (\texttt{StoryNode.jsx}, \texttt{ZoneNode.jsx}) e arestas interativas (\texttt{EditableEdge.jsx}).
+    \item \textbf{\texttt{hooks/}:} Ganchos React personalizados (\textit{custom hooks}) que isolam e gerem a lógica de estado, incluindo o histórico de ações e gestão de atalhos.
+    \item \textbf{\texttt{utils/}:} Módulos JavaScript utilitários que efetuam o processamento algorítmico independente da interface, tais como o parser (\texttt{tweeParser.js}), validador de caminhos (\texttt{storyTraversal.js}) e ligação à IA (\texttt{aiGenerator.js}).
+\end{itemize}
 
 \subsection{Funcionamento da Interface Visual}
 \label{subsec:camada-interface}
 
-Esta secção explica como os elementos visuais do editor foram construídos e como resolvemos alguns problemas práticos de utilização para tornar a experiência fluida.
+Esta secção detalha os aspetos de engenharia gráfica desenvolvidos para concretizar a interface de autoria visual de grafos.
 
-\subsubsection{Organização do Canvas e Gestão de Cliques}
-O ecrã principal usa a biblioteca React Flow para desenhar o mapa de nós e ligações interativas. Desenvolvemos dois tipos de nós customizados: o nó de cena (\texttt{StoryNode}), que contém o texto da história e as ligações, e o nó de Zona (\texttt{ZoneNode}), que funciona como um retângulo para agrupar várias cenas em capítulos.
+\subsubsection{Organização do Canvas, Nós Customizados e Gestão de Cliques}
+O canvas baseia-se na biblioteca React Flow. O estado reativo central do mapa mantido em \texttt{App.jsx} utiliza um vetor de nós (\texttt{nodes}) em que cada objeto segue a estrutura de dados exemplificada a seguir para uma cena padrão:
+\begin{verbatim}
+{
+  id: "cena_taberna",
+  type: "storyNode",
+  position: { x: 250, y: 180 },
+  data: {
+    title: "Interior da Taberna",
+    content: "O cheiro a hidromel preenche a sala...",
+    tags: ["secreto"],
+    bgImage: ""
+  },
+  width: 280,
+  height: 150
+}
+\end{verbatim}
 
-Ao colocar nós de cena dentro de uma Zona, surgiu o problema de cliques sobrepostos descrito na Secção~\ref{subsec:zonas-agrupamento}. Conforme projetado, a implementação prática de estilos CSS (\texttt{pointer-events}) resolveu este obstáculo: a Zona exterior foi configurada para ignorar cliques no seu corpo geral e aceitá-los apenas nas bordas e barra de título, permitindo mover e editar as cenas interiores livremente.
+Para além do nó de cena padrão (\texttt{"storyNode"}), foram implementados mais três tipos de nós personalizados:
+\begin{itemize}
+    \item \textbf{Zona de Agrupamento (\texttt{"zoneNode"}):} Contentor retangular que agrupa logicamente os nós de cena e cujos nós filhos contêm a propriedade de relação \texttt{parentId} mapeada no objeto.
+    \item \textbf{Nó de JavaScript (\texttt{"javascriptNode"}):} Permite ao autor programar funções utilitárias ou regras gerais de controlo de variáveis de jogo executadas no simulador.
+    \item \textbf{Nó de CSS (\texttt{"cssNode"}):} Destinado à introdução de estilos e classes de personalização da simulação.
+\end{itemize}
+
+Ao nível da interface, a sobreposição das Zonas de Agrupamento (\texttt{ZoneNode}) criava uma colisão de eventos de rato. Sendo um retângulo de grandes dimensões sobposto aos nós de cena interiores, os cliques efetuados nos nós filhos eram capturados pela Zona, inviabilizando a seleção ou arrasto dos mesmos. Para resolver isto, implementou-se o seguinte mecanismo em CSS:
+\begin{enumerate}
+    \item O contentor geral da Zona foi estilizado com a propriedade \texttt{pointer-events: none} na raiz de estilos do React Flow.
+    \item No componente interno \texttt{ZoneNode.jsx}, forçou-se a propriedade \texttt{pointer-events: auto} exclusivamente nos componentes de cabeçalho (utilizado para arrastar a zona em bloco com os seus filhos) e nas pegas de redimensionamento (\texttt{NodeResizer}), permitindo a manipulação e edição fluida de todos os elementos.
+\end{enumerate}
 
 \begin{figure}[htbp]
     \centering
@@ -32,8 +66,21 @@ Ao colocar nós de cena dentro de uma Zona, surgiu o problema de cliques sobrepo
 \end{figure}
 
 \subsubsection{Caminhos Curvos e Pontos de Controlo}
-As linhas que ligam os nós representam as escolhas do jogador. Para evitar que as linhas fiquem retas e se cruzem de forma confusa por cima de outras cenas, utilizámos curvas matemáticas suaves (chamadas Splines de Catmull-Rom). Além do traçado curvo automático, o utilizador pode dar um duplo clique em qualquer linha para criar um ponto de controlo amarelo. Ao arrastar esse ponto, a linha de ligação curva-se de forma flexível, permitindo contornar obstáculos e manter o mapa organizado.
+As arestas direcionadas ligam os nós e representam caminhos no grafo. O componente personalizado \texttt{EditableEdge.jsx} recolhe o vetor de arestas (\texttt{edges}) em memória que armazena os pontos geométricos intermédios (waypoints) criados pelo autor, conforme ilustrado a seguir:
+\begin{verbatim}
+{
+  id: "edge-cena_praca-cena_taberna",
+  source: "cena_praca",
+  target: "cena_taberna",
+  type: "editableEdge",
+  data: {
+    choiceText: "Entrar na taberna",
+    waypoints: [{ x: 120, y: 150 }, { x: 180, y: 160 }]
+  }
+}
+\end{verbatim}
 
+Para calcular e desenhar a curva suavizada, o componente executa a interpolação matemática de Catmull-Rom sobre a matriz contendo o nó de origem, os waypoints e o nó de destino. A curva resultante é traduzida num caminho de controlo SVG (propriedade \texttt{d}) atualizado dinamicamente à medida que o utilizador arrasta as pegas geométricas dos marcadores amarelos (com double click).
 
 Para ajudar a navegar em mapas grandes, o painel lateral de propriedades (\texttt{Inspector}) calcula em tempo real quais são os nós que entram e saem do nó selecionado. Isto cria atalhos rápidos para que o autor possa saltar de cena em cena sem ter de arrastar o ecrã manualmente.
 
@@ -59,15 +106,31 @@ Para além do mapa principal, a interface tem outras ferramentas de suporte:
 \subsection{Funcionamento da Camada de Lógica}
 \label{subsec:camada-logica}
 
-A lógica do programa é composta por três módulos independentes: o leitor de ficheiros, o validador matemático de rotas (que deteta erros no fluxo) e o assistente de Inteligência Artificial (atualmente em versão beta, usado exclusivamente para converter histórias existentes em texto livre para o formato do mapa). Esta camada funciona de forma autónoma em segundo plano:
+A camada de lógica funciona de forma autónoma em segundo plano e é composta por módulos independentes programados em JavaScript simples na pasta \texttt{src/utils/}: o parser bidirecional, o compilador JIT de macros, o validador reativo de espaço de estados e o módulo de ligação ao Ollama.
 
-\subsubsection{Leitor de Ficheiros Twee 3}
-O leitor (\texttt{tweeParser}) é o responsável por traduzir o mapa visual do canvas em ficheiros de texto no formato Twine (Twee 3) e vice-versa. Quando um ficheiro de texto é importado, o leitor decifra a posição das cenas e coloca-as no ecrã. Se um nó estiver dentro de uma Zona de capítulo, o leitor calcula a sua posição somando os desvios da Zona-mãe, para que as caixas fiquem organizadas exatamente como o autor as deixou.
+\subsubsection{Leitor e Gravador de Ficheiros Twee 3}
+O módulo \texttt{tweeParser.js} é responsável pela tradução bidirecional síncrona. O processo de importação é implementado pela função \texttt{parseTwee3(source)}:
+\begin{enumerate}
+    \item \textbf{Divisão Lógica em Blocos:} Utiliza a expressão regular \lstinline|^::| com a flag \lstinline|m| (multiline) para segmentar a cadeia de texto em nós individuais.
+    \item \textbf{Extração de Metadados:} A linha de cabeçalho é processada para isolar o nome da passagem, etiquetas (entre parênteses retos) e metadados visuais (em formato JSON entre chavetas). A separação do JSON de metadados visuais é efetuada localizando o primeiro caractere \lstinline|{| para evitar falhas em objetos complexos.
+    \item \textbf{Resolução de Zonas:} Efetua a conversão de coordenadas absolutas para relativas caso o nó possua a propriedade \texttt{parent} mapeando-o a uma Zona de Agrupamento Visual, de modo a permitir que o React Flow renderize a hierarquia no canvas.
+    \item \textbf{Extração de Arestas:} Executa a pesquisa sintática de hiperligações no texto através das expressões regulares:
+    \begin{itemize}
+        \item Ligações double-bracket: \lstinline|/\[\[(.*?)\]\]/g|, analisando a presença de marcadores de direcionamento (\lstinline/|/, \lstinline/->/, \lstinline/<-/).
+        \item Macros SugarCube: \lstinline|/<<link\s+"([^"]+)"\s*>>([\s\S]*?)<<\/link>>/g| em conjunto com comandos \lstinline|<<goto>>| interiores.
+    \end{itemize}
+    \item \textbf{Layout Automático:} Caso o ficheiro não possua coordenadas espaciais, o parser invoca a rotina \texttt{layoutNodesAndEdges} (utilizando a biblioteca Dagre) para posicionar hierarquicamente os nós no ecrã.
+\end{enumerate}
+
+Para o processo de gravação física, a função \texttt{exportToTwee3(nodes, edges)} serializa os dados efetuando as seguintes tarefas auxiliares:
+\begin{itemize}
+    \item \textbf{Garantia de Unicidade:} Evita colisões de nomes duplicados renomeando de forma incremental passagens repetidas.
+    \item \textbf{Escapes preventivos:} A função \texttt{escapeForTweeHeader} escapa delimitadores do cabeçalho (\lstinline|\|, \lstinline|[|, \lstinline|]|, \lstinline|{|, \lstinline|}|), enquanto a função \texttt{escapeForTweeText} deteta ocorrências de \lstinline|::| no início de linhas do corpo e converte-as em \lstinline|\::|, impedindo erros de parsing no compilador Twine final.
+    \item \textbf{Coordenadas absolutas:} Reconverte as posições locais de nós filhos de Zonas para posições absolutas antes da escrita no ficheiro.
+\end{itemize}
 
 \subsubsection{Validação de Caminhos e Ciclos Infinitos}
-Para verificar se existem erros na história (como caminhos sem saída ou cenas impossíveis de alcançar), o sistema percorre automaticamente todas as rotas do grafo em largura (BFS). No entanto, como as histórias têm escolhas baseadas em variáveis (por exemplo, um loop onde o jogador volta à mesma sala até encontrar uma chave), a validação podia ficar presa num ciclo infinito em segundo plano.
-
-Para evitar isto e manter a aplicação rápida, o validador (\texttt{storyTraversal}) implementa uma regra de segurança: se o mesmo nó for visitado 10 vezes com estados diferentes das variáveis, o sistema assume que existe um ciclo infinito no mapa e interrompe a pesquisa, avisando de imediato o utilizador, conforme demonstrado no código da Listagem~\ref{lst:traversal-loop}.
+O validador estático, implementado em \texttt{storyValidator.js} e \texttt{storyTraversal.js}, executa a pesquisa em largura (BFS) sobre o grafo de espaço de estados. A Listagem~\ref{lst:traversal-loop} ilustra a implementação prática do ciclo principal de exploração, destacando a aplicação do limite de $K=10$ visitas por nó com estados diferentes para mitigar o problema da paragem e ciclos infinitos.
 
 \begin{listing}[!htpb]
 \begin{lstlisting}
@@ -99,8 +162,57 @@ while (queue.length > 0) {
 \label{lst:traversal-loop}
 \end{listing}
 
-\subsubsection{Ligação à Inteligência Artificial}
-O módulo de IA (\texttt{aiGenerator}) permite converter histórias existentes, escritas em linguagem simples pelo autor, para o formato aceite pelo editor. O sistema faz um pedido de comunicação direto (via API REST local na porta 11434) a um modelo de linguagem a correr no computador do utilizador. O prompt enviado obriga o modelo de IA a estruturar a resposta no formato padrão Twine, garantindo que o nosso leitor de ficheiros possa criar os nós visuais e as ligações no canvas sem qualquer erro de formatação.
+\subsubsection{Compilação JIT de Macros SugarCube e Segurança}
+\label{subsec:compilador-jit-macros-impl}
+A interpretação dinâmica de condicionais e atribuições SugarCube na sandbox de simulação e no validador é gerida pelos módulos \texttt{logicParser.js} e \texttt{sugarcubeLogic.js}. A execução baseia-se num processo de compilação em tempo de execução (JIT) estruturado em três fases:
+\begin{enumerate}
+    \item \textbf{Tradução Sintática:} O texto contendo expressões SugarCube (ex: \texttt{<<if \$ouro is 10>>}) é analisado e traduzido para JavaScript puro através de mapeamentos léxicos de expressões regulares (conforme detalhado na Tabela~\ref{tab:operadores-sugarcube}). As variáveis prefixadas com \texttt{\$} são reescritas para referências seguras dentro do objeto global de estado (ex: \texttt{state.ouro}).
+    
+    \item \textbf{Construção da Árvore de Sintaxe Abstrata (AST):} O módulo \texttt{logicParser.js} analisa o texto à procura de desvios e segmenta blocos condicionais aninhados (\texttt{<<if>>}, \texttt{<<elseif>>}, \texttt{<<else>>}), gerando uma árvore estruturada de desvios condicionais na memória.
+    
+    \item \textbf{Compilação Dinâmica via \texttt{new Function}:} O código traduzido é compilado em tempo de execução numa função JavaScript executável através do construtor dinâmico do navegador:
+    \begin{verbatim}
+const evaluator = new Function('state', 'return state.ouro === 10;');
+const isTrue = evaluator(currentState);
+    \end{verbatim}
+    Esta compilação JIT é também aplicada sobre as macros de mutação de estado (ex: \texttt{<<set \$ouro to 10>>}), gerando funções mutadoras locais que atualizam o estado da simulação.
+    
+    \item \textbf{Segurança e Prevenção contra Poluição de Protótipos:} A compilação reativa utilizando o construtor \texttt{new Function} introduz riscos de injeção de scripts maliciosos. Para mitigar esta vulnerabilidade sem degradar o desempenho síncrono no cliente, implementou-se em \texttt{sugarcubeLogic.js} a rotina de sanitização \texttt{safeguardState}. Esta função atua intercetando a execução e invalidando de forma proativa acessos a chaves de sistema protegidas, tais como \texttt{\_\_proto\_\_}, \texttt{constructor} e \texttt{prototype}.
+\end{enumerate}
+
+\begin{table}[H]
+    \centering
+    \caption{Mapeamento de operadores lógicos SugarCube para JavaScript.}
+    \label{tab:operadores-sugarcube}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Operador SugarCube} & \textbf{Operador JavaScript} & \textbf{Significado} \\
+        \midrule
+        \texttt{is} / \texttt{eq} & \texttt{===} & Igualdade estrita \\
+        \texttt{neq} & \texttt{!==} & Diferença estrita \\
+        \texttt{and} & \texttt{\&\&} & E lógico \\
+        \texttt{or} & \texttt{||} & OU lógico \\
+        \texttt{to} & \texttt{=} & Atribuição de valor \\
+        \texttt{\$variavel} & \texttt{state.variavel} & Acesso ao estado reativo \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Ligação à Inteligência Artificial (Ollama Local)}
+O assistente de importação rápida é gerido pelo módulo \texttt{aiGenerator.js}. O sistema realiza chamadas HTTP assíncronas (via API Fetch) diretamente ao servidor local do Ollama que corre na porta padrão \texttt{11434} do computador do utilizador:
+\begin{verbatim}
+POST http://localhost:11434/api/generate
+Content-Type: application/json
+
+{
+  "model": "qwen2.5:9b",
+  "prompt": "... prompt de conversão para Twee 3 ...",
+  "stream": false
+}
+\end{verbatim}
+
+O cliente REST processa a resposta JSON para extrair o texto limpo da especificação Twee 3, lidando com erros de rede e indisponibilidade do serviço local, permitindo que o interpretador da aplicação efetue a renderização determinística imediata das passagens no canvas.
+
 \subsubsection{Fluxo de Atualização Reativa}
 Para manter a aplicação sempre coerente, o fluxo de dados é direto e contínuo:
 \begin{enumerate}

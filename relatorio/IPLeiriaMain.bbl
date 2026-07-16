@@ -41,32 +41,6 @@
     \field{year}{1997}
   \endentry
 
-  \entry{Aarts2018StackOverflow}{misc}{}
-    \name{author}{1}{}{%
-      {{hash=AR}{%
-         family={Aarts},
-         familyi={A\bibinitperiod},
-         given={Roy},
-         giveni={R\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{AR1}
-    \strng{fullhash}{AR1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2018}
-    \field{labeldatesource}{}
-    \field{sortinit}{A}
-    \field{sortinithash}{A}
-    \field{howpublished}{Stack Overflow Answer}
-    \field{title}{How to draw smooth curve through N points using javascript \&
-  HTML5 canvas?}
-    \verb{url}
-    \verb https://stackoverflow.com/a/49371349
-    \endverb
-    \field{year}{2018}
-  \endentry
-
   \entry{Adams2014}{book}{}
     \name{author}{1}{}{%
       {{hash=AE}{%
@@ -112,33 +86,6 @@
     \verb https://www.articy.com/
     \endverb
     \field{year}{2010}
-  \endentry
-
-  \entry{Babich2023}{article}{}
-    \name{author}{1}{}{%
-      {{hash=BN}{%
-         family={Babich},
-         familyi={B\bibinitperiod},
-         given={Nick},
-         giveni={N\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{BN1}
-    \strng{fullhash}{BN1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2023}
-    \field{labeldatesource}{}
-    \field{sortinit}{B}
-    \field{sortinithash}{B}
-    \field{title}{Neubrutalism in Web Design: Principles and Accessibility Best
-  Practices}
-    \verb{url}
-    \verb https://www.uxbooth.com/articles/neubrutalism-in-web-design-principle
-    \verb s-and-accessibility-best-practices/
-    \endverb
-    \field{journaltitle}{UX Booth}
-    \field{year}{2023}
   \endentry
 
   \entry{BondyMurty2008}{book}{}
@@ -376,48 +323,6 @@
     \field{year}{2009}
   \endentry
 
-  \entry{Ferreira2024Refactoring}{article}{}
-    \name{author}{3}{}{%
-      {{hash=FF}{%
-         family={Ferreira},
-         familyi={F\bibinitperiod},
-         given={F{\'a}bio},
-         giveni={F\bibinitperiod},
-      }}%
-      {{hash=BHS}{%
-         family={Borges},
-         familyi={B\bibinitperiod},
-         given={Hudson\bibnamedelima Silva},
-         giveni={H\bibinitperiod\bibinitdelim S\bibinitperiod},
-      }}%
-      {{hash=VMT}{%
-         family={Valente},
-         familyi={V\bibinitperiod},
-         given={Marco\bibnamedelima Tulio},
-         giveni={M\bibinitperiod\bibinitdelim T\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{FF+1}
-    \strng{fullhash}{FFBHSVMT1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2024}
-    \field{labeldatesource}{}
-    \field{sortinit}{F}
-    \field{sortinithash}{F}
-    \verb{doi}
-    \verb 10.1016/j.jss.2024.112105
-    \endverb
-    \field{pages}{112105}
-    \field{title}{Refactoring React-based Web apps}
-    \verb{url}
-    \verb https://doi.org/10.1016/j.jss.2024.112105
-    \endverb
-    \field{volume}{215}
-    \field{journaltitle}{Journal of Systems and Software}
-    \field{year}{2024}
-  \endentry
-
   \entry{InkReference}{misc}{}
     \name{author}{1}{}{%
       {{hash=I}{%
@@ -571,29 +476,28 @@
     \field{year}{2018}
   \endentry
 
-  \entry{Loranger2022}{misc}{}
+  \entry{Malewicz2022}{article}{}
     \name{author}{1}{}{%
-      {{hash=LP}{%
-         family={Loranger},
-         familyi={L\bibinitperiod},
-         given={Page},
-         giveni={P\bibinitperiod},
+      {{hash=MM}{%
+         family={Malewicz},
+         familyi={M\bibinitperiod},
+         given={Michal},
+         giveni={M\bibinitperiod},
       }}%
     }
-    \strng{namehash}{LP1}
-    \strng{fullhash}{LP1}
+    \strng{namehash}{MM1}
+    \strng{fullhash}{MM1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
     \field{labelyear}{2022}
     \field{labeldatesource}{}
-    \field{sortinit}{L}
-    \field{sortinithash}{L}
-    \field{note}{Nielsen Norman Group}
-    \field{title}{Neubrutalism: The Web Design Trend Challenging Usability
-  Conventions}
+    \field{sortinit}{M}
+    \field{sortinithash}{M}
+    \field{title}{Neubrutalism is taking over web}
     \verb{url}
-    \verb https://www.nngroup.com/articles/neobrutalism/
+    \verb https://hype4.academy/articles/design/neubrutalism-is-taking-over-web
     \endverb
+    \field{journaltitle}{Hype4 Academy}
     \field{year}{2022}
   \endentry
 
@@ -836,6 +740,31 @@
     \verb https://yarnspinner.dev/
     \endverb
     \field{year}{2015}
+  \endentry
+
+  \entry{Sheikh2025}{misc}{}
+    \name{author}{1}{}{%
+      {{hash=SH}{%
+         family={Sheikh},
+         familyi={S\bibinitperiod},
+         given={Hayat},
+         giveni={H\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{SH1}
+    \strng{fullhash}{SH1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2025}
+    \field{labeldatesource}{}
+    \field{sortinit}{S}
+    \field{sortinithash}{S}
+    \field{note}{Nielsen Norman Group}
+    \field{title}{Neobrutalism: Definition and Best Practices}
+    \verb{url}
+    \verb https://www.nngroup.com/articles/neobrutalism/
+    \endverb
+    \field{year}{2025}
   \endentry
 
   \entry{TailwindCSSReference}{misc}{}
