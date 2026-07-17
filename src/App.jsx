@@ -6,8 +6,7 @@ import ReactFlow, {
   Controls,
   Background,
   useNodesState,
-  useEdgesState,
-  addEdge
+  useEdgesState
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -30,66 +29,150 @@ const nodeTypes = {
   zone: RpgNode
 };
 
-// Dados de Exemplo para a Campanha Inicial (D&D Starter)
+// Dados de Exemplo para a Campanha Inicial (Ordem Paranormal - Fumaça Púrpura)
 const initialNodes = [
   {
     id: 'node-1',
     type: 'session',
-    position: { x: 200, y: 50 },
+    position: { x: 250, y: -100 },
     data: {
-      label: 'Sessão 1: A Chegada',
+      label: 'Fumaça Púrpura',
       category: 'session',
-      content: `# Sessão 1 - A Chegada a Phandalin&#10;&#10;Os heróis foram contratados por [[Gundren Rockseeker]] para escoltar uma carroça até à [[Vila de Phandalin]].&#10;&#10;## Acontecimentos:&#10;- Foram atacados por goblins no caminho.&#10;- Chegaram à vila e descansaram no [[O Javali Bebado]].&#10;- Ouviram boatos de que o grupo de mercenários [[Redbrands]] está a aterrorizar os moradores locais.`,
-      tags: 'sessao, starter',
-      metadata: { inGameDate: '15 Mirtul, 1492', realDate: '17/07/2026', players: 'Rita, Nuno, José' }
+      content: '<h1>Fumaça Púrpura</h1><strong>Prólogo - Ordem Paranormal RPG</strong><br/>Um idílico passeio de trem pelos vinhedos da Serra Gaúcha transforma-se num terrível pesadelo. Os personagens, inicialmente "civis" sem ligação à Ordo Realitas, encontram-se a bordo da <span class="wiki-link" contenteditable="false" data-target="Maria Fumaça de Gonçalino">📄 Maria Fumaça de Gonçalino</span>.<br/><br/><h2>Ganchos de Campanha</h2><ul><li><strong>Férias:</strong> O passeio turístico faz parte das férias dos personagens.</li><li><strong>Novas Experiências:</strong> Um escape da rotina diária no sul do país.</li><li><strong>Presente Inesperado:</strong> Um bilhete ganho num sorteio.</li></ul><h2>Investigação e Cenas</h2><ol><li><strong>Banquete Inicial:</strong> Os heróis comem os pratos servidos por <span class="wiki-link" contenteditable="false" data-target="Lia Schmidt">📄 Lia Schmidt</span>.</li><li><strong>Cena 1 - Porta Emperrada:</strong> A primeira manifestação paranormal ocorre quando a porta do vagão tranca, gerando uma <span class="wiki-link" contenteditable="false" data-target="Porta Emperrada">📄 Porta Emperrada</span>.</li><li><strong>Cena 2 - Sombras &amp; Vultos:</strong> O trem para e as luzes apagam, revelando vultos de Energia.</li><li><strong>Cena 3 - Massacre no Trem:</strong> <span class="wiki-link" contenteditable="false" data-target="Matheus Santavilla">📄 Matheus Santavilla</span> assassina <span class="wiki-link" contenteditable="false" data-target="Luiz Marzio">📄 Luiz Marzio</span>.</li></ol>',
+      tags: 'missao-0, prologo, nex-0',
+      metadata: { inGameDate: 'Primavera, 2023', realDate: '17/07/2026', players: 'Civis (NEX 0% -> 5%)' }
     }
   },
   {
     id: 'node-2',
-    type: 'npc',
-    position: { x: 500, y: 50 },
+    type: 'location',
+    position: { x: 0, y: 50 },
     data: {
-      label: 'Gundren Rockseeker',
-      category: 'npc',
-      content: `# Gundren Rockseeker&#10;&#10;Um anão negociante obstinado. Ele contratou o grupo por 10 moedas de ouro cada para fazer a escolta da carga.&#10;&#10;Ele viajou antes dos heróis com um guerreiro escolta, mas nunca chegou à [[Vila de Phandalin]]. Os heróis temem que ele tenha sido capturado.`,
-      tags: 'importante, quest-giver',
-      metadata: { race: 'Anão', class: 'Comerciante', hp: '32', ac: '12', status: 'Desaparecido', alignment: 'Neutro e Bom' }
+      label: 'Maria Fumaça de Gonçalino',
+      category: 'location',
+      content: '<h1>Maria Fumaça de Gonçalino</h1><strong>Tipo:</strong> Trem Turístico<br/><strong>Região:</strong> Gonçalino, Serra Gaúcha<br/><strong>Nível de Perigo:</strong> 💀💀<br/><br/><h2>Vagões do Trem</h2><ul><li><strong>Locomotiva:</strong> Onde fica o painel de comando para controlar os motores.</li><li><strong>Vagão-Cozinha:</strong> Onde fica a caixa de fusíveis do <span class="wiki-link" contenteditable="false" data-target="Enigma dos Fusíveis">📄 Enigma dos Fusíveis</span>.</li><li><strong>Vagão de Primeira Classe:</strong> Onde <span class="wiki-link" contenteditable="false" data-target="Luiz Marzio">📄 Luiz Marzio</span> estava disfarçado.</li><li><strong>Vagões de Passageiros Comuns:</strong> Onde os personagens e <span class="wiki-link" contenteditable="false" data-target="Lia Schmidt">📄 Lia Schmidt</span> começam.</li><li><strong>Vagão-Depósito:</strong> Onde são estocadas as malas e os fusíveis sobressalentes.</li></ul><br/>O trem é parado a meio do trajeto, sobre uma alta ponte de ferro que cruza o cânion.',
+      tags: 'trem, cenario',
+      metadata: { region: 'Serra Gaúcha', type: 'Trem', danger: 2 }
     }
   },
   {
     id: 'node-3',
-    type: 'location',
-    position: { x: 200, y: 280 },
+    type: 'npc',
+    position: { x: -200, y: 50 },
     data: {
-      label: 'O Javali Bebado',
-      category: 'location',
-      content: `# O Javali Bêbado&#10;&#10;A principal taverna e hospedaria da [[Vila de Phandalin]].&#10;&#10;**Som:** Canecas batendo, gargalhadas altas, lareira crepitando.&#10;**Cheiro:** Cerveja azeda, ensopado de coelho e fumo de cachimbo.&#10;&#10;## NPCs Comuns:&#10;- [[Toblen Stonehill]] (Dono da taverna)&#10;- Rumores sobre [[Redbrands]] são discutidos aqui frequentemente.`,
-      tags: 'taverna, phandalin',
-      metadata: { region: 'Fronteira da Costa da Espada', type: 'Taverna', danger: 1 }
+      label: 'Lia Schmidt',
+      category: 'npc',
+      content: '<h1>Lia Schmidt</h1><strong>Descrição Física:</strong> Uma jovem ruiva, simpática e com leve sobrepeso. Usa o uniforme azul e preto da Maria Fumaça.<br/><strong>Personalidade:</strong> Solícita, mas visivelmente nervosa por ser o seu primeiro dia de trabalho. A sua família humilde vive na região de Dourado.<br/><br/><h2>Papel na Missão</h2><ul><li>Serve a degustação de vinhos, queijos e massas aos passageiros.</li><li>Pede ajuda para abrir a <span class="wiki-link" contenteditable="false" data-target="Porta Emperrada">📄 Porta Emperrada</span> quando esta tranca misteriosamente.</li><li>Após o <span class="wiki-link" contenteditable="false" data-target="Massacre no Trem">📄 Massacre no Trem</span>, fica em choque absoluto mas ajuda os sobreviventes com um kit de primeiros socorros.</li></ul>',
+      tags: 'npc, inocente, tripulante',
+      metadata: { race: 'Humana', class: 'Atendente', hp: '12', ac: '10', status: 'Vivo', alignment: 'Neutro e Bom' }
     }
   },
   {
     id: 'node-4',
-    type: 'location',
-    position: { x: -80, y: 280 },
+    type: 'quest',
+    position: { x: -200, y: 220 },
     data: {
-      label: 'Vila de Phandalin',
-      category: 'location',
-      content: `# Vila de Phandalin&#10;&#10;Uma pacata vila fronteiriça de colonos. Está construída sobre antigas ruínas de pedra.&#10;&#10;## Locais Principais:&#10;- [[O Javali Bebado]]&#10;- Câmara Municipal&#10;&#10;A vila está a sofrer pressão constante do gangue de bandidos [[Redbrands]].`,
-      tags: 'cidade, segura',
-      metadata: { region: 'Costa da Espada', type: 'Vila', danger: 2 }
+      label: 'Porta Emperrada',
+      category: 'quest',
+      content: '<h1>Porta Emperrada</h1><strong>Dador da Quest:</strong> <span class="wiki-link" contenteditable="false" data-target="Lia Schmidt">📄 Lia Schmidt</span><br/><strong>Recompensa:</strong> Avançar na investigação<br/><br/><h2>Objetivos</h2><div style="margin-bottom: 5px;"><input type="checkbox" style="margin-right: 5px; cursor: pointer; accent-color: var(--accent);" /> Ajudar Lia a abrir a porta que liga os vagões de passageiros.</div><div style="margin-bottom: 5px;"><input type="checkbox" style="margin-right: 5px; cursor: pointer; accent-color: var(--accent);" /> Fazer testes de Atletismo ou Tecnologia (DT 15) para forçar o painel.</div><div style="margin-bottom: 5px;"><input type="checkbox" style="margin-right: 5px; cursor: pointer; accent-color: var(--accent);" /> Evitar ser atingido pelo arco voltaico (1d6 de dano de eletricidade, Ref DT 15 reduz à metade).</div><br/><em>Nota: A falha na abertura da porta é provocada pelo ritual de Energia oculto no trem.</em>',
+      tags: 'quest, tutorial, perigo',
+      metadata: { status: 'Em Progresso', reward: 'Acesso aos outros vagões', questGiver: 'Lia Schmidt' }
     }
   },
   {
     id: 'node-5',
-    type: 'lore',
-    position: { x: -80, y: 480 },
+    type: 'npc',
+    position: { x: 250, y: 150 },
     data: {
-      label: 'Redbrands',
-      category: 'lore',
-      content: `# Redbrands&#10;&#10;Um bando organizado de mercenários e bandidos que usam capas vermelhas.&#10;&#10;Eles andam a exigir "dinheiro de proteção" aos comerciantes da [[Vila de Phandalin]] e raptaram alguns colonos. O seu líder é um feiticeiro misterioso conhecido como "Glasstaff".`,
-      tags: 'inimigos, faccao',
-      metadata: { association: 'Glasstaff / Aranha Negra' }
+      label: 'Luiz Marzio',
+      category: 'npc',
+      content: '<h1>Luiz Marzio</h1><strong>Descrição Física:</strong> Agente federal de estatura mediana, barbado, com jaqueta cinza de capuz. Infiltrado disfarçado sob o nome falso "Carlos Zanotti" (33 anos).<br/><br/><h2>Investigação Oculta</h2><ul><li>Infiltrado para investigar o desvio de verbas e lavagem de dinheiro de <span class="wiki-link" contenteditable="false" data-target="Giordano Argento">📄 Giordano Argento</span>.</li><li>Carrega a prova crucial: o <span class="wiki-link" contenteditable="false" data-target="Documento Secreto">📄 Documento Secreto</span>, que contém a lista de investidores e políticos corruptos.</li><li>É assassinado a sangue frio por <span class="wiki-link" contenteditable="false" data-target="Matheus Santavilla">📄 Matheus Santavilla</span> no vagão-cozinha durante o <span class="wiki-link" contenteditable="false" data-target="Massacre no Trem">📄 Massacre no Trem</span>.</li></ul>',
+      tags: 'npc, policia-federal, investigacao',
+      metadata: { race: 'Humano', class: 'Policial Federal', hp: '15', ac: '18', status: 'Morto', alignment: 'Ordeiro e Bom' }
+    }
+  },
+  {
+    id: 'node-6',
+    type: 'item',
+    position: { x: 450, y: 150 },
+    data: {
+      label: 'Documento Secreto',
+      category: 'item',
+      content: '<h1>Documento Secreto</h1><strong>Tipo:</strong> Lista de Nomes (Handout)<br/><strong>Raridade:</strong> Raro<br/><br/><h2>Detalhes</h2>Uma lista impressa detalhando autoridades envolvidas numa operação de lavagem de dinheiro que financia os planos ocultistas de <span class="wiki-link" contenteditable="false" data-target="Giordano Argento">📄 Giordano Argento</span> e a sua falsa siderúrgica.<br/><br/><h2>Como Obter:</h2><ul><li>Encontrado dentro da maleta trancada (senha: 1990) no corpo de <span class="wiki-link" contenteditable="false" data-target="Luiz Marzio">📄 Luiz Marzio</span> após o <span class="wiki-link" contenteditable="false" data-target="Massacre no Trem">📄 Massacre no Trem</span>.</li></ul>',
+      tags: 'item, pista, principal',
+      metadata: { rarity: 'Raro', type: 'Documento', attunement: false, value: 'Inestimável' }
+    }
+  },
+  {
+    id: 'node-7',
+    type: 'npc',
+    position: { x: 500, y: 320 },
+    data: {
+      label: 'Matheus Santavilla',
+      category: 'npc',
+      content: '<h1>Matheus Santavilla</h1><strong>Descrição Física:</strong> Jovem pardo, alto, cabelos bem cortados. Veste o uniforme de Chefe da Tripulação da Maria Fumaça, mas revela-se vestindo um manto roxo.<br/><br/><h2>O Cultista de Energia</h2><ul><li>Capanga e assecla de <span class="wiki-link" contenteditable="false" data-target="Giordano Argento">📄 Giordano Argento</span>.</li><li>Sabotou a eletricidade do trem usando um ritual para isolar a comunicação.</li><li>Executou <span class="wiki-link" contenteditable="false" data-target="Luiz Marzio">📄 Luiz Marzio</span> para recuperar o <span class="wiki-link" contenteditable="false" data-target="Documento Secreto">📄 Documento Secreto</span>.</li><li>Provoca o <span class="wiki-link" contenteditable="false" data-target="Massacre no Trem">📄 Massacre no Trem</span> ao conjurar um poderoso ritual de eletrocussão que carboniza todos os passageiros.</li><li>Confronta os personagens no <span class="wiki-link" contenteditable="false" data-target="Confronto no Expresso">📄 Confronto no Expresso</span> usando rituais de Energia e Conhecimento.</li></ul>',
+      tags: 'npc, cultista, inimigo',
+      metadata: { race: 'Humano (Ocultista)', class: 'Chefe de Tripulação', hp: '15 / 30', ac: '15 / 17', status: 'Vivo', alignment: 'Caótico e Mau' }
+    }
+  },
+  {
+    id: 'node-8',
+    type: 'session',
+    position: { x: 250, y: 320 },
+    data: {
+      label: 'Massacre no Trem',
+      category: 'session',
+      content: '<h1>Massacre no Trem</h1><strong>Acontecimentos da Investigação:</strong><ul><li>O trem para no meio da ponte sobre a Queda da Estrela e as luzes se apagam.</li><li>Os personagens ouvem gritos de <span class="wiki-link" contenteditable="false" data-target="Lia Schmidt">📄 Lia Schmidt</span> no vagão da frente.</li><li>No vagão-cozinha, encontram <span class="wiki-link" contenteditable="false" data-target="Matheus Santavilla">📄 Matheus Santavilla</span> com uma faca de churrasco sobre o corpo sem vida de <span class="wiki-link" contenteditable="false" data-target="Luiz Marzio">📄 Luiz Marzio</span>.</li><li>Matheus ativa um poderoso ritual de Energia que eletrocuta e incinera todos os civis no trem, deixando apenas os personagens e Lia vivos.</li><li>Os personagens devem revistar o corpo de Luiz para obter o <span class="wiki-link" contenteditable="false" data-target="Documento Secreto">📄 Documento Secreto</span> e a sua pistola.</li></ul>',
+      tags: 'cena-3, cena-4, combate, terror',
+      metadata: { inGameDate: 'Primavera, 2023', realDate: '17/07/2026', players: 'Civis (NEX 0% -> 5%)' }
+    }
+  },
+  {
+    id: 'node-9',
+    type: 'quest',
+    position: { x: 30, y: 320 },
+    data: {
+      label: 'Enigma dos Fusíveis',
+      category: 'quest',
+      content: '<h1>Enigma dos Fusíveis</h1><strong>Tipo:</strong> Puzzle de Engenharia<br/><strong>Objetivo:</strong> Restaurar a energia da Maria Fumaça para conduzir o trem até ao fim da ponte.<br/><br/><h2>O Quadro de Fusíveis</h2><ul><li>Localizado na parede do vagão-cozinha.</li><li>Possui 6 espaços: Vermelho, Verde, Amarelo 1, Rosa, Amarelo 2, Roxo.</li><li>Faltam os fusíveis Verde, Rosa e Roxo (o antigo roxo está queimado).</li></ul><h2>Resolução:</h2><ol><li>Ir até ao vagão-depósito restrito (requer Vermelho + Amarelo 1).</li><li>Passar pelo carrinho de metal emperrado na porta (Acrobacia DT 15 ou Atletismo DT 20).</li><li>Fazer testes de Investigação (DT 20) no depósito para achar os fusíveis Rosa e Roxo, e a senha (5926) do cofre onde está o fusível Verde.</li><li>Acoplar tudo para religar o painel!</li></ol>',
+      tags: 'quest, puzzle, investigacao',
+      metadata: { status: 'Não Iniciada', reward: 'Acesso à Locomotiva', questGiver: 'Painel de Eletricidade' }
+    }
+  },
+  {
+    id: 'node-10',
+    type: 'session',
+    position: { x: 250, y: 480 },
+    data: {
+      label: 'Confronto no Expresso',
+      category: 'session',
+      content: '<h1>Confronto no Expresso</h1><strong>O Combate Final do Prólogo</strong><br/>Após restaurarem a energia e tentarem pilotar o trem, o painel de comando explode devido à instabilidade do paranormal. Os personagens correm de volta e deparam-se com <span class="wiki-link" contenteditable="false" data-target="Matheus Santavilla">📄 Matheus Santavilla</span> em sua forma de Cultista de Energia.<br/><br/><h2>Dificuldade e Combate</h2><ul><li>Matheus usa o ritual Eletrocussão e Perturbação.</li><li><strong>Ajuda da Ordem:</strong> <span class="wiki-link" contenteditable="false" data-target="Eduarda Flom">📄 Eduarda Flom</span>, agente da Ordo Realitas, chega numa van preta e consegue infiltrar-se no trem para atuar como aliada do grupo.</li><li>Ao derrotarem Matheus, a missão termina e os sobreviventes são recrutados.</li></ul>',
+      tags: 'combate-final, prologo, nex-5',
+      metadata: { inGameDate: 'Primavera, 2023', realDate: '17/07/2026', players: 'Rita, Nuno, José, Eduarda' }
+    }
+  },
+  {
+    id: 'node-11',
+    type: 'npc',
+    position: { x: 30, y: 480 },
+    data: {
+      label: 'Eduarda Flom',
+      category: 'npc',
+      content: '<h1>Eduarda Flom</h1><strong>Descrição Física:</strong> Jovem de cabelos curtos com mechas roxas, casaco de ganga, calça rasgada, luva preta sem dedos e coldre tático com uma pistola na coxa.<br/><strong>Personalidade:</strong> Rebelde na aparência, mas extremamente gentil, protetora e madura.<br/><br/><h2>Recrutamento para a Ordem</h2><ul><li>Agente da Ordo Realitas enviada para interceptar a atividade ocultista no trem.</li><li>Chega para apoiar os heróis no <span class="wiki-link" contenteditable="false" data-target="Confronto no Expresso">📄 Confronto no Expresso</span>.</li><li>Após a batalha, recolhe as provas, trata os feridos e faz o convite oficial para os sobreviventes se juntarem à Ordo Realitas (NEX 5%).</li></ul>',
+      tags: 'npc, aliado, ordo-realitas',
+      metadata: { race: 'Humana', class: 'Agente da Ordem', hp: '25', ac: '15', status: 'Vivo', alignment: 'Ordeiro e Bom' }
+    }
+  },
+  {
+    id: 'node-12',
+    type: 'npc',
+    position: { x: 500, y: 480 },
+    data: {
+      label: 'Giordano Argento',
+      category: 'npc',
+      content: '<h1>Giordano Argento</h1><strong>Descrição:</strong> Atual patriarca do clã Argento, um empresário elegante de 63 anos, presidente do Grupo Argento S/A.<br/><strong>O Ocultista:</strong> Um mestre ocultista poderoso que busca desviar verbas públicas e privadas para financiar rituais por todo o Brasil com o propósito de enfraquecer a Membrana.<br/><br/><h2>Relações com o Prólogo</h2><ul><li>Mandou o seu capanga <span class="wiki-link" contenteditable="false" data-target="Matheus Santavilla">📄 Matheus Santavilla</span> recuperar o <span class="wiki-link" contenteditable="false" data-target="Documento Secreto">📄 Documento Secreto</span> e silenciar o agente federal <span class="wiki-link" contenteditable="false" data-target="Luiz Marzio">📄 Luiz Marzio</span>.</li><li>O seu nome é o elo que conecta todas as missões futuras da campanha.</li></ul>',
+      tags: 'npc, vilao, ocultista',
+      metadata: { race: 'Humano (Ocultista)', class: 'Patriarca do Clã', hp: '150 (Enfraquecido)', ac: '27', status: 'Vivo', alignment: 'Caótico e Mau' }
     }
   }
 ];
@@ -102,37 +185,45 @@ const parseEdgesFromNotes = (nodes) => {
     if (sourceNode.type === 'zone') return;
     
     const content = sourceNode.data?.content || '';
-    const wikiLinkRegex = /\[\[(.*?)\]\]/g;
-    let match;
-    const targetsFound = new Set();
+    const targets = new Set();
 
-    while ((match = wikiLinkRegex.exec(content)) !== null) {
-      const linkContent = match[1];
+    // 1. Scan for WYSIWYG tags data-target="Target"
+    const dataTargetRegex = /data-target="([^"]+)"/g;
+    let dataMatch;
+    while ((dataMatch = dataTargetRegex.exec(content)) !== null) {
+      targets.add(dataMatch[1].trim());
+    }
+
+    // 2. Scan for [[Target]] or [[Target|Label]] links
+    const wikiLinkRegex = /\[\[(.*?)\]\]/g;
+    let mdMatch;
+    while ((mdMatch = wikiLinkRegex.exec(content)) !== null) {
+      const linkContent = mdMatch[1];
       let targetName = linkContent;
-      // Handle [[Target|Label]] structure
       if (linkContent.includes('|')) {
         targetName = linkContent.split('|')[0].trim();
       } else {
         targetName = targetName.trim();
       }
+      targets.add(targetName);
+    }
 
+    // Generate edges for unique targets
+    targets.forEach(targetName => {
       // Procura nó de destino pelo título (case-insensitive)
       const targetNode = nodes.find(n => n.data?.label?.toLowerCase() === targetName.toLowerCase());
       if (targetNode && targetNode.id !== sourceNode.id) {
         const edgeId = `edge-${sourceNode.id}-${targetNode.id}`;
-        if (!targetsFound.has(targetNode.id)) {
-          targetsFound.add(targetNode.id);
-          newEdges.push({
-            id: edgeId,
-            source: sourceNode.id,
-            target: targetNode.id,
-            type: 'default',
-            animated: true,
-            style: { stroke: 'var(--accent)', strokeWidth: 2 }
-          });
-        }
+        newEdges.push({
+          id: edgeId,
+          source: sourceNode.id,
+          target: targetNode.id,
+          type: 'default',
+          animated: true,
+          style: { stroke: 'var(--accent)', strokeWidth: 2 }
+        });
       }
-    }
+    });
   });
   return newEdges;
 };
@@ -163,6 +254,7 @@ function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [activeTheme, setActiveTheme] = useState(SAVED_DATA.theme || 'obsidian');
+  const [isMaximized, setIsMaximized] = useState(false);
 
   // Auto-Save do Vault
   useEffect(() => {
@@ -243,10 +335,17 @@ function App() {
     if (!title) {
       let index = 1;
       const categoryName = category.toUpperCase();
-      do {
-        title = `Novo ${categoryName} ${index}`;
+      const checkTitleExists = (name) => {
+        const lowerName = name.toLowerCase();
+        return nodes.some(n => n.data?.label?.toLowerCase() === lowerName);
+      };
+      
+      let candidateTitle = `Novo ${categoryName} ${index}`;
+      while (checkTitleExists(candidateTitle)) {
         index++;
-      } while (nodes.some(n => n.data?.label?.toLowerCase() === title.toLowerCase()));
+        candidateTitle = `Novo ${categoryName} ${index}`;
+      }
+      title = candidateTitle;
     }
 
     const uniqueId = `node-${Date.now()}`;
@@ -289,40 +388,73 @@ function App() {
   }, [nodes, selectedNodeId]);
 
   return (
-    <div className="flex h-screen w-screen font-sans bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden">
+    <div className={`flex h-screen w-screen font-sans bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden ${isMaximized ? 'focus-mode-active' : ''}`}>
       
       {/* 1. PAINEL ESQUERDO: EXPLORER, DIALLER & DICE ROLLER */}
-      <SidebarLeft
-        nodes={nodes}
-        selectedNodeId={selectedNodeId}
-        onSelectNode={handleSelectNode}
-        onCreateNode={handleCreateNode}
-        activeTheme={activeTheme}
-        onThemeChange={setActiveTheme}
-      />
+      {!isMaximized && (
+        <SidebarLeft
+          nodes={nodes}
+          selectedNodeId={selectedNodeId}
+          onSelectNode={handleSelectNode}
+          onCreateNode={handleCreateNode}
+          activeTheme={activeTheme}
+          onThemeChange={setActiveTheme}
+        />
+      )}
 
       {/* 2. CENTRO: GRAFO INTERACTIVO REACTFLOW */}
       <div className="flex-1 flex flex-col relative bg-[var(--bg-primary)] border-r border-[var(--border)]">
-        {/* Top Mini Info Bar */}
-        <div className="p-3 bg-[var(--bg-secondary)] border-b border-[var(--border)] flex justify-between items-center z-10">
-          <div className="flex items-center gap-2">
-            <span className="text-xs px-2 py-0.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded text-[var(--text-muted)] font-mono">
-              Grafo das Notas
-            </span>
-            <span className="text-xs text-[var(--text-muted)]">
-              Dica: Arraste de um nó a outro para criar conexões (Wiki-links automáticos).
-            </span>
+        {/* Top Mini Info Bar (escondido se maximizado para foco total) */}
+        {!isMaximized && (
+          <div className="p-3 bg-[var(--bg-secondary)] border-b border-[var(--border)] flex justify-between items-center z-10">
+            <div className="flex items-center gap-2">
+              <span className="text-xs px-2 py-0.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded text-[var(--text-muted)] font-mono">
+                Grafo das Notas
+              </span>
+              <span className="text-xs text-[var(--text-muted)]">
+                Dica: Arraste de um nó a outro para criar conexões (Wiki-links automáticos).
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (window.confirm("Aviso: Isto apagará todo o progresso atual e restaurará a missão padrão 'Fumaça Púrpura'. Deseja continuar?")) {
+                    localStorage.removeItem('loreforge-vault');
+                    window.location.reload();
+                  }
+                }}
+                className="px-2.5 py-1 bg-red-950/40 hover:bg-red-900/60 border border-red-900/50 text-red-400 font-bold text-xs rounded transition-colors"
+              >
+                Recomeçar Campanha 🔄
+              </button>
+              <button
+                onClick={() => handleCreateNode('lore')}
+                className="px-2.5 py-1 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-bold text-xs rounded transition-colors"
+              >
+                + Nova Nota 📄
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => handleCreateNode('lore')}
-            className="px-2.5 py-1 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-bold text-xs rounded transition-colors"
-          >
-            + Nova Nota 📄
-          </button>
-        </div>
+        )}
 
         {/* React Flow Editor */}
-        <div className="flex-1">
+        <div className="flex-1 relative">
+          {/* Overlay do Editor Maximizado (Modo Foco) */}
+          {isMaximized && (
+            <div className="absolute inset-0 z-40 bg-[var(--bg-secondary)] flex flex-col">
+              <Inspector
+                selectedNode={selectedNode}
+                nodes={nodes}
+                onUpdateNode={handleUpdateNode}
+                onDeleteNode={handleDeleteNode}
+                onSelectNode={handleSelectNode}
+                onCreateNode={handleCreateNode}
+                isMaximized={isMaximized}
+                onToggleMaximize={() => setIsMaximized(false)}
+              />
+            </div>
+          )}
+
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -364,16 +496,19 @@ function App() {
         </div>
       </div>
 
-      {/* 3. PAINEL DIREITO: INSPETOR DE METADADOS & EDITOR MARKDOWN */}
-      <Inspector
-        selectedNode={selectedNode}
-        nodes={nodes}
-        onUpdateNode={handleUpdateNode}
-        onDeleteNode={handleDeleteNode}
-        onSelectNode={handleSelectNode}
-        onCreateNode={handleCreateNode}
-      />
-
+      {/* 3. PAINEL DIREITO: INSPETOR DE METADADOS & EDITOR RICHO WYSIWYG */}
+      {!isMaximized && (
+        <Inspector
+          selectedNode={selectedNode}
+          nodes={nodes}
+          onUpdateNode={handleUpdateNode}
+          onDeleteNode={handleDeleteNode}
+          onSelectNode={handleSelectNode}
+          onCreateNode={handleCreateNode}
+          isMaximized={isMaximized}
+          onToggleMaximize={() => setIsMaximized(true)}
+        />
+      )}
     </div>
   );
 }

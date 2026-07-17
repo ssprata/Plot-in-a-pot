@@ -54,7 +54,7 @@ export default function SidebarLeft({
           categorized[cat].push(node);
         }
       }
-    };
+    });
 
     return categorized;
   };

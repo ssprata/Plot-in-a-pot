@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { renderMarkdown } from '../utils/markdownParser';
 import { rpgTemplates } from '../utils/rpgTemplates';
 
 const CATEGORY_NAMES = {
@@ -17,22 +16,35 @@ export default function Inspector({
   onUpdateNode,
   onDeleteNode,
   onSelectNode,
-  onCreateNode
+  onCreateNode,
+  isMaximized,
+  onToggleMaximize
 }) {
-  const [tab, setTab] = useState('edit'); // 'edit', 'preview'
   const [width, setWidth] = useState(380);
   const [isResizing, setIsResizing] = useState(false);
+  
   const sidebarRef = useRef(null);
-  const textareaRef = useRef(null);
+  const editorRef = useRef(null);
+  const lastNodeId = useRef(null);
 
   // Autocomplete states
   const [showSuggest, setShowSuggest] = useState(false);
   const [suggestQuery, setSuggestQuery] = useState('');
   const [suggestIndex, setSuggestIndex] = useState(0);
-  const [suggestStartPos, setSuggestStartPos] = useState(-1);
+  const [suggestStartPos, setSuggestStartPos] = useState(null);
   const [filteredNotes, setFilteredNotes] = useState([]);
 
-  // Resize Sidebar Logic
+  // Load editor content on selectedNode change to avoid cursor-jumping
+  useEffect(() => {
+    if (selectedNode && editorRef.current) {
+      if (lastNodeId.current !== selectedNode.id) {
+        editorRef.current.innerHTML = selectedNode.data.content || '';
+        lastNodeId.current = selectedNode.id;
+      }
+    }
+  }, [selectedNode]);
+
+  // Sidebar resize logic
   const startResizing = (mouseDownEvent) => {
     mouseDownEvent.preventDefault();
     setIsResizing(true);
@@ -42,7 +54,7 @@ export default function Inspector({
 
     const doDrag = (mouseMoveEvent) => {
       const deltaX = mouseMoveEvent.clientX - startX;
-      const nextWidth = Math.max(300, Math.min(800, startWidth - deltaX));
+      const nextWidth = Math.max(320, Math.min(900, startWidth - deltaX));
       setWidth(nextWidth);
     };
 
@@ -56,50 +68,79 @@ export default function Inspector({
     document.addEventListener('mouseup', stopDrag);
   };
 
-  const handleTextareaChange = (e) => {
-    const text = e.target.value;
-    const selectionEnd = e.target.selectionEnd;
-    onUpdateNode(selectedNode.id, { content: text });
+  // Sync content back to state on input
+  const handleInput = () => {
+    if (!editorRef.current || !selectedNode) return;
+    const html = editorRef.current.innerHTML;
+    onUpdateNode(selectedNode.id, { content: html });
 
-    // Check for "[[ " autocomplete trigger
-    const textBeforeCursor = text.substring(0, selectionEnd);
-    const lastOpen = textBeforeCursor.lastIndexOf('[[');
-    const lastClose = textBeforeCursor.lastIndexOf(']]');
+    // Check for inline autocomplete trigger
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      const node = range.startContainer;
+      const offset = range.startOffset;
 
-    if (lastOpen !== -1 && lastOpen > lastClose) {
-      const query = textBeforeCursor.substring(lastOpen + 2);
-      // Ensure no spaces or newlines inside query for autocomplete trigger
-      if (!query.includes('\n')) {
-        setSuggestQuery(query);
-        setSuggestStartPos(lastOpen);
-        setShowSuggest(true);
-        setSuggestIndex(0);
-        return;
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.nodeValue.substring(0, offset);
+        const openIdx = text.lastIndexOf('[[');
+        const closeIdx = text.lastIndexOf(']]');
+
+        if (openIdx !== -1 && openIdx > closeIdx) {
+          const query = text.substring(openIdx + 2);
+          if (!query.includes('\n')) {
+            setSuggestQuery(query);
+            setSuggestStartPos({ node, offset: openIdx });
+            setShowSuggest(true);
+            setSuggestIndex(0);
+            return;
+          }
+        }
       }
     }
     setShowSuggest(false);
   };
 
-  const insertSuggestion = (noteTitle) => {
-    if (!textareaRef.current || !selectedNode) return;
-    const text = selectedNode.data.content || '';
-    const cursor = textareaRef.current.selectionEnd;
-    const before = text.substring(0, suggestStartPos);
-    const after = text.substring(cursor);
-    const insertText = `[[${noteTitle}]]`;
-    const newText = before + insertText + after;
+  const insertSuggestion = (title) => {
+    if (!suggestStartPos || !editorRef.current) return;
+    const { node, offset } = suggestStartPos;
 
-    onUpdateNode(selectedNode.id, { content: newText });
+    if (node && node.nodeType === Node.TEXT_NODE) {
+      const val = node.nodeValue;
+      // Remove the "[[" trigger and current typed query
+      node.nodeValue = val.substring(0, offset);
+
+      const range = document.createRange();
+      range.setStart(node, offset);
+      range.collapse(true);
+
+      // Create rich inline link element
+      const el = document.createElement('span');
+      el.className = 'wiki-link';
+      el.setAttribute('contenteditable', 'false');
+      el.setAttribute('data-target', title);
+      el.innerHTML = `📄 ${title}`;
+
+      range.insertNode(el);
+
+      // Add a non-breaking space after the tag for typing continuation
+      const space = document.createTextNode('\u00A0');
+      range.setStartAfter(el);
+      range.collapse(true);
+      range.insertNode(space);
+
+      // Place cursor after space
+      range.setStartAfter(space);
+      range.collapse(true);
+
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      // Force HTML sync
+      handleInput();
+    }
     setShowSuggest(false);
-
-    // Reset cursor position
-    setTimeout(() => {
-      if (textareaRef.current) {
-        const newCursorPos = suggestStartPos + insertText.length;
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 50);
   };
 
   const handleKeyDown = (e) => {
@@ -120,14 +161,54 @@ export default function Inspector({
     }
   };
 
-  // Filter notes based on suggestQuery
+  // Apply Rich Text Formatting
+  const applyCommand = (cmd, value = null) => {
+    document.execCommand(cmd, false, value);
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+    handleInput();
+  };
+
+  // Insert Checklist Checkbox
+  const handleInsertCheckbox = () => {
+    const checkboxHtml = `<input type="checkbox" style="margin-right: 5px; cursor: pointer; accent-color: var(--accent);" />&nbsp;`;
+    applyCommand('insertHTML', checkboxHtml);
+  };
+
+  // Trigger [[ autocomplete programmatically
+  const handleInsertLinkButton = () => {
+    applyCommand('insertText', '[[');
+  };
+
+  // Event delegation to capture link clicks inside contentEditable
+  const handleEditorClick = (e) => {
+    const targetEl = e.target.closest('.wiki-link');
+    if (targetEl) {
+      e.preventDefault();
+      e.stopPropagation();
+      const targetName = targetEl.getAttribute('data-target');
+      if (targetName) {
+        const targetNode = nodes.find(n => n.data?.label?.toLowerCase() === targetName.toLowerCase());
+        if (targetNode) {
+          onSelectNode(targetNode.id);
+        } else {
+          if (window.confirm(`A nota "${targetName}" não existe. Deseja criá-la agora?`)) {
+            onCreateNode('lore', targetName);
+          }
+        }
+      }
+    }
+  };
+
+  // Filter notes for suggest Query
   useEffect(() => {
     if (showSuggest && selectedNode) {
       const others = nodes.filter(n => n.id !== selectedNode.id && n.data?.label);
       const filtered = others.filter(n =>
         n.data.label.toLowerCase().includes(suggestQuery.toLowerCase())
       );
-      setFilteredNotes(filtered.slice(0, 8)); // limit to 8 suggestions
+      setFilteredNotes(filtered.slice(0, 8));
       if (filtered.length === 0) {
         setShowSuggest(false);
       }
@@ -166,32 +247,23 @@ export default function Inspector({
     const tpl = rpgTemplates[category];
     if (tpl) {
       if (window.confirm('Substituir o conteúdo atual desta nota pelo template do RPG?')) {
-        onUpdateNode(selectedNode.id, { content: tpl });
-      }
-    }
-  };
-
-  const handleCheckboxToggle = (lineIndex, isChecked) => {
-    const text = selectedNode.data.content || '';
-    const lines = text.split('\n');
-    const line = lines[lineIndex];
-    if (line) {
-      // Replace - [ ] or - [x]
-      const updatedLine = line.replace(/^- (\[[ xX]\])/, `- [${isChecked ? 'x' : ' '}]`);
-      lines[lineIndex] = updatedLine;
-      onUpdateNode(selectedNode.id, { content: lines.join('\n') });
-    }
-  };
-
-  const handleWikiLinkClickInPreview = (targetName) => {
-    // Look up node by label
-    const targetNode = nodes.find(n => n.data?.label?.toLowerCase() === targetName.toLowerCase());
-    if (targetNode) {
-      onSelectNode(targetNode.id);
-    } else {
-      // Create a new node with this name
-      if (window.confirm(`A nota "${targetName}" não existe. Deseja criá-la agora?`)) {
-        onCreateNode('lore', targetName);
+        // Simple MD-to-HTML mock replacements for WYSIWYG
+        const htmlTemplate = tpl
+          .replace(/\n/g, '<br/>')
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+          .replace(/# ([^\n<]+)/g, '<h1>$1</h1>')
+          .replace(/## ([^\n<]+)/g, '<h2>$1</h2>')
+          .replace(/- \[ \]/g, '<input type="checkbox" style="margin-right: 5px; cursor: pointer; accent-color: var(--accent);" />')
+          .replace(/- (.*)/g, '<ul><li>$1</li></ul>')
+          .replace(/\[\[(.*?)\]\]/g, (match, title) => {
+            return `<span class="wiki-link" contenteditable="false" data-target="${title}">📄 ${title}</span>`;
+          });
+        
+        if (editorRef.current) {
+          editorRef.current.innerHTML = htmlTemplate;
+          onUpdateNode(selectedNode.id, { content: htmlTemplate });
+        }
       }
     }
   };
@@ -199,26 +271,38 @@ export default function Inspector({
   return (
     <div
       ref={sidebarRef}
-      style={{ width: `${width}px` }}
+      style={{ width: isMaximized ? '100%' : `${width}px` }}
       className={`relative border-l-2 border-[var(--border)] bg-[var(--bg-secondary)] flex flex-col h-full shadow-lg shrink-0 text-[var(--text-primary)] ${
         isResizing ? '' : 'transition-[width] duration-100'
       }`}
     >
-      {/* Resize Handle (Left side of sidebar) */}
-      <div
-        onMouseDown={startResizing}
-        className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-50 hover:bg-[var(--accent)] transition-colors"
-      />
+      {/* Resize Handle (Only when not maximized) */}
+      {!isMaximized && (
+        <div
+          onMouseDown={startResizing}
+          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 hover:bg-[var(--accent)] transition-colors"
+        />
+      )}
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col space-y-4">
         
-        {/* SIDEBAR TITLE */}
+        {/* HEADER TOOLBAR / CONTROLS */}
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-2.5">
           <div className="flex items-center gap-1.5">
             <span className="text-xs">✏️</span>
-            <span className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)]">Nota do Painel</span>
+            <span className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)]">
+              {isMaximized ? 'Editor Maximizado (Modo Foco)' : 'Editor da Nota'}
+            </span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            {/* Maximize Toggle Button */}
+            <button
+              onClick={onToggleMaximize}
+              className="px-2.5 py-1 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-primary)] border border-[var(--border)] text-[10px] font-black uppercase tracking-wider rounded transition-colors text-[var(--accent)]"
+              title={isMaximized ? 'Restaurar Tamanho' : 'Maximizar Nota (Foco)'}
+            >
+              {isMaximized ? '🗗 Restaurar' : '🗖 Maximizar'}
+            </button>
             <button
               onClick={() => onDeleteNode(selectedNode.id)}
               className="px-2 py-1 border border-red-950 bg-red-950/20 hover:bg-red-900/30 text-red-400 text-[10px] font-black uppercase transition-all rounded"
@@ -284,8 +368,8 @@ export default function Inspector({
                   type="text"
                   value={metadata.race || ''}
                   onChange={(e) => handleMetadataChange('race', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="ex: Elfo, Humano"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
+                  placeholder="ex: Elfo"
                 />
               </div>
               <div className="space-y-1">
@@ -294,8 +378,8 @@ export default function Inspector({
                   type="text"
                   value={metadata.class || ''}
                   onChange={(e) => handleMetadataChange('class', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="ex: Mago, Guerreiro"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
+                  placeholder="ex: Mago"
                 />
               </div>
               <div className="space-y-1">
@@ -304,8 +388,8 @@ export default function Inspector({
                   type="text"
                   value={metadata.hp || ''}
                   onChange={(e) => handleMetadataChange('hp', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="ex: 45 ou 4d10+8"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
+                  placeholder="ex: 45"
                 />
               </div>
               <div className="space-y-1">
@@ -314,7 +398,7 @@ export default function Inspector({
                   type="text"
                   value={metadata.ac || ''}
                   onChange={(e) => handleMetadataChange('ac', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: 15"
                 />
               </div>
@@ -323,7 +407,7 @@ export default function Inspector({
                 <select
                   value={metadata.status || 'Vivo'}
                   onChange={(e) => handleMetadataChange('status', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)] cursor-pointer"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none cursor-pointer"
                 >
                   <option value="Vivo">🟢 Vivo</option>
                   <option value="Morto">🔴 Morto</option>
@@ -336,7 +420,7 @@ export default function Inspector({
                   type="text"
                   value={metadata.alignment || ''}
                   onChange={(e) => handleMetadataChange('alignment', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: Caótico e Bom"
                 />
               </div>
@@ -351,7 +435,7 @@ export default function Inspector({
                   type="text"
                   value={metadata.region || ''}
                   onChange={(e) => handleMetadataChange('region', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: Reinos do Norte"
                 />
               </div>
@@ -361,8 +445,8 @@ export default function Inspector({
                   type="text"
                   value={metadata.type || ''}
                   onChange={(e) => handleMetadataChange('type', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="ex: Taverna, Masmorra"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
+                  placeholder="ex: Taverna"
                 />
               </div>
               <div className="space-y-1 col-span-2">
@@ -391,7 +475,7 @@ export default function Inspector({
                 <select
                   value={metadata.status || 'Não Iniciada'}
                   onChange={(e) => handleMetadataChange('status', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)] cursor-pointer"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none cursor-pointer"
                 >
                   <option value="Não Iniciada">⚪ Não Iniciada</option>
                   <option value="Em Progresso">🔵 Em Progresso</option>
@@ -405,7 +489,7 @@ export default function Inspector({
                   type="text"
                   value={metadata.questGiver || ''}
                   onChange={(e) => handleMetadataChange('questGiver', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: Rei Aldor"
                 />
               </div>
@@ -415,7 +499,7 @@ export default function Inspector({
                   type="text"
                   value={metadata.reward || ''}
                   onChange={(e) => handleMetadataChange('reward', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: 500gp, Espada de Fogo"
                 />
               </div>
@@ -429,7 +513,7 @@ export default function Inspector({
                 <select
                   value={metadata.rarity || 'Comum'}
                   onChange={(e) => handleMetadataChange('rarity', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)] cursor-pointer"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none cursor-pointer"
                 >
                   <option value="Comum">Comum</option>
                   <option value="Incomum">🟢 Incomum</option>
@@ -444,7 +528,7 @@ export default function Inspector({
                   type="text"
                   value={metadata.type || ''}
                   onChange={(e) => handleMetadataChange('type', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: Espada, Armadura"
                 />
               </div>
@@ -454,7 +538,7 @@ export default function Inspector({
                   type="text"
                   value={metadata.value || ''}
                   onChange={(e) => handleMetadataChange('value', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: 150gp"
                 />
               </div>
@@ -480,17 +564,17 @@ export default function Inspector({
                   type="text"
                   value={metadata.inGameDate || ''}
                   onChange={(e) => handleMetadataChange('inGameDate', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="ex: 14 Altosol, 1492"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
+                  placeholder="ex: 14 Altosol"
                 />
               </div>
               <div className="space-y-1">
-                <span>Data de Jogo Real</span>
+                <span>Data Real</span>
                 <input
                   type="text"
                   value={metadata.realDate || ''}
                   onChange={(e) => handleMetadataChange('realDate', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
                   placeholder="ex: DD/MM/AAAA"
                 />
               </div>
@@ -500,8 +584,8 @@ export default function Inspector({
                   type="text"
                   value={metadata.players || ''}
                   onChange={(e) => handleMetadataChange('players', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="ex: Nuno, Rita, José"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
+                  placeholder="ex: Nuno, Rita"
                 />
               </div>
             </div>
@@ -515,96 +599,137 @@ export default function Inspector({
                   type="text"
                   value={metadata.association || ''}
                   onChange={(e) => handleMetadataChange('association', e.target.value)}
-                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="ex: Culto da Sombra"
+                  className="w-full p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded text-white text-xs focus:outline-none"
+                  placeholder="ex: Ordo Realitas"
                 />
               </div>
             </div>
           )}
         </div>
 
-        {/* EDITOR TABS */}
-        <div className="flex border border-[var(--border)] rounded overflow-hidden">
-          <button
-            onClick={() => setTab('edit')}
-            className={`flex-1 py-1.5 text-xs uppercase font-black transition-all ${
-              tab === 'edit'
-                ? 'bg-[var(--accent)] text-[var(--bg-primary)] font-black'
-                : 'bg-[var(--bg-primary)] text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)]'
-            }`}
-          >
-            Markdown Editor ✍️
-          </button>
-          <button
-            onClick={() => setTab('preview')}
-            className={`flex-1 py-1.5 text-xs uppercase font-black transition-all ${
-              tab === 'preview'
-                ? 'bg-[var(--accent)] text-[var(--bg-primary)] font-black'
-                : 'bg-[var(--bg-primary)] text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)]'
-            }`}
-          >
-            Leitura Preview 👁️
-          </button>
-        </div>
+        {/* EDITOR TITLE & WYSIWYG TOOLBAR */}
+        <div className="space-y-1.5 flex-1 flex flex-col">
+          <label className="text-[9px] font-black uppercase text-[var(--text-muted)] tracking-wider">
+            Editor WYSIWYG da Nota ⚡
+          </label>
 
-        {/* EDIT / PREVIEW AREA */}
-        <div className="flex-1 flex flex-col min-h-[220px] relative">
-          {tab === 'edit' ? (
-            <div className="flex-1 flex flex-col relative h-full">
-              <textarea
-                ref={textareaRef}
-                value={selectedNode.data.content || ''}
-                onChange={handleTextareaChange}
-                onKeyDown={handleKeyDown}
-                placeholder="# Título&#10;&#10;Escreva em **Markdown**.&#10;Use [[Nome da Nota]] para conectar a outros arquivos de campanha."
-                className="w-full flex-1 p-3 border border-[var(--border)] bg-[var(--bg-primary)] text-white text-xs font-mono rounded resize-none outline-none focus:border-[var(--accent)] h-full"
-              />
+          {/* RICH TOOLBAR */}
+          <div className="flex flex-wrap gap-1 p-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded-t-sm shrink-0">
+            <button
+              onClick={() => applyCommand('bold')}
+              className="px-2 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-xs font-black rounded border border-[var(--border)]"
+              title="Negrito"
+            >
+              B
+            </button>
+            <button
+              onClick={() => applyCommand('italic')}
+              className="px-2 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-xs italic rounded border border-[var(--border)]"
+              title="Itálico"
+            >
+              I
+            </button>
+            <button
+              onClick={() => applyCommand('underline')}
+              className="px-2 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-xs underline rounded border border-[var(--border)]"
+              title="Sublinhado"
+            >
+              U
+            </button>
+            <button
+              onClick={() => applyCommand('strikeThrough')}
+              className="px-2 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-xs line-through rounded border border-[var(--border)]"
+              title="Riscado"
+            >
+              S
+            </button>
+            <div className="w-px h-4 bg-[var(--border)] self-center mx-1"></div>
+            <button
+              onClick={() => applyCommand('formatBlock', '<h1>')}
+              className="px-1.5 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-[10px] font-bold rounded border border-[var(--border)]"
+              title="Título 1"
+            >
+              H1
+            </button>
+            <button
+              onClick={() => applyCommand('formatBlock', '<h2>')}
+              className="px-1.5 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-[10px] font-bold rounded border border-[var(--border)]"
+              title="Título 2"
+            >
+              H2
+            </button>
+            <button
+              onClick={() => applyCommand('insertUnorderedList')}
+              className="px-2 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-xs rounded border border-[var(--border)]"
+              title="Lista de Marcadores"
+            >
+              • Lista
+            </button>
+            <button
+              onClick={handleInsertCheckbox}
+              className="px-1.5 py-0.5 hover:bg-[var(--bg-tertiary)] text-white text-[10px] rounded border border-[var(--border)]"
+              title="Lista de Verificação"
+            >
+              ☑️ Check
+            </button>
+            <div className="w-px h-4 bg-[var(--border)] self-center mx-1"></div>
+            <button
+              onClick={handleInsertLinkButton}
+              className="px-1.5 py-0.5 hover:bg-[var(--bg-tertiary)] text-[var(--accent)] hover:text-white text-[10px] font-black rounded border border-[var(--border)]"
+              title="Inserir Wiki-link para outra nota"
+            >
+              📄 Link Nota
+            </button>
+          </div>
 
-              {/* Autocomplete suggestions box */}
-              {showSuggest && filteredNotes.length > 0 && (
-                <div className="absolute left-1 bottom-10 right-1 border-2 border-[var(--accent)] bg-[var(--bg-secondary)] shadow-2xl z-50 rounded-sm">
-                  <div className="bg-[var(--bg-primary)] p-1.5 text-[9px] font-black uppercase text-[var(--text-muted)] tracking-wider border-b border-[var(--border)] flex justify-between">
-                    <span>Selecionar Nota (Enter para inserir)</span>
-                    <span>{filteredNotes.length} opções</span>
-                  </div>
-                  <div className="max-h-[160px] overflow-y-auto">
-                    {filteredNotes.map((note, idx) => {
-                      const isActive = idx === suggestIndex;
-                      return (
-                        <div
-                          key={note.id}
-                          onClick={() => insertSuggestion(note.data.label)}
-                          onMouseEnter={() => setSuggestIndex(idx)}
-                          className={`p-2 text-xs flex justify-between cursor-pointer border-b border-[var(--border)]/40 ${
-                            isActive
-                              ? 'bg-[var(--accent)] text-[var(--bg-primary)] font-bold'
-                              : 'hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                          }`}
-                        >
-                          <span>📄 {note.data.label}</span>
-                          <span className="text-[9px] opacity-70">
-                            {CATEGORY_NAMES[note.data.category || 'lore']}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+          {/* WYSIWYG EDITABLE CONTAINER */}
+          <div className="flex-1 flex flex-col relative min-h-[220px] bg-[var(--bg-primary)] border border-t-0 border-[var(--border)] rounded-b-sm overflow-hidden">
+            <div
+              ref={editorRef}
+              contentEditable
+              onInput={handleInput}
+              onKeyDown={handleKeyDown}
+              onClick={handleEditorClick}
+              className="wysiwyg-editor p-3 overflow-y-auto flex-1 outline-none text-white focus:ring-1 focus:ring-[var(--accent)]/30"
+              placeholder="Comece a digitar..."
+            />
+
+            {/* Autocomplete floating list */}
+            {showSuggest && filteredNotes.length > 0 && (
+              <div className="absolute left-1 bottom-10 right-1 border-2 border-[var(--accent)] bg-[var(--bg-secondary)] shadow-2xl z-50 rounded-sm">
+                <div className="bg-[var(--bg-primary)] p-1.5 text-[9px] font-black uppercase text-[var(--text-muted)] tracking-wider border-b border-[var(--border)] flex justify-between">
+                  <span>Selecionar Nota (Enter para inserir)</span>
+                  <span>{filteredNotes.length} opções</span>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex-1 p-3 border border-[var(--border)] bg-[var(--bg-primary)] rounded overflow-y-auto max-h-[380px] min-h-[220px]">
-              {renderMarkdown(
-                selectedNode.data.content,
-                handleWikiLinkClickInPreview,
-                handleCheckboxToggle
-              )}
-            </div>
-          )}
+                <div className="max-h-[160px] overflow-y-auto">
+                  {filteredNotes.map((note, idx) => {
+                    const isActive = idx === suggestIndex;
+                    return (
+                      <div
+                        key={note.id}
+                        onClick={() => insertSuggestion(note.data.label)}
+                        onMouseEnter={() => setSuggestIndex(idx)}
+                        className={`p-2 text-xs flex justify-between cursor-pointer border-b border-[var(--border)]/40 ${
+                          isActive
+                            ? 'bg-[var(--accent)] text-[var(--bg-primary)] font-bold'
+                            : 'hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
+                        }`}
+                      >
+                        <span>📄 {note.data.label}</span>
+                        <span className="text-[9px] opacity-70">
+                          {CATEGORY_NAMES[note.data.category || 'lore']}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* TAGS INPUT */}
-        <div className="space-y-1">
+        <div className="space-y-1 shrink-0">
           <label className="text-[9px] font-black uppercase text-[var(--text-muted)] tracking-wider">
             Tags (separadas por vírgula)
           </label>
@@ -613,7 +738,7 @@ export default function Inspector({
             value={selectedNode.data.tags || ''}
             onChange={(e) => onUpdateNode(selectedNode.id, { tags: e.target.value })}
             className="w-full p-2 border border-[var(--border)] bg-[var(--bg-primary)] text-white text-xs focus:outline-none focus:border-[var(--accent)] rounded-sm"
-            placeholder="ex: importante, boss, segredo"
+            placeholder="ex: boss, segredo"
           />
         </div>
 

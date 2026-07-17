@@ -14,7 +14,6 @@ export function parseInlineMarkdown(text, onWikiLinkClick) {
   const italicRegex = /\*(.*?)\*/g;
   const codeRegex = /`(.*?)`/g;
   const wikiLinkRegex = /\[\[(.*?)\]\]/g;
-  const checkboxRegex = /^\[([ xX])\]\s(.*)/;
 
   let parts = [text];
 
@@ -29,7 +28,6 @@ export function parseInlineMarkdown(text, onWikiLinkClick) {
     wikiLinkRegex.lastIndex = 0;
 
     while ((match = wikiLinkRegex.exec(part)) !== null) {
-      const fullMatch = match[0];
       const content = match[1];
       const matchIndex = match.index;
 
