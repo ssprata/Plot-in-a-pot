@@ -5,37 +5,21 @@ function generateIfid() {
   return crypto.randomUUID().toUpperCase();
 }
 
-//gera um prompt para o modelo de IA, com instruções detalhadas sobre como formatar a saída em Twee 3 (SugarCube)
-function buildSystemPrompt(ifid) {
+//gera um prompt para o modelo de IA para atuar como assistente de lore RPG do LoreForge
+function buildSystemPrompt() {
   return `[ATENÇÃO: Se fores um modelo de raciocínio (CoT/thinking), limita o teu raciocínio ao mínimo absoluto. Vai direto ao ponto.]
-Converte a história fornecida em código fonte no formato Twee 3 com macros SugarCube.
-
-Estrutura obrigatória do ficheiro:
-:: StoryTitle
-Fuga da Prisao
-
-:: StoryData
-{
-  "ifid": "${ifid}",
-  "format": "SugarCube",
-  "format-version": "2.36.0",
-  "start": "Inicio",
-  "zoom": 1
-}
-
-:: StoryInit
-<<set $moedas to 0>>
-
-:: Inicio
-[Texto da cena inicial com links no formato [[Texto|Identificador]]]
+Tu és o LoreForge Bard, um assistente criativo e experiente para Mestres de Jogo (DMs) de RPG de mesa.
+A tua tarefa é criar conteúdo imersivo de campanha (NPCs, Locais, Quests, Itens ou Lore) em Markdown rico, pronto a ser inserido no LoreForge.
 
 Regras de Formatação:
-- Inicializa as variáveis na secção ":: StoryInit" usando a macro <<set $variavel to valor>>.
-- Cada nó começa com "::" seguido de um identificador alfanumérico simples sem espaços ou acentos (ex: :: CenaCorredor).
-- Usa o formato de links nativos: [[Texto de Exibição|Identificador]].
-- Não incluas blocos de código Markdown (sem aspas triplas \`\`\`), notas introdutórias ou conversação. Devolve apenas o código Twee 3 bruto.
+- Escreve em português europeu natural e evocativo.
+- Começa sempre com um cabeçalho # Título do Arquivo
+- Usa Wiki-links no formato [[Nome da Nota]] para conectar entidades importantes (por exemplo, referir a cidade natal de um NPC, uma masmorra ligada a uma quest, ou o criador de um item).
+- Inclui descrições sensoriais e traços marcantes.
+- Se apropriado, cria uma secção no fim com uma tabela de atributos sugerida (ex: HP, AC, Alinhamento para NPCs; Raridade, Tipo para Itens).
+- Não envolvas toda a resposta em blocos de código com aspas triplas (```). Devolve o Markdown puro diretamente.
 
-História para converter:
+Pedido do utilizador para gerar:
 `;
 }
 
@@ -61,7 +45,7 @@ export async function generateFromGemini(storyText, apiKey) {
   if (!apiKey) throw new Error("API Key do Gemini em falta.");
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  const fullPrompt = buildSystemPrompt(generateIfid()) + storyText;
+  const fullPrompt = buildSystemPrompt() + storyText;
 
   try {
     const response = await fetch(endpoint, {
@@ -113,7 +97,7 @@ export async function generateFromGemini(storyText, apiKey) {
 export async function generateFromOllama(storyText, modelName = 'llama3') {
   // O endpoint padrão onde o Ollama escuta pedidos locais
   const endpoint = 'http://localhost:11434/api/generate';
-  const systemPrompt = buildSystemPrompt(generateIfid());
+  const systemPrompt = buildSystemPrompt();
 
   try {
     const response = await fetch(endpoint, {

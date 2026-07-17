@@ -2,69 +2,260 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Configuração de Temas do LoreForge */
+:root, .theme-obsidian {
+  --bg-primary: #0f0f11;
+  --bg-secondary: #16161a;
+  --bg-tertiary: #1f1f24;
+  --accent: #eab308;
+  --accent-hover: #ca8a04;
+  --text-primary: #f3f4f6;
+  --text-muted: #9ca3af;
+  --border: #2e2e36;
+  --node-npc: #8b5cf6;
+  --node-location: #10b981;
+  --node-quest: #f59e0b;
+  --node-item: #06b6d4;
+  --node-lore: #ec4899;
+  --node-session: #6366f1;
+}
+
+.theme-gothic {
+  --bg-primary: #0b0507;
+  --bg-secondary: #140a0e;
+  --bg-tertiary: #221217;
+  --accent: #ef4444;
+  --accent-hover: #dc2626;
+  --text-primary: #f9fafb;
+  --text-muted: #a1a1aa;
+  --border: #3f101d;
+  --node-npc: #a855f7;
+  --node-location: #059669;
+  --node-quest: #d97706;
+  --node-item: #0891b2;
+  --node-lore: #db2777;
+  --node-session: #4f46e5;
+}
+
+.theme-emerald {
+  --bg-primary: #050d0a;
+  --bg-secondary: #0c1a14;
+  --bg-tertiary: #142a21;
+  --accent: #10b981;
+  --accent-hover: #059669;
+  --text-primary: #ecfdf5;
+  --text-muted: #6ee7b7;
+  --border: #113f30;
+  --node-npc: #7c3aed;
+  --node-location: #34d399;
+  --node-quest: #fbbf24;
+  --node-item: #22d3ee;
+  --node-lore: #f472b6;
+  --node-session: #818cf8;
+}
+
+.theme-cyberpunk {
+  --bg-primary: #030305;
+  --bg-secondary: #0b0914;
+  --bg-tertiary: #141124;
+  --accent: #ec4899;
+  --accent-hover: #db2777;
+  --text-primary: #fdf4ff;
+  --text-muted: #c084fc;
+  --border: #3b174a;
+  --node-npc: #a855f7;
+  --node-location: #00f5d4;
+  --node-quest: #fee440;
+  --node-item: #00bbf9;
+  --node-lore: #f15bb5;
+  --node-session: #7209b7;
+}
+
+/* Estilo Base da Aplicação */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Scrollbars Customizados e Premium */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 
-/* Flashing animations for tutorial indicators */
-@keyframes pulse-green-border {
-  0%, 100% {
-    outline: 3px solid transparent;
-    box-shadow: 0 0 0 0px rgba(34, 197, 94, 0);
-  }
-  50% {
-    outline: 4px solid #22c55e;
-    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.4);
-  }
+/* Estilização para Renderizador de Markdown */
+.markdown-content {
+  font-size: 0.925rem;
+  line-height: 1.6;
+  color: var(--text-primary);
 }
-
-@keyframes pulse-green-handle {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7);
-  }
-  50% {
-    transform: scale(1.5);
-    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-  }
+.markdown-content h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.25rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-
-@keyframes pulse-green-button {
-  0%, 100% {
-    box-shadow: 0 0 0 0px rgba(234, 179, 8, 0.7);
-    outline: 2px solid transparent;
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(234, 179, 8, 0);
-    outline: 3px solid #eab308;
-  }
+.markdown-content h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+  border-left: 3px solid var(--accent);
+  padding-left: 0.5rem;
 }
-
-.tutorial-node-flash {
-  animation: pulse-green-border 1.5s infinite;
+.markdown-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+.markdown-content p {
+  margin-bottom: 0.8rem;
+}
+.markdown-content ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 0.8rem;
+}
+.markdown-content ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-bottom: 0.8rem;
+}
+.markdown-content li {
+  margin-bottom: 0.25rem;
+}
+.markdown-content blockquote {
+  border-left: 4px solid var(--accent);
+  background-color: var(--bg-tertiary);
+  padding: 0.5rem 0.75rem;
+  margin: 0.8rem 0;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.markdown-content code {
+  font-family: 'Fira Code', Menlo, Monaco, monospace;
+  background-color: var(--bg-tertiary);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.85em;
+  border: 1px solid var(--border);
+}
+.markdown-content pre {
+  background-color: var(--bg-tertiary);
+  padding: 0.75rem;
   border-radius: 4px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  margin-bottom: 0.8rem;
+}
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+  border: none;
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+.markdown-content th, .markdown-content td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: left;
+}
+.markdown-content th {
+  background-color: var(--bg-tertiary);
+  font-weight: 700;
+  color: var(--accent);
+}
+.markdown-content tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
-.tutorial-handle-flash {
-  animation: pulse-green-handle 1.5s infinite !important;
-  background-color: #22c55e !important;
-  border-color: #ffffff !important;
-  z-index: 1000 !important;
+/* Wiki-link customizados */
+.wiki-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background-color: rgba(234, 179, 8, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  border-radius: 3px;
+  padding: 0.05rem 0.3rem;
+  font-weight: 600;
+  font-size: 0.9em;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+.wiki-link:hover {
+  background-color: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
 }
 
-.tutorial-btn-flash {
-  animation: pulse-green-button 1.5s infinite;
-  border-color: #eab308 !important;
-  background-color: #fef08a !important; /* light yellow bg */
-  color: #000000 !important;
+/* Checkbox Markdown */
+.markdown-content input[type="checkbox"] {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-right: 0.35rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+/* Classes customizadas do ReactFlow do LoreForge */
+.react-flow__pane {
+  background-color: var(--bg-primary);
+}
+.react-flow__edge-path {
+  stroke: var(--border);
+  stroke-width: 2.5;
+  transition: stroke 0.2s ease;
+}
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--accent) !important;
+}
+.react-flow__controls button {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border) !important;
+  fill: var(--text-primary) !important;
+  transition: all 0.15s ease;
+}
+.react-flow__controls button:hover {
+  background-color: var(--accent) !important;
+  fill: var(--bg-primary) !important;
+}
+
+/* Animações de Rolagem de Dados */
+@keyframes dice-roll-spin {
+  0% { transform: rotate(0deg) scale(0.9); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.dice-roll-animation {
+  animation: dice-roll-spin 0.4s ease-out;
 }

@@ -1,631 +1,380 @@
 // src/App.jsx
-// Aplicação principal do editor de histórias visuais.
-// Orquestra os hooks customizados, calcula dados derivados e compõe o JSX.
-import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+// Aplicação principal do LoreForge - Obsidian-like Campaign Organizer para RPG.
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
   Background,
   useNodesState,
-  useEdgesState
+  useEdgesState,
+  addEdge
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-// Utilitários de Lógica e Parsing
-import { buildAdjacencyList } from './utils/graphMath';
-import { validateStoryFlow } from './utils/storyValidator';
-import { runDevSimulationLog } from './utils/storySimulator';
-import { parseVariablesFromText } from './utils/textParsing';
-
-// Componentes da Interface Geral
-import EditableEdge from './components/EditableEdge';
-import TopBar from './components/TopBar';
+// Componentes do LoreForge
+import SidebarLeft from './components/SidebarLeft';
+import RpgNode from './components/RpgNode';
 import Inspector from './components/Inspector';
-import DataPanel from './components/DataPanel';
-import StoryNode from './components/StoryNode';
-import ZoneNode from './components/ZoneNode';
-import SettingsModal from './components/SettingsModal';
-import PlayMode from './components/PlayMode';
-import AiImportModal from './components/AiImportModal';
-import Popout from './components/Popout';
-import TranslationMatrix from './components/TranslationMatrix';
-import ExportModal from './components/ExportModal';
-import VariablesModal from './components/VariablesModal';
-import ConnectionModal from './components/ConnectionModal';
-import ValidationModal from './components/ValidationModal';
-import { InfoPopoutProvider } from './contexts/InfoPopoutContext';
-import { useTranslation } from 'react-i18next';
-import TemplatePromptModal from './components/TemplatePromptModal';
-import PlaythroughTutorial from './components/PlaythroughTutorial';
+import { rpgTemplates } from './utils/rpgTemplates';
 
-// Contexto de Tema e Carregamento de Configurações
-import { useTheme } from './contexts/ThemeContext';
-import * as sugarcubeLogic from './utils/sugarcubeLogic';
+// Mapeamento de tipos de nós para o ReactFlow
+const nodeTypes = {
+  npc: RpgNode,
+  location: RpgNode,
+  quest: RpgNode,
+  item: RpgNode,
+  lore: RpgNode,
+  session: RpgNode,
+  // Fallbacks
+  choice: RpgNode,
+  zone: RpgNode
+};
 
-// Custom Hooks
-import { useSettings } from './hooks/useSettings';
-import { useUndoRedo } from './hooks/useUndoRedo';
-import { useChoiceSync } from './hooks/useChoiceSync';
-import { useNodeOperations } from './hooks/useNodeOperations';
-import useGraphHandlers from './hooks/useGraphHandlers';
-import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
-import { useProjectPersistence } from './hooks/useProjectPersistence';
+// Dados de Exemplo para a Campanha Inicial (D&D Starter)
+const initialNodes = [
+  {
+    id: 'node-1',
+    type: 'session',
+    position: { x: 200, y: 50 },
+    data: {
+      label: 'Sessão 1: A Chegada',
+      category: 'session',
+      content: `# Sessão 1 - A Chegada a Phandalin&#10;&#10;Os heróis foram contratados por [[Gundren Rockseeker]] para escoltar uma carroça até à [[Vila de Phandalin]].&#10;&#10;## Acontecimentos:&#10;- Foram atacados por goblins no caminho.&#10;- Chegaram à vila e descansaram no [[O Javali Bebado]].&#10;- Ouviram boatos de que o grupo de mercenários [[Redbrands]] está a aterrorizar os moradores locais.`,
+      tags: 'sessao, starter',
+      metadata: { inGameDate: '15 Mirtul, 1492', realDate: '17/07/2026', players: 'Rita, Nuno, José' }
+    }
+  },
+  {
+    id: 'node-2',
+    type: 'npc',
+    position: { x: 500, y: 50 },
+    data: {
+      label: 'Gundren Rockseeker',
+      category: 'npc',
+      content: `# Gundren Rockseeker&#10;&#10;Um anão negociante obstinado. Ele contratou o grupo por 10 moedas de ouro cada para fazer a escolta da carga.&#10;&#10;Ele viajou antes dos heróis com um guerreiro escolta, mas nunca chegou à [[Vila de Phandalin]]. Os heróis temem que ele tenha sido capturado.`,
+      tags: 'importante, quest-giver',
+      metadata: { race: 'Anão', class: 'Comerciante', hp: '32', ac: '12', status: 'Desaparecido', alignment: 'Neutro e Bom' }
+    }
+  },
+  {
+    id: 'node-3',
+    type: 'location',
+    position: { x: 200, y: 280 },
+    data: {
+      label: 'O Javali Bebado',
+      category: 'location',
+      content: `# O Javali Bêbado&#10;&#10;A principal taverna e hospedaria da [[Vila de Phandalin]].&#10;&#10;**Som:** Canecas batendo, gargalhadas altas, lareira crepitando.&#10;**Cheiro:** Cerveja azeda, ensopado de coelho e fumo de cachimbo.&#10;&#10;## NPCs Comuns:&#10;- [[Toblen Stonehill]] (Dono da taverna)&#10;- Rumores sobre [[Redbrands]] são discutidos aqui frequentemente.`,
+      tags: 'taverna, phandalin',
+      metadata: { region: 'Fronteira da Costa da Espada', type: 'Taverna', danger: 1 }
+    }
+  },
+  {
+    id: 'node-4',
+    type: 'location',
+    position: { x: -80, y: 280 },
+    data: {
+      label: 'Vila de Phandalin',
+      category: 'location',
+      content: `# Vila de Phandalin&#10;&#10;Uma pacata vila fronteiriça de colonos. Está construída sobre antigas ruínas de pedra.&#10;&#10;## Locais Principais:&#10;- [[O Javali Bebado]]&#10;- Câmara Municipal&#10;&#10;A vila está a sofrer pressão constante do gangue de bandidos [[Redbrands]].`,
+      tags: 'cidade, segura',
+      metadata: { region: 'Costa da Espada', type: 'Vila', danger: 2 }
+    }
+  },
+  {
+    id: 'node-5',
+    type: 'lore',
+    position: { x: -80, y: 480 },
+    data: {
+      label: 'Redbrands',
+      category: 'lore',
+      content: `# Redbrands&#10;&#10;Um bando organizado de mercenários e bandidos que usam capas vermelhas.&#10;&#10;Eles andam a exigir "dinheiro de proteção" aos comerciantes da [[Vila de Phandalin]] e raptaram alguns colonos. O seu líder é um feiticeiro misterioso conhecido como "Glasstaff".`,
+      tags: 'inimigos, faccao',
+      metadata: { association: 'Glasstaff / Aranha Negra' }
+    }
+  }
+];
 
-if (typeof window !== 'undefined') {
-  window.sugarcubeLogic = sugarcubeLogic;
-}
+// Parser para extrair Wiki-links e gerar arestas automáticas
+const parseEdgesFromNotes = (nodes) => {
+  const newEdges = [];
+  nodes.forEach(sourceNode => {
+    // Skip zone nodes
+    if (sourceNode.type === 'zone') return;
+    
+    const content = sourceNode.data?.content || '';
+    const wikiLinkRegex = /\[\[(.*?)\]\]/g;
+    let match;
+    const targetsFound = new Set();
 
-// --- CONSTANTES (fora do componente para não recriar a cada render) ---
+    while ((match = wikiLinkRegex.exec(content)) !== null) {
+      const linkContent = match[1];
+      let targetName = linkContent;
+      // Handle [[Target|Label]] structure
+      if (linkContent.includes('|')) {
+        targetName = linkContent.split('|')[0].trim();
+      } else {
+        targetName = targetName.trim();
+      }
 
-// Lê o projeto salvo do LocalStorage na carga inicial do módulo.
+      // Procura nó de destino pelo título (case-insensitive)
+      const targetNode = nodes.find(n => n.data?.label?.toLowerCase() === targetName.toLowerCase());
+      if (targetNode && targetNode.id !== sourceNode.id) {
+        const edgeId = `edge-${sourceNode.id}-${targetNode.id}`;
+        if (!targetsFound.has(targetNode.id)) {
+          targetsFound.add(targetNode.id);
+          newEdges.push({
+            id: edgeId,
+            source: sourceNode.id,
+            target: targetNode.id,
+            type: 'default',
+            animated: true,
+            style: { stroke: 'var(--accent)', strokeWidth: 2 }
+          });
+        }
+      }
+    }
+  });
+  return newEdges;
+};
+
+// Recupera dados salvos do LocalStorage ou carrega os iniciais
 const getSavedData = () => {
-  const saved = localStorage.getItem('plot-in-a-pot-project');
-  if (saved && saved !== 'undefined') {
+  const saved = localStorage.getItem('loreforge-vault');
+  if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed.nodes)) {
+        return parsed;
+      }
     } catch (e) {
       console.error("Erro ao carregar dados do LocalStorage", e);
     }
   }
-  return null;
+  return {
+    nodes: initialNodes,
+    theme: 'obsidian'
+  };
 };
 
 const SAVED_DATA = getSavedData();
 
-// Nó inicial padrão usado quando não existe projeto salvo no LocalStorage.
-const initialNodes = [
-  {
-    id: '1',
-    type: 'choice',
-    position: { x: 250, y: 5 },
-    data: { label: 'Start', nodeType: 'choice', content: 'A história começa aqui.', choices: [], tags: '' }
-  }
-];
-
-// Mapeamento de tipos de nós customizados para o ReactFlow.
-const nodeTypes = {
-  choice: StoryNode,
-  javascript: StoryNode,
-  css: StoryNode,
-  zone: ZoneNode
-};
-
-// Tipos de aresta personalizados
-const edgeTypes = {
-  editable: EditableEdge,
-  default: EditableEdge
-};
-
 function App() {
-  const { isDark, toggleTheme } = useTheme();
-  const { t, i18n } = useTranslation();
-
-  // --- Estados Principais do Grafo ---
-  const [nodes, setNodes, onNodesChange] = useNodesState(
-    Array.isArray(SAVED_DATA?.nodes) ? SAVED_DATA.nodes : initialNodes
-  );
-  const [edges, setEdges, onEdgesChange] = useEdgesState(SAVED_DATA?.edges || []);
+  const [nodes, setNodes, onNodesChange] = useNodesState(SAVED_DATA.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [selectedEdgeId, setSelectedEdgeId] = useState(null);
+  const [activeTheme, setActiveTheme] = useState(SAVED_DATA.theme || 'obsidian');
 
-  // --- Estados de Modais ---
-  const [isPlayModeOpen, setIsPlayModeOpen] = useState(false);
-  const [playModeCurrentNodeId, setPlayModeCurrentNodeId] = useState(null);
-  const [playModeLanguage, setPlayModeLanguage] = useState('pt');
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [importText, setImportText] = useState('');
-  const [isMatrixOpen, setIsMatrixOpen] = useState(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isVarModalOpen, setIsVarModalOpen] = useState(false);
-  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
-  const [validationModalResult, setValidationModalResult] = useState(null);
-  const [pendingConnection, setPendingConnection] = useState(null);
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [isTutorialPromptOpen, setIsTutorialPromptOpen] = useState(false);
-  const [isTutorialMenuOpen, setIsTutorialMenuOpen] = useState(false);
-  const [activeTutorial, setActiveTutorial] = useState(null);
-  const [activeStep, setActiveStep] = useState(null);
-  const [importError, setImportError] = useState('');
-  const [parserWarnings, setParserWarnings] = useState([]);
-  const [validationResult, setValidationResult] = useState(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  // Verifica se o prompt de template já foi mostrado e abre-o na primeira carga.
+  // Auto-Save do Vault
   useEffect(() => {
-    const getCookie = (name) => {
-      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      return match ? match[2] : null;
-    };
-    const seenPrompt = getCookie('seen-template-prompt');
-    if (seenPrompt === 'false' || seenPrompt === null) {
-      setIsTemplateModalOpen(true);
-    }
-  }, []);
+    localStorage.setItem('loreforge-vault', JSON.stringify({
+      nodes,
+      theme: activeTheme
+    }));
+  }, [nodes, activeTheme]);
 
-  // Verifica se o prompt do tutorial já foi mostrado e exibe-o quando necessário.
+  // Sincroniza Tema no Body do Documento
   useEffect(() => {
-    const getCookie = (name) => {
-      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      return match ? match[2] : null;
-    };
-    const seenTutorial = getCookie('seen-tutorial-prompt');
-    if (seenTutorial === 'false' || seenTutorial === null) {
-      setIsTutorialPromptOpen(true);
-    }
-  }, []);
+    document.body.className = `theme-${activeTheme}`;
+  }, [activeTheme]);
 
-  // Traduções do projeto, persistidas no LocalStorage.
-  const [translations, setTranslations] = useState({
-    languages: SAVED_DATA?.translations?.languages || ['pt', 'en'],
-    keys: SAVED_DATA?.translations?.keys || {}
-  });
-
-  // Refs para acesso estável ao estado atual sem causar dependências em callbacks.
-  const nodesRef = useRef(nodes);
-  const edgesRef = useRef(edges);
-  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
-  useEffect(() => { edgesRef.current = edges; }, [edges]);
-
-  // --- Custom Hooks ---
-  const { settings, toggleSetting, updateSetting } = useSettings();
-
-  const { takeSnapshot, undo, redo, past, future } = useUndoRedo({
-    nodesRef, edgesRef, setNodes, setEdges, setSelectedNodeId, setSelectedEdgeId
-  });
-
-  const { syncChoicesFromText, handleConnectionConfirm } = useChoiceSync({
-    nodesRef, setNodes, setEdges, setPendingConnection
-  });
-
-  const { addNode, deleteNode, duplicateNode, updateSelectedNode, setStartNode } = useNodeOperations({
-    nodesRef, setNodes, setEdges, setSelectedNodeId, selectedNodeId,
-    takeSnapshot, syncChoicesFromText, t, activeTutorial, activeStep
-  });
-
-  const {
-    onConnect, onEdgeUpdate, onNodeDragStop, onNodeClick, onEdgeClick,
-    handleOpenPlayMode, onEdgeDoubleClick
-  } = useGraphHandlers({
-    nodesRef, setNodes, setEdges, takeSnapshot, syncChoicesFromText,
-    setPendingConnection, setSelectedNodeId, setSelectedEdgeId,
-    setIsPlayModeOpen, activeTutorial, activeStep, t
-  });
-
-  const { exportToTwine, handleImport, handleAiImportSuccess, handleLoadBaseTemplate } = useProjectPersistence({
-    nodes, edges, translations, setTranslations,
-    nodesRef, edgesRef, setNodes, setEdges,
-    setParserWarnings, setImportError, importText,
-    takeSnapshot, t, i18n
-  });
-
-  // --- Estados de Interface Restantes ---
-  const [infoPopout, setInfoPopout] = useState({
-    isOpen: false,
-    title: 'Informações',
-    subtitle: '',
-    content: null
-  });
-
-  const showInfoPopout = useCallback(({ title, subtitle, content }) => {
-    setInfoPopout({ isOpen: true, title, subtitle, content });
-  }, []);
-
-  const closeInfoPopout = useCallback(() => {
-    setInfoPopout((prev) => ({ ...prev, isOpen: false }));
-  }, []);
-
-  // --- Estado de Erros de Validação ---
-  const [validationErrors, setValidationErrors] = useState([]);
-
-  // --- Funções Locais ---
-  const resetProject = useCallback(() => {
-    if (window.confirm(t('alerts.resetConfirm', 'Warning: This will delete all current progress. Continue?'))) {
-      localStorage.removeItem('plot-in-a-pot-project');
-      window.location.reload();
-    }
-  }, [t]);
-
-  const runValidation = useCallback(() => {
-    const result = validateStoryFlow(nodesRef.current, edgesRef.current);
-    setValidationErrors(result.unreachableEdges);
-    setValidationResult(result);
-    setValidationModalResult(result);
-    setIsValidationModalOpen(true);
-  }, []);
-
-  const runSimulationLog = useCallback(() => {
-    runDevSimulationLog(nodesRef.current, edgesRef.current);
-  }, []);
-
-  // --- Atalhos de Teclado (depende de closeInfoPopout e runValidation, por isso vem depois) ---
-  useKeyboardShortcuts({
-    selectedEdgeId, selectedNodeId, setEdges, deleteNode, undo, redo,
-    takeSnapshot, addNode, closeInfoPopout,
-    handleOpenPlayMode, runValidation,
-    activeTutorial, activeStep,
-    setIsPlayModeOpen, setIsAiModalOpen, setIsSettingsOpen, setSelectedEdgeId
-  });
-
-  const [varModalMode, setVarModalMode] = useState('create');
-
-  const openVariablesEditor = useCallback(() => {
-    if (!selectedNodeId) return;
-    setVarModalMode('create');
-    setIsVarModalOpen(true);
-  }, [selectedNodeId]);
-
-  const openChangeVariablesEditor = useCallback(() => {
-    if (!selectedNodeId) return;
-    setVarModalMode('change');
-    setIsVarModalOpen(true);
-  }, [selectedNodeId]);
-
-  // --- Cálculos Memorizados ---
-  const adjacencyList = useMemo(() => buildAdjacencyList(nodes ?? [], edges ?? []), [nodes, edges]);
-  const selectedNode = useMemo(() => (nodes ?? []).find((n) => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
-
-  const globalVars = useMemo(() => {
-    return (nodes ?? []).reduce((acc, node) => {
-      const vars = parseVariablesFromText(node.data.content);
-      return Object.keys(vars).length > 0 ? { ...acc, ...vars } : acc;
-    }, {});
-  }, [nodes]);
-
-  const unreachableNodeIds = useMemo(() => {
-    if (!validationResult || !validationResult.orphanNodes) return new Set();
-    return new Set(validationResult.orphanNodes.map(n => n.id));
-  }, [validationResult]);
-
-  const reachableNodeIds = useMemo(() => {
-    if (!validationResult || !validationResult.reachableNodes) return new Set();
-    return validationResult.reachableNodes;
-  }, [validationResult]);
-
-  const visibleNodes = useMemo(() => {
-    let filtered = nodes;
-    if (!settings.showSecrets) {
-      filtered = nodes.filter(n => {
-        const tags = Array.isArray(n.data.tags) ? n.data.tags.join(' ') : String(n.data.tags || '');
-        return !tags.toLowerCase().includes('secreto');
-      });
-    }
-    return filtered.map(n => {
-      const isUnreachable = unreachableNodeIds.has(n.id);
-      let updatedNode = {
-        ...n,
-        data: {
-          ...n.data,
-          isUnreachable
-        }
-      };
-      if (n.type === 'zone' || n.data?.nodeType === 'zone') {
-        updatedNode.style = { ...updatedNode.style, pointerEvents: 'none' };
-      }
-      return updatedNode;
-    });
-  }, [nodes, settings.showSecrets, unreachableNodeIds]);
-
-  const visibleEdges = useMemo(() => {
-    let filteredEdges = edges;
-    if (!settings.showSecrets) {
-      const ids = new Set(visibleNodes.map(n => n.id));
-      filteredEdges = edges.filter(e => ids.has(e.source) && ids.has(e.target));
-    }
-    return filteredEdges.map(e => {
-      const isUnreachable = unreachableNodeIds.has(e.target) && reachableNodeIds.has(e.source);
-      return {
-        ...e,
-        data: {
-          ...e.data,
-          isUnreachable
-        }
-      };
-    });
-  }, [edges, visibleNodes, settings.showSecrets, unreachableNodeIds, reachableNodeIds]);
-
-  // --- Efeitos de UI ---
-  // Atualiza os realces dos nós conforme o tutorial avança.
+  // Sincronização Automática de Edges baseada nos Wiki-links Markdown
   useEffect(() => {
-    if (!activeTutorial || !activeStep) {
-      setNodes(nds => nds.map(n => {
-        if (n.data.highlight || n.data.highlightHandle) {
-          return { ...n, data: { ...n.data, highlight: false, highlightHandle: null } };
-        }
-        return n;
-      }));
-      return;
+    const parsedEdges = parseEdgesFromNotes(nodes);
+    
+    // Compara para evitar loops infinitos de re-render
+    const currentIds = edges.map(e => e.id).join(',');
+    const parsedIds = parsedEdges.map(e => e.id).join(',');
+    
+    if (currentIds !== parsedIds) {
+      setEdges(parsedEdges);
     }
+  }, [nodes, edges, setEdges]);
 
-    const firstNodeId = activeStep.highlightNodeId;
-    const firstHandle = activeStep.highlightHandle;
-    const secondNodeId = activeStep.highlightNodeId2;
-    const secondHandle = activeStep.highlightHandle2;
+  // Callback ao selecionar nó no Grafo ou na Barra Lateral
+  const handleSelectNode = useCallback((nodeId) => {
+    setSelectedNodeId(nodeId);
+    // Realça nó selecionado no React Flow (opcional, ReactFlow já lida com seleção básica)
+  }, []);
 
-    setNodes(nds => nds.map(n => {
-      const isFirst = n.id === firstNodeId;
-      const isSecond = n.id === secondNodeId;
-      const shouldHighlight = isFirst || isSecond;
-      const handle = isFirst ? firstHandle : (isSecond ? secondHandle : null);
+  const onNodeClick = useCallback((event, node) => {
+    handleSelectNode(node.id);
+  }, [handleSelectNode]);
 
-      const currentHighlight = !!n.data.highlight;
-      const currentHandle = n.data.highlightHandle;
+  const onPaneClick = useCallback(() => {
+    setSelectedNodeId(null);
+  }, []);
 
-      if (shouldHighlight !== currentHighlight || handle !== currentHandle) {
+  // Atualizar dados de uma nota específica
+  const handleUpdateNode = useCallback((nodeId, updatedFields) => {
+    setNodes(nds => nds.map(node => {
+      if (node.id === nodeId) {
+        // Se mudou o label (título), atualiza o tipo para condizer com a categoria caso mude
+        const category = updatedFields.category !== undefined ? updatedFields.category : node.data.category;
         return {
-          ...n,
+          ...node,
+          type: category,
           data: {
-            ...n.data,
-            highlight: shouldHighlight,
-            highlightHandle: shouldHighlight ? handle : null
+            ...node.data,
+            ...updatedFields,
+            category
           }
         };
       }
-      return n;
+      return node;
     }));
-  }, [activeTutorial, activeStep, setNodes]);
+  }, [setNodes]);
 
-  // Sincroniza a propriedade bgImageBlur dos nós sempre que o setting mudar.
-  useEffect(() => {
-    setNodes(nds => nds.map(n => {
-      if (n.data.bgImageBlur !== settings.bgImageBlur) {
-        return {
-          ...n,
-          data: {
-            ...n.data,
-            bgImageBlur: settings.bgImageBlur
-          }
-        };
+  // Apagar nota
+  const handleDeleteNode = useCallback((nodeId) => {
+    if (window.confirm('Tem certeza de que deseja apagar esta nota? Esta ação é irreversível.')) {
+      setNodes(nds => nds.filter(n => n.id !== nodeId));
+      if (selectedNodeId === nodeId) {
+        setSelectedNodeId(null);
       }
-      return n;
-    }));
-  }, [settings.bgImageBlur, setNodes]);
+    }
+  }, [selectedNodeId, setNodes]);
 
-  // --- Listeners de Eventos Globais ---
-  useEffect(() => {
-    const onThemeToggle = () => toggleTheme();
-    const onMatrixToggle = () => setIsMatrixOpen(prev => !prev);
-    const onUndo = () => undo();
-    const onRedo = () => redo();
-    const onUpdateWaypoints = (e) => {
-      const { edgeId, waypoints } = e.detail;
-      setEdges(eds => eds.map(edge => edge.id === edgeId ? { ...edge, data: { ...edge.data, waypoints } } : edge));
+  // Criar uma nova nota
+  const handleCreateNode = useCallback((category = 'lore', defaultTitle = null) => {
+    const defaultTemplate = rpgTemplates[category] || '';
+    
+    // Encontra um título único
+    let title = defaultTitle;
+    if (!title) {
+      let index = 1;
+      const categoryName = category.toUpperCase();
+      do {
+        title = `Novo ${categoryName} ${index}`;
+        index++;
+      } while (nodes.some(n => n.data?.label?.toLowerCase() === title.toLowerCase()));
+    }
+
+    const uniqueId = `node-${Date.now()}`;
+    const newNode = {
+      id: uniqueId,
+      type: category,
+      // Posição no centro aproximado do viewport do grafo
+      position: { x: 150 + Math.random() * 150, y: 150 + Math.random() * 150 },
+      data: {
+        label: title,
+        category,
+        content: defaultTemplate.replace('[Nome do NPC]', title).replace('[Nome do Local]', title).replace('[Nome da Quest]', title).replace('[Nome do Item]', title).replace('[Título da Lore/Fação]', title),
+        tags: '',
+        metadata: category === 'npc' ? { status: 'Vivo' } : category === 'quest' ? { status: 'Não Iniciada' } : {}
+      }
     };
 
-    window.addEventListener('triggerThemeToggle', onThemeToggle);
-    window.addEventListener('triggerMatrixToggle', onMatrixToggle);
-    window.addEventListener('triggerUndo', onUndo);
-    window.addEventListener('triggerRedo', onRedo);
-    window.addEventListener('updateEdgeWaypoints', onUpdateWaypoints);
+    setNodes(nds => [...nds, newNode]);
+    setSelectedNodeId(uniqueId);
+  }, [nodes, setNodes]);
 
-    return () => {
-      window.removeEventListener('triggerThemeToggle', onThemeToggle);
-      window.removeEventListener('triggerMatrixToggle', onMatrixToggle);
-      window.removeEventListener('triggerUndo', onUndo);
-      window.removeEventListener('triggerRedo', onRedo);
-      window.removeEventListener('updateEdgeWaypoints', onUpdateWaypoints);
-    };
-  }, [toggleTheme, undo, redo, setEdges]);
+  // Conectar manualmente no grafo -> Cria Wiki-link no texto
+  const onConnect = useCallback((params) => {
+    const sourceNode = nodes.find(n => n.id === params.source);
+    const targetNode = nodes.find(n => n.id === params.target);
+
+    if (sourceNode && targetNode) {
+      const targetLabel = targetNode.data?.label || '';
+      const currentContent = sourceNode.data?.content || '';
+      const appendText = `\n\n[[${targetLabel}]]`;
+
+      // Atualiza o conteúdo do nó de origem
+      handleUpdateNode(sourceNode.id, { content: currentContent + appendText });
+    }
+  }, [nodes, handleUpdateNode]);
+
+  // Seleciona a nota ativa
+  const selectedNode = useMemo(() => {
+    return nodes.find(n => n.id === selectedNodeId) || null;
+  }, [nodes, selectedNodeId]);
 
   return (
-    <InfoPopoutProvider value={{ showInfoPopout, closeInfoPopout }}>
-      <div className="flex h-screen w-screen font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 overflow-hidden">
+    <div className="flex h-screen w-screen font-sans bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden">
+      
+      {/* 1. PAINEL ESQUERDO: EXPLORER, DIALLER & DICE ROLLER */}
+      <SidebarLeft
+        nodes={nodes}
+        selectedNodeId={selectedNodeId}
+        onSelectNode={handleSelectNode}
+        onCreateNode={handleCreateNode}
+        activeTheme={activeTheme}
+        onThemeChange={setActiveTheme}
+      />
 
-        <AiImportModal
-          isOpen={isAiModalOpen}
-          onClose={() => setIsAiModalOpen(false)}
-          onImportSuccess={handleAiImportSuccess}
-        />
-
-        <PlayMode
-          isOpen={isPlayModeOpen}
-          onClose={() => setIsPlayModeOpen(false)}
-          nodes={nodes}
-          edges={edges}
-          translations={translations}
-          onCurrentNodeIdChange={setPlayModeCurrentNodeId}
-          onGameLanguageChange={setPlayModeLanguage}
-          activeStep={activeStep}
-        />
-
-        <TranslationMatrix
-          isOpen={isMatrixOpen}
-          onClose={() => setIsMatrixOpen(false)}
-          translations={translations}
-          setTranslations={setTranslations}
-        />
-
-        <ExportModal
-          isOpen={isExportModalOpen}
-          onClose={() => setIsExportModalOpen(false)}
-          languages={translations.languages}
-          onConfirm={exportToTwine}
-        />
-
-        <ValidationModal
-          isOpen={isValidationModalOpen}
-          onClose={() => setIsValidationModalOpen(false)}
-          result={validationModalResult}
-          showSimulation={settings.showSimulationOnValidation}
-          nodes={nodes}
-        />
-
-        {isSettingsOpen && (
-          <SettingsModal
-            isOpen={isSettingsOpen}
-            onClose={() => setIsSettingsOpen(false)}
-            settings={settings}
-            toggleSetting={toggleSetting}
-            updateSetting={updateSetting}
-            resetProject={resetProject}
-            openTutorialMenu={() => {
-              setIsSettingsOpen(false);
-              setIsTutorialMenuOpen(true);
-            }}
-          />
-        )}
-
-        <div className="flex-1 flex flex-col border-r-4 border-gray-900 dark:border-gray-700 relative z-0">
-          <TopBar
-            addNode={addNode}
-            openSettings={() => setIsSettingsOpen(true)}
-            openPlayMode={() => handleOpenPlayMode()}
-            openAiModal={() => setIsAiModalOpen(true)}
-            openTutorialMenu={() => setIsTutorialMenuOpen(true)}
-            canUndo={past.length > 0}
-            canRedo={future.length > 0}
-            activeStep={activeStep}
-          />
-          <div className="flex-1">
-            <ReactFlow
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              nodes={visibleNodes}
-              edges={visibleEdges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onEdgeUpdate={onEdgeUpdate}
-              onNodeDragStart={takeSnapshot}
-              onNodeDragStop={onNodeDragStop}
-              onNodeDoubleClick={onNodeClick}
-              onEdgeClick={onEdgeClick}
-              onEdgeDoubleClick={onEdgeDoubleClick}
-              deleteKeyCode={activeStep ? null : ['Delete']}
-              fitView
-              selectionOnDrag
-            >
-              <MiniMap
-                className="!border-2 !border-gray-900 dark:!border-gray-200 !shadow-[4px_4px_0px_#000] dark:!shadow-[4px_4px_0px_#fff] !bg-white dark:!bg-gray-800 transition-colors"
-                nodeColor={(n) => {
-                  const type = n.data?.nodeType || n.type;
-                  if (type === 'zone') {
-                    const zoneColor = n.data?.color || '#f59e0b';
-                    return `${zoneColor}22`;
-                  }
-                  if (type === 'javascript') return '#2563eb';
-                  if (type === 'css') return '#db2777';
-                  return isDark ? '#f8fafc' : '#1e293b';
-                }}
-                nodeStrokeColor={(n) => {
-                  const type = n.data?.nodeType || n.type;
-                  if (type === 'zone') {
-                    return n.data?.color || '#f59e0b';
-                  }
-                  return isDark ? '#ffffff' : '#000000';
-                }}
-                maskColor={isDark ? 'rgba(15, 23, 42, 0.7)' : 'rgba(203, 213, 225, 0.5)'}
-                nodeStrokeWidth={3}
-                nodeBorderRadius={2}
-              />
-              <Controls className="border-2 border-gray-800 dark:border-gray-200 rounded shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] overflow-hidden [&>button]:dark:bg-gray-800 [&>button]:dark:border-gray-700 [&>button]:dark:fill-gray-200 hover:[&>button]:dark:bg-gray-700 [&>button]:transition-colors" />
-              <Background gap={16} color={isDark ? '#475569' : '#94a3b8'} />
-            </ReactFlow>
+      {/* 2. CENTRO: GRAFO INTERACTIVO REACTFLOW */}
+      <div className="flex-1 flex flex-col relative bg-[var(--bg-primary)] border-r border-[var(--border)]">
+        {/* Top Mini Info Bar */}
+        <div className="p-3 bg-[var(--bg-secondary)] border-b border-[var(--border)] flex justify-between items-center z-10">
+          <div className="flex items-center gap-2">
+            <span className="text-xs px-2 py-0.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded text-[var(--text-muted)] font-mono">
+              Grafo das Notas
+            </span>
+            <span className="text-xs text-[var(--text-muted)]">
+              Dica: Arraste de um nó a outro para criar conexões (Wiki-links automáticos).
+            </span>
           </div>
+          <button
+            onClick={() => handleCreateNode('lore')}
+            className="px-2.5 py-1 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--bg-primary)] font-bold text-xs rounded transition-colors"
+          >
+            + Nova Nota 📄
+          </button>
         </div>
 
-        <Inspector
-          selectedNode={selectedNode}
-          nodes={nodes}
-          updateSelectedNode={updateSelectedNode}
-          deleteNode={deleteNode}
-          duplicateNode={duplicateNode}
-          syncChoicesFromText={syncChoicesFromText}
-          setStartNode={setStartNode}
-          onOpenVariables={openVariablesEditor}
-          onChangeVariables={openChangeVariablesEditor}
-          translations={translations}
-          visualLogicEnabled={settings.visualLogicEnabled}
-          visualBlocksMode={settings.visualBlocksMode}
-          globalVars={globalVars}
-          activeStep={activeStep}
-        />
-
-        <DataPanel
-          exportToTwine={() => setIsExportModalOpen(true)}
-          importText={importText}
-          setImportText={setImportText}
-          handleImport={handleImport}
-          importError={importError}
-          adjacencyList={adjacencyList}
-          showAdjacencyList={settings.showAdjacency}
-          showFlowErrors={settings.showFlowErrors}
-          runValidation={runValidation}
-          validationResult={validationResult}
-          parserWarnings={parserWarnings}
-          validationErrors={validationErrors}
-          runSimulationLog={runSimulationLog}
-          showSimulationLegacy={settings.showSimulationLegacy}
-          translations={translations}
-          setTranslations={setTranslations}
-          activeStep={activeStep}
-          openPlayMode={() => handleOpenPlayMode()}
-          nodes={nodes}
-          settings={settings}
-          toggleSetting={toggleSetting}
-        />
-
-        <Popout
-          isOpen={infoPopout.isOpen}
-          onClose={closeInfoPopout}
-          title={infoPopout.title}
-          subtitle={infoPopout.subtitle}
-        >
-          {infoPopout.content}
-        </Popout>
-
-        <VariablesModal
-          isOpen={isVarModalOpen}
-          onClose={() => setIsVarModalOpen(false)}
-          selectedNode={selectedNode}
-          nodes={nodes}
-          setNodes={setNodes}
-          takeSnapshot={takeSnapshot}
-          initialMode={varModalMode}
-          activeStep={activeStep}
-        />
-
-        <ConnectionModal
-          isOpen={!!pendingConnection}
-          onClose={() => setPendingConnection(null)}
-          onConfirm={handleConnectionConfirm}
-          params={pendingConnection}
-          nodes={nodes}
-          globalVars={globalVars}
-          activeStep={activeStep}
-        />
-
-        <TemplatePromptModal
-          isOpen={isTemplateModalOpen}
-          onClose={() => setIsTemplateModalOpen(false)}
-          onLoadBaseTemplate={handleLoadBaseTemplate}
-        />
-
-        <PlaythroughTutorial
-          nodes={nodes}
-          setNodes={setNodes}
-          edges={edges}
-          setEdges={setEdges}
-          translations={translations}
-          setTranslations={setTranslations}
-          selectedNodeId={selectedNodeId}
-          setSelectedNodeId={setSelectedNodeId}
-          validationResult={validationResult}
-          runValidation={runValidation}
-          isPlayModeOpen={isPlayModeOpen}
-          setIsPlayModeOpen={setIsPlayModeOpen}
-          isTutorialPromptOpen={isTutorialPromptOpen}
-          setIsTutorialPromptOpen={setIsTutorialPromptOpen}
-          isTutorialMenuOpen={isTutorialMenuOpen}
-          setIsTutorialMenuOpen={setIsTutorialMenuOpen}
-          activeTutorial={activeTutorial}
-          setActiveTutorial={setActiveTutorial}
-          isVarModalOpen={isVarModalOpen}
-          playModeCurrentNodeId={playModeCurrentNodeId}
-          playModeLanguage={playModeLanguage}
-          onActiveStepChange={setActiveStep}
-        />
+        {/* React Flow Editor */}
+        <div className="flex-1">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodeClick={onNodeClick}
+            onPaneClick={onPaneClick}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            fitView
+            deleteKeyCode={null} // Desativa Delete do teclado para não colidir com o editor
+          >
+            <MiniMap
+              className="!border !border-[var(--border)] !bg-[var(--bg-secondary)] transition-colors rounded shadow-lg"
+              nodeColor={(n) => {
+                const cat = n.data?.category || 'lore';
+                if (cat === 'npc') return 'rgba(139, 92, 246, 0.4)';
+                if (cat === 'location') return 'rgba(16, 185, 129, 0.4)';
+                if (cat === 'quest') return 'rgba(245, 158, 11, 0.4)';
+                if (cat === 'item') return 'rgba(6, 182, 212, 0.4)';
+                if (cat === 'session') return 'rgba(99, 102, 241, 0.4)';
+                return 'rgba(236, 72, 153, 0.4)';
+              }}
+              nodeStrokeColor={(n) => {
+                const cat = n.data?.category || 'lore';
+                if (cat === 'npc') return '#8b5cf6';
+                if (cat === 'location') return '#10b981';
+                if (cat === 'quest') return '#f59e0b';
+                if (cat === 'item') return '#06b6d4';
+                if (cat === 'session') return '#6366f1';
+                return '#ec4899';
+              }}
+              maskColor="rgba(15, 15, 17, 0.7)"
+              nodeStrokeWidth={3}
+            />
+            <Controls className="!border-[var(--border)] !bg-[var(--bg-tertiary)] overflow-hidden" />
+            <Background gap={18} color="rgba(255, 255, 255, 0.05)" />
+          </ReactFlow>
+        </div>
       </div>
-    </InfoPopoutProvider>
+
+      {/* 3. PAINEL DIREITO: INSPETOR DE METADADOS & EDITOR MARKDOWN */}
+      <Inspector
+        selectedNode={selectedNode}
+        nodes={nodes}
+        onUpdateNode={handleUpdateNode}
+        onDeleteNode={handleDeleteNode}
+        onSelectNode={handleSelectNode}
+        onCreateNode={handleCreateNode}
+      />
+
+    </div>
   );
 }
 
